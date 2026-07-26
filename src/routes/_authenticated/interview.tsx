@@ -125,6 +125,10 @@ function InterviewPage() {
           const n = parseInt(savedExpiry, 10);
           if (!Number.isNaN(n)) setExpiresInHours(n);
         }
+        const savedActiveOnly = window.localStorage.getItem("ri_show_active_only");
+        if (savedActiveOnly !== null) {
+          setShowActiveOnly(savedActiveOnly === "true");
+        }
       }
       const [sessionRes, intelRes] = await Promise.all([
         supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
