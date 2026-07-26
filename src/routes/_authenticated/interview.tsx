@@ -279,14 +279,14 @@ function InterviewPage() {
   }
 
   const filteredRevokedShares = useMemo(() => {
-    const q = revokedSearch.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     if (!q) return sortedRevokedShares;
     return sortedRevokedShares.filter((r) => {
       const url = urlFor(r.token).toLowerCase();
       const by = (r.revoked_by_name ?? "").toLowerCase();
       return url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
     });
-  }, [sortedRevokedShares, revokedSearch]);
+  }, [sortedRevokedShares, debouncedSearch]);
 
   const refreshShares = useCallback(async () => {
     try {
