@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
-import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
+import { checkExpiredShares, createShareLink, listActiveShares, listRevokedShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
