@@ -763,13 +763,21 @@ function InterviewPage() {
                           <ul className="space-y-2">
                             {pageItems.map((r) => (
                               <li key={r.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
-                                <div className="truncate text-xs text-muted-foreground line-through">{urlFor(r.token)}</div>
+                                <div className="truncate text-xs text-muted-foreground line-through">
+                                  <Highlight text={urlFor(r.token)} query={debouncedSearch} />
+                                </div>
+                                <div className="truncate text-[10px] font-mono text-muted-foreground">
+                                  Token: <Highlight text={r.token} query={debouncedSearch} />
+                                </div>
                                 <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                                   <span>
                                     Revoked {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
                                     {" · by "}
                                     <span className="text-foreground">
-                                      {r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                                      <Highlight
+                                        text={r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                                        query={debouncedSearch}
+                                      />
                                     </span>
                                   </span>
                                   <span>Created {new Date(r.created_at).toLocaleDateString()}</span>
