@@ -875,7 +875,9 @@ function InterviewPage() {
                     <p className="text-xs text-muted-foreground">Loading history…</p>
                   ) : filteredRevokedShares.length === 0 ? (
                     <p className="text-xs text-ink-soft">
-                      {revokedSearch.trim() || revokedFilters.size > 0 ? "No revoked links match your filters." : "No revoked links yet."}
+                      {revokedSearch.trim() || revokedFilters.size > 0 || revokedStart || revokedEnd
+                        ? "No revoked links match your filters."
+                        : "No revoked links yet."}
                     </p>
                   ) : (
                     (() => {
