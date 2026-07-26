@@ -336,6 +336,12 @@ function InterviewPage() {
             >
               {saving ? "Distilling…" : "Save to my profile"}
             </button>
+            <button
+              onClick={exportPdf}
+              className="mt-2 w-full rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground hover:border-primary/50"
+            >
+              Download transcript (PDF)
+            </button>
           </div>
         )}
       </div>
