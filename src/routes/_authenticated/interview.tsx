@@ -468,23 +468,39 @@ function InterviewPage() {
           <div className="mt-3 rounded-2xl border border-border/60 bg-card/80 p-3">
             <div className="flex items-center justify-between">
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Shareable link</p>
-              <button
-                type="button"
-                onClick={() => setShareOpen(false)}
-                className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-              >
-                Close
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleShowActiveOnly}
+                  className={
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] transition " +
+                    (showActiveOnly
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground")
+                  }
+                  aria-pressed={showActiveOnly}
+                >
+                  <span className={`h-2 w-2 rounded-full ${showActiveOnly ? "bg-primary" : "bg-muted-foreground/50"}`} />
+                  Active only
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(false)}
+                  className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+                >
+                  Close
+                </button>
+              </div>
             </div>
             {!sharesLoaded ? (
               <p className="mt-3 text-xs text-muted-foreground">Loading your links…</p>
-            ) : shares.length === 0 ? (
+            ) : filteredShares.length === 0 ? (
               <p className="mt-2 text-xs text-ink-soft">
-                No active links yet. Choose how long a new link should stay active, then create it.
+                {showActiveOnly ? "No active links right now." : "No active links yet. Choose how long a new link should stay active, then create it."}
               </p>
             ) : (
               <ul className="mt-2 space-y-2">
-                {sortedShares.map((s) => (
+                {filteredShares.map((s) => (
                   <li key={s.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
                     <div className="truncate text-xs text-foreground">{urlFor(s.token)}</div>
                     <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
