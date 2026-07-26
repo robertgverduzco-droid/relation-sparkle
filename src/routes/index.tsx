@@ -40,10 +40,15 @@ function Welcome() {
         <div />
 
         <section className="mt-20 text-center">
-          <h1 className="font-display text-[3.25rem] leading-[1.02] text-[#1a2540]">
-            Meet <em className="italic">Athena</em>.
+          <h1 className="font-display leading-none text-ink">
+            <span className="block text-[1rem] font-normal tracking-[0.22em] text-ink-soft/80 uppercase">
+              Meet
+            </span>
+            <span className="mt-5 block text-[4.5rem] tracking-tight" aria-label="Athena">
+              Athena.
+            </span>
           </h1>
-          <p className="mt-4 text-[17px] leading-relaxed text-[#3a4a68]">
+          <p className="mt-8 text-[17px] leading-relaxed text-ink-soft">
             The Next Evolution of Matchmaking.
           </p>
         </section>
