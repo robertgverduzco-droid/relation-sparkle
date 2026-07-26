@@ -106,6 +106,8 @@ export type Database = {
       interview_shares: {
         Row: {
           created_at: string
+          expires_at: string | null
+          expiry_notified_at: string | null
           id: string
           revoked_at: string | null
           token: string
@@ -114,6 +116,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
+          expiry_notified_at?: string | null
           id?: string
           revoked_at?: string | null
           token?: string
@@ -122,6 +126,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
+          expiry_notified_at?: string | null
           id?: string
           revoked_at?: string | null
           token?: string
