@@ -134,6 +134,25 @@ function InterviewPage() {
     }
   }
 
+  const sortedRevokedShares = useMemo(() => {
+    const sorted = [...revokedShares];
+    sorted.sort((a, b) => {
+      const aTime = a.revoked_at ? new Date(a.revoked_at).getTime() : 0;
+      const bTime = b.revoked_at ? new Date(b.revoked_at).getTime() : 0;
+      return revokedSort === "newest" ? bTime - aTime : aTime - bTime;
+    });
+    return sorted;
+  }, [revokedShares, revokedSort]);
+
+  function toggleRevokedSort() {
+    const next = revokedSort === "newest" ? "oldest" : "newest";
+    setRevokedSort(next);
+    setRevokedPage(0);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ri_revoked_sort", next);
+    }
+  }
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
