@@ -453,5 +453,12 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       signals: {},
     });
 
-    return { ok: true };
+    // When both people accept, Athena quietly opens a shared connection.
+    let connectionId: string | null = null;
+    if (data.response === "accepted") {
+      const { openConnectionIfMutual } = await import("./connections.functions");
+      connectionId = await openConnectionIfMutual(supabase, data.pair_id);
+    }
+
+    return { ok: true, connection_id: connectionId };
   });
