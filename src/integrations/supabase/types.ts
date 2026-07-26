@@ -79,6 +79,39 @@ export type Database = {
           },
         ]
       }
+      facet_history: {
+        Row: {
+          confidence: number
+          evidence: Json
+          facet_key: string
+          id: string
+          reasoning: string | null
+          refined_at: string
+          understanding: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          evidence?: Json
+          facet_key: string
+          id?: string
+          reasoning?: string | null
+          refined_at?: string
+          understanding?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          evidence?: Json
+          facet_key?: string
+          id?: string
+          reasoning?: string | null
+          refined_at?: string
+          understanding?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       interview_sessions: {
         Row: {
           completed_at: string | null
@@ -138,6 +171,82 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      introduction_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          pair_id: string
+          perspective: string | null
+          signals: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          pair_id: string
+          perspective?: string | null
+          signals?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          pair_id?: string
+          perspective?: string | null
+          signals?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introduction_feedback_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "pair_reasoning"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      introduction_responses: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          pair_id: string
+          response: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          pair_id: string
+          response: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          pair_id?: string
+          response?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introduction_responses_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "pair_reasoning"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       introductions: {
         Row: {
@@ -265,6 +374,116 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pair_reasoning: {
+        Row: {
+          alignments: Json
+          complementary: Json
+          confidence: number
+          created_at: string
+          frictions: Json
+          hard_conflicts: Json
+          id: string
+          is_stale: boolean
+          last_reasoned_at: string
+          presentation_a: string | null
+          presentation_b: string | null
+          presented_to_a_at: string | null
+          presented_to_b_at: string | null
+          reasoning: string | null
+          stale_reason: string | null
+          status: string
+          updated_at: string
+          user_high: string
+          user_low: string
+        }
+        Insert: {
+          alignments?: Json
+          complementary?: Json
+          confidence?: number
+          created_at?: string
+          frictions?: Json
+          hard_conflicts?: Json
+          id?: string
+          is_stale?: boolean
+          last_reasoned_at?: string
+          presentation_a?: string | null
+          presentation_b?: string | null
+          presented_to_a_at?: string | null
+          presented_to_b_at?: string | null
+          reasoning?: string | null
+          stale_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_high: string
+          user_low: string
+        }
+        Update: {
+          alignments?: Json
+          complementary?: Json
+          confidence?: number
+          created_at?: string
+          frictions?: Json
+          hard_conflicts?: Json
+          id?: string
+          is_stale?: boolean
+          last_reasoned_at?: string
+          presentation_a?: string | null
+          presentation_b?: string | null
+          presented_to_a_at?: string | null
+          presented_to_b_at?: string | null
+          reasoning?: string | null
+          stale_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_high?: string
+          user_low?: string
+        }
+        Relationships: []
+      }
+      pair_reasoning_history: {
+        Row: {
+          confidence: number
+          id: string
+          pair_id: string
+          reasoned_at: string
+          reasoning: string | null
+          snapshot: Json
+          status: string
+          user_high: string
+          user_low: string
+        }
+        Insert: {
+          confidence: number
+          id?: string
+          pair_id: string
+          reasoned_at?: string
+          reasoning?: string | null
+          snapshot?: Json
+          status: string
+          user_high: string
+          user_low: string
+        }
+        Update: {
+          confidence?: number
+          id?: string
+          pair_id?: string
+          reasoned_at?: string
+          reasoning?: string | null
+          snapshot?: Json
+          status?: string
+          user_high?: string
+          user_low?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pair_reasoning_history_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "pair_reasoning"
             referencedColumns: ["id"]
           },
         ]
@@ -448,6 +667,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      understanding_facets: {
+        Row: {
+          confidence: number
+          created_at: string
+          evidence: Json
+          facet_key: string
+          id: string
+          reasoning: string | null
+          refined_at: string
+          understanding: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          evidence?: Json
+          facet_key: string
+          id?: string
+          reasoning?: string | null
+          refined_at?: string
+          understanding?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          evidence?: Json
+          facet_key?: string
+          id?: string
+          reasoning?: string | null
+          refined_at?: string
+          understanding?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_intelligence: {
         Row: {
