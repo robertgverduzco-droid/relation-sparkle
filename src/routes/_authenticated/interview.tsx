@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
+import { getOrCreateShareLink, getActiveShare, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/interview")({
@@ -33,6 +34,12 @@ function InterviewPage() {
   const [targetTurns, setTargetTurns] = useState<number>(7);
   const [started, setStarted] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
+  const createShare = useServerFn(getOrCreateShareLink);
+  const fetchShare = useServerFn(getActiveShare);
+  const revokeShare = useServerFn(revokeShareLink);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -80,6 +87,53 @@ function InterviewPage() {
   }, [messages, busy, hydrated]);
 
   useEffect(() => { inputRef.current?.focus(); }, [busy, done]);
+
+  const shareUrl = shareToken && typeof window !== "undefined"
+    ? `${window.location.origin}/shared/interview/${shareToken}`
+    : null;
+
+  async function openShare() {
+    setShareOpen(true);
+    if (shareToken) return;
+    try {
+      const res = await fetchShare();
+      if (res.token) setShareToken(res.token);
+    } catch { /* ignore */ }
+  }
+
+  async function createOrCopy() {
+    setShareBusy(true);
+    try {
+      const res = shareToken ? { token: shareToken } : await createShare();
+      setShareToken(res.token);
+      const url = `${window.location.origin}/shared/interview/${res.token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard");
+      } catch {
+        toast.success("Share link ready");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't create link");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  async function revoke() {
+    if (typeof window !== "undefined" && !window.confirm("Revoke this link? Anyone with it will lose access.")) return;
+    setShareBusy(true);
+    try {
+      await revokeShare();
+      setShareToken(null);
+      toast.success("Link revoked");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't revoke");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
 
 
   async function send() {
@@ -223,13 +277,22 @@ function InterviewPage() {
               </button>
             )}
             {hydrated && messages.length > 1 && (
-              <button
-                type="button"
-                onClick={exportPdf}
-                className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
-              >
-                Export
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={openShare}
+                  className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+                >
+                  Share
+                </button>
+                <button
+                  type="button"
+                  onClick={exportPdf}
+                  className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+                >
+                  Export
+                </button>
+              </>
             )}
             {!(started && !done) && !(hydrated && messages.length > 1) && <span className="w-10" />}
           </div>
@@ -271,6 +334,62 @@ function InterviewPage() {
                 );
               })}
             </div>
+          </div>
+        )}
+        {shareOpen && (
+          <div className="mt-3 rounded-2xl border border-border/60 bg-card/80 p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Shareable link</p>
+              <button
+                type="button"
+                onClick={() => setShareOpen(false)}
+                className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
+            </div>
+            {shareUrl ? (
+              <>
+                <p className="mt-2 text-xs text-ink-soft">
+                  Anyone with this link can read your transcript until you revoke it.
+                </p>
+                <div className="mt-2 truncate rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground">
+                  {shareUrl}
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    onClick={createOrCopy}
+                    className="flex-1 rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+                  >
+                    Copy link
+                  </button>
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    onClick={revoke}
+                    className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-2 text-xs text-ink-soft">
+                  No active link. Generate one to share this transcript with someone. You can revoke it anytime.
+                </p>
+                <button
+                  type="button"
+                  disabled={shareBusy}
+                  onClick={createOrCopy}
+                  className="mt-2 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+                >
+                  {shareBusy ? "Creating…" : "Create share link"}
+                </button>
+              </>
+            )}
           </div>
         )}
       </header>

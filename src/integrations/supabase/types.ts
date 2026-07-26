@@ -103,6 +103,33 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_shares: {
+        Row: {
+          created_at: string
+          id: string
+          revoked_at: string | null
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          revoked_at?: string | null
+          token?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          revoked_at?: string | null
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       introductions: {
         Row: {
           ai_opening: string | null
