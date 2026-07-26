@@ -98,5 +98,6 @@ TRANSCRIPT:\n\n${transcript}`,
       last_interview_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
     if (error) throw new Error(error.message);
+    await supabase.from("interview_sessions").delete().eq("user_id", userId);
     return { ok: true, extracted: object };
   });
