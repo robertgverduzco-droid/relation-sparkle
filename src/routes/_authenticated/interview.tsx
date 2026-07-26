@@ -112,16 +112,26 @@ function InterviewPage() {
     if (shareToken) return;
     try {
       const res = await fetchShare();
-      if (res.token) setShareToken(res.token);
+      if (res.token) {
+        setShareToken(res.token);
+        setShareExpiresAt(res.expires_at);
+      }
     } catch { /* ignore */ }
   }
 
   async function createOrCopy() {
     setShareBusy(true);
     try {
-      const res = shareToken ? { token: shareToken } : await createShare();
-      setShareToken(res.token);
-      const url = `${window.location.origin}/shared/interview/${res.token}`;
+      let token = shareToken;
+      let expires_at = shareExpiresAt;
+      if (!token) {
+        const res = await createShare({ data: { expiresInHours: expiresInHours as 0 | 1 | 24 | 168 | 720 } });
+        token = res.token;
+        expires_at = res.expires_at;
+        setShareToken(token);
+        setShareExpiresAt(expires_at);
+      }
+      const url = `${window.location.origin}/shared/interview/${token}`;
       try {
         await navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard");
@@ -141,6 +151,7 @@ function InterviewPage() {
     try {
       await revokeShare();
       setShareToken(null);
+      setShareExpiresAt(null);
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
