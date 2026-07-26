@@ -386,84 +386,88 @@ function InterviewPage() {
                 Close
               </button>
             </div>
-            {shareUrl ? (
-              <>
-                <p className="mt-2 text-xs text-ink-soft">
-                  {shareExpiresAt
-                    ? `Anyone with this link can read your transcript until ${new Date(shareExpiresAt).toLocaleString()} or you revoke it.`
-                    : "Anyone with this link can read your transcript until you revoke it."}
-                </p>
-                <div className="mt-2 truncate rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground">
-                  {shareUrl}
-                </div>
-                <div className="mt-2 flex gap-2">
-                  <button
-                    type="button"
-                    disabled={shareBusy}
-                    onClick={createOrCopy}
-                    className="flex-1 rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
-                  >
-                    Copy link
-                  </button>
-                  <button
-                    type="button"
-                    disabled={shareBusy}
-                    onClick={revoke}
-                    className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
-                  >
-                    Revoke
-                  </button>
-                </div>
-              </>
+            {!sharesLoaded ? (
+              <p className="mt-3 text-xs text-muted-foreground">Loading your links…</p>
+            ) : shares.length === 0 ? (
+              <p className="mt-2 text-xs text-ink-soft">
+                No active links yet. Choose how long a new link should stay active, then create it.
+              </p>
             ) : (
-              <>
-                <p className="mt-2 text-xs text-ink-soft">
-                  No active link. Choose how long it should stay active, then create it.
-                </p>
-                <div className="mt-3">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Expires after</p>
-                  <div className="mt-2 grid grid-cols-5 gap-1.5">
-                    {[
-                      { h: 0, label: "Never" },
-                      { h: 1, label: "1 hr" },
-                      { h: 24, label: "24 hrs" },
-                      { h: 168, label: "7 days" },
-                      { h: 720, label: "30 days" },
-                    ].map((o) => {
-                      const active = o.h === expiresInHours;
-                      return (
+              <ul className="mt-2 space-y-2">
+                {shares.map((s) => (
+                  <li key={s.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
+                    <div className="truncate text-xs text-foreground">{urlFor(s.token)}</div>
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      <span>
+                        Created {new Date(s.created_at).toLocaleString()}
+                        {" · "}
+                        {s.expires_at ? `Expires ${new Date(s.expires_at).toLocaleString()}` : "No expiry"}
+                      </span>
+                      <div className="flex gap-2">
                         <button
-                          key={o.h}
                           type="button"
-                          onClick={() => {
-                            setExpiresInHours(o.h);
-                            if (typeof window !== "undefined") {
-                              window.localStorage.setItem("ri_share_expiry_hours", String(o.h));
-                            }
-                          }}
-                          className={
-                            "rounded-full border px-2 py-1.5 text-[11px] transition " +
-                            (active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-background text-foreground hover:border-primary/50")
-                          }
+                          onClick={() => copyOne(s.token)}
+                          className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-primary/50"
                         >
-                          {o.label}
+                          Copy
                         </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={shareBusy}
-                  onClick={createOrCopy}
-                  className="mt-3 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
-                >
-                  {shareBusy ? "Creating…" : "Create share link"}
-                </button>
-              </>
+                        <button
+                          type="button"
+                          disabled={shareBusy}
+                          onClick={() => revokeOneShare(s.id)}
+                          className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
+            <div className="mt-4 border-t border-border/60 pt-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Create new link · expires after</p>
+              <div className="mt-2 grid grid-cols-5 gap-1.5">
+                {[
+                  { h: 0, label: "Never" },
+                  { h: 1, label: "1 hr" },
+                  { h: 24, label: "24 hrs" },
+                  { h: 168, label: "7 days" },
+                  { h: 720, label: "30 days" },
+                ].map((o) => {
+                  const active = o.h === expiresInHours;
+                  return (
+                    <button
+                      key={o.h}
+                      type="button"
+                      onClick={() => {
+                        setExpiresInHours(o.h);
+                        if (typeof window !== "undefined") {
+                          window.localStorage.setItem("ri_share_expiry_hours", String(o.h));
+                        }
+                      }}
+                      className={
+                        "rounded-full border px-2 py-1.5 text-[11px] transition " +
+                        (active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground hover:border-primary/50")
+                      }
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                disabled={shareBusy}
+                onClick={createNew}
+                className="mt-3 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+              >
+                {shareBusy ? "Working…" : "Create link"}
+              </button>
+            </div>
+
           </div>
         )}
       </header>
