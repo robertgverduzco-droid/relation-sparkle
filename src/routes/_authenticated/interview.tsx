@@ -109,6 +109,22 @@ function InterviewPage() {
     [shares],
   );
 
+  const filteredShares = useMemo(() => {
+    if (!showActiveOnly) return sortedShares;
+    return sortedShares.filter((s) => {
+      if (!s.expires_at) return true;
+      return new Date(s.expires_at).getTime() > Date.now();
+    });
+  }, [sortedShares, showActiveOnly]);
+
+  function toggleShowActiveOnly() {
+    const next = !showActiveOnly;
+    setShowActiveOnly(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ri_show_active_only", String(next));
+    }
+  }
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
