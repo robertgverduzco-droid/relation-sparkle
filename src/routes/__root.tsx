@@ -117,7 +117,27 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const REVOKED_FILTER_KEYS = [
+      "ri_revoked_search",
+      "ri_revoked_filters",
+      "ri_revoked_start",
+      "ri_revoked_end",
+    ];
+    const clearRevokedFilters = () => {
+      if (typeof window === "undefined") return;
+      for (const k of REVOKED_FILTER_KEYS) window.localStorage.removeItem(k);
+    };
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        clearRevokedFilters();
+        if (typeof window !== "undefined") window.localStorage.removeItem("ri_user_id");
+      } else if (event === "SIGNED_IN" && session?.user) {
+        if (typeof window !== "undefined") {
+          const prev = window.localStorage.getItem("ri_user_id");
+          if (prev && prev !== session.user.id) clearRevokedFilters();
+          window.localStorage.setItem("ri_user_id", session.user.id);
+        }
+      }
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
