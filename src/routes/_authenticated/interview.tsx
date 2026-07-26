@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
-import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById } from "@/lib/interview-share.functions";
+import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -95,6 +95,7 @@ function InterviewPage() {
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
   const revokeOne = useServerFn(revokeShareById);
+  const revokeAll = useServerFn(revokeShareLink);
   const checkExpired = useServerFn(checkExpiredShares);
 
   const sortedShares = useMemo(
@@ -249,6 +250,19 @@ function InterviewPage() {
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  async function revokeAllShares() {
+    setShareBusy(true);
+    try {
+      await revokeAll();
+      setShares([]);
+      toast.success("All links revoked");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't revoke all");
     } finally {
       setShareBusy(false);
     }
@@ -476,6 +490,16 @@ function InterviewPage() {
                   <span className={`h-2 w-2 rounded-full ${showActiveOnly ? "bg-primary" : "bg-muted-foreground/50"}`} />
                   Active only
                 </button>
+                {filteredShares.length > 0 && (
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    onClick={revokeAllShares}
+                    className="rounded-full border border-destructive/60 bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-destructive hover:bg-destructive/10 disabled:opacity-60"
+                  >
+                    Revoke all
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setShareOpen(false)}
