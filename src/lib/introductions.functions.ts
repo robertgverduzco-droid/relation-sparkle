@@ -288,10 +288,13 @@ export const considerIntroductions = createServerFn({ method: "POST" })
       const presentedForLow = selfIsLow ? object.presentation_for_a : object.presentation_for_b;
       const presentedForHigh = selfIsLow ? object.presentation_for_b : object.presentation_for_a;
 
-      const updateRow: Record<string, unknown> = {
+      const status: "considering" | "withheld" | "introduced" = wantsIntroduction
+        ? "introduced"
+        : object.status;
+      const updateRow = {
         user_low: low,
         user_high: high,
-        status: wantsIntroduction ? "introduced" : object.status,
+        status,
         confidence: object.confidence,
         reasoning: object.reasoning,
         alignments: object.alignments,
@@ -301,15 +304,11 @@ export const considerIntroductions = createServerFn({ method: "POST" })
         presentation_a: presentedForLow,
         presentation_b: presentedForHigh,
         is_stale: false,
-        stale_reason: null,
+        stale_reason: null as string | null,
         last_reasoned_at: nowIso,
+        presented_to_a_at: wantsIntroduction && selfIsLow ? nowIso : null,
+        presented_to_b_at: wantsIntroduction && !selfIsLow ? nowIso : null,
       };
-
-      // Only mark presented to the current user (mutual consent is per-side).
-      if (wantsIntroduction) {
-        if (selfIsLow) updateRow.presented_to_a_at = nowIso;
-        else updateRow.presented_to_b_at = nowIso;
-      }
 
       const { data: upserted, error: upErr } = await supabase
         .from("pair_reasoning")
@@ -321,10 +320,10 @@ export const considerIntroductions = createServerFn({ method: "POST" })
 
       // Append history snapshot.
       await supabase.from("pair_reasoning_history").insert({
-        pair_id: upserted.id,
+        pair_id: upserted.id as string,
         user_low: low,
         user_high: high,
-        status: updateRow.status,
+        status,
         confidence: object.confidence,
         reasoning: object.reasoning,
         snapshot: {
