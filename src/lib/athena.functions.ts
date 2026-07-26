@@ -277,21 +277,21 @@ const facetSchema = z.object({
   reasoning: z.string(),
   evidence: z.array(z.string()).max(6),
   confidence: z.number().min(0).max(1),
-  contradictsPrior: z.boolean().optional(),
-  clarificationNote: z.string().optional(),
+  contradictsPrior: z.boolean().nullable(),
+  clarificationNote: z.string().nullable(),
 });
 
 const topicUpdateSchema = z.object({
   key: z.enum(TOPIC_KEYS),
   status: z.enum(["untouched", "introduced", "explored", "deep"]),
   confidence: z.number().min(0).max(1),
-  importance: z.number().min(0).max(1).optional(),
+  importance: z.number().min(0).max(1).nullable(),
   questionsAsked: z.number().min(0).max(20),
   observations: z.array(z.string()).max(5),
   openQuestions: z.array(z.string()).max(4),
-  relatedTopics: z.array(z.enum(TOPIC_KEYS)).max(4).optional(),
-  contradictsPrior: z.boolean().optional(),
-  clarificationNote: z.string().optional(),
+  relatedTopics: z.array(z.enum(TOPIC_KEYS)).max(4).nullable(),
+  contradictsPrior: z.boolean().nullable(),
+  clarificationNote: z.string().nullable(),
 });
 
 const reflectSchema = z.object({
