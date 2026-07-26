@@ -102,15 +102,37 @@ function InterviewPage() {
     }
   }
 
+  const TARGET_TURNS = 7;
+  const userTurns = messages.filter((m) => m.role === "user").length;
+  const completedTurns = done ? TARGET_TURNS : Math.min(userTurns, TARGET_TURNS);
+  const progressPct = (completedTurns / TARGET_TURNS) * 100;
+
   return (
     <div className="screen-shell safe-top">
-      <header className="flex items-center justify-between px-6 pt-6 pb-3 border-b border-border/60">
-        <button onClick={() => navigate({ to: "/home" })} className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-          ← Leave
-        </button>
-        <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">The Interview</span>
-        <span className="w-10" />
+      <header className="px-6 pt-6 pb-3 border-b border-border/60">
+        <div className="flex items-center justify-between">
+          <button onClick={() => navigate({ to: "/home" })} className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            ← Leave
+          </button>
+          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">The Interview</span>
+          <span className="w-10" />
+        </div>
+        {hydrated && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span>{done ? "Complete" : "Progress"}</span>
+              <span>{completedTurns} / {TARGET_TURNS}</span>
+            </div>
+            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+        )}
       </header>
+
 
       <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
         {!hydrated ? (
