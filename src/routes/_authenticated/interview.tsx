@@ -71,8 +71,20 @@ function InterviewPage() {
         else setResumed(true);
       }
       setHydrated(true);
+      // Notify user of any shared links that expired since last visit.
+      try {
+        const res = await checkExpired();
+        if (res.expired > 0) {
+          toast.message(
+            res.expired === 1
+              ? "Your shared transcript link has expired."
+              : `${res.expired} shared transcript links have expired.`,
+            { description: "Viewers can no longer access it. Create a new link to share again." },
+          );
+        }
+      } catch { /* ignore */ }
     })();
-  }, []);
+  }, [checkExpired]);
 
   const persist = useCallback(async (msgs: Msg[], completed: boolean) => {
     const { data: userRes } = await supabase.auth.getUser();
