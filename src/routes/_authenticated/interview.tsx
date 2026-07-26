@@ -34,6 +34,12 @@ function InterviewPage() {
   const [targetTurns, setTargetTurns] = useState<number>(7);
   const [started, setStarted] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
+  const createShare = useServerFn(getOrCreateShareLink);
+  const fetchShare = useServerFn(getActiveShare);
+  const revokeShare = useServerFn(revokeShareLink);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
