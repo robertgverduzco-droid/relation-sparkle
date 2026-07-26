@@ -37,12 +37,18 @@ function InterviewPage() {
 
   useEffect(() => {
     (async () => {
+      const saved = typeof window !== "undefined" ? window.localStorage.getItem("ri_target_turns") : null;
+      if (saved) {
+        const n = parseInt(saved, 10);
+        if (!Number.isNaN(n)) setTargetTurns(n);
+      }
       const { data } = await supabase
         .from("interview_sessions")
         .select("messages, completed_at")
         .maybeSingle();
       if (data && Array.isArray(data.messages) && data.messages.length > 0) {
         setMessages(data.messages as Msg[]);
+        setStarted(true);
         if (data.completed_at) setDone(true);
         else setResumed(true);
       }
