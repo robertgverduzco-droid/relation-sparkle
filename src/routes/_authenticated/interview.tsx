@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
-import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById } from "@/lib/interview-share.functions";
+import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -95,6 +95,7 @@ function InterviewPage() {
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
   const revokeOne = useServerFn(revokeShareById);
+  const revokeAll = useServerFn(revokeShareLink);
   const checkExpired = useServerFn(checkExpiredShares);
 
   const sortedShares = useMemo(
@@ -249,6 +250,19 @@ function InterviewPage() {
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  async function revokeAllShares() {
+    setShareBusy(true);
+    try {
+      await revokeAll();
+      setShares([]);
+      toast.success("All links revoked");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't revoke all");
     } finally {
       setShareBusy(false);
     }
