@@ -32,6 +32,7 @@ function InterviewPage() {
   const [resumed, setResumed] = useState(false);
   const [targetTurns, setTargetTurns] = useState<number>(7);
   const [started, setStarted] = useState(false);
+  const [adjustOpen, setAdjustOpen] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -138,6 +139,18 @@ function InterviewPage() {
     })();
   }
 
+  function adjustDuringSession(n: number) {
+    if (n === targetTurns) { setAdjustOpen(false); return; }
+    const shorter = n < userTurns;
+    const msg = shorter
+      ? `You've already had ${userTurns} exchanges. Setting the length to ${n} will wrap the conversation up soon. Continue?`
+      : `Change the interview length from ${targetTurns} to ${n} exchanges? The interviewer will pace itself to the new length.`;
+    if (typeof window !== "undefined" && !window.confirm(msg)) return;
+    chooseTurns(n);
+    setAdjustOpen(false);
+    toast.success(`Interview length set to ${n} exchanges.`);
+  }
+
   return (
     <div className="screen-shell safe-top">
       <header className="px-6 pt-6 pb-3 border-b border-border/60">
@@ -146,7 +159,17 @@ function InterviewPage() {
             ← Leave
           </button>
           <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">The Interview</span>
-          <span className="w-10" />
+          {started && !done ? (
+            <button
+              type="button"
+              onClick={() => setAdjustOpen((v) => !v)}
+              className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+            >
+              Length
+            </button>
+          ) : (
+            <span className="w-10" />
+          )}
         </div>
         {hydrated && (
           <div className="mt-3">
@@ -159,6 +182,31 @@ function InterviewPage() {
                 className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
                 style={{ width: `${progressPct}%` }}
               />
+            </div>
+          </div>
+        )}
+        {adjustOpen && started && !done && (
+          <div className="mt-3 rounded-2xl border border-border/60 bg-card/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Adjust length</p>
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {TURN_OPTIONS.map((n) => {
+                const active = n === targetTurns;
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => adjustDuringSession(n)}
+                    className={
+                      "rounded-full border px-3 py-1.5 text-sm transition " +
+                      (active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-foreground hover:border-primary/50")
+                    }
+                  >
+                    {n}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
