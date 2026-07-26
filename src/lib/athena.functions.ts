@@ -66,14 +66,13 @@ export const askAthena = createServerFn({ method: "POST" })
           ? "You've been speaking for a while. Let the conversation breathe. If it feels right, you may gently note this is a good pause."
           : "Stay curious. There is time.";
 
-    const messages: ModelMessage[] = [
-      { role: "system", content: athenaSystemPrompt() },
-      { role: "system", content: pacingHint },
-      ...data.messages.filter((m) => m.role !== "system"),
-    ];
+    const messages: ModelMessage[] = data.messages
+      .filter((m) => m.role !== "system")
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
+      system: `${athenaSystemPrompt()}\n\n${pacingHint}`,
       messages,
       providerOptions: { lovable: { reasoningEffort: "none" } },
     });
