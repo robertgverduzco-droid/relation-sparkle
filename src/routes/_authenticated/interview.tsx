@@ -173,6 +173,10 @@ function InterviewPage() {
         if (savedActiveOnly !== null) {
           setShowActiveOnly(savedActiveOnly === "true");
         }
+        const savedRevokedSort = window.localStorage.getItem("ri_revoked_sort");
+        if (savedRevokedSort === "newest" || savedRevokedSort === "oldest") {
+          setRevokedSort(savedRevokedSort);
+        }
       }
       const [sessionRes, intelRes] = await Promise.all([
         supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
