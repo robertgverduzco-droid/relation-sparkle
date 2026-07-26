@@ -16,10 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
-import { Route as AuthenticatedInterviewRouteImport } from './routes/_authenticated/interview'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
-import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
-import { Route as SharedInterviewTokenRouteImport } from './routes/shared/interview/$token'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -57,26 +54,10 @@ const AuthenticatedIntroductionsRoute =
     path: '/introductions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedInterviewRoute = AuthenticatedInterviewRouteImport.update({
-  id: '/interview',
-  path: '/interview',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedConversationsRoute =
-  AuthenticatedConversationsRouteImport.update({
-    id: '/conversations',
-    path: '/conversations',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const SharedInterviewTokenRoute = SharedInterviewTokenRouteImport.update({
-  id: '/shared/interview/$token',
-  path: '/shared/interview/$token',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileReviewRoute =
   AuthenticatedProfileReviewRouteImport.update({
@@ -89,27 +70,21 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
-  '/conversations': typeof AuthenticatedConversationsRoute
   '/home': typeof AuthenticatedHomeRoute
-  '/interview': typeof AuthenticatedInterviewRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/profile/review': typeof AuthenticatedProfileReviewRoute
-  '/shared/interview/$token': typeof SharedInterviewTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
-  '/conversations': typeof AuthenticatedConversationsRoute
   '/home': typeof AuthenticatedHomeRoute
-  '/interview': typeof AuthenticatedInterviewRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/profile/review': typeof AuthenticatedProfileReviewRoute
-  '/shared/interview/$token': typeof SharedInterviewTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -117,14 +92,11 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
-  '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
-  '/_authenticated/interview': typeof AuthenticatedInterviewRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
-  '/shared/interview/$token': typeof SharedInterviewTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -132,41 +104,32 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/privacy'
-    | '/conversations'
     | '/home'
-    | '/interview'
     | '/introductions'
     | '/onboarding'
     | '/profile'
     | '/profile/review'
-    | '/shared/interview/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/privacy'
-    | '/conversations'
     | '/home'
-    | '/interview'
     | '/introductions'
     | '/onboarding'
     | '/profile'
     | '/profile/review'
-    | '/shared/interview/$token'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/privacy'
-    | '/_authenticated/conversations'
     | '/_authenticated/home'
-    | '/_authenticated/interview'
     | '/_authenticated/introductions'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/profile/review'
-    | '/shared/interview/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -174,7 +137,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PrivacyRoute: typeof PrivacyRoute
-  SharedInterviewTokenRoute: typeof SharedInterviewTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -228,33 +190,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIntroductionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/interview': {
-      id: '/_authenticated/interview'
-      path: '/interview'
-      fullPath: '/interview'
-      preLoaderRoute: typeof AuthenticatedInterviewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/conversations': {
-      id: '/_authenticated/conversations'
-      path: '/conversations'
-      fullPath: '/conversations'
-      preLoaderRoute: typeof AuthenticatedConversationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/shared/interview/$token': {
-      id: '/shared/interview/$token'
-      path: '/shared/interview/$token'
-      fullPath: '/shared/interview/$token'
-      preLoaderRoute: typeof SharedInterviewTokenRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/profile/review': {
       id: '/_authenticated/profile/review'
@@ -278,18 +219,14 @@ const AuthenticatedProfileRouteWithChildren =
   AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
-  AuthenticatedInterviewRoute: typeof AuthenticatedInterviewRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
-  AuthenticatedInterviewRoute: AuthenticatedInterviewRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
@@ -303,7 +240,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PrivacyRoute: PrivacyRoute,
-  SharedInterviewTokenRoute: SharedInterviewTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
