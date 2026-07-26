@@ -160,6 +160,36 @@ function InterviewPage() {
                 Welcome back — picking up where you left off.
               </div>
             )}
+            {showSettings && (
+              <div className="mx-auto max-w-md rounded-3xl border border-border/60 bg-card/60 p-5">
+                <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Before we begin</p>
+                <p className="mt-2 font-display text-lg text-foreground">How long would you like this to be?</p>
+                <p className="mt-1 text-sm text-ink-soft">Choose the number of exchanges. You can change this later.</p>
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  {TURN_OPTIONS.map((n) => {
+                    const active = n === targetTurns;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => chooseTurns(n)}
+                        className={
+                          "rounded-full border px-3 py-2 text-sm transition " +
+                          (active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background text-foreground hover:border-primary/50")
+                        }
+                      >
+                        {n}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  About {Math.round(targetTurns * 0.7)}–{Math.round(targetTurns * 1)} minutes. Send your first reply to begin.
+                </p>
+              </div>
+            )}
             {messages.map((m, i) => (
               <Bubble key={i} role={m.role} content={m.content} />
             ))}
