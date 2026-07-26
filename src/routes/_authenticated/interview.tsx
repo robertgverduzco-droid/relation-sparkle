@@ -651,23 +651,56 @@ function InterviewPage() {
                   ) : revokedShares.length === 0 ? (
                     <p className="text-xs text-ink-soft">No revoked links yet.</p>
                   ) : (
-                    <ul className="space-y-2">
-                      {revokedShares.map((r) => (
-                        <li key={r.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
-                          <div className="truncate text-xs text-muted-foreground line-through">{urlFor(r.token)}</div>
-                          <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                            <span>
-                              Revoked {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
-                              {" · by "}
-                              <span className="text-foreground">
-                                {r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                    (() => {
+                      const totalPages = Math.max(1, Math.ceil(revokedShares.length / REVOKED_PAGE_SIZE));
+                      const page = Math.min(revokedPage, totalPages - 1);
+                      const start = page * REVOKED_PAGE_SIZE;
+                      const pageItems = revokedShares.slice(start, start + REVOKED_PAGE_SIZE);
+                      return (
+                        <>
+                          <ul className="space-y-2">
+                            {pageItems.map((r) => (
+                              <li key={r.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
+                                <div className="truncate text-xs text-muted-foreground line-through">{urlFor(r.token)}</div>
+                                <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                                  <span>
+                                    Revoked {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
+                                    {" · by "}
+                                    <span className="text-foreground">
+                                      {r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                                    </span>
+                                  </span>
+                                  <span>Created {new Date(r.created_at).toLocaleDateString()}</span>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                          {totalPages > 1 && (
+                            <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                              <button
+                                type="button"
+                                onClick={() => setRevokedPage((p) => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="rounded-md border border-border/60 px-2 py-1 disabled:opacity-40"
+                              >
+                                Prev
+                              </button>
+                              <span>
+                                Page {page + 1} of {totalPages} · {revokedShares.length} total
                               </span>
-                            </span>
-                            <span>Created {new Date(r.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                              <button
+                                type="button"
+                                onClick={() => setRevokedPage((p) => Math.min(totalPages - 1, p + 1))}
+                                disabled={page >= totalPages - 1}
+                                className="rounded-md border border-border/60 px-2 py-1 disabled:opacity-40"
+                              >
+                                Next
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()
                   )}
                 </div>
               )}
