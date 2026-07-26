@@ -7,7 +7,10 @@ const messageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
   content: z.string(),
 });
-const askInput = z.object({ messages: z.array(messageSchema) });
+const askInput = z.object({
+  messages: z.array(messageSchema),
+  targetTurns: z.number().int().min(4).max(20).optional(),
+});
 
 const SYSTEM_PROMPT = `You are the Relationship Intelligence interviewer — a warm, unhurried, emotionally intelligent guide.
 
