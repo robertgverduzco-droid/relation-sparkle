@@ -92,6 +92,7 @@ function InterviewPage() {
   const [shareBusy, setShareBusy] = useState(false);
   const [expiresInHours, setExpiresInHours] = useState<number>(0);
   const [pendingRevokeId, setPendingRevokeId] = useState<string | null>(null);
+  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(false);
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
   const revokeOne = useServerFn(revokeShareById);
