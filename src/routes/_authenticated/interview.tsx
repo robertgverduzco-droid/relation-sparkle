@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
-import { getOrCreateShareLink, getActiveShare, revokeShareLink, checkExpiredShares } from "@/lib/interview-share.functions";
+import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/interview")({
@@ -35,14 +35,15 @@ function InterviewPage() {
   const [started, setStarted] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [shareToken, setShareToken] = useState<string | null>(null);
-  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null);
+  const [shares, setShares] = useState<Array<{ id: string; token: string; created_at: string; expires_at: string | null }>>([]);
+  const [sharesLoaded, setSharesLoaded] = useState(false);
   const [shareBusy, setShareBusy] = useState(false);
   const [expiresInHours, setExpiresInHours] = useState<number>(0);
-  const createShare = useServerFn(getOrCreateShareLink);
-  const fetchShare = useServerFn(getActiveShare);
-  const revokeShare = useServerFn(revokeShareLink);
+  const createShare = useServerFn(createShareLink);
+  const listShares = useServerFn(listActiveShares);
+  const revokeOne = useServerFn(revokeShareById);
   const checkExpired = useServerFn(checkExpiredShares);
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -110,40 +111,35 @@ function InterviewPage() {
 
   useEffect(() => { inputRef.current?.focus(); }, [busy, done]);
 
-  const shareUrl = shareToken && typeof window !== "undefined"
-    ? `${window.location.origin}/shared/interview/${shareToken}`
-    : null;
+  function urlFor(token: string) {
+    return typeof window !== "undefined"
+      ? `${window.location.origin}/shared/interview/${token}`
+      : `/shared/interview/${token}`;
+  }
+
+  const refreshShares = useCallback(async () => {
+    try {
+      const res = await listShares();
+      setShares(res.shares);
+    } catch { /* ignore */ }
+    finally { setSharesLoaded(true); }
+  }, [listShares]);
 
   async function openShare() {
     setShareOpen(true);
-    if (shareToken) return;
-    try {
-      const res = await fetchShare();
-      if (res.token) {
-        setShareToken(res.token);
-        setShareExpiresAt(res.expires_at);
-      }
-    } catch { /* ignore */ }
+    if (!sharesLoaded) await refreshShares();
   }
 
-  async function createOrCopy() {
+  async function createNew() {
     setShareBusy(true);
     try {
-      let token = shareToken;
-      let expires_at = shareExpiresAt;
-      if (!token) {
-        const res = await createShare({ data: { expiresInHours: expiresInHours as 0 | 1 | 24 | 168 | 720 } });
-        token = res.token;
-        expires_at = res.expires_at;
-        setShareToken(token);
-        setShareExpiresAt(expires_at);
-      }
-      const url = `${window.location.origin}/shared/interview/${token}`;
+      const res = await createShare({ data: { expiresInHours: expiresInHours as 0 | 1 | 24 | 168 | 720 } });
+      setShares((prev) => [{ id: res.id, token: res.token, created_at: res.created_at, expires_at: res.expires_at }, ...prev]);
       try {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied to clipboard");
+        await navigator.clipboard.writeText(urlFor(res.token));
+        toast.success("Link created and copied");
       } catch {
-        toast.success("Share link ready");
+        toast.success("Link created");
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't create link");
@@ -152,13 +148,21 @@ function InterviewPage() {
     }
   }
 
-  async function revoke() {
+  async function copyOne(token: string) {
+    try {
+      await navigator.clipboard.writeText(urlFor(token));
+      toast.success("Link copied");
+    } catch {
+      toast.error("Couldn't copy");
+    }
+  }
+
+  async function revokeOneShare(id: string) {
     if (typeof window !== "undefined" && !window.confirm("Revoke this link? Anyone with it will lose access.")) return;
     setShareBusy(true);
     try {
-      await revokeShare();
-      setShareToken(null);
-      setShareExpiresAt(null);
+      await revokeOne({ data: { id } });
+      setShares((prev) => prev.filter((s) => s.id !== id));
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
@@ -166,6 +170,7 @@ function InterviewPage() {
       setShareBusy(false);
     }
   }
+
 
 
 
@@ -381,84 +386,88 @@ function InterviewPage() {
                 Close
               </button>
             </div>
-            {shareUrl ? (
-              <>
-                <p className="mt-2 text-xs text-ink-soft">
-                  {shareExpiresAt
-                    ? `Anyone with this link can read your transcript until ${new Date(shareExpiresAt).toLocaleString()} or you revoke it.`
-                    : "Anyone with this link can read your transcript until you revoke it."}
-                </p>
-                <div className="mt-2 truncate rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground">
-                  {shareUrl}
-                </div>
-                <div className="mt-2 flex gap-2">
-                  <button
-                    type="button"
-                    disabled={shareBusy}
-                    onClick={createOrCopy}
-                    className="flex-1 rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
-                  >
-                    Copy link
-                  </button>
-                  <button
-                    type="button"
-                    disabled={shareBusy}
-                    onClick={revoke}
-                    className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
-                  >
-                    Revoke
-                  </button>
-                </div>
-              </>
+            {!sharesLoaded ? (
+              <p className="mt-3 text-xs text-muted-foreground">Loading your links…</p>
+            ) : shares.length === 0 ? (
+              <p className="mt-2 text-xs text-ink-soft">
+                No active links yet. Choose how long a new link should stay active, then create it.
+              </p>
             ) : (
-              <>
-                <p className="mt-2 text-xs text-ink-soft">
-                  No active link. Choose how long it should stay active, then create it.
-                </p>
-                <div className="mt-3">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Expires after</p>
-                  <div className="mt-2 grid grid-cols-5 gap-1.5">
-                    {[
-                      { h: 0, label: "Never" },
-                      { h: 1, label: "1 hr" },
-                      { h: 24, label: "24 hrs" },
-                      { h: 168, label: "7 days" },
-                      { h: 720, label: "30 days" },
-                    ].map((o) => {
-                      const active = o.h === expiresInHours;
-                      return (
+              <ul className="mt-2 space-y-2">
+                {shares.map((s) => (
+                  <li key={s.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
+                    <div className="truncate text-xs text-foreground">{urlFor(s.token)}</div>
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      <span>
+                        Created {new Date(s.created_at).toLocaleString()}
+                        {" · "}
+                        {s.expires_at ? `Expires ${new Date(s.expires_at).toLocaleString()}` : "No expiry"}
+                      </span>
+                      <div className="flex gap-2">
                         <button
-                          key={o.h}
                           type="button"
-                          onClick={() => {
-                            setExpiresInHours(o.h);
-                            if (typeof window !== "undefined") {
-                              window.localStorage.setItem("ri_share_expiry_hours", String(o.h));
-                            }
-                          }}
-                          className={
-                            "rounded-full border px-2 py-1.5 text-[11px] transition " +
-                            (active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-background text-foreground hover:border-primary/50")
-                          }
+                          onClick={() => copyOne(s.token)}
+                          className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-primary/50"
                         >
-                          {o.label}
+                          Copy
                         </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={shareBusy}
-                  onClick={createOrCopy}
-                  className="mt-3 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
-                >
-                  {shareBusy ? "Creating…" : "Create share link"}
-                </button>
-              </>
+                        <button
+                          type="button"
+                          disabled={shareBusy}
+                          onClick={() => revokeOneShare(s.id)}
+                          className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
+            <div className="mt-4 border-t border-border/60 pt-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Create new link · expires after</p>
+              <div className="mt-2 grid grid-cols-5 gap-1.5">
+                {[
+                  { h: 0, label: "Never" },
+                  { h: 1, label: "1 hr" },
+                  { h: 24, label: "24 hrs" },
+                  { h: 168, label: "7 days" },
+                  { h: 720, label: "30 days" },
+                ].map((o) => {
+                  const active = o.h === expiresInHours;
+                  return (
+                    <button
+                      key={o.h}
+                      type="button"
+                      onClick={() => {
+                        setExpiresInHours(o.h);
+                        if (typeof window !== "undefined") {
+                          window.localStorage.setItem("ri_share_expiry_hours", String(o.h));
+                        }
+                      }}
+                      className={
+                        "rounded-full border px-2 py-1.5 text-[11px] transition " +
+                        (active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground hover:border-primary/50")
+                      }
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                disabled={shareBusy}
+                onClick={createNew}
+                className="mt-3 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+              >
+                {shareBusy ? "Working…" : "Create link"}
+              </button>
+            </div>
+
           </div>
         )}
       </header>
