@@ -1,0 +1,1 @@
+ALTER TABLE public.interview_shares ADD COLUMN IF NOT EXISTS revoked_by uuid REFERENCES auth.users(id) ON DELETE SET NULL;

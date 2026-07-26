@@ -90,7 +90,7 @@ export const revokeShareLink = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { error } = await supabase
       .from("interview_shares")
-      .update({ revoked_at: new Date().toISOString() })
+      .update({ revoked_at: new Date().toISOString(), revoked_by: userId })
       .eq("user_id", userId)
       .is("revoked_at", null);
     if (error) throw new Error(error.message);
@@ -110,6 +110,39 @@ export const listActiveShares = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     const rows = (data ?? []).filter((r) => !r.expires_at || r.expires_at > nowIso);
     return { shares: rows };
+  });
+
+export const listRevokedShares = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data, error } = await supabase
+      .from("interview_shares")
+      .select("id, token, created_at, expires_at, revoked_at, revoked_by")
+      .eq("user_id", userId)
+      .not("revoked_at", "is", null)
+      .order("revoked_at", { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    const revokerIds = Array.from(
+      new Set(rows.map((r) => r.revoked_by).filter((v): v is string => !!v)),
+    );
+    let names: Record<string, string> = {};
+    if (revokerIds.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", revokerIds);
+      names = Object.fromEntries((profs ?? []).map((p) => [p.id, p.display_name ?? ""]));
+    }
+    return {
+      revoked: rows.map((r) => ({
+        ...r,
+        revoked_by_name: r.revoked_by ? names[r.revoked_by] ?? null : null,
+        revoked_by_self: r.revoked_by === context.userId,
+      })),
+    };
   });
 
 export const createShareLink = createServerFn({ method: "POST" })
@@ -134,13 +167,14 @@ export const revokeShareById = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { error } = await supabase
       .from("interview_shares")
-      .update({ revoked_at: new Date().toISOString() })
+      .update({ revoked_at: new Date().toISOString(), revoked_by: userId })
       .eq("user_id", userId)
       .eq("id", data.id)
       .is("revoked_at", null);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
 
 
 const tokenInput = z.object({ token: z.string().min(8).max(128) });

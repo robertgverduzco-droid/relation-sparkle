@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
-import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
+import { checkExpiredShares, createShareLink, listActiveShares, listRevokedShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
@@ -94,8 +94,12 @@ function InterviewPage() {
   const [revokingIds, setRevokingIds] = useState<Set<string>>(new Set());
   const [expiresInHours, setExpiresInHours] = useState<number>(0);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [revokedShares, setRevokedShares] = useState<Array<{ id: string; token: string; created_at: string; expires_at: string | null; revoked_at: string | null; revoked_by: string | null; revoked_by_name: string | null; revoked_by_self: boolean }>>([]);
+  const [revokedLoaded, setRevokedLoaded] = useState(false);
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
+  const listRevoked = useServerFn(listRevokedShares);
   const revokeOne = useServerFn(revokeShareById);
   const revokeAll = useServerFn(revokeShareLink);
   const checkExpired = useServerFn(checkExpiredShares);
@@ -212,10 +216,25 @@ function InterviewPage() {
     finally { setSharesLoaded(true); }
   }, [listShares]);
 
+  const refreshRevoked = useCallback(async () => {
+    try {
+      const res = await listRevoked();
+      setRevokedShares(res.revoked);
+    } catch { /* ignore */ }
+    finally { setRevokedLoaded(true); }
+  }, [listRevoked]);
+
   async function openShare() {
     setShareOpen(true);
     if (!sharesLoaded) await refreshShares();
   }
+
+  async function toggleHistory() {
+    const next = !historyOpen;
+    setHistoryOpen(next);
+    if (next && !revokedLoaded) await refreshRevoked();
+  }
+
 
   async function createNew() {
     setShareBusy(true);
@@ -254,6 +273,7 @@ function InterviewPage() {
       await revokeOne({ data: { id } });
       setShares((prev) => prev.filter((s) => s.id !== id));
       toast.success("Link revoked");
+      if (historyOpen || revokedLoaded) refreshRevoked();
     } catch (e) {
       const detail = e instanceof Error ? e.message : "Please try again.";
       toast.error(`Couldn’t revoke link: ${detail}`);
@@ -272,6 +292,7 @@ function InterviewPage() {
       await revokeAll();
       setShares([]);
       toast.success("All links revoked");
+      if (historyOpen || revokedLoaded) refreshRevoked();
     } catch (e) {
       const detail = e instanceof Error ? e.message : "Please try again.";
       toast.error(`Couldn’t revoke all links: ${detail}`);
@@ -610,7 +631,46 @@ function InterviewPage() {
               </button>
             </div>
 
+            <div className="mt-4 border-t border-border/60 pt-3">
+              <button
+                type="button"
+                onClick={toggleHistory}
+                className="flex w-full items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+                aria-expanded={historyOpen}
+              >
+                <span>Revocation history</span>
+                <span>{historyOpen ? "Hide" : "Show"}</span>
+              </button>
+              {historyOpen && (
+                <div className="mt-2">
+                  {!revokedLoaded ? (
+                    <p className="text-xs text-muted-foreground">Loading history…</p>
+                  ) : revokedShares.length === 0 ? (
+                    <p className="text-xs text-ink-soft">No revoked links yet.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {revokedShares.map((r) => (
+                        <li key={r.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
+                          <div className="truncate text-xs text-muted-foreground line-through">{urlFor(r.token)}</div>
+                          <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                            <span>
+                              Revoked {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
+                              {" · by "}
+                              <span className="text-foreground">
+                                {r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                              </span>
+                            </span>
+                            <span>Created {new Date(r.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
         )}
       </header>
 
