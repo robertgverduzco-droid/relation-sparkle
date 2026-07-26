@@ -328,25 +328,6 @@ function InterviewPage() {
         if (savedRevokedSort === "newest" || savedRevokedSort === "oldest") {
           setRevokedSort(savedRevokedSort);
         }
-        const savedRevokedSearch = window.localStorage.getItem("ri_revoked_search");
-        if (savedRevokedSearch) setRevokedSearch(savedRevokedSearch);
-        const savedRevokedFilters = window.localStorage.getItem("ri_revoked_filters");
-        if (savedRevokedFilters) {
-          try {
-            const arr = JSON.parse(savedRevokedFilters);
-            if (Array.isArray(arr)) setRevokedFilters(new Set(arr.filter((x) => typeof x === "string")));
-          } catch {}
-        }
-        const savedRevokedStart = window.localStorage.getItem("ri_revoked_start");
-        if (savedRevokedStart) {
-          const d = new Date(savedRevokedStart);
-          if (!Number.isNaN(d.getTime())) setRevokedStart(d);
-        }
-        const savedRevokedEnd = window.localStorage.getItem("ri_revoked_end");
-        if (savedRevokedEnd) {
-          const d = new Date(savedRevokedEnd);
-          if (!Number.isNaN(d.getTime())) setRevokedEnd(d);
-        }
       }
       const [sessionRes, intelRes] = await Promise.all([
         supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
