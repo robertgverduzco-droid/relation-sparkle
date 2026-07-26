@@ -128,6 +128,14 @@ function InterviewPage() {
   function chooseTurns(n: number) {
     setTargetTurns(n);
     if (typeof window !== "undefined") window.localStorage.setItem("ri_target_turns", String(n));
+    void (async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id;
+      if (!uid) return;
+      await supabase
+        .from("user_intelligence")
+        .upsert({ user_id: uid, interview_target_turns: n }, { onConflict: "user_id" });
+    })();
   }
 
   return (
