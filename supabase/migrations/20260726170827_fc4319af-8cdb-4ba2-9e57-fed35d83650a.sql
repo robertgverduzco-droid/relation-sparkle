@@ -1,0 +1,1 @@
+ALTER TABLE public.user_intelligence ADD COLUMN IF NOT EXISTS profile_approved_at timestamptz;

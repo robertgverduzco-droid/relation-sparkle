@@ -465,6 +465,7 @@ export type Database = {
           life_direction: string | null
           meaning_of_relationship: string | null
           partnership_vision: string | null
+          profile_approved_at: string | null
           readiness_summary: string | null
           self_understanding: string | null
           updated_at: string
@@ -485,6 +486,7 @@ export type Database = {
           life_direction?: string | null
           meaning_of_relationship?: string | null
           partnership_vision?: string | null
+          profile_approved_at?: string | null
           readiness_summary?: string | null
           self_understanding?: string | null
           updated_at?: string
@@ -505,6 +507,7 @@ export type Database = {
           life_direction?: string | null
           meaning_of_relationship?: string | null
           partnership_vision?: string | null
+          profile_approved_at?: string | null
           readiness_summary?: string | null
           self_understanding?: string | null
           updated_at?: string
