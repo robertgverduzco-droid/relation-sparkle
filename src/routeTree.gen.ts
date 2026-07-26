@@ -17,8 +17,10 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
+import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
 
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
@@ -60,6 +62,12 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConnectionsRoute =
+  AuthenticatedConnectionsRouteImport.update({
+    id: '/connections',
+    path: '/connections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
   id: '/athena',
   path: '/athena',
@@ -71,16 +79,24 @@ const AuthenticatedProfileReviewRoute =
     path: '/review',
     getParentRoute: () => AuthenticatedProfileRoute,
   } as any)
+const AuthenticatedConnectionsIdRoute =
+  AuthenticatedConnectionsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedConnectionsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
   '/athena': typeof AuthenticatedAthenaRoute
+  '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRoutesByTo {
@@ -88,10 +104,12 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
   '/athena': typeof AuthenticatedAthenaRoute
+  '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRoutesById {
@@ -101,10 +119,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
+  '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRouteTypes {
@@ -114,10 +134,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/privacy'
     | '/athena'
+    | '/connections'
     | '/home'
     | '/introductions'
     | '/onboarding'
     | '/profile'
+    | '/connections/$id'
     | '/profile/review'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -125,10 +147,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/privacy'
     | '/athena'
+    | '/connections'
     | '/home'
     | '/introductions'
     | '/onboarding'
     | '/profile'
+    | '/connections/$id'
     | '/profile/review'
   id:
     | '__root__'
@@ -137,10 +161,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/privacy'
     | '/_authenticated/athena'
+    | '/_authenticated/connections'
     | '/_authenticated/home'
     | '/_authenticated/introductions'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/connections/$id'
     | '/_authenticated/profile/review'
   fileRoutesById: FileRoutesById
 }
@@ -209,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/connections': {
+      id: '/_authenticated/connections'
+      path: '/connections'
+      fullPath: '/connections'
+      preLoaderRoute: typeof AuthenticatedConnectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/athena': {
       id: '/_authenticated/athena'
       path: '/athena'
@@ -223,8 +256,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileReviewRouteImport
       parentRoute: typeof AuthenticatedProfileRoute
     }
+    '/_authenticated/connections/$id': {
+      id: '/_authenticated/connections/$id'
+      path: '/$id'
+      fullPath: '/connections/$id'
+      preLoaderRoute: typeof AuthenticatedConnectionsIdRouteImport
+      parentRoute: typeof AuthenticatedConnectionsRoute
+    }
   }
 }
+
+interface AuthenticatedConnectionsRouteChildren {
+  AuthenticatedConnectionsIdRoute: typeof AuthenticatedConnectionsIdRoute
+}
+
+const AuthenticatedConnectionsRouteChildren: AuthenticatedConnectionsRouteChildren =
+  {
+    AuthenticatedConnectionsIdRoute: AuthenticatedConnectionsIdRoute,
+  }
+
+const AuthenticatedConnectionsRouteWithChildren =
+  AuthenticatedConnectionsRoute._addFileChildren(
+    AuthenticatedConnectionsRouteChildren,
+  )
 
 interface AuthenticatedProfileRouteChildren {
   AuthenticatedProfileReviewRoute: typeof AuthenticatedProfileReviewRoute
@@ -239,6 +293,7 @@ const AuthenticatedProfileRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
+  AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -247,6 +302,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
+  AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
