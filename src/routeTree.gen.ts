@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,7 +20,13 @@ import { Route as AuthenticatedInterviewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as SharedInterviewTokenRouteImport } from './routes/shared/interview/$token'
+import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -71,27 +78,37 @@ const SharedInterviewTokenRoute = SharedInterviewTokenRouteImport.update({
   path: '/shared/interview/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProfileReviewRoute =
+  AuthenticatedProfileReviewRouteImport.update({
+    id: '/review',
+    path: '/review',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/privacy': typeof PrivacyRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/home': typeof AuthenticatedHomeRoute
   '/interview': typeof AuthenticatedInterviewRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/shared/interview/$token': typeof SharedInterviewTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/privacy': typeof PrivacyRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/home': typeof AuthenticatedHomeRoute
   '/interview': typeof AuthenticatedInterviewRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/shared/interview/$token': typeof SharedInterviewTokenRoute
 }
 export interface FileRoutesById {
@@ -99,12 +116,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/privacy': typeof PrivacyRoute
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/interview': typeof AuthenticatedInterviewRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
   '/shared/interview/$token': typeof SharedInterviewTokenRoute
 }
 export interface FileRouteTypes {
@@ -112,35 +131,41 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/privacy'
     | '/conversations'
     | '/home'
     | '/interview'
     | '/introductions'
     | '/onboarding'
     | '/profile'
+    | '/profile/review'
     | '/shared/interview/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/privacy'
     | '/conversations'
     | '/home'
     | '/interview'
     | '/introductions'
     | '/onboarding'
     | '/profile'
+    | '/profile/review'
     | '/shared/interview/$token'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/privacy'
     | '/_authenticated/conversations'
     | '/_authenticated/home'
     | '/_authenticated/interview'
     | '/_authenticated/introductions'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/profile/review'
     | '/shared/interview/$token'
   fileRoutesById: FileRoutesById
 }
@@ -148,11 +173,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PrivacyRoute: typeof PrivacyRoute
   SharedInterviewTokenRoute: typeof SharedInterviewTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -223,8 +256,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SharedInterviewTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/profile/review': {
+      id: '/_authenticated/profile/review'
+      path: '/review'
+      fullPath: '/profile/review'
+      preLoaderRoute: typeof AuthenticatedProfileReviewRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
+    }
   }
 }
+
+interface AuthenticatedProfileRouteChildren {
+  AuthenticatedProfileReviewRoute: typeof AuthenticatedProfileReviewRoute
+}
+
+const AuthenticatedProfileRouteChildren: AuthenticatedProfileRouteChildren = {
+  AuthenticatedProfileReviewRoute: AuthenticatedProfileReviewRoute,
+}
+
+const AuthenticatedProfileRouteWithChildren =
+  AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
@@ -232,7 +283,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInterviewRoute: typeof AuthenticatedInterviewRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -241,7 +292,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInterviewRoute: AuthenticatedInterviewRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -251,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PrivacyRoute: PrivacyRoute,
   SharedInterviewTokenRoute: SharedInterviewTokenRoute,
 }
 export const routeTree = rootRouteImport
