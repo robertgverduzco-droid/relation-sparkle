@@ -143,6 +143,7 @@ function InterviewPage() {
   const [revokedSort, setRevokedSort] = useState<"newest" | "oldest">("newest");
   const [revokedSearch, setRevokedSearch] = useState("");
   const debouncedSearch = useDebouncedValue(revokedSearch, 300);
+  const [revokedFilters, setRevokedFilters] = useState<Set<string>>(new Set());
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
