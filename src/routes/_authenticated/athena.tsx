@@ -69,9 +69,17 @@ function AthenaPage() {
   const [hydrated, setHydrated] = useState(false);
   const [voiceMode, setVoiceMode] = useState<VoiceMode | null>(null);
   const [askingPreference, setAskingPreference] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastReflectedTurnRef = useRef(0);
+  const conversationStartRef = useRef<number>(Date.now());
+  const timeAcknowledgedRef = useRef(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -100,13 +108,14 @@ function AthenaPage() {
         lastReflectedTurnRef.current = priorMessages.filter((m) => m.role === "user").length;
         setVoiceMode(stored ?? "text");
         setHydrated(true);
+        conversationStartRef.current = Date.now();
         return;
       }
 
       // First meeting.
       setHydrated(true);
       setIntroducing(true);
-      const useVoice = stored !== "text"; // default to voice on very first meeting
+      const useVoice = stored !== "text";
       setVoiceMode(stored ?? "voice");
 
       const firstName = (profile?.display_name as string | null)?.split(" ")[0] ?? null;
@@ -122,12 +131,12 @@ function AthenaPage() {
         if (useVoice) {
           await playLine(lines[i], abort.signal);
         } else {
-          // Reading beat proportional to length
           await wait(Math.min(3200, 700 + lines[i].length * 30));
         }
       }
       if (cancelled) return;
       setIntroducing(false);
+      conversationStartRef.current = Date.now();
       void persist(accumulated);
       if (!stored) {
         setAskingPreference(true);
@@ -155,7 +164,6 @@ function AthenaPage() {
     try { localStorage.setItem(VOICE_KEY, mode); } catch { /* ignore */ }
     setVoiceMode(mode);
     setAskingPreference(false);
-    // Athena's first real question, opening the conversation.
     const opening = "What's something you've been thinking about recently?";
     const abort = new AbortController();
     setIntroducing(true);
@@ -167,10 +175,15 @@ function AthenaPage() {
     setMessages(next);
     if (mode === "voice") await playLine(opening, abort.signal);
     setIntroducing(false);
+    conversationStartRef.current = Date.now();
     void persist(next);
   }, [messages, persist]);
 
-  async function askWithRetry(payload: { messages: Msg[] }): Promise<{ reply: string } | null> {
+  async function askWithRetry(payload: {
+    messages: Msg[];
+    elapsedMinutes: number;
+    timeAcknowledged: boolean;
+  }): Promise<{ reply: string; timeAcknowledged?: boolean } | null> {
     try {
       return await ask({ data: payload });
     } catch {
@@ -192,12 +205,18 @@ function AthenaPage() {
     setInput("");
     setBusy(true);
     try {
-      const res = await askWithRetry({ messages: next });
+      const elapsedMinutes = (Date.now() - conversationStartRef.current) / 60000;
+      const res = await askWithRetry({
+        messages: next,
+        elapsedMinutes,
+        timeAcknowledged: timeAcknowledgedRef.current,
+      });
       if (!res) {
         void persist(next);
         toast("I'm having a little trouble responding right now. Your message has been saved. Please try again.");
         return;
       }
+      if (res.timeAcknowledged) timeAcknowledgedRef.current = true;
       const withReply: Msg[] = [
         ...next,
         { role: "assistant", content: res.reply, ts: new Date().toISOString() },
@@ -219,12 +238,102 @@ function AthenaPage() {
     }
   }
 
-  const inputDisabled = busy || introducing || !hydrated || askingPreference;
+  // ---- Voice input (mic) ----
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    recorderRef.current = null;
+  }, []);
+
+  const startRecording = useCallback(async () => {
+    if (recording || transcribing || busy) return;
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      toast("Voice input isn't available in this browser.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      // Pick the best supported mime; Safari uses mp4, others webm.
+      const candidates = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+      ];
+      const mimeType = candidates.find((c) =>
+        typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported?.(c),
+      );
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        const type = recorder.mimeType || mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type });
+        chunksRef.current = [];
+        stopStream();
+        if (blob.size < 1024) {
+          setRecording(false);
+          setTranscribing(false);
+          return;
+        }
+        setTranscribing(true);
+        try {
+          const fd = new FormData();
+          const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
+          fd.append("file", blob, `voice.${ext}`);
+          const res = await fetch("/api/stt", { method: "POST", body: fd });
+          if (!res.ok) {
+            toast("I couldn't hear that clearly. Please try again.");
+            return;
+          }
+          const { text } = (await res.json()) as { text?: string };
+          const clean = (text ?? "").trim();
+          if (!clean) {
+            toast("I didn't catch that. Please try again.");
+            return;
+          }
+          setInput((prev) => (prev ? `${prev.trimEnd()} ${clean}` : clean));
+          requestAnimationFrame(() => inputRef.current?.focus());
+        } catch {
+          toast("Voice input didn't go through. Please try again.");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorder.start();
+      setRecording(true);
+    } catch {
+      toast("Microphone permission is needed to speak with Athena.");
+      stopStream();
+    }
+  }, [recording, transcribing, busy, stopStream]);
+
+  const stopRecording = useCallback(() => {
+    const rec = recorderRef.current;
+    setRecording(false);
+    if (rec && rec.state !== "inactive") {
+      try { rec.stop(); } catch { /* ignore */ }
+    } else {
+      stopStream();
+    }
+  }, [stopStream]);
+
+  useEffect(() => () => { stopStream(); }, [stopStream]);
+
+  const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing;
   const placeholder = introducing || !hydrated || askingPreference
     ? ""
-    : busy
-      ? "…"
-      : "Say it the way you'd actually say it";
+    : transcribing
+      ? "Transcribing…"
+      : recording
+        ? "Listening…"
+        : busy
+          ? "…"
+          : "Say it — or type it";
 
   return (
     <div className="screen-shell safe-top pb-24">
@@ -238,13 +347,9 @@ function AthenaPage() {
           </button>
           <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Athena</span>
           <button
-            onClick={() => {
-              const next: VoiceMode = voiceMode === "voice" ? "text" : "voice";
-              try { localStorage.setItem(VOICE_KEY, next); } catch { /* ignore */ }
-              setVoiceMode(next);
-            }}
+            onClick={() => setSettingsOpen(true)}
             className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
-            title="Toggle voice"
+            title="Voice settings"
           >
             {voiceMode === "voice" ? "Voice" : "Text"}
           </button>
@@ -270,7 +375,7 @@ function AthenaPage() {
                     onClick={() => void choosePreference("voice")}
                     className="rounded-2xl border border-input bg-card px-4 py-3 text-left text-[15px] hover:bg-accent transition"
                   >
-                    Continue with voice
+                    Continue with voice & text
                     <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
                   </button>
                   <button
@@ -281,7 +386,7 @@ function AthenaPage() {
                     <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">You can change this later in Settings.</p>
+                <p className="text-xs text-muted-foreground">You can change this anytime.</p>
               </div>
             )}
           </>
@@ -295,7 +400,24 @@ function AthenaPage() {
         }}
         className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
       >
-        <div className="flex items-end gap-2 rounded-3xl border border-input bg-card px-3 py-2 transition-opacity" style={{ opacity: inputDisabled ? 0.5 : 1 }}>
+        <div
+          className="flex items-end gap-2 rounded-3xl border border-input bg-card px-2 py-2 transition-opacity"
+          style={{ opacity: inputDisabled && !recording ? 0.5 : 1 }}
+        >
+          <button
+            type="button"
+            onClick={() => (recording ? stopRecording() : void startRecording())}
+            disabled={busy || introducing || askingPreference || transcribing}
+            title={recording ? "Stop and transcribe" : "Speak to Athena"}
+            aria-label={recording ? "Stop recording" : "Start recording"}
+            className={`shrink-0 flex h-10 w-10 items-center justify-center rounded-full transition disabled:opacity-40 ${
+              recording
+                ? "bg-primary text-primary-foreground animate-pulse"
+                : "bg-muted text-foreground hover:bg-accent"
+            }`}
+          >
+            {recording ? <StopIcon /> : <MicIcon />}
+          </button>
           <textarea
             ref={inputRef}
             value={input}
@@ -308,7 +430,7 @@ function AthenaPage() {
             }}
             rows={1}
             placeholder={placeholder}
-            disabled={inputDisabled}
+            disabled={inputDisabled && !recording}
             className="min-h-[24px] max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
           />
           <button
@@ -319,10 +441,90 @@ function AthenaPage() {
             Send
           </button>
         </div>
+        {recording && (
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Listening — tap the button again when you're done.
+          </p>
+        )}
       </form>
+
+      {settingsOpen && (
+        <VoiceSettingsSheet
+          current={voiceMode ?? "text"}
+          onClose={() => setSettingsOpen(false)}
+          onChoose={(mode) => {
+            try { localStorage.setItem(VOICE_KEY, mode); } catch { /* ignore */ }
+            setVoiceMode(mode);
+            setSettingsOpen(false);
+          }}
+        />
+      )}
 
       <MobileTabBar current="athena" />
     </div>
+  );
+}
+
+function VoiceSettingsSheet({
+  current,
+  onClose,
+  onChoose,
+}: {
+  current: VoiceMode;
+  onClose: () => void;
+  onChoose: (m: VoiceMode) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-t-3xl bg-background border-t border-border/60 p-6 pb-8 fade-in-slow"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
+        <h2 className="text-lg font-display mb-1">Voice settings</h2>
+        <p className="text-sm text-muted-foreground mb-5">How would you like Athena to respond?</p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => onChoose("voice")}
+            className={`rounded-2xl border px-4 py-3 text-left text-[15px] transition ${
+              current === "voice" ? "border-primary bg-accent" : "border-input hover:bg-accent"
+            }`}
+          >
+            Voice & Text
+            <span className="block text-xs text-muted-foreground mt-1">Athena speaks aloud while text appears in sync.</span>
+          </button>
+          <button
+            onClick={() => onChoose("text")}
+            className={`rounded-2xl border px-4 py-3 text-left text-[15px] transition ${
+              current === "text" ? "border-primary bg-accent" : "border-input hover:bg-accent"
+            }`}
+          >
+            Text Only
+            <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
+          </button>
+        </div>
+        <p className="mt-5 text-xs text-muted-foreground">
+          You can speak to Athena at any time by tapping the microphone — whichever mode you're in.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MicIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="3" width="6" height="12" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0" />
+      <path d="M12 18v3" />
+    </svg>
+  );
+}
+function StopIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+    </svg>
   );
 }
 

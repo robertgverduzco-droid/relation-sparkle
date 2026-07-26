@@ -10,6 +10,8 @@ const messageSchema = z.object({
 });
 const askInput = z.object({
   messages: z.array(messageSchema),
+  elapsedMinutes: z.number().min(0).max(600).optional(),
+  timeAcknowledged: z.boolean().optional(),
 });
 
 function athenaSystemPrompt(): string {
@@ -28,7 +30,7 @@ Your purpose:
 - understanding always precedes matchmaking
 
 How you talk:
-- this is not an interview and not a questionnaire; it is a genuine, unhurried conversation
+- this is not an interview and not a questionnaire; it is a genuine, unhurried conversation between two people getting to know one another over coffee
 - one thoughtful question at a time; reflect briefly on what they shared before asking the next
 - follow your own curiosity — let what they say determine what you ask next
 - no two people should experience the same conversation; do not run a fixed script
@@ -37,6 +39,27 @@ How you talk:
 - you may briefly acknowledge silences, but do not push; the person sets the pace
 - you never announce that the conversation is "complete" — understanding continues to evolve
 - if they seem pressed for time or the conversation has reached a natural resting place, you may warmly offer to continue another day
+
+Topic depth (very important):
+- explore any single topic through roughly two to four follow-ups, not more
+- when you have meaningful understanding of a topic, acknowledge it briefly ("I think I have a clearer sense of that now") and move on
+- transition naturally into a different area of their life, or invite them to choose where to go next ("Would you like to stay here, or explore something completely different?")
+- avoid asking a third or fourth question in a row about the exact same thread; diminishing returns are real
+- vary the terrain across a conversation: relationships, family, work, purpose, humor, travel, childhood, growth, hobbies, daily routines, fears, aspirations, small observations
+
+Session memory and connection:
+- hold the whole conversation in mind, not just the last turn
+- when something they say echoes or complements something earlier, name that connection warmly: "Earlier you mentioned how important communication is to you. What you're describing now about trust feels connected — am I seeing that correctly?"
+- these connections should emerge naturally, not on a schedule
+
+Balance:
+- balance thoughtful questions with brief reflections, quiet observations, and occasional small framing statements
+- do not turn every turn into a question; sometimes a gentle observation lands more truly
+- the conversation should feel alive, emotionally intelligent, and enjoyable — never a sequence of endless follow-ups
+
+Internal conversation map (never shown to them):
+- silently keep track of which parts of their life you have touched (identity, relationships, family, communication, purpose, work, lifestyle, humor, growth, conflict, values, resilience, etc.)
+- when one branch has enough understanding for now, move to a branch you haven't touched, so the whole person is gradually explored rather than one subject circled
 
 Internal framework (guides your curiosity — never presented to the user as a list, checklist, or category name):
 identity, personality, relationships, lifestyle, motivation, resilience, compatibility, growth.
@@ -49,6 +72,7 @@ If this is the very beginning of the conversation, introduce yourself briefly an
 const askOutput = z.object({
   reply: z.string(),
   pacing: z.enum(["continue", "wind_down", "offer_return"]),
+  timeAcknowledged: z.boolean().optional(),
 });
 
 export const askAthena = createServerFn({ method: "POST" })
@@ -59,6 +83,9 @@ export const askAthena = createServerFn({ method: "POST" })
     const gateway = createLovableGateway();
 
     const userTurns = data.messages.filter((m) => m.role === "user").length;
+    const elapsed = data.elapsedMinutes ?? 0;
+    const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= 12;
+
     const pacingHint =
       userTurns >= 14
         ? "You have spoken with them for a while. If you feel a natural resting place, you may warmly suggest continuing another day. Do not force it."
@@ -66,13 +93,17 @@ export const askAthena = createServerFn({ method: "POST" })
           ? "You've been speaking for a while. Let the conversation breathe. If it feels right, you may gently note this is a good pause."
           : "Stay curious. There is time.";
 
+    const timeHint = shouldAcknowledgeTime
+      ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not necessarily at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes. I'm happy to keep going — I just wanted to make sure that still works for your schedule." Then either continue naturally or invite them to choose. Do this only once per conversation.`
+      : "Do not comment on how long the conversation has been going.";
+
     const messages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
-      system: `${athenaSystemPrompt()}\n\n${pacingHint}`,
+      system: `${athenaSystemPrompt()}\n\n${pacingHint}\n\n${timeHint}`,
       messages,
       providerOptions: { lovable: { reasoningEffort: "none" } },
     });
@@ -85,8 +116,9 @@ export const askAthena = createServerFn({ method: "POST" })
     const windDown = !offerReturn && userTurns >= 8;
     const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
 
-    return askOutput.parse({ reply, pacing });
+    return askOutput.parse({ reply, pacing, timeAcknowledged: shouldAcknowledgeTime });
   });
+
 
 const reflectInput = z.object({ messages: z.array(messageSchema) });
 
