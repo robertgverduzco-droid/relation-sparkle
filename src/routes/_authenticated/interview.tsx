@@ -430,7 +430,12 @@ function InterviewPage() {
                         <button
                           key={o.h}
                           type="button"
-                          onClick={() => setExpiresInHours(o.h)}
+                          onClick={() => {
+                            setExpiresInHours(o.h);
+                            if (typeof window !== "undefined") {
+                              window.localStorage.setItem("ri_share_expiry_hours", String(o.h));
+                            }
+                          }}
                           className={
                             "rounded-full border px-2 py-1.5 text-[11px] transition " +
                             (active
