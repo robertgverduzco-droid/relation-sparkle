@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { reconcileRevokedFilterStorage } from "@/lib/revoked-filters-storage";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -117,8 +118,9 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        reconcileRevokedFilterStorage(session?.user?.id ?? null);
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       }

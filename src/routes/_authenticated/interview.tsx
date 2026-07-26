@@ -9,6 +9,7 @@ import { askInterview, finalizeInterview } from "@/lib/interview.functions";
 import { checkExpiredShares, createShareLink, listActiveShares, listRevokedShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { reconcileRevokedFilterStorage } from "@/lib/revoked-filters-storage";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -199,50 +200,9 @@ function InterviewPage() {
         setFiltersHydrated(true);
         return;
       }
-      // Migrate legacy un-namespaced keys → per-user keys, then prune.
-      // Only migrate when a per-user value doesn't already exist for this user.
-      const BASES = ["ri_revoked_search", "ri_revoked_filters", "ri_revoked_start", "ri_revoked_end"];
-      for (const base of BASES) {
-        const legacy = window.localStorage.getItem(base);
-        if (legacy === null) continue;
-        const perUserKey = `${base}:${uid}`;
-        if (window.localStorage.getItem(perUserKey) === null) {
-          window.localStorage.setItem(perUserKey, legacy);
-        }
-        window.localStorage.removeItem(base);
-      }
-      // Prune orphaned per-user keys for user ids that no longer have a Supabase
-      // session cached in this browser. Best-effort — safe to run every load.
-      const knownUids = new Set<string>([uid]);
-      for (let i = 0; i < window.localStorage.length; i++) {
-        const k = window.localStorage.key(i);
-        if (!k) continue;
-        // Supabase session keys look like `sb-<ref>-auth-token`; parse user ids out.
-        if (k.startsWith("sb-") && k.endsWith("-auth-token")) {
-          try {
-            const raw = window.localStorage.getItem(k);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              const otherUid = parsed?.user?.id ?? parsed?.currentSession?.user?.id;
-              if (typeof otherUid === "string") knownUids.add(otherUid);
-            }
-          } catch {}
-        }
-      }
-      const toDelete: string[] = [];
-      for (let i = 0; i < window.localStorage.length; i++) {
-        const k = window.localStorage.key(i);
-        if (!k) continue;
-        for (const base of BASES) {
-          const prefix = `${base}:`;
-          if (k.startsWith(prefix)) {
-            const owner = k.slice(prefix.length);
-            if (!knownUids.has(owner)) toDelete.push(k);
-            break;
-          }
-        }
-      }
-      for (const k of toDelete) window.localStorage.removeItem(k);
+      // Migrate legacy un-namespaced keys into this user's namespace and
+      // prune orphaned per-user entries. Shared with __root.tsx.
+      reconcileRevokedFilterStorage(uid);
 
       const s = window.localStorage.getItem(`ri_revoked_search:${uid}`);
       if (s) setRevokedSearch(s);
