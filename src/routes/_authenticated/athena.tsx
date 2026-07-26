@@ -27,6 +27,7 @@ function buildIntro(firstName: string | null): string[] {
     greeting,
     "I'm Athena.",
     "It's a pleasure to finally meet you.",
+    "Our first conversation is designed to help me build a strong foundation for understanding who you are. By the end of our conversation, I'll know enough to begin identifying people who appear highly compatible with you. Every conversation we have after that helps me understand you more deeply, allowing me to continually refine and improve the introductions I make over time.",
     "Before I ever introduce you to another person, I'd like the opportunity to understand you.",
     "There are no questionnaires. There are no personality tests. Just a conversation.",
     "Every conversation helps me better understand who you are, so every future introduction can become more meaningful.",
