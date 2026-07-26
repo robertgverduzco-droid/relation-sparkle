@@ -1,0 +1,1 @@
+CREATE POLICY "internal only" ON public.pair_reasoning_history FOR SELECT TO authenticated USING (false);
