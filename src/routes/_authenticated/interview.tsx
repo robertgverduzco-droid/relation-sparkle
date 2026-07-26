@@ -255,7 +255,8 @@ function InterviewPage() {
       setShares((prev) => prev.filter((s) => s.id !== id));
       toast.success("Link revoked");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't revoke");
+      const detail = e instanceof Error ? e.message : "Please try again.";
+      toast.error(`Couldn’t revoke link: ${detail}`);
     } finally {
       setRevokingIds((prev) => {
         const next = new Set(prev);
@@ -272,7 +273,8 @@ function InterviewPage() {
       setShares([]);
       toast.success("All links revoked");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't revoke all");
+      const detail = e instanceof Error ? e.message : "Please try again.";
+      toast.error(`Couldn’t revoke all links: ${detail}`);
     } finally {
       setShareBusy(false);
     }
