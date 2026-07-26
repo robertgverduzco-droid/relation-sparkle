@@ -65,6 +65,48 @@ function ShareExpiry({ expiresAt }: { expiresAt?: string | null }) {
   );
 }
 
+function splitHighlight(text: string, query: string) {
+  if (!query.trim()) return [{ text, match: false }];
+  const q = query.toLowerCase();
+  const parts: { text: string; match: boolean }[] = [];
+  let remaining = text;
+  while (remaining.length) {
+    const idx = remaining.toLowerCase().indexOf(q);
+    if (idx < 0) {
+      parts.push({ text: remaining, match: false });
+      break;
+    }
+    if (idx > 0) parts.push({ text: remaining.slice(0, idx), match: false });
+    parts.push({ text: remaining.slice(idx, idx + q.length), match: true });
+    remaining = remaining.slice(idx + q.length);
+  }
+  return parts;
+}
+
+function Highlight({ text, query }: { text?: string | null; query: string }) {
+  if (!text) return null;
+  return (
+    <>
+      {splitHighlight(text, query).map((part, i) =>
+        part.match ? (
+          <span key={i} className="rounded bg-primary/20 px-0.5 text-foreground">{part.text}</span>
+        ) : (
+          <span key={i}>{part.text}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function useDebouncedValue<T>(value: T, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
 type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
@@ -100,6 +142,7 @@ function InterviewPage() {
   const [revokedPage, setRevokedPage] = useState(0);
   const [revokedSort, setRevokedSort] = useState<"newest" | "oldest">("newest");
   const [revokedSearch, setRevokedSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(revokedSearch, 300);
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -236,14 +279,14 @@ function InterviewPage() {
   }
 
   const filteredRevokedShares = useMemo(() => {
-    const q = revokedSearch.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     if (!q) return sortedRevokedShares;
     return sortedRevokedShares.filter((r) => {
       const url = urlFor(r.token).toLowerCase();
       const by = (r.revoked_by_name ?? "").toLowerCase();
       return url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
     });
-  }, [sortedRevokedShares, revokedSearch]);
+  }, [sortedRevokedShares, debouncedSearch]);
 
   const refreshShares = useCallback(async () => {
     try {
@@ -720,13 +763,21 @@ function InterviewPage() {
                           <ul className="space-y-2">
                             {pageItems.map((r) => (
                               <li key={r.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
-                                <div className="truncate text-xs text-muted-foreground line-through">{urlFor(r.token)}</div>
+                                <div className="truncate text-xs text-muted-foreground line-through">
+                                  <Highlight text={urlFor(r.token)} query={debouncedSearch} />
+                                </div>
+                                <div className="truncate text-[10px] font-mono text-muted-foreground">
+                                  Token: <Highlight text={r.token} query={debouncedSearch} />
+                                </div>
                                 <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                                   <span>
                                     Revoked {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
                                     {" · by "}
                                     <span className="text-foreground">
-                                      {r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                                      <Highlight
+                                        text={r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                                        query={debouncedSearch}
+                                      />
                                     </span>
                                   </span>
                                   <span>Created {new Date(r.created_at).toLocaleDateString()}</span>
