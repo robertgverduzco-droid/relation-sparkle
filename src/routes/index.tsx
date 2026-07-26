@@ -65,9 +65,9 @@ function Welcome() {
             Enter a quieter world
           </p>
           <h1 className="mt-4 font-display text-[3.25rem] leading-[1.02] text-foreground">
-            Meet
+            Meet.....
             <br />
-            <em className="italic text-primary">Athena</em>.
+            <em className="italic text-primary">Athena</em>
           </h1>
           <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-ink-soft">
             Before any introduction, there is understanding. Athena is here to know
