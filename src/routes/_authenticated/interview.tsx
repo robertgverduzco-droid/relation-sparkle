@@ -722,7 +722,7 @@ function InterviewPage() {
                                 Prev
                               </button>
                               <span>
-                                Page {page + 1} of {totalPages} · {revokedShares.length} total
+                                Page {page + 1} of {totalPages} · {sortedRevokedShares.length} total
                               </span>
                               <button
                                 type="button"
