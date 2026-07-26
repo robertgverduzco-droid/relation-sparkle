@@ -6,7 +6,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/profile/review")({
   head: () => ({
     meta: [
-      { title: "Review your Living Profile — Relationship Intelligence" },
+      { title: "Correct what Athena understands — Relationship Intelligence" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -39,18 +39,19 @@ function ReviewPage() {
   const [valuesText, setValuesText] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [approved, setApproved] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("user_intelligence")
         .select(
-          "core_values, life_direction, self_understanding, communication_style, conflict_style, partnership_vision, readiness_summary, profile_approved_at"
+          "core_values, life_direction, self_understanding, communication_style, conflict_style, partnership_vision, readiness_summary",
         )
         .maybeSingle();
       if (data) {
-        const values = Array.isArray(data.core_values) ? (data.core_values as string[]) : [];
+        const values = Array.isArray(data.core_values)
+          ? (data.core_values as string[])
+          : [];
         setDraft({
           core_values: values,
           life_direction: data.life_direction ?? "",
@@ -61,13 +62,12 @@ function ReviewPage() {
           readiness_summary: data.readiness_summary ?? "",
         });
         setValuesText(values.join(", "));
-        setApproved(!!data.profile_approved_at);
       }
       setLoading(false);
     })();
   }, []);
 
-  async function persist(alsoApprove: boolean) {
+  async function save() {
     setSaving(true);
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
@@ -80,37 +80,33 @@ function ReviewPage() {
       .split(",")
       .map((v) => v.trim().toLowerCase())
       .filter(Boolean);
-    const payload = {
-      user_id: userId,
-      core_values: values,
-      life_direction: draft.life_direction.trim() || null,
-      self_understanding: draft.self_understanding.trim() || null,
-      communication_style: draft.communication_style.trim() || null,
-      conflict_style: draft.conflict_style.trim() || null,
-      partnership_vision: draft.partnership_vision.trim() || null,
-      readiness_summary: draft.readiness_summary.trim() || null,
-      ...(alsoApprove ? { profile_approved_at: new Date().toISOString() } : {}),
-    };
-    const { error } = await supabase
-      .from("user_intelligence")
-      .upsert(payload, { onConflict: "user_id" });
+    const { error } = await supabase.from("user_intelligence").upsert(
+      {
+        user_id: userId,
+        core_values: values,
+        life_direction: draft.life_direction.trim() || null,
+        self_understanding: draft.self_understanding.trim() || null,
+        communication_style: draft.communication_style.trim() || null,
+        conflict_style: draft.conflict_style.trim() || null,
+        partnership_vision: draft.partnership_vision.trim() || null,
+        readiness_summary: draft.readiness_summary.trim() || null,
+      },
+      { onConflict: "user_id" },
+    );
     setSaving(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    if (alsoApprove) {
-      setApproved(true);
-      toast("Profile approved.");
-      navigate({ to: "/profile" });
-    } else {
-      toast("Changes saved.");
-    }
+    toast("Athena will hold this in mind.");
+    navigate({ to: "/profile" });
   }
 
   if (loading) {
     return (
-      <div className="screen-shell safe-top px-6 pt-10 text-sm text-muted-foreground">Loading…</div>
+      <div className="screen-shell safe-top px-6 pt-10 text-sm text-muted-foreground">
+        A moment…
+      </div>
     );
   }
 
@@ -121,19 +117,22 @@ function ReviewPage() {
           ← Back
         </Link>
         <p className="mt-4 text-xs uppercase tracking-[0.25em] text-muted-foreground">
-          Correct & approve
+          In your own words
         </p>
         <h1 className="mt-2 font-display text-[2rem] leading-tight text-foreground">
-          Does this feel like you?
+          Does this sound like you?
         </h1>
         <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
-          Read what the AI understood. Change anything that isn’t right in your own words, then
-          approve it. You can edit again any time.
+          Athena's understanding of you is always evolving. Correct anything that
+          isn't right — she'll fold your words into how she sees you.
         </p>
       </header>
 
       <main className="mt-6 space-y-5 px-6">
-        <FieldGroup label="Core values" hint="Short lowercase phrases, separated by commas.">
+        <FieldGroup
+          label="What you care about"
+          hint="Short lowercase phrases, separated by commas."
+        >
           <input
             value={valuesText}
             onChange={(e) => setValuesText(e.target.value)}
@@ -143,32 +142,32 @@ function ReviewPage() {
         </FieldGroup>
 
         <TextArea
-          label="Life direction"
+          label="Where your life is going"
           value={draft.life_direction}
           onChange={(v) => setDraft((d) => ({ ...d, life_direction: v }))}
         />
         <TextArea
-          label="Self-understanding"
+          label="How you understand yourself"
           value={draft.self_understanding}
           onChange={(v) => setDraft((d) => ({ ...d, self_understanding: v }))}
         />
         <TextArea
-          label="Communication style"
+          label="How you tend to communicate"
           value={draft.communication_style}
           onChange={(v) => setDraft((d) => ({ ...d, communication_style: v }))}
         />
         <TextArea
-          label="Conflict style"
+          label="How you handle conflict"
           value={draft.conflict_style}
           onChange={(v) => setDraft((d) => ({ ...d, conflict_style: v }))}
         />
         <TextArea
-          label="Partnership vision"
+          label="What you're building toward"
           value={draft.partnership_vision}
           onChange={(v) => setDraft((d) => ({ ...d, partnership_vision: v }))}
         />
         <TextArea
-          label="Readiness"
+          label="Where you are right now"
           value={draft.readiness_summary}
           onChange={(v) => setDraft((d) => ({ ...d, readiness_summary: v }))}
         />
@@ -177,23 +176,16 @@ function ReviewPage() {
       <footer className="mt-8 space-y-3 px-6">
         <button
           disabled={saving}
-          onClick={() => persist(true)}
+          onClick={save}
           className="w-full rounded-full bg-primary px-6 py-4 text-[15px] font-medium text-primary-foreground disabled:opacity-60"
         >
-          {approved ? "Save & re-approve" : "Approve my profile"}
-        </button>
-        <button
-          disabled={saving}
-          onClick={() => persist(false)}
-          className="w-full rounded-full border border-border px-6 py-3 text-[15px] text-foreground disabled:opacity-60"
-        >
-          Save changes
+          {saving ? "Saving…" : "Save"}
         </button>
         <Link
-          to="/interview"
+          to="/athena"
           className="block w-full rounded-full border border-border/60 px-6 py-3 text-center text-[13px] text-muted-foreground"
         >
-          Talk with the AI again
+          Continue with Athena
         </Link>
       </footer>
     </div>
@@ -215,7 +207,9 @@ function FieldGroup({
         {label}
       </label>
       <div className="mt-2">{children}</div>
-      {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && (
+        <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }
