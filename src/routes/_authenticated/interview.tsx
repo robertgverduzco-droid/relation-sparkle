@@ -576,6 +576,35 @@ function InterviewPage() {
           </div>
         </form>
       )}
+
+      <Dialog open={pendingRevokeId !== null} onOpenChange={(open) => { if (!open) setPendingRevokeId(null); }}>
+        <DialogContent className="sm:max-w-[90vw] max-w-md rounded-3xl border border-border bg-background p-6">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg text-foreground">Revoke this link?</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Anyone with this link will immediately lose access to the shared transcript. This can't be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-5 flex-col gap-2 sm:flex-col">
+            <button
+              type="button"
+              disabled={shareBusy}
+              onClick={confirmRevokeShare}
+              className="w-full rounded-full bg-destructive px-5 py-3 text-sm font-medium text-white transition disabled:opacity-60"
+            >
+              {shareBusy ? "Revoking…" : "Yes, revoke"}
+            </button>
+            <button
+              type="button"
+              disabled={shareBusy}
+              onClick={() => setPendingRevokeId(null)}
+              className="w-full rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-primary/50 disabled:opacity-60"
+            >
+              Cancel
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
