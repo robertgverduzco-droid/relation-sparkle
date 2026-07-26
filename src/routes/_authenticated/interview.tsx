@@ -659,15 +659,27 @@ function InterviewPage() {
             </div>
 
             <div className="mt-4 border-t border-border/60 pt-3">
-              <button
-                type="button"
-                onClick={toggleHistory}
-                className="flex w-full items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-                aria-expanded={historyOpen}
-              >
-                <span>Revocation history</span>
-                <span>{historyOpen ? "Hide" : "Show"}</span>
-              </button>
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={toggleHistory}
+                  className="flex items-center gap-2 hover:text-foreground"
+                  aria-expanded={historyOpen}
+                >
+                  <span>Revocation history</span>
+                  <span>{historyOpen ? "Hide" : "Show"}</span>
+                </button>
+                {historyOpen && revokedLoaded && sortedRevokedShares.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleRevokedSort}
+                    className="flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-primary/50"
+                    aria-label={`Sort ${revokedSort === "newest" ? "oldest first" : "newest first"}`}
+                  >
+                    {revokedSort === "newest" ? "Newest first" : "Oldest first"}
+                  </button>
+                )}
+              </div>
               {historyOpen && (
                 <div className="mt-2">
                   {!revokedLoaded ? (
