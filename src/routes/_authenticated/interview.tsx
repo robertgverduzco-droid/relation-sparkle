@@ -121,7 +121,7 @@ function InterviewPage() {
           <div className="mt-3">
             <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               <span>{done ? "Complete" : "Progress"}</span>
-              <span>{completedTurns} / {TARGET_TURNS}</span>
+              <span>Turn {completedTurns} of {TARGET_TURNS}</span>
             </div>
             <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
               <div
