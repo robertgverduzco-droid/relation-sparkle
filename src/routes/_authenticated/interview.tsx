@@ -3,10 +3,15 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { CalendarIcon, Loader2, Search } from "lucide-react";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
 import { checkExpiredShares, createShareLink, listActiveShares, listRevokedShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 export const Route = createFileRoute("/_authenticated/interview")({
@@ -107,6 +112,36 @@ function useDebouncedValue<T>(value: T, delay = 300) {
   return debounced;
 }
 
+function DateFilterButton({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value?: Date;
+  onChange: (date?: Date) => void;
+  placeholder: string;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "h-8 justify-start rounded-full border-border bg-background px-3 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:text-foreground hover:border-primary/50",
+            !value && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="mr-1.5 h-3 w-3" />
+          {value ? format(value, "MMM d, yyyy") : <span>{placeholder}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar mode="single" selected={value} onSelect={onChange} initialFocus className={cn("p-3 pointer-events-auto")} />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
@@ -144,6 +179,8 @@ function InterviewPage() {
   const [revokedSearch, setRevokedSearch] = useState("");
   const debouncedSearch = useDebouncedValue(revokedSearch, 300);
   const [revokedFilters, setRevokedFilters] = useState<Set<string>>(new Set());
+  const [revokedStart, setRevokedStart] = useState<Date | undefined>();
+  const [revokedEnd, setRevokedEnd] = useState<Date | undefined>();
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -298,16 +335,21 @@ function InterviewPage() {
   const filteredRevokedShares = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
     const hasFilters = revokedFilters.size > 0;
+    const start = revokedStart ? startOfDay(revokedStart).getTime() : null;
+    const end = revokedEnd ? endOfDay(revokedEnd).getTime() : null;
     return sortedRevokedShares.filter((r) => {
       const { key } = revokerCategory(r);
       const matchesFilter = !hasFilters || revokedFilters.has(key);
-      if (!q) return matchesFilter;
+      if (!r.revoked_at) return false;
+      const revokedTime = new Date(r.revoked_at).getTime();
+      const matchesDate = (!start || revokedTime >= start) && (!end || revokedTime <= end);
+      if (!q) return matchesFilter && matchesDate;
       const url = urlFor(r.token).toLowerCase();
       const by = (r.revoked_by_name ?? "").toLowerCase();
       const matchesSearch = url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
-      return matchesFilter && matchesSearch;
+      return matchesFilter && matchesDate && matchesSearch;
     });
-  }, [sortedRevokedShares, debouncedSearch, revokedFilters]);
+  }, [sortedRevokedShares, debouncedSearch, revokedFilters, revokedStart, revokedEnd]);
 
   const refreshShares = useCallback(async () => {
     try {
@@ -800,6 +842,25 @@ function InterviewPage() {
                       )}
                     </div>
                   )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">From</span>
+                    <DateFilterButton value={revokedStart} onChange={(d) => { setRevokedStart(d); setRevokedPage(0); }} placeholder="Start date" />
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">To</span>
+                    <DateFilterButton value={revokedEnd} onChange={(d) => { setRevokedEnd(d); setRevokedPage(0); }} placeholder="End date" />
+                    {(revokedStart || revokedEnd) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRevokedStart(undefined);
+                          setRevokedEnd(undefined);
+                          setRevokedPage(0);
+                        }}
+                        className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground"
+                      >
+                        Clear dates
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
@@ -814,7 +875,9 @@ function InterviewPage() {
                     <p className="text-xs text-muted-foreground">Loading history…</p>
                   ) : filteredRevokedShares.length === 0 ? (
                     <p className="text-xs text-ink-soft">
-                      {revokedSearch.trim() || revokedFilters.size > 0 ? "No revoked links match your filters." : "No revoked links yet."}
+                      {revokedSearch.trim() || revokedFilters.size > 0 || revokedStart || revokedEnd
+                        ? "No revoked links match your filters."
+                        : "No revoked links yet."}
                     </p>
                   ) : (
                     (() => {
