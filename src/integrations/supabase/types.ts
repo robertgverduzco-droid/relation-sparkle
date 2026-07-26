@@ -110,6 +110,7 @@ export type Database = {
           expiry_notified_at: string | null
           id: string
           revoked_at: string | null
+          revoked_by: string | null
           token: string
           updated_at: string
           user_id: string
@@ -120,6 +121,7 @@ export type Database = {
           expiry_notified_at?: string | null
           id?: string
           revoked_at?: string | null
+          revoked_by?: string | null
           token?: string
           updated_at?: string
           user_id: string
@@ -130,6 +132,7 @@ export type Database = {
           expiry_notified_at?: string | null
           id?: string
           revoked_at?: string | null
+          revoked_by?: string | null
           token?: string
           updated_at?: string
           user_id?: string
