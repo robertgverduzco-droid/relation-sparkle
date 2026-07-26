@@ -60,20 +60,12 @@ function Welcome() {
           </span>
         </header>
 
-        <section className="mt-24">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Enter a quieter world
-          </p>
-          <h1 className="mt-4 font-display text-[3.25rem] leading-[1.02] text-foreground">
-            Meet.....
-            <br />
-            <em className="italic text-primary">Athena</em>
+        <section className="mt-20">
+          <h1 className="font-display text-[3.25rem] leading-[1.02] text-foreground">
+            Meet <em className="italic text-primary">Athena</em>.
           </h1>
-          <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-ink-soft">
-            Before any introduction, there is understanding. Athena is here to know
-            you — patiently, without judgment — through a conversation that is
-            entirely your own. Introductions follow, in time, and only when they're
-            worth arriving.
+          <p className="mt-4 text-[17px] leading-relaxed text-ink-soft">
+            The Next Evolution of Matchmaking.
           </p>
         </section>
 
