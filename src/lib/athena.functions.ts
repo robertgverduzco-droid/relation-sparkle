@@ -167,7 +167,6 @@ ${transcript}`,
       });
     }
 
-    type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
     const upserts: Array<{
       user_id: string;
       facet_key: FacetKey;
