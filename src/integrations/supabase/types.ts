@@ -400,8 +400,11 @@ export type Database = {
           daily_lifestyle: string | null
           emotional_patterns: string | null
           ideal_week: string | null
+          last_interview_at: string | null
           life_direction: string | null
           meaning_of_relationship: string | null
+          partnership_vision: string | null
+          readiness_summary: string | null
           self_understanding: string | null
           updated_at: string
           user_id: string
@@ -416,8 +419,11 @@ export type Database = {
           daily_lifestyle?: string | null
           emotional_patterns?: string | null
           ideal_week?: string | null
+          last_interview_at?: string | null
           life_direction?: string | null
           meaning_of_relationship?: string | null
+          partnership_vision?: string | null
+          readiness_summary?: string | null
           self_understanding?: string | null
           updated_at?: string
           user_id: string
@@ -432,8 +438,11 @@ export type Database = {
           daily_lifestyle?: string | null
           emotional_patterns?: string | null
           ideal_week?: string | null
+          last_interview_at?: string | null
           life_direction?: string | null
           meaning_of_relationship?: string | null
+          partnership_vision?: string | null
+          readiness_summary?: string | null
           self_understanding?: string | null
           updated_at?: string
           user_id?: string
