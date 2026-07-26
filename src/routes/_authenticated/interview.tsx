@@ -98,6 +98,7 @@ function InterviewPage() {
   const [revokedShares, setRevokedShares] = useState<Array<{ id: string; token: string; created_at: string; expires_at: string | null; revoked_at: string | null; revoked_by: string | null; revoked_by_name: string | null; revoked_by_self: boolean }>>([]);
   const [revokedLoaded, setRevokedLoaded] = useState(false);
   const [revokedPage, setRevokedPage] = useState(0);
+  const [revokedSort, setRevokedSort] = useState<"newest" | "oldest">("newest");
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -133,6 +134,25 @@ function InterviewPage() {
     }
   }
 
+  const sortedRevokedShares = useMemo(() => {
+    const sorted = [...revokedShares];
+    sorted.sort((a, b) => {
+      const aTime = a.revoked_at ? new Date(a.revoked_at).getTime() : 0;
+      const bTime = b.revoked_at ? new Date(b.revoked_at).getTime() : 0;
+      return revokedSort === "newest" ? bTime - aTime : aTime - bTime;
+    });
+    return sorted;
+  }, [revokedShares, revokedSort]);
+
+  function toggleRevokedSort() {
+    const next = revokedSort === "newest" ? "oldest" : "newest";
+    setRevokedSort(next);
+    setRevokedPage(0);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ri_revoked_sort", next);
+    }
+  }
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -152,6 +172,10 @@ function InterviewPage() {
         const savedActiveOnly = window.localStorage.getItem("ri_show_active_only");
         if (savedActiveOnly !== null) {
           setShowActiveOnly(savedActiveOnly === "true");
+        }
+        const savedRevokedSort = window.localStorage.getItem("ri_revoked_sort");
+        if (savedRevokedSort === "newest" || savedRevokedSort === "oldest") {
+          setRevokedSort(savedRevokedSort);
         }
       }
       const [sessionRes, intelRes] = await Promise.all([
@@ -635,27 +659,39 @@ function InterviewPage() {
             </div>
 
             <div className="mt-4 border-t border-border/60 pt-3">
-              <button
-                type="button"
-                onClick={toggleHistory}
-                className="flex w-full items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-                aria-expanded={historyOpen}
-              >
-                <span>Revocation history</span>
-                <span>{historyOpen ? "Hide" : "Show"}</span>
-              </button>
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={toggleHistory}
+                  className="flex items-center gap-2 hover:text-foreground"
+                  aria-expanded={historyOpen}
+                >
+                  <span>Revocation history</span>
+                  <span>{historyOpen ? "Hide" : "Show"}</span>
+                </button>
+                {historyOpen && revokedLoaded && sortedRevokedShares.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleRevokedSort}
+                    className="flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-primary/50"
+                    aria-label={`Sort ${revokedSort === "newest" ? "oldest first" : "newest first"}`}
+                  >
+                    {revokedSort === "newest" ? "Newest first" : "Oldest first"}
+                  </button>
+                )}
+              </div>
               {historyOpen && (
                 <div className="mt-2">
                   {!revokedLoaded ? (
                     <p className="text-xs text-muted-foreground">Loading history…</p>
-                  ) : revokedShares.length === 0 ? (
+                  ) : sortedRevokedShares.length === 0 ? (
                     <p className="text-xs text-ink-soft">No revoked links yet.</p>
                   ) : (
                     (() => {
-                      const totalPages = Math.max(1, Math.ceil(revokedShares.length / REVOKED_PAGE_SIZE));
+                      const totalPages = Math.max(1, Math.ceil(sortedRevokedShares.length / REVOKED_PAGE_SIZE));
                       const page = Math.min(revokedPage, totalPages - 1);
                       const start = page * REVOKED_PAGE_SIZE;
-                      const pageItems = revokedShares.slice(start, start + REVOKED_PAGE_SIZE);
+                      const pageItems = sortedRevokedShares.slice(start, start + REVOKED_PAGE_SIZE);
                       return (
                         <>
                           <ul className="space-y-2">
@@ -686,7 +722,7 @@ function InterviewPage() {
                                 Prev
                               </button>
                               <span>
-                                Page {page + 1} of {totalPages} · {revokedShares.length} total
+                                Page {page + 1} of {totalPages} · {sortedRevokedShares.length} total
                               </span>
                               <button
                                 type="button"
