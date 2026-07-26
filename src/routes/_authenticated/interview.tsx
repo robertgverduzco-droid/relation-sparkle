@@ -277,13 +277,22 @@ function InterviewPage() {
               </button>
             )}
             {hydrated && messages.length > 1 && (
-              <button
-                type="button"
-                onClick={exportPdf}
-                className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
-              >
-                Export
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={openShare}
+                  className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+                >
+                  Share
+                </button>
+                <button
+                  type="button"
+                  onClick={exportPdf}
+                  className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+                >
+                  Export
+                </button>
+              </>
             )}
             {!(started && !done) && !(hydrated && messages.length > 1) && <span className="w-10" />}
           </div>
