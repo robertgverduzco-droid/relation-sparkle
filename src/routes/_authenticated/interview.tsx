@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/interview")({
   component: InterviewPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
   role: "assistant",
@@ -85,7 +85,8 @@ function InterviewPage() {
   async function send() {
     const text = input.trim();
     if (!text || busy || done) return;
-    const next: Msg[] = [...messages, { role: "user", content: text }];
+    const now = new Date().toISOString();
+    const next: Msg[] = [...messages, { role: "user", content: text, ts: now }];
     setMessages(next);
     setInput("");
     setBusy(true);
@@ -93,7 +94,7 @@ function InterviewPage() {
     try {
       if (!started) setStarted(true);
       const res = await ask({ data: { messages: next, targetTurns } });
-      const withReply: Msg[] = [...next, { role: "assistant", content: res.reply }];
+      const withReply: Msg[] = [...next, { role: "assistant", content: res.reply, ts: new Date().toISOString() }];
       setMessages(withReply);
       if (res.done) setDone(true);
       void persist(withReply, res.done);
@@ -104,6 +105,58 @@ function InterviewPage() {
       setBusy(false);
     }
   }
+
+  async function exportPdf() {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 54;
+    const marginTop = 64;
+    const marginBottom = 54;
+    const maxW = pageW - marginX * 2;
+    let y = marginTop;
+
+    const fmt = (ts?: string) => (ts ? new Date(ts).toLocaleString() : "—");
+    const line = (h: number) => {
+      if (y + h > pageH - marginBottom) { doc.addPage(); y = marginTop; }
+    };
+
+    // Header
+    doc.setFont("times", "bold"); doc.setFontSize(18);
+    doc.text("The Interview", marginX, y); y += 22;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90);
+    doc.text(`Exported ${new Date().toLocaleString()}`, marginX, y); y += 14;
+    doc.text(`Status: ${done ? "Completed" : "In progress"}   ·   Turn ${completedTurns} of ${TARGET_TURNS}`, marginX, y);
+    y += 20;
+    doc.setDrawColor(200); doc.line(marginX, y, pageW - marginX, y); y += 18;
+    doc.setTextColor(20);
+
+    for (const m of messages) {
+      const speaker = m.role === "user" ? "You" : "Interviewer";
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(120);
+      line(14);
+      doc.text(`${speaker}   ·   ${fmt(m.ts)}`, marginX, y); y += 14;
+      doc.setFont("times", "normal"); doc.setFontSize(11); doc.setTextColor(20);
+      const lines = doc.splitTextToSize(m.content, maxW) as string[];
+      for (const ln of lines) {
+        line(15);
+        doc.text(ln, marginX, y); y += 15;
+      }
+      y += 10;
+    }
+
+    if (done) {
+      line(28);
+      doc.setDrawColor(200); doc.line(marginX, y, pageW - marginX, y); y += 16;
+      doc.setFont("helvetica", "italic"); doc.setFontSize(10); doc.setTextColor(90);
+      doc.text("Interview completed.", marginX, y);
+    }
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    doc.save(`interview-transcript-${stamp}.pdf`);
+  }
+
 
 
   async function saveAndFinish() {
@@ -159,17 +212,27 @@ function InterviewPage() {
             ← Leave
           </button>
           <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">The Interview</span>
-          {started && !done ? (
-            <button
-              type="button"
-              onClick={() => setAdjustOpen((v) => !v)}
-              className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
-            >
-              Length
-            </button>
-          ) : (
-            <span className="w-10" />
-          )}
+          <div className="flex items-center gap-3">
+            {started && !done && (
+              <button
+                type="button"
+                onClick={() => setAdjustOpen((v) => !v)}
+                className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+              >
+                Length
+              </button>
+            )}
+            {hydrated && messages.length > 1 && (
+              <button
+                type="button"
+                onClick={exportPdf}
+                className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+              >
+                Export
+              </button>
+            )}
+            {!(started && !done) && !(hydrated && messages.length > 1) && <span className="w-10" />}
+          </div>
         </div>
         {hydrated && (
           <div className="mt-3">
@@ -272,6 +335,12 @@ function InterviewPage() {
               className="mt-4 w-full rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
             >
               {saving ? "Distilling…" : "Save to my profile"}
+            </button>
+            <button
+              onClick={exportPdf}
+              className="mt-2 w-full rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground hover:border-primary/50"
+            >
+              Download transcript (PDF)
             </button>
           </div>
         )}
