@@ -181,6 +181,26 @@ function InterviewPage() {
   const [revokedFilters, setRevokedFilters] = useState<Set<string>>(new Set());
   const [revokedStart, setRevokedStart] = useState<Date | undefined>();
   const [revokedEnd, setRevokedEnd] = useState<Date | undefined>();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedSearch) window.localStorage.setItem("ri_revoked_search", revokedSearch);
+    else window.localStorage.removeItem("ri_revoked_search");
+  }, [revokedSearch]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedFilters.size > 0) window.localStorage.setItem("ri_revoked_filters", JSON.stringify([...revokedFilters]));
+    else window.localStorage.removeItem("ri_revoked_filters");
+  }, [revokedFilters]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedStart) window.localStorage.setItem("ri_revoked_start", revokedStart.toISOString());
+    else window.localStorage.removeItem("ri_revoked_start");
+  }, [revokedStart]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedEnd) window.localStorage.setItem("ri_revoked_end", revokedEnd.toISOString());
+    else window.localStorage.removeItem("ri_revoked_end");
+  }, [revokedEnd]);
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -258,6 +278,25 @@ function InterviewPage() {
         const savedRevokedSort = window.localStorage.getItem("ri_revoked_sort");
         if (savedRevokedSort === "newest" || savedRevokedSort === "oldest") {
           setRevokedSort(savedRevokedSort);
+        }
+        const savedRevokedSearch = window.localStorage.getItem("ri_revoked_search");
+        if (savedRevokedSearch) setRevokedSearch(savedRevokedSearch);
+        const savedRevokedFilters = window.localStorage.getItem("ri_revoked_filters");
+        if (savedRevokedFilters) {
+          try {
+            const arr = JSON.parse(savedRevokedFilters);
+            if (Array.isArray(arr)) setRevokedFilters(new Set(arr.filter((x) => typeof x === "string")));
+          } catch {}
+        }
+        const savedRevokedStart = window.localStorage.getItem("ri_revoked_start");
+        if (savedRevokedStart) {
+          const d = new Date(savedRevokedStart);
+          if (!Number.isNaN(d.getTime())) setRevokedStart(d);
+        }
+        const savedRevokedEnd = window.localStorage.getItem("ri_revoked_end");
+        if (savedRevokedEnd) {
+          const d = new Date(savedRevokedEnd);
+          if (!Number.isNaN(d.getTime())) setRevokedEnd(d);
         }
       }
       const [sessionRes, intelRes] = await Promise.all([
