@@ -5,10 +5,21 @@ import { useEffect } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Relationship Intelligence — A different way to meet someone" },
-      { name: "description", content: "A calm, intelligent introduction platform for people ready for something real." },
+      {
+        title:
+          "Relationship Intelligence — Meet Athena, and be known before you're introduced",
+      },
+      {
+        name: "description",
+        content:
+          "Athena is the intelligence at the heart of Relationship Intelligence. She takes the time to understand you first — introductions follow, only when it's right.",
+      },
       { property: "og:title", content: "Relationship Intelligence" },
-      { property: "og:description", content: "A calm, intelligent introduction platform for people ready for something real." },
+      {
+        property: "og:description",
+        content:
+          "A calm, intentional way to be understood — and then, in time, introduced.",
+      },
     ],
   }),
   component: Welcome,
@@ -24,7 +35,6 @@ function Welcome() {
 
   return (
     <div className="screen-shell safe-top safe-bottom overflow-hidden">
-      {/* Cinematic layered gradient */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-70"
@@ -36,25 +46,34 @@ function Welcome() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-30"
-        style={{ background: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>\")" }}
+        style={{
+          background:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>\")",
+        }}
       />
 
       <main className="relative flex flex-1 flex-col justify-between px-6 pt-14 pb-8 fade-in-slow">
         <header className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-primary" />
-          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Relationship Intelligence</span>
+          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            Relationship Intelligence
+          </span>
         </header>
 
         <section className="mt-24">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">A different beginning</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            Enter a quieter world
+          </p>
           <h1 className="mt-4 font-display text-[3.25rem] leading-[1.02] text-foreground">
-            Meet someone<br/>
-            <em className="italic text-primary">who fits</em><br/>
-            your life.
+            Meet
+            <br />
+            <em className="italic text-primary">Athena</em>.
           </h1>
           <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-ink-soft">
-            Not a swipe deck. Not a marketplace of faces. A quiet, intelligent way to
-            be introduced to one person at a time — by values, readiness, and depth.
+            Before any introduction, there is understanding. Athena is here to know
+            you — patiently, without judgment — through a conversation that is
+            entirely your own. Introductions follow, in time, and only when they're
+            worth arriving.
           </p>
         </section>
 
@@ -73,7 +92,11 @@ function Welcome() {
             I already have an account
           </Link>
           <p className="pt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
-            By continuing you agree to our community guidelines and safety principles. Read our <Link to="/privacy" className="underline">privacy explanation</Link>.
+            By continuing you agree to our community guidelines. Read our{" "}
+            <Link to="/privacy" className="underline">
+              privacy explanation
+            </Link>
+            .
           </p>
         </footer>
       </main>
