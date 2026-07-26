@@ -38,6 +38,53 @@ export type Database = {
         }
         Relationships: []
       }
+      connections: {
+        Row: {
+          close_reason: string | null
+          closed_at: string | null
+          created_at: string
+          id: string
+          opened_at: string
+          pair_id: string
+          status: string
+          updated_at: string
+          user_high: string
+          user_low: string
+        }
+        Insert: {
+          close_reason?: string | null
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string
+          pair_id: string
+          status?: string
+          updated_at?: string
+          user_high: string
+          user_low: string
+        }
+        Update: {
+          close_reason?: string | null
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string
+          pair_id?: string
+          status?: string
+          updated_at?: string
+          user_high?: string
+          user_low?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connections_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: true
+            referencedRelation: "pair_reasoning"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -328,6 +375,59 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_proposals: {
+        Row: {
+          completed_at: string | null
+          confirmed_at: string | null
+          connection_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          proposed_by: string
+          scheduled_for: string | null
+          status: string
+          updated_at: string
+          when_text: string | null
+          where_text: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          connection_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          proposed_by: string
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+          when_text?: string | null
+          where_text?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          connection_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          proposed_by?: string
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+          when_text?: string | null
+          where_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_proposals_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -484,6 +584,53 @@ export type Database = {
             columns: ["pair_id"]
             isOneToOne: false
             referencedRelation: "pair_reasoning"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_meeting_reflections: {
+        Row: {
+          connection_id: string
+          created_at: string
+          id: string
+          refined_at: string | null
+          sentiment: string | null
+          summary: string | null
+          transcript: Json
+          updated_at: string
+          user_id: string
+          would_meet_again: boolean | null
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          id?: string
+          refined_at?: string | null
+          sentiment?: string | null
+          summary?: string | null
+          transcript?: Json
+          updated_at?: string
+          user_id: string
+          would_meet_again?: boolean | null
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          id?: string
+          refined_at?: string | null
+          sentiment?: string | null
+          summary?: string | null
+          transcript?: Json
+          updated_at?: string
+          user_id?: string
+          would_meet_again?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_meeting_reflections_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
             referencedColumns: ["id"]
           },
         ]
