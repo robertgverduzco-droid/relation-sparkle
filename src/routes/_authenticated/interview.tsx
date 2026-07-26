@@ -680,7 +680,7 @@ function InterviewPage() {
                   <span>Revocation history</span>
                   <span>{historyOpen ? "Hide" : "Show"}</span>
                 </button>
-                {historyOpen && revokedLoaded && sortedRevokedShares.length > 0 && (
+                {historyOpen && revokedLoaded && filteredRevokedShares.length > 0 && (
                   <button
                     type="button"
                     onClick={toggleRevokedSort}
@@ -692,17 +692,29 @@ function InterviewPage() {
                 )}
               </div>
               {historyOpen && (
-                <div className="mt-2">
+                <div className="mt-2 space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="search"
+                      value={revokedSearch}
+                      onChange={(e) => setRevokedSearch(e.target.value)}
+                      placeholder="Search link or ID"
+                      className="w-full rounded-full border border-border bg-background py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                    />
+                  </div>
                   {!revokedLoaded ? (
                     <p className="text-xs text-muted-foreground">Loading history…</p>
-                  ) : sortedRevokedShares.length === 0 ? (
-                    <p className="text-xs text-ink-soft">No revoked links yet.</p>
+                  ) : filteredRevokedShares.length === 0 ? (
+                    <p className="text-xs text-ink-soft">
+                      {revokedSearch.trim() ? "No matches for your search." : "No revoked links yet."}
+                    </p>
                   ) : (
                     (() => {
-                      const totalPages = Math.max(1, Math.ceil(sortedRevokedShares.length / REVOKED_PAGE_SIZE));
+                      const totalPages = Math.max(1, Math.ceil(filteredRevokedShares.length / REVOKED_PAGE_SIZE));
                       const page = Math.min(revokedPage, totalPages - 1);
                       const start = page * REVOKED_PAGE_SIZE;
-                      const pageItems = sortedRevokedShares.slice(start, start + REVOKED_PAGE_SIZE);
+                      const pageItems = filteredRevokedShares.slice(start, start + REVOKED_PAGE_SIZE);
                       return (
                         <>
                           <ul className="space-y-2">
@@ -733,7 +745,7 @@ function InterviewPage() {
                                 Prev
                               </button>
                               <span>
-                                Page {page + 1} of {totalPages} · {sortedRevokedShares.length} total
+                                Page {page + 1} of {totalPages} · {filteredRevokedShares.length} total
                               </span>
                               <button
                                 type="button"
