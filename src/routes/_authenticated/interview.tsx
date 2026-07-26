@@ -97,6 +97,17 @@ function InterviewPage() {
   const revokeOne = useServerFn(revokeShareById);
   const checkExpired = useServerFn(checkExpiredShares);
 
+  const sortedShares = useMemo(
+    () =>
+      [...shares].sort((a, b) => {
+        if (a.expires_at && b.expires_at) return new Date(a.expires_at).getTime() - new Date(b.expires_at).getTime();
+        if (a.expires_at) return -1;
+        if (b.expires_at) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }),
+    [shares],
+  );
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
