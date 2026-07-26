@@ -463,7 +463,7 @@ function InterviewPage() {
               </p>
             ) : (
               <ul className="mt-2 space-y-2">
-                {shares.map((s) => (
+                {sortedShares.map((s) => (
                   <li key={s.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
                     <div className="truncate text-xs text-foreground">{urlFor(s.token)}</div>
                     <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
