@@ -842,6 +842,25 @@ function InterviewPage() {
                       )}
                     </div>
                   )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">From</span>
+                    <DateFilterButton value={revokedStart} onChange={(d) => { setRevokedStart(d); setRevokedPage(0); }} placeholder="Start date" />
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">To</span>
+                    <DateFilterButton value={revokedEnd} onChange={(d) => { setRevokedEnd(d); setRevokedPage(0); }} placeholder="End date" />
+                    {(revokedStart || revokedEnd) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRevokedStart(undefined);
+                          setRevokedEnd(undefined);
+                          setRevokedPage(0);
+                        }}
+                        className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground"
+                      >
+                        Clear dates
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
