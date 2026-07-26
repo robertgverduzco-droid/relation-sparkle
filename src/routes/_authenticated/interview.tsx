@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/interview")({
   component: InterviewPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
   role: "assistant",
