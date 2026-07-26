@@ -92,6 +92,7 @@ function InterviewPage() {
   const [shareBusy, setShareBusy] = useState(false);
   const [expiresInHours, setExpiresInHours] = useState<number>(0);
   const [pendingRevokeId, setPendingRevokeId] = useState<string | null>(null);
+  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(false);
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
   const revokeOne = useServerFn(revokeShareById);
@@ -108,6 +109,22 @@ function InterviewPage() {
     [shares],
   );
 
+  const filteredShares = useMemo(() => {
+    if (!showActiveOnly) return sortedShares;
+    return sortedShares.filter((s) => {
+      if (!s.expires_at) return true;
+      return new Date(s.expires_at).getTime() > Date.now();
+    });
+  }, [sortedShares, showActiveOnly]);
+
+  function toggleShowActiveOnly() {
+    const next = !showActiveOnly;
+    setShowActiveOnly(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ri_show_active_only", String(next));
+    }
+  }
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -123,6 +140,10 @@ function InterviewPage() {
         if (savedExpiry !== null) {
           const n = parseInt(savedExpiry, 10);
           if (!Number.isNaN(n)) setExpiresInHours(n);
+        }
+        const savedActiveOnly = window.localStorage.getItem("ri_show_active_only");
+        if (savedActiveOnly !== null) {
+          setShowActiveOnly(savedActiveOnly === "true");
         }
       }
       const [sessionRes, intelRes] = await Promise.all([
@@ -447,23 +468,39 @@ function InterviewPage() {
           <div className="mt-3 rounded-2xl border border-border/60 bg-card/80 p-3">
             <div className="flex items-center justify-between">
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Shareable link</p>
-              <button
-                type="button"
-                onClick={() => setShareOpen(false)}
-                className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-              >
-                Close
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleShowActiveOnly}
+                  className={
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] transition " +
+                    (showActiveOnly
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground")
+                  }
+                  aria-pressed={showActiveOnly}
+                >
+                  <span className={`h-2 w-2 rounded-full ${showActiveOnly ? "bg-primary" : "bg-muted-foreground/50"}`} />
+                  Active only
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(false)}
+                  className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+                >
+                  Close
+                </button>
+              </div>
             </div>
             {!sharesLoaded ? (
               <p className="mt-3 text-xs text-muted-foreground">Loading your links…</p>
-            ) : shares.length === 0 ? (
+            ) : filteredShares.length === 0 ? (
               <p className="mt-2 text-xs text-ink-soft">
-                No active links yet. Choose how long a new link should stay active, then create it.
+                {showActiveOnly ? "No active links right now." : "No active links yet. Choose how long a new link should stay active, then create it."}
               </p>
             ) : (
               <ul className="mt-2 space-y-2">
-                {sortedShares.map((s) => (
+                {filteredShares.map((s) => (
                   <li key={s.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
                     <div className="truncate text-xs text-foreground">{urlFor(s.token)}</div>
                     <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
