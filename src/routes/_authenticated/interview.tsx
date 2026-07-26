@@ -279,15 +279,35 @@ function InterviewPage() {
       : `/shared/interview/${token}`;
   }
 
+  function revokerCategory(r: (typeof revokedShares)[number]) {
+    if (r.revoked_by_self) return { key: "you", label: "You" };
+    if (!r.revoked_by) return { key: "system", label: "System" };
+    if (r.revoked_by_name) return { key: `name:${r.revoked_by_name}`, label: r.revoked_by_name };
+    return { key: "other", label: "Another user" };
+  }
+
+  const availableCategories = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of revokedShares) {
+      const { key, label } = revokerCategory(r);
+      if (!map.has(key)) map.set(key, label);
+    }
+    return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [revokedShares]);
+
   const filteredRevokedShares = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
-    if (!q) return sortedRevokedShares;
+    const hasFilters = revokedFilters.size > 0;
     return sortedRevokedShares.filter((r) => {
+      const { key } = revokerCategory(r);
+      const matchesFilter = !hasFilters || revokedFilters.has(key);
+      if (!q) return matchesFilter;
       const url = urlFor(r.token).toLowerCase();
       const by = (r.revoked_by_name ?? "").toLowerCase();
-      return url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
+      const matchesSearch = url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
+      return matchesFilter && matchesSearch;
     });
-  }, [sortedRevokedShares, debouncedSearch]);
+  }, [sortedRevokedShares, debouncedSearch, revokedFilters]);
 
   const refreshShares = useCallback(async () => {
     try {
