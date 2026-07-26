@@ -672,14 +672,14 @@ function InterviewPage() {
                 <div className="mt-2">
                   {!revokedLoaded ? (
                     <p className="text-xs text-muted-foreground">Loading history…</p>
-                  ) : revokedShares.length === 0 ? (
+                  ) : sortedRevokedShares.length === 0 ? (
                     <p className="text-xs text-ink-soft">No revoked links yet.</p>
                   ) : (
                     (() => {
-                      const totalPages = Math.max(1, Math.ceil(revokedShares.length / REVOKED_PAGE_SIZE));
+                      const totalPages = Math.max(1, Math.ceil(sortedRevokedShares.length / REVOKED_PAGE_SIZE));
                       const page = Math.min(revokedPage, totalPages - 1);
                       const start = page * REVOKED_PAGE_SIZE;
-                      const pageItems = revokedShares.slice(start, start + REVOKED_PAGE_SIZE);
+                      const pageItems = sortedRevokedShares.slice(start, start + REVOKED_PAGE_SIZE);
                       return (
                         <>
                           <ul className="space-y-2">
