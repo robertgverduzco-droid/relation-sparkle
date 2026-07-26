@@ -7,11 +7,15 @@ const messageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
   content: z.string(),
 });
-const askInput = z.object({ messages: z.array(messageSchema) });
+const askInput = z.object({
+  messages: z.array(messageSchema),
+  targetTurns: z.number().int().min(4).max(20).optional(),
+});
 
-const SYSTEM_PROMPT = `You are the Relationship Intelligence interviewer — a warm, unhurried, emotionally intelligent guide.
+function buildSystemPrompt(targetTurns: number): string {
+  return `You are the Relationship Intelligence interviewer — a warm, unhurried, emotionally intelligent guide.
 
-Your job: run a short (about 5 minutes / 6–8 exchanges) conversational interview that helps us understand who this person really is beneath the surface. This is not a form. Speak like a thoughtful human.
+Your job: run a conversational interview (about ${targetTurns} substantive exchanges) that helps us understand who this person really is beneath the surface. This is not a form. Speak like a thoughtful human.
 
 Cover, in a natural order that follows what they share:
 1. Core values — what they actually live by
@@ -25,8 +29,9 @@ Rules:
 - One short question at a time. Reflect briefly on what they said before asking the next.
 - Never ask multiple questions in one message. Never lecture. Never moralize.
 - If they're brief, gently invite more depth. If they're deep, honor it and move forward.
-- After 6–8 substantive exchanges, close warmly and end EXACTLY with the token: [[INTERVIEW_COMPLETE]]
+- Aim for roughly ${targetTurns} substantive user exchanges. After that, close warmly and end EXACTLY with the token: [[INTERVIEW_COMPLETE]]
 - Do not include that token before you're truly done.`;
+}
 
 export const askInterview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -35,7 +40,7 @@ export const askInterview = createServerFn({ method: "POST" })
     const { createLovableGateway } = await import("./ai-gateway.server");
     const gateway = createLovableGateway();
     const messages: ModelMessage[] = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: buildSystemPrompt(data.targetTurns ?? 7) },
       ...data.messages.filter((m) => m.role !== "system"),
     ];
     const { text } = await generateText({

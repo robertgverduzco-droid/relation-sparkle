@@ -30,17 +30,25 @@ function InterviewPage() {
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [resumed, setResumed] = useState(false);
+  const [targetTurns, setTargetTurns] = useState<number>(7);
+  const [started, setStarted] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     (async () => {
+      const saved = typeof window !== "undefined" ? window.localStorage.getItem("ri_target_turns") : null;
+      if (saved) {
+        const n = parseInt(saved, 10);
+        if (!Number.isNaN(n)) setTargetTurns(n);
+      }
       const { data } = await supabase
         .from("interview_sessions")
         .select("messages, completed_at")
         .maybeSingle();
       if (data && Array.isArray(data.messages) && data.messages.length > 0) {
         setMessages(data.messages as Msg[]);
+        setStarted(true);
         if (data.completed_at) setDone(true);
         else setResumed(true);
       }
@@ -75,7 +83,8 @@ function InterviewPage() {
     setBusy(true);
     setResumed(false);
     try {
-      const res = await ask({ data: { messages: next } });
+      if (!started) setStarted(true);
+      const res = await ask({ data: { messages: next, targetTurns } });
       const withReply: Msg[] = [...next, { role: "assistant", content: res.reply }];
       setMessages(withReply);
       if (res.done) setDone(true);
@@ -102,10 +111,17 @@ function InterviewPage() {
     }
   }
 
-  const TARGET_TURNS = 7;
+  const TARGET_TURNS = targetTurns;
   const userTurns = messages.filter((m) => m.role === "user").length;
   const completedTurns = done ? TARGET_TURNS : Math.min(userTurns, TARGET_TURNS);
   const progressPct = (completedTurns / TARGET_TURNS) * 100;
+  const showSettings = hydrated && !started && !done;
+
+  const TURN_OPTIONS = [5, 7, 10, 12];
+  function chooseTurns(n: number) {
+    setTargetTurns(n);
+    if (typeof window !== "undefined") window.localStorage.setItem("ri_target_turns", String(n));
+  }
 
   return (
     <div className="screen-shell safe-top">
@@ -142,6 +158,36 @@ function InterviewPage() {
             {resumed && (
               <div className="mx-auto max-w-[90%] rounded-2xl border border-border/60 bg-muted/40 px-4 py-2 text-center text-xs text-muted-foreground">
                 Welcome back — picking up where you left off.
+              </div>
+            )}
+            {showSettings && (
+              <div className="mx-auto max-w-md rounded-3xl border border-border/60 bg-card/60 p-5">
+                <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Before we begin</p>
+                <p className="mt-2 font-display text-lg text-foreground">How long would you like this to be?</p>
+                <p className="mt-1 text-sm text-ink-soft">Choose the number of exchanges. You can change this later.</p>
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  {TURN_OPTIONS.map((n) => {
+                    const active = n === targetTurns;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => chooseTurns(n)}
+                        className={
+                          "rounded-full border px-3 py-2 text-sm transition " +
+                          (active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background text-foreground hover:border-primary/50")
+                        }
+                      >
+                        {n}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  About {Math.round(targetTurns * 0.7)}–{Math.round(targetTurns * 1)} minutes. Send your first reply to begin.
+                </p>
               </div>
             )}
             {messages.map((m, i) => (
