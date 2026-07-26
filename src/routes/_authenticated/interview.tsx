@@ -273,6 +273,7 @@ function InterviewPage() {
       await revokeOne({ data: { id } });
       setShares((prev) => prev.filter((s) => s.id !== id));
       toast.success("Link revoked");
+      if (historyOpen || revokedLoaded) refreshRevoked();
     } catch (e) {
       const detail = e instanceof Error ? e.message : "Please try again.";
       toast.error(`Couldn’t revoke link: ${detail}`);
