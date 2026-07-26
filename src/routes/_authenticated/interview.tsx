@@ -112,6 +112,36 @@ function useDebouncedValue<T>(value: T, delay = 300) {
   return debounced;
 }
 
+function DateFilterButton({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value?: Date;
+  onChange: (date?: Date) => void;
+  placeholder: string;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "h-8 justify-start rounded-full border-border bg-background px-3 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:text-foreground hover:border-primary/50",
+            !value && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="mr-1.5 h-3 w-3" />
+          {value ? format(value, "MMM d, yyyy") : <span>{placeholder}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar mode="single" selected={value} onSelect={onChange} initialFocus className={cn("p-3 pointer-events-auto")} />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
