@@ -73,16 +73,21 @@ function InterviewPage() {
     setMessages(next);
     setInput("");
     setBusy(true);
+    setResumed(false);
     try {
       const res = await ask({ data: { messages: next } });
-      setMessages((m) => [...m, { role: "assistant", content: res.reply }]);
+      const withReply: Msg[] = [...next, { role: "assistant", content: res.reply }];
+      setMessages(withReply);
       if (res.done) setDone(true);
+      void persist(withReply, res.done);
     } catch (e) {
+      void persist(next, false);
       toast.error(e instanceof Error ? e.message : "The interviewer couldn't respond");
     } finally {
       setBusy(false);
     }
   }
+
 
   async function saveAndFinish() {
     setSaving(true);
