@@ -48,10 +48,17 @@ function InterviewPage() {
 
   useEffect(() => {
     (async () => {
-      const saved = typeof window !== "undefined" ? window.localStorage.getItem("ri_target_turns") : null;
-      if (saved) {
-        const n = parseInt(saved, 10);
-        if (!Number.isNaN(n)) setTargetTurns(n);
+      if (typeof window !== "undefined") {
+        const saved = window.localStorage.getItem("ri_target_turns");
+        if (saved) {
+          const n = parseInt(saved, 10);
+          if (!Number.isNaN(n)) setTargetTurns(n);
+        }
+        const savedExpiry = window.localStorage.getItem("ri_share_expiry_hours");
+        if (savedExpiry !== null) {
+          const n = parseInt(savedExpiry, 10);
+          if (!Number.isNaN(n)) setExpiresInHours(n);
+        }
       }
       const [sessionRes, intelRes] = await Promise.all([
         supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
@@ -423,7 +430,12 @@ function InterviewPage() {
                         <button
                           key={o.h}
                           type="button"
-                          onClick={() => setExpiresInHours(o.h)}
+                          onClick={() => {
+                            setExpiresInHours(o.h);
+                            if (typeof window !== "undefined") {
+                              window.localStorage.setItem("ri_share_expiry_hours", String(o.h));
+                            }
+                          }}
                           className={
                             "rounded-full border px-2 py-1.5 text-[11px] transition " +
                             (active
