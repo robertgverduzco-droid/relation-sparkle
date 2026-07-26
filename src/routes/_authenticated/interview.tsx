@@ -98,6 +98,7 @@ function InterviewPage() {
   const [revokedShares, setRevokedShares] = useState<Array<{ id: string; token: string; created_at: string; expires_at: string | null; revoked_at: string | null; revoked_by: string | null; revoked_by_name: string | null; revoked_by_self: boolean }>>([]);
   const [revokedLoaded, setRevokedLoaded] = useState(false);
   const [revokedPage, setRevokedPage] = useState(0);
+  const [revokedSort, setRevokedSort] = useState<"newest" | "oldest">("newest");
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
