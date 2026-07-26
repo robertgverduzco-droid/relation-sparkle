@@ -151,17 +151,18 @@ ${transcript}`,
       .select("facet_key, understanding, reasoning, evidence, confidence")
       .in("facet_key", keys);
 
+    type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
     const existing = new Map<string, {
       understanding: string | null;
       reasoning: string | null;
-      evidence: unknown;
+      evidence: Json;
       confidence: number;
     }>();
     for (const r of existingRows ?? []) {
       existing.set(r.facet_key as string, {
         understanding: (r.understanding as string | null) ?? null,
         reasoning: (r.reasoning as string | null) ?? null,
-        evidence: r.evidence,
+        evidence: (r.evidence as Json) ?? [],
         confidence: Number(r.confidence ?? 0),
       });
     }
