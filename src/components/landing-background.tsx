@@ -131,7 +131,7 @@ export function LandingBackground() {
       pa.pairedWith = bestB;
       particles[bestB].pairedWith = a;
       lastConnectionAt = now;
-      nextConnectionDelay = 7000 + Math.random() * 12000;
+      nextConnectionDelay = 8000 + Math.random() * 7000; // 8–15s
     };
 
     const draw = (now: number) => {
@@ -162,20 +162,23 @@ export function LandingBackground() {
             playChime();
             p.violet = true;
             q.violet = true;
+            p.violetAt = now;
+            q.violetAt = now;
             p.pairedWith = null;
             q.pairedWith = null;
             // nudge apart, resume drift
             const ang = Math.random() * Math.PI * 2;
-            p.vx = Math.cos(ang) * 0.08;
-            p.vy = Math.sin(ang) * 0.08;
+            const s = 0.11 + Math.random() * 0.05;
+            p.vx = Math.cos(ang) * s;
+            p.vy = Math.sin(ang) * s;
             q.vx = -p.vx;
             q.vy = -p.vy;
           }
         } else {
-          // subtle brownian drift
-          p.vx += (Math.random() - 0.5) * 0.002;
-          p.vy += (Math.random() - 0.5) * 0.002;
-          const maxV = 0.15;
+          // subtle brownian drift, per-particle variation
+          p.vx += (Math.random() - 0.5) * 0.003 * p.drift;
+          p.vy += (Math.random() - 0.5) * 0.003 * p.drift;
+          const maxV = 0.22;
           p.vx = Math.max(-maxV, Math.min(maxV, p.vx));
           p.vy = Math.max(-maxV, Math.min(maxV, p.vy));
         }
@@ -194,41 +197,55 @@ export function LandingBackground() {
       for (let i = ripples.length - 1; i >= 0; i--) {
         const rp = ripples[i];
         const age = (now - rp.t) / 1000;
-        if (age > 2.5) {
+        if (age > 3.0) {
           ripples.splice(i, 1);
           continue;
         }
-        const radius = age * 60;
-        const alpha = Math.max(0, 1 - age / 2.5) * 0.35;
+        const radius = age * 82; // slightly farther
+        const alpha = Math.max(0, 1 - age / 3.0) * 0.5;
         ctx.beginPath();
         ctx.arc(rp.x, rp.y, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(180, 150, 220, ${alpha})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(190, 165, 230, ${alpha})`;
+        ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        // pulse flash in first 400ms
-        if (age < 0.4) {
-          const pa = 1 - age / 0.4;
-          const grd = ctx.createRadialGradient(rp.x, rp.y, 0, rp.x, rp.y, 40);
-          grd.addColorStop(0, `rgba(255,255,255,${0.6 * pa})`);
+        // brighter pulse flash in first 500ms
+        if (age < 0.5) {
+          const pa = 1 - age / 0.5;
+          const grd = ctx.createRadialGradient(rp.x, rp.y, 0, rp.x, rp.y, 60);
+          grd.addColorStop(0, `rgba(255,255,255,${0.9 * pa})`);
+          grd.addColorStop(0.4, `rgba(220,205,245,${0.5 * pa})`);
           grd.addColorStop(1, "rgba(255,255,255,0)");
           ctx.fillStyle = grd;
-          ctx.fillRect(rp.x - 40, rp.y - 40, 80, 80);
+          ctx.fillRect(rp.x - 60, rp.y - 60, 120, 120);
         }
       }
 
       // particles
       for (const p of particles) {
         if (p.merged) continue;
-        const color = p.violet
-          ? "rgba(178, 156, 222, 0.95)"
-          : "rgba(255, 255, 255, 0.9)";
-        const glow = p.violet
-          ? "rgba(178, 156, 222, 0.25)"
-          : "rgba(255, 255, 255, 0.25)";
+        let color: string;
+        let glow: string;
+        let glowScale = 3;
+        if (p.violet) {
+          // brief brightness boost after violetAt for ~1s
+          const boostAge = (now - p.violetAt) / 1000;
+          if (boostAge < 1) {
+            const b = 1 - boostAge; // 1 → 0
+            color = `rgba(210, 190, 245, ${0.95 + 0.05 * b})`;
+            glow = `rgba(210, 190, 245, ${0.35 + 0.35 * b})`;
+            glowScale = 3 + 1.5 * b;
+          } else {
+            color = "rgba(178, 156, 222, 0.98)";
+            glow = "rgba(178, 156, 222, 0.32)";
+          }
+        } else {
+          color = "rgba(255, 255, 255, 1)";
+          glow = "rgba(255, 255, 255, 0.4)";
+        }
         // glow
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.r * glowScale, 0, Math.PI * 2);
         ctx.fillStyle = glow;
         ctx.fill();
         // core
