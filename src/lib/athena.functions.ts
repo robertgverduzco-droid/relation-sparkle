@@ -166,12 +166,13 @@ ${transcript}`,
       });
     }
 
+    type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
     const upserts: Array<{
       user_id: string;
       facet_key: FacetKey;
       understanding: string;
       reasoning: string;
-      evidence: string[];
+      evidence: Json;
       confidence: number;
       refined_at: string;
     }> = [];
@@ -180,7 +181,7 @@ ${transcript}`,
       facet_key: FacetKey;
       understanding: string | null;
       reasoning: string | null;
-      evidence: unknown;
+      evidence: Json;
       confidence: number;
     }> = [];
 
