@@ -31,7 +31,7 @@ export function LandingBackground() {
     const particles: Particle[] = [];
     const ripples: Ripple[] = [];
     let lastConnectionAt = performance.now();
-    let nextConnectionDelay = 6000 + Math.random() * 8000;
+    let nextConnectionDelay = 4000 + Math.random() * 4000;
     let raf = 0;
 
     const resize = () => {
