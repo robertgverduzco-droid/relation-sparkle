@@ -181,6 +181,26 @@ function InterviewPage() {
   const [revokedFilters, setRevokedFilters] = useState<Set<string>>(new Set());
   const [revokedStart, setRevokedStart] = useState<Date | undefined>();
   const [revokedEnd, setRevokedEnd] = useState<Date | undefined>();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedSearch) window.localStorage.setItem("ri_revoked_search", revokedSearch);
+    else window.localStorage.removeItem("ri_revoked_search");
+  }, [revokedSearch]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedFilters.size > 0) window.localStorage.setItem("ri_revoked_filters", JSON.stringify([...revokedFilters]));
+    else window.localStorage.removeItem("ri_revoked_filters");
+  }, [revokedFilters]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedStart) window.localStorage.setItem("ri_revoked_start", revokedStart.toISOString());
+    else window.localStorage.removeItem("ri_revoked_start");
+  }, [revokedStart]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (revokedEnd) window.localStorage.setItem("ri_revoked_end", revokedEnd.toISOString());
+    else window.localStorage.removeItem("ri_revoked_end");
+  }, [revokedEnd]);
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
