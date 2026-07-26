@@ -497,7 +497,7 @@ function InterviewPage() {
                     onClick={revokeAllShares}
                     className="rounded-full border border-destructive/60 bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-destructive hover:bg-destructive/10 disabled:opacity-60"
                   >
-                    Revoke all
+                    {shareBusy ? "Revoking…" : "Revoke all"}
                   </button>
                 )}
                 <button
