@@ -377,7 +377,9 @@ function InterviewPage() {
             {shareUrl ? (
               <>
                 <p className="mt-2 text-xs text-ink-soft">
-                  Anyone with this link can read your transcript until you revoke it.
+                  {shareExpiresAt
+                    ? `Anyone with this link can read your transcript until ${new Date(shareExpiresAt).toLocaleString()} or you revoke it.`
+                    : "Anyone with this link can read your transcript until you revoke it."}
                 </p>
                 <div className="mt-2 truncate rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground">
                   {shareUrl}
@@ -404,13 +406,42 @@ function InterviewPage() {
             ) : (
               <>
                 <p className="mt-2 text-xs text-ink-soft">
-                  No active link. Generate one to share this transcript with someone. You can revoke it anytime.
+                  No active link. Choose how long it should stay active, then create it.
                 </p>
+                <div className="mt-3">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Expires after</p>
+                  <div className="mt-2 grid grid-cols-5 gap-1.5">
+                    {[
+                      { h: 0, label: "Never" },
+                      { h: 1, label: "1 hr" },
+                      { h: 24, label: "24 hrs" },
+                      { h: 168, label: "7 days" },
+                      { h: 720, label: "30 days" },
+                    ].map((o) => {
+                      const active = o.h === expiresInHours;
+                      return (
+                        <button
+                          key={o.h}
+                          type="button"
+                          onClick={() => setExpiresInHours(o.h)}
+                          className={
+                            "rounded-full border px-2 py-1.5 text-[11px] transition " +
+                            (active
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-background text-foreground hover:border-primary/50")
+                          }
+                        >
+                          {o.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <button
                   type="button"
                   disabled={shareBusy}
                   onClick={createOrCopy}
-                  className="mt-2 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+                  className="mt-3 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
                 >
                   {shareBusy ? "Creating…" : "Create share link"}
                 </button>
