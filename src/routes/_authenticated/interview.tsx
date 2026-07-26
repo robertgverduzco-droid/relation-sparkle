@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
-import { getOrCreateShareLink, getActiveShare, revokeShareLink } from "@/lib/interview-share.functions";
+import { getOrCreateShareLink, getActiveShare, revokeShareLink, checkExpiredShares } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/interview")({
@@ -36,10 +36,13 @@ function InterviewPage() {
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
+  const [expiresInHours, setExpiresInHours] = useState<number>(0);
   const createShare = useServerFn(getOrCreateShareLink);
   const fetchShare = useServerFn(getActiveShare);
   const revokeShare = useServerFn(revokeShareLink);
+  const checkExpired = useServerFn(checkExpiredShares);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -68,8 +71,20 @@ function InterviewPage() {
         else setResumed(true);
       }
       setHydrated(true);
+      // Notify user of any shared links that expired since last visit.
+      try {
+        const res = await checkExpired();
+        if (res.expired > 0) {
+          toast.message(
+            res.expired === 1
+              ? "Your shared transcript link has expired."
+              : `${res.expired} shared transcript links have expired.`,
+            { description: "Viewers can no longer access it. Create a new link to share again." },
+          );
+        }
+      } catch { /* ignore */ }
     })();
-  }, []);
+  }, [checkExpired]);
 
   const persist = useCallback(async (msgs: Msg[], completed: boolean) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -97,16 +112,26 @@ function InterviewPage() {
     if (shareToken) return;
     try {
       const res = await fetchShare();
-      if (res.token) setShareToken(res.token);
+      if (res.token) {
+        setShareToken(res.token);
+        setShareExpiresAt(res.expires_at);
+      }
     } catch { /* ignore */ }
   }
 
   async function createOrCopy() {
     setShareBusy(true);
     try {
-      const res = shareToken ? { token: shareToken } : await createShare();
-      setShareToken(res.token);
-      const url = `${window.location.origin}/shared/interview/${res.token}`;
+      let token = shareToken;
+      let expires_at = shareExpiresAt;
+      if (!token) {
+        const res = await createShare({ data: { expiresInHours: expiresInHours as 0 | 1 | 24 | 168 | 720 } });
+        token = res.token;
+        expires_at = res.expires_at;
+        setShareToken(token);
+        setShareExpiresAt(expires_at);
+      }
+      const url = `${window.location.origin}/shared/interview/${token}`;
       try {
         await navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard");
@@ -126,6 +151,7 @@ function InterviewPage() {
     try {
       await revokeShare();
       setShareToken(null);
+      setShareExpiresAt(null);
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
@@ -351,7 +377,9 @@ function InterviewPage() {
             {shareUrl ? (
               <>
                 <p className="mt-2 text-xs text-ink-soft">
-                  Anyone with this link can read your transcript until you revoke it.
+                  {shareExpiresAt
+                    ? `Anyone with this link can read your transcript until ${new Date(shareExpiresAt).toLocaleString()} or you revoke it.`
+                    : "Anyone with this link can read your transcript until you revoke it."}
                 </p>
                 <div className="mt-2 truncate rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground">
                   {shareUrl}
@@ -378,13 +406,42 @@ function InterviewPage() {
             ) : (
               <>
                 <p className="mt-2 text-xs text-ink-soft">
-                  No active link. Generate one to share this transcript with someone. You can revoke it anytime.
+                  No active link. Choose how long it should stay active, then create it.
                 </p>
+                <div className="mt-3">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Expires after</p>
+                  <div className="mt-2 grid grid-cols-5 gap-1.5">
+                    {[
+                      { h: 0, label: "Never" },
+                      { h: 1, label: "1 hr" },
+                      { h: 24, label: "24 hrs" },
+                      { h: 168, label: "7 days" },
+                      { h: 720, label: "30 days" },
+                    ].map((o) => {
+                      const active = o.h === expiresInHours;
+                      return (
+                        <button
+                          key={o.h}
+                          type="button"
+                          onClick={() => setExpiresInHours(o.h)}
+                          className={
+                            "rounded-full border px-2 py-1.5 text-[11px] transition " +
+                            (active
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-background text-foreground hover:border-primary/50")
+                          }
+                        >
+                          {o.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <button
                   type="button"
                   disabled={shareBusy}
                   onClick={createOrCopy}
-                  className="mt-2 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+                  className="mt-3 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
                 >
                   {shareBusy ? "Creating…" : "Create share link"}
                 </button>
