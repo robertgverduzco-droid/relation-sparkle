@@ -335,16 +335,21 @@ function InterviewPage() {
   const filteredRevokedShares = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
     const hasFilters = revokedFilters.size > 0;
+    const start = revokedStart ? startOfDay(revokedStart).getTime() : null;
+    const end = revokedEnd ? endOfDay(revokedEnd).getTime() : null;
     return sortedRevokedShares.filter((r) => {
       const { key } = revokerCategory(r);
       const matchesFilter = !hasFilters || revokedFilters.has(key);
-      if (!q) return matchesFilter;
+      if (!r.revoked_at) return false;
+      const revokedTime = new Date(r.revoked_at).getTime();
+      const matchesDate = (!start || revokedTime >= start) && (!end || revokedTime <= end);
+      if (!q) return matchesFilter && matchesDate;
       const url = urlFor(r.token).toLowerCase();
       const by = (r.revoked_by_name ?? "").toLowerCase();
       const matchesSearch = url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
-      return matchesFilter && matchesSearch;
+      return matchesFilter && matchesDate && matchesSearch;
     });
-  }, [sortedRevokedShares, debouncedSearch, revokedFilters]);
+  }, [sortedRevokedShares, debouncedSearch, revokedFilters, revokedStart, revokedEnd]);
 
   const refreshShares = useCallback(async () => {
     try {
