@@ -159,17 +159,22 @@ function InterviewPage() {
     }
   }
 
-  async function revokeOneShare(id: string) {
-    if (typeof window !== "undefined" && !window.confirm("Revoke this link? Anyone with it will lose access.")) return;
+  function askRevokeShare(id: string) {
+    setPendingRevokeId(id);
+  }
+
+  async function confirmRevokeShare() {
+    if (!pendingRevokeId) return;
     setShareBusy(true);
     try {
-      await revokeOne({ data: { id } });
-      setShares((prev) => prev.filter((s) => s.id !== id));
+      await revokeOne({ data: { id: pendingRevokeId } });
+      setShares((prev) => prev.filter((s) => s.id !== pendingRevokeId));
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
     } finally {
       setShareBusy(false);
+      setPendingRevokeId(null);
     }
   }
 
