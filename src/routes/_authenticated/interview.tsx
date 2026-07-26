@@ -111,40 +111,35 @@ function InterviewPage() {
 
   useEffect(() => { inputRef.current?.focus(); }, [busy, done]);
 
-  const shareUrl = shareToken && typeof window !== "undefined"
-    ? `${window.location.origin}/shared/interview/${shareToken}`
-    : null;
+  function urlFor(token: string) {
+    return typeof window !== "undefined"
+      ? `${window.location.origin}/shared/interview/${token}`
+      : `/shared/interview/${token}`;
+  }
+
+  const refreshShares = useCallback(async () => {
+    try {
+      const res = await listShares();
+      setShares(res.shares);
+    } catch { /* ignore */ }
+    finally { setSharesLoaded(true); }
+  }, [listShares]);
 
   async function openShare() {
     setShareOpen(true);
-    if (shareToken) return;
-    try {
-      const res = await fetchShare();
-      if (res.token) {
-        setShareToken(res.token);
-        setShareExpiresAt(res.expires_at);
-      }
-    } catch { /* ignore */ }
+    if (!sharesLoaded) await refreshShares();
   }
 
-  async function createOrCopy() {
+  async function createNew() {
     setShareBusy(true);
     try {
-      let token = shareToken;
-      let expires_at = shareExpiresAt;
-      if (!token) {
-        const res = await createShare({ data: { expiresInHours: expiresInHours as 0 | 1 | 24 | 168 | 720 } });
-        token = res.token;
-        expires_at = res.expires_at;
-        setShareToken(token);
-        setShareExpiresAt(expires_at);
-      }
-      const url = `${window.location.origin}/shared/interview/${token}`;
+      const res = await createShare({ data: { expiresInHours: expiresInHours as 0 | 1 | 24 | 168 | 720 } });
+      setShares((prev) => [{ id: res.id, token: res.token, created_at: res.created_at, expires_at: res.expires_at }, ...prev]);
       try {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied to clipboard");
+        await navigator.clipboard.writeText(urlFor(res.token));
+        toast.success("Link created and copied");
       } catch {
-        toast.success("Share link ready");
+        toast.success("Link created");
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't create link");
@@ -153,13 +148,21 @@ function InterviewPage() {
     }
   }
 
-  async function revoke() {
+  async function copyOne(token: string) {
+    try {
+      await navigator.clipboard.writeText(urlFor(token));
+      toast.success("Link copied");
+    } catch {
+      toast.error("Couldn't copy");
+    }
+  }
+
+  async function revokeOneShare(id: string) {
     if (typeof window !== "undefined" && !window.confirm("Revoke this link? Anyone with it will lose access.")) return;
     setShareBusy(true);
     try {
-      await revokeShare();
-      setShareToken(null);
-      setShareExpiresAt(null);
+      await revokeOne({ data: { id } });
+      setShares((prev) => prev.filter((s) => s.id !== id));
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
@@ -167,6 +170,7 @@ function InterviewPage() {
       setShareBusy(false);
     }
   }
+
 
 
 
