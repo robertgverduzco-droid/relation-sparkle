@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
@@ -96,6 +96,17 @@ function InterviewPage() {
   const listShares = useServerFn(listActiveShares);
   const revokeOne = useServerFn(revokeShareById);
   const checkExpired = useServerFn(checkExpiredShares);
+
+  const sortedShares = useMemo(
+    () =>
+      [...shares].sort((a, b) => {
+        if (a.expires_at && b.expires_at) return new Date(a.expires_at).getTime() - new Date(b.expires_at).getTime();
+        if (a.expires_at) return -1;
+        if (b.expires_at) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }),
+    [shares],
+  );
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -452,7 +463,7 @@ function InterviewPage() {
               </p>
             ) : (
               <ul className="mt-2 space-y-2">
-                {shares.map((s) => (
+                {sortedShares.map((s) => (
                   <li key={s.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
                     <div className="truncate text-xs text-foreground">{urlFor(s.token)}</div>
                     <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
