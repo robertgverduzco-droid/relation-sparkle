@@ -113,10 +113,22 @@ function InterviewPage() {
       </header>
 
       <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
-        {messages.map((m, i) => (
-          <Bubble key={i} role={m.role} content={m.content} />
-        ))}
-        {busy && <TypingBubble />}
+        {!hydrated ? (
+          <p className="text-center text-sm text-muted-foreground">Loading…</p>
+        ) : (
+          <>
+            {resumed && (
+              <div className="mx-auto max-w-[90%] rounded-2xl border border-border/60 bg-muted/40 px-4 py-2 text-center text-xs text-muted-foreground">
+                Welcome back — picking up where you left off.
+              </div>
+            )}
+            {messages.map((m, i) => (
+              <Bubble key={i} role={m.role} content={m.content} />
+            ))}
+            {busy && <TypingBubble />}
+          </>
+        )}
+
         {done && (
           <div className="mt-6 rounded-3xl border border-primary/30 bg-primary/5 p-5">
             <p className="font-display text-lg text-foreground">The interview is complete.</p>
