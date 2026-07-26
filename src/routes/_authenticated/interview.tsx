@@ -631,7 +631,46 @@ function InterviewPage() {
               </button>
             </div>
 
+            <div className="mt-4 border-t border-border/60 pt-3">
+              <button
+                type="button"
+                onClick={toggleHistory}
+                className="flex w-full items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+                aria-expanded={historyOpen}
+              >
+                <span>Revocation history</span>
+                <span>{historyOpen ? "Hide" : "Show"}</span>
+              </button>
+              {historyOpen && (
+                <div className="mt-2">
+                  {!revokedLoaded ? (
+                    <p className="text-xs text-muted-foreground">Loading history…</p>
+                  ) : revokedShares.length === 0 ? (
+                    <p className="text-xs text-ink-soft">No revoked links yet.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {revokedShares.map((r) => (
+                        <li key={r.id} className="rounded-xl border border-border/60 bg-background px-3 py-2">
+                          <div className="truncate text-xs text-muted-foreground line-through">{urlFor(r.token)}</div>
+                          <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                            <span>
+                              Revoked {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
+                              {" · by "}
+                              <span className="text-foreground">
+                                {r.revoked_by_self ? "you" : r.revoked_by_name || (r.revoked_by ? "another user" : "system")}
+                              </span>
+                            </span>
+                            <span>Created {new Date(r.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
         )}
       </header>
 
