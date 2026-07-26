@@ -222,6 +222,7 @@ function InterviewPage() {
     try {
       const res = await listRevoked();
       setRevokedShares(res.revoked);
+      setRevokedPage(0);
     } catch { /* ignore */ }
     finally { setRevokedLoaded(true); }
   }, [listRevoked]);
