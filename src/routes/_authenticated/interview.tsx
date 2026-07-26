@@ -13,6 +13,57 @@ export const Route = createFileRoute("/_authenticated/interview")({
   component: InterviewPage,
 });
 
+function useCountdown(target?: string | null) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  if (!target) return { label: "No expiry", status: "none" as const };
+  const end = new Date(target).getTime();
+  const remaining = end - now;
+  if (remaining <= 0) return { label: "Expired", status: "expired" as const };
+  const seconds = Math.floor((remaining / 1000) % 60);
+  const minutes = Math.floor((remaining / (1000 * 60)) % 60);
+  const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0 || days > 0) parts.push(`${hours}h`);
+  if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`);
+  parts.push(`${seconds}s`);
+  let status: "urgent" | "soon" | "safe" | "none" | "expired" = "safe";
+  if (remaining < 1000 * 60 * 60) status = "urgent";
+  else if (remaining < 1000 * 60 * 60 * 24) status = "soon";
+  return { label: `${parts.join(" ")} remaining`, status };
+}
+
+function ShareExpiry({ expiresAt }: { expiresAt?: string | null }) {
+  const { label, status } = useCountdown(expiresAt ?? undefined);
+  const color =
+    status === "expired"
+      ? "text-destructive"
+      : status === "urgent"
+        ? "text-ember"
+        : status === "soon"
+          ? "text-amber-600"
+          : "text-muted-foreground";
+  const dot =
+    status === "expired"
+      ? "bg-destructive"
+      : status === "urgent"
+        ? "bg-ember"
+        : status === "soon"
+          ? "bg-amber-500"
+          : "bg-emerald-500";
+  return (
+    <span className={`inline-flex items-center gap-1.5 ${color}`}>
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${dot} ${status === "urgent" || status === "soon" ? "animate-pulse" : ""}`} />
+      {label}
+    </span>
+  );
+}
+
 type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
