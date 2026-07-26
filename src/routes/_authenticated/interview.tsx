@@ -143,6 +143,7 @@ function InterviewPage() {
   const [revokedSort, setRevokedSort] = useState<"newest" | "oldest">("newest");
   const [revokedSearch, setRevokedSearch] = useState("");
   const debouncedSearch = useDebouncedValue(revokedSearch, 300);
+  const [revokedFilters, setRevokedFilters] = useState<Set<string>>(new Set());
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -278,15 +279,35 @@ function InterviewPage() {
       : `/shared/interview/${token}`;
   }
 
+  function revokerCategory(r: (typeof revokedShares)[number]) {
+    if (r.revoked_by_self) return { key: "you", label: "You" };
+    if (!r.revoked_by) return { key: "system", label: "System" };
+    if (r.revoked_by_name) return { key: `name:${r.revoked_by_name}`, label: r.revoked_by_name };
+    return { key: "other", label: "Another user" };
+  }
+
+  const availableCategories = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of revokedShares) {
+      const { key, label } = revokerCategory(r);
+      if (!map.has(key)) map.set(key, label);
+    }
+    return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [revokedShares]);
+
   const filteredRevokedShares = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
-    if (!q) return sortedRevokedShares;
+    const hasFilters = revokedFilters.size > 0;
     return sortedRevokedShares.filter((r) => {
+      const { key } = revokerCategory(r);
+      const matchesFilter = !hasFilters || revokedFilters.has(key);
+      if (!q) return matchesFilter;
       const url = urlFor(r.token).toLowerCase();
       const by = (r.revoked_by_name ?? "").toLowerCase();
-      return url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
+      const matchesSearch = url.includes(q) || r.token.toLowerCase().includes(q) || by.includes(q);
+      return matchesFilter && matchesSearch;
     });
-  }, [sortedRevokedShares, debouncedSearch]);
+  }, [sortedRevokedShares, debouncedSearch, revokedFilters]);
 
   const refreshShares = useCallback(async () => {
     try {
@@ -736,6 +757,49 @@ function InterviewPage() {
               </div>
               {historyOpen && (
                 <div className="mt-2 space-y-2">
+                  {revokedLoaded && availableCategories.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {availableCategories.map(([key, label]) => {
+                        const active = revokedFilters.has(key);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => {
+                              setRevokedFilters((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(key)) next.delete(key);
+                                else next.add(key);
+                                return next;
+                              });
+                              setRevokedPage(0);
+                            }}
+                            className={
+                              "rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] transition " +
+                              (active
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border bg-background text-muted-foreground hover:text-foreground")
+                            }
+                            aria-pressed={active}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                      {revokedFilters.size > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRevokedFilters(new Set());
+                            setRevokedPage(0);
+                          }}
+                          className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
@@ -750,7 +814,7 @@ function InterviewPage() {
                     <p className="text-xs text-muted-foreground">Loading history…</p>
                   ) : filteredRevokedShares.length === 0 ? (
                     <p className="text-xs text-ink-soft">
-                      {revokedSearch.trim() ? "No matches for your search." : "No revoked links yet."}
+                      {revokedSearch.trim() || revokedFilters.size > 0 ? "No revoked links match your filters." : "No revoked links yet."}
                     </p>
                   ) : (
                     (() => {
