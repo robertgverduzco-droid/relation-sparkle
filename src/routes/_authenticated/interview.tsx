@@ -91,7 +91,6 @@ function InterviewPage() {
   const [sharesLoaded, setSharesLoaded] = useState(false);
   const [shareBusy, setShareBusy] = useState(false);
   const [expiresInHours, setExpiresInHours] = useState<number>(0);
-  const [pendingRevokeId, setPendingRevokeId] = useState<string | null>(null);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(false);
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -511,10 +510,10 @@ function InterviewPage() {
                         >
                           Copy
                         </button>
-                          <button
+                        <button
                           type="button"
                           disabled={shareBusy}
-                          onClick={() => askRevokeShare(s.id)}
+                          onClick={() => revokeShare(s.id)}
                           className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
                         >
                           Revoke
@@ -669,35 +668,6 @@ function InterviewPage() {
           </div>
         </form>
       )}
-
-      <Dialog open={pendingRevokeId !== null} onOpenChange={(open) => { if (!open) setPendingRevokeId(null); }}>
-        <DialogContent className="sm:max-w-[90vw] max-w-md rounded-3xl border border-border bg-background p-6">
-          <DialogHeader>
-            <DialogTitle className="font-display text-lg text-foreground">Revoke this link?</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              Anyone with this link will immediately lose access to the shared transcript. This can't be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-5 flex-col gap-2 sm:flex-col">
-            <button
-              type="button"
-              disabled={shareBusy}
-              onClick={confirmRevokeShare}
-              className="w-full rounded-full bg-destructive px-5 py-3 text-sm font-medium text-white transition disabled:opacity-60"
-            >
-              {shareBusy ? "Revoking…" : "Yes, revoke"}
-            </button>
-            <button
-              type="button"
-              disabled={shareBusy}
-              onClick={() => setPendingRevokeId(null)}
-              className="w-full rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-primary/50 disabled:opacity-60"
-            >
-              Cancel
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
