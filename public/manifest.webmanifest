@@ -1,0 +1,14 @@
+{
+  "name": "Relationship Intelligence",
+  "short_name": "RI",
+  "description": "A calm, intelligent way to meet someone who fits your life.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F0EADB",
+  "theme_color": "#2B1830",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

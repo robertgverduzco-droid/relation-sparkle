@@ -1,24 +1,82 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Relationship Intelligence — A different way to meet someone" },
+      { name: "description", content: "A calm, intelligent introduction platform for people ready for something real." },
+      { property: "og:title", content: "Relationship Intelligence" },
+      { property: "og:description", content: "A calm, intelligent introduction platform for people ready for something real." },
+    ],
+  }),
+  component: Welcome,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Welcome() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) navigate({ to: "/home" });
+  }, [loading, user, navigate]);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <div className="screen-shell safe-top safe-bottom overflow-hidden">
+      {/* Cinematic layered gradient */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-70"
+        style={{
+          background:
+            "radial-gradient(120% 60% at 50% 0%, oklch(0.42 0.08 330 / 0.35), transparent 60%), radial-gradient(80% 50% at 80% 100%, oklch(0.62 0.14 40 / 0.25), transparent 65%)",
+        }}
       />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-30"
+        style={{ background: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>\")" }}
+      />
+
+      <main className="relative flex flex-1 flex-col justify-between px-6 pt-14 pb-8 fade-in-slow">
+        <header className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-primary" />
+          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Relationship Intelligence</span>
+        </header>
+
+        <section className="mt-24">
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">A different beginning</p>
+          <h1 className="mt-4 font-display text-[3.25rem] leading-[1.02] text-foreground">
+            Meet someone<br/>
+            <em className="italic text-primary">who fits</em><br/>
+            your life.
+          </h1>
+          <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-ink-soft">
+            Not a swipe deck. Not a marketplace of faces. A quiet, intelligent way to
+            be introduced to one person at a time — by values, readiness, and depth.
+          </p>
+        </section>
+
+        <footer className="mt-10 space-y-3">
+          <Link
+            to="/auth"
+            search={{ mode: "signup" } as never}
+            className="block w-full rounded-full bg-primary px-6 py-4 text-center text-[15px] font-medium text-primary-foreground shadow-lg shadow-black/10 transition active:scale-[0.98]"
+          >
+            Begin
+          </Link>
+          <Link
+            to="/auth"
+            className="block w-full rounded-full border border-border/70 bg-background/60 backdrop-blur px-6 py-4 text-center text-[15px] font-medium text-foreground transition active:scale-[0.98]"
+          >
+            I already have an account
+          </Link>
+          <p className="pt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
+            By continuing you agree to our community guidelines and safety principles.
+          </p>
+        </footer>
+      </main>
     </div>
   );
 }
