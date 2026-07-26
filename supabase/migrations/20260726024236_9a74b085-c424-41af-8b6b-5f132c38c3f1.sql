@@ -1,0 +1,1 @@
+ALTER TABLE public.user_intelligence ADD COLUMN IF NOT EXISTS interview_target_turns integer NOT NULL DEFAULT 7 CHECK (interview_target_turns BETWEEN 3 AND 20);
