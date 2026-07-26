@@ -88,6 +88,53 @@ function InterviewPage() {
 
   useEffect(() => { inputRef.current?.focus(); }, [busy, done]);
 
+  const shareUrl = shareToken && typeof window !== "undefined"
+    ? `${window.location.origin}/shared/interview/${shareToken}`
+    : null;
+
+  async function openShare() {
+    setShareOpen(true);
+    if (shareToken) return;
+    try {
+      const res = await fetchShare();
+      if (res.token) setShareToken(res.token);
+    } catch { /* ignore */ }
+  }
+
+  async function createOrCopy() {
+    setShareBusy(true);
+    try {
+      const res = shareToken ? { token: shareToken } : await createShare();
+      setShareToken(res.token);
+      const url = `${window.location.origin}/shared/interview/${res.token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard");
+      } catch {
+        toast.success("Share link ready");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't create link");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  async function revoke() {
+    if (typeof window !== "undefined" && !window.confirm("Revoke this link? Anyone with it will lose access.")) return;
+    setShareBusy(true);
+    try {
+      await revokeShare();
+      setShareToken(null);
+      toast.success("Link revoked");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't revoke");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+
 
   async function send() {
     const text = input.trim();
