@@ -815,13 +815,75 @@ export type Database = {
           },
         ]
       }
+      topic_map: {
+        Row: {
+          clarification_note: string | null
+          confidence: number
+          conversation_count: number
+          created_at: string
+          first_discussed_at: string | null
+          id: string
+          importance: number
+          last_discussed_at: string | null
+          needs_clarification: boolean
+          observations: Json
+          open_questions: string[]
+          question_count: number
+          related_topics: string[]
+          status: string
+          topic_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clarification_note?: string | null
+          confidence?: number
+          conversation_count?: number
+          created_at?: string
+          first_discussed_at?: string | null
+          id?: string
+          importance?: number
+          last_discussed_at?: string | null
+          needs_clarification?: boolean
+          observations?: Json
+          open_questions?: string[]
+          question_count?: number
+          related_topics?: string[]
+          status?: string
+          topic_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clarification_note?: string | null
+          confidence?: number
+          conversation_count?: number
+          created_at?: string
+          first_discussed_at?: string | null
+          id?: string
+          importance?: number
+          last_discussed_at?: string | null
+          needs_clarification?: boolean
+          observations?: Json
+          open_questions?: string[]
+          question_count?: number
+          related_topics?: string[]
+          status?: string
+          topic_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       understanding_facets: {
         Row: {
+          clarification_note: string | null
           confidence: number
           created_at: string
           evidence: Json
           facet_key: string
           id: string
+          needs_clarification: boolean
           reasoning: string | null
           refined_at: string
           understanding: string | null
@@ -829,11 +891,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          clarification_note?: string | null
           confidence?: number
           created_at?: string
           evidence?: Json
           facet_key: string
           id?: string
+          needs_clarification?: boolean
           reasoning?: string | null
           refined_at?: string
           understanding?: string | null
@@ -841,11 +905,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          clarification_note?: string | null
           confidence?: number
           created_at?: string
           evidence?: Json
           facet_key?: string
           id?: string
+          needs_clarification?: boolean
           reasoning?: string | null
           refined_at?: string
           understanding?: string | null
