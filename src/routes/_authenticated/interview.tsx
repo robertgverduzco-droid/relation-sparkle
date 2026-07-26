@@ -216,10 +216,25 @@ function InterviewPage() {
     finally { setSharesLoaded(true); }
   }, [listShares]);
 
+  const refreshRevoked = useCallback(async () => {
+    try {
+      const res = await listRevoked();
+      setRevokedShares(res.revoked);
+    } catch { /* ignore */ }
+    finally { setRevokedLoaded(true); }
+  }, [listRevoked]);
+
   async function openShare() {
     setShareOpen(true);
     if (!sharesLoaded) await refreshShares();
   }
+
+  async function toggleHistory() {
+    const next = !historyOpen;
+    setHistoryOpen(next);
+    if (next && !revokedLoaded) await refreshRevoked();
+  }
+
 
   async function createNew() {
     setShareBusy(true);
