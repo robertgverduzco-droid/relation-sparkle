@@ -97,6 +97,52 @@ export const revokeShareLink = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const listActiveShares = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const nowIso = new Date().toISOString();
+    const { data } = await supabase
+      .from("interview_shares")
+      .select("id, token, created_at, expires_at")
+      .eq("user_id", userId)
+      .is("revoked_at", null)
+      .order("created_at", { ascending: false });
+    const rows = (data ?? []).filter((r) => !r.expires_at || r.expires_at > nowIso);
+    return { shares: rows };
+  });
+
+export const createShareLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => z.object({ expiresInHours: EXPIRY_HOURS.default(0) }).parse(v ?? {}))
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    const expires_at = computeExpiry(data.expiresInHours);
+    const { data: created, error } = await supabase
+      .from("interview_shares")
+      .insert({ user_id: userId, expires_at })
+      .select("id, token, created_at, expires_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return created;
+  });
+
+export const revokeShareById = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("interview_shares")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .eq("id", data.id)
+      .is("revoked_at", null);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+
 const tokenInput = z.object({ token: z.string().min(8).max(128) });
 
 export const getSharedTranscript = createServerFn({ method: "POST" })
