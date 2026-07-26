@@ -424,6 +424,7 @@ export type Database = {
           daily_lifestyle: string | null
           emotional_patterns: string | null
           ideal_week: string | null
+          interview_target_turns: number
           last_interview_at: string | null
           life_direction: string | null
           meaning_of_relationship: string | null
@@ -443,6 +444,7 @@ export type Database = {
           daily_lifestyle?: string | null
           emotional_patterns?: string | null
           ideal_week?: string | null
+          interview_target_turns?: number
           last_interview_at?: string | null
           life_direction?: string | null
           meaning_of_relationship?: string | null
@@ -462,6 +464,7 @@ export type Database = {
           daily_lifestyle?: string | null
           emotional_patterns?: string | null
           ideal_week?: string | null
+          interview_target_turns?: number
           last_interview_at?: string | null
           life_direction?: string | null
           meaning_of_relationship?: string | null
