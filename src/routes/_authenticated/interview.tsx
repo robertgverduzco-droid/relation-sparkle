@@ -490,6 +490,16 @@ function InterviewPage() {
                   <span className={`h-2 w-2 rounded-full ${showActiveOnly ? "bg-primary" : "bg-muted-foreground/50"}`} />
                   Active only
                 </button>
+                {filteredShares.length > 0 && (
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    onClick={revokeAllShares}
+                    className="rounded-full border border-destructive/60 bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-destructive hover:bg-destructive/10 disabled:opacity-60"
+                  >
+                    Revoke all
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setShareOpen(false)}
