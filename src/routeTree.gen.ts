@@ -17,6 +17,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -59,6 +60,11 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
+  id: '/athena',
+  path: '/athena',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileReviewRoute =
   AuthenticatedProfileReviewRouteImport.update({
     id: '/review',
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
+  '/athena': typeof AuthenticatedAthenaRoute
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
+  '/athena': typeof AuthenticatedAthenaRoute
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
+  '/_authenticated/athena': typeof AuthenticatedAthenaRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/privacy'
+    | '/athena'
     | '/home'
     | '/introductions'
     | '/onboarding'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/privacy'
+    | '/athena'
     | '/home'
     | '/introductions'
     | '/onboarding'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/privacy'
+    | '/_authenticated/athena'
     | '/_authenticated/home'
     | '/_authenticated/introductions'
     | '/_authenticated/onboarding'
@@ -197,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/athena': {
+      id: '/_authenticated/athena'
+      path: '/athena'
+      fullPath: '/athena'
+      preLoaderRoute: typeof AuthenticatedAthenaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile/review': {
       id: '/_authenticated/profile/review'
       path: '/review'
@@ -219,6 +238,7 @@ const AuthenticatedProfileRouteWithChildren =
   AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -226,6 +246,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,

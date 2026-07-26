@@ -1,12 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Home, Sparkles, MessageCircle, User } from "lucide-react";
 
-type Tab = "home" | "introductions" | "conversations" | "profile";
+type Tab = "home" | "athena" | "introductions" | "profile";
 
-const tabs: { key: Tab; to: "/home" | "/introductions" | "/conversations" | "/profile"; label: string; Icon: typeof Home }[] = [
+const tabs: {
+  key: Tab;
+  to: "/home" | "/athena" | "/introductions" | "/profile";
+  label: string;
+  Icon: typeof Home;
+}[] = [
   { key: "home", to: "/home", label: "Today", Icon: Home },
+  { key: "athena", to: "/athena", label: "Athena", Icon: MessageCircle },
   { key: "introductions", to: "/introductions", label: "Meet", Icon: Sparkles },
-  { key: "conversations", to: "/conversations", label: "Talk", Icon: MessageCircle },
   { key: "profile", to: "/profile", label: "You", Icon: User },
 ];
 
