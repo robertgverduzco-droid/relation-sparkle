@@ -13,6 +13,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
@@ -39,6 +40,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/introductions': typeof AuthenticatedIntroductionsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/api/tts': typeof ApiTtsRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/introductions'
     | '/onboarding'
     | '/profile'
+    | '/api/tts'
     | '/connections/$id'
     | '/profile/review'
   fileRoutesByTo: FileRoutesByTo
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/introductions'
     | '/onboarding'
     | '/profile'
+    | '/api/tts'
     | '/connections/$id'
     | '/profile/review'
   id:
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/_authenticated/introductions'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/api/tts'
     | '/_authenticated/connections/$id'
     | '/_authenticated/profile/review'
   fileRoutesById: FileRoutesById
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PrivacyRoute: typeof PrivacyRoute
+  ApiTtsRoute: typeof ApiTtsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/profile': {
@@ -317,17 +337,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PrivacyRoute: PrivacyRoute,
+  ApiTtsRoute: ApiTtsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
