@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
 import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById, revokeShareLink } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/interview")({
@@ -90,6 +91,7 @@ function InterviewPage() {
   const [shares, setShares] = useState<Array<{ id: string; token: string; created_at: string; expires_at: string | null }>>([]);
   const [sharesLoaded, setSharesLoaded] = useState(false);
   const [shareBusy, setShareBusy] = useState(false);
+  const [revokingIds, setRevokingIds] = useState<Set<string>>(new Set());
   const [expiresInHours, setExpiresInHours] = useState<number>(0);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(false);
   const createShare = useServerFn(createShareLink);
@@ -243,7 +245,11 @@ function InterviewPage() {
   }
 
   async function revokeShare(id: string) {
-    setShareBusy(true);
+    setRevokingIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
     try {
       await revokeOne({ data: { id } });
       setShares((prev) => prev.filter((s) => s.id !== id));
@@ -251,7 +257,11 @@ function InterviewPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
     } finally {
-      setShareBusy(false);
+      setRevokingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }
 
@@ -536,11 +546,18 @@ function InterviewPage() {
                         </button>
                         <button
                           type="button"
-                          disabled={shareBusy}
+                          disabled={shareBusy || revokingIds.has(s.id)}
                           onClick={() => revokeShare(s.id)}
-                          className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
                         >
-                          Revoke
+                          {revokingIds.has(s.id) ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Revoking…
+                            </>
+                          ) : (
+                            "Revoke"
+                          )}
                         </button>
                       </div>
                     </div>
