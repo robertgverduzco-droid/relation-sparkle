@@ -181,26 +181,75 @@ function InterviewPage() {
   const [revokedFilters, setRevokedFilters] = useState<Set<string>>(new Set());
   const [revokedStart, setRevokedStart] = useState<Date | undefined>();
   const [revokedEnd, setRevokedEnd] = useState<Date | undefined>();
+  const [filterUserId, setFilterUserId] = useState<string | null>(null);
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
+  const rkey = useCallback(
+    (base: string) => (filterUserId ? `${base}:${filterUserId}` : null),
+    [filterUserId],
+  );
+  // Resolve current user id, then hydrate per-user filter keys.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (revokedSearch) window.localStorage.setItem("ri_revoked_search", revokedSearch);
-    else window.localStorage.removeItem("ri_revoked_search");
-  }, [revokedSearch]);
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const uid = data.user?.id ?? null;
+      setFilterUserId(uid);
+      if (typeof window === "undefined" || !uid) {
+        setFiltersHydrated(true);
+        return;
+      }
+      const s = window.localStorage.getItem(`ri_revoked_search:${uid}`);
+      if (s) setRevokedSearch(s);
+      const f = window.localStorage.getItem(`ri_revoked_filters:${uid}`);
+      if (f) {
+        try {
+          const arr = JSON.parse(f);
+          if (Array.isArray(arr)) setRevokedFilters(new Set(arr.filter((x) => typeof x === "string")));
+        } catch {}
+      }
+      const sd = window.localStorage.getItem(`ri_revoked_start:${uid}`);
+      if (sd) {
+        const d = new Date(sd);
+        if (!Number.isNaN(d.getTime())) setRevokedStart(d);
+      }
+      const ed = window.localStorage.getItem(`ri_revoked_end:${uid}`);
+      if (ed) {
+        const d = new Date(ed);
+        if (!Number.isNaN(d.getTime())) setRevokedEnd(d);
+      }
+      setFiltersHydrated(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (revokedFilters.size > 0) window.localStorage.setItem("ri_revoked_filters", JSON.stringify([...revokedFilters]));
-    else window.localStorage.removeItem("ri_revoked_filters");
-  }, [revokedFilters]);
+    if (typeof window === "undefined" || !filtersHydrated) return;
+    const k = rkey("ri_revoked_search");
+    if (!k) return;
+    if (revokedSearch) window.localStorage.setItem(k, revokedSearch);
+    else window.localStorage.removeItem(k);
+  }, [revokedSearch, filtersHydrated, rkey]);
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (revokedStart) window.localStorage.setItem("ri_revoked_start", revokedStart.toISOString());
-    else window.localStorage.removeItem("ri_revoked_start");
-  }, [revokedStart]);
+    if (typeof window === "undefined" || !filtersHydrated) return;
+    const k = rkey("ri_revoked_filters");
+    if (!k) return;
+    if (revokedFilters.size > 0) window.localStorage.setItem(k, JSON.stringify([...revokedFilters]));
+    else window.localStorage.removeItem(k);
+  }, [revokedFilters, filtersHydrated, rkey]);
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (revokedEnd) window.localStorage.setItem("ri_revoked_end", revokedEnd.toISOString());
-    else window.localStorage.removeItem("ri_revoked_end");
-  }, [revokedEnd]);
+    if (typeof window === "undefined" || !filtersHydrated) return;
+    const k = rkey("ri_revoked_start");
+    if (!k) return;
+    if (revokedStart) window.localStorage.setItem(k, revokedStart.toISOString());
+    else window.localStorage.removeItem(k);
+  }, [revokedStart, filtersHydrated, rkey]);
+  useEffect(() => {
+    if (typeof window === "undefined" || !filtersHydrated) return;
+    const k = rkey("ri_revoked_end");
+    if (!k) return;
+    if (revokedEnd) window.localStorage.setItem(k, revokedEnd.toISOString());
+    else window.localStorage.removeItem(k);
+  }, [revokedEnd, filtersHydrated, rkey]);
   const REVOKED_PAGE_SIZE = 10;
   const createShare = useServerFn(createShareLink);
   const listShares = useServerFn(listActiveShares);
@@ -278,25 +327,6 @@ function InterviewPage() {
         const savedRevokedSort = window.localStorage.getItem("ri_revoked_sort");
         if (savedRevokedSort === "newest" || savedRevokedSort === "oldest") {
           setRevokedSort(savedRevokedSort);
-        }
-        const savedRevokedSearch = window.localStorage.getItem("ri_revoked_search");
-        if (savedRevokedSearch) setRevokedSearch(savedRevokedSearch);
-        const savedRevokedFilters = window.localStorage.getItem("ri_revoked_filters");
-        if (savedRevokedFilters) {
-          try {
-            const arr = JSON.parse(savedRevokedFilters);
-            if (Array.isArray(arr)) setRevokedFilters(new Set(arr.filter((x) => typeof x === "string")));
-          } catch {}
-        }
-        const savedRevokedStart = window.localStorage.getItem("ri_revoked_start");
-        if (savedRevokedStart) {
-          const d = new Date(savedRevokedStart);
-          if (!Number.isNaN(d.getTime())) setRevokedStart(d);
-        }
-        const savedRevokedEnd = window.localStorage.getItem("ri_revoked_end");
-        if (savedRevokedEnd) {
-          const d = new Date(savedRevokedEnd);
-          if (!Number.isNaN(d.getTime())) setRevokedEnd(d);
         }
       }
       const [sessionRes, intelRes] = await Promise.all([

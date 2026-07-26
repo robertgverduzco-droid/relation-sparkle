@@ -117,27 +117,13 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const REVOKED_FILTER_KEYS = [
-      "ri_revoked_search",
-      "ri_revoked_filters",
-      "ri_revoked_start",
-      "ri_revoked_end",
-    ];
-    const clearRevokedFilters = () => {
-      if (typeof window === "undefined") return;
-      for (const k of REVOKED_FILTER_KEYS) window.localStorage.removeItem(k);
-    };
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        clearRevokedFilters();
-        if (typeof window !== "undefined") window.localStorage.removeItem("ri_user_id");
-      } else if (event === "SIGNED_IN" && session?.user) {
-        if (typeof window !== "undefined") {
-          const prev = window.localStorage.getItem("ri_user_id");
-          if (prev && prev !== session.user.id) clearRevokedFilters();
-          window.localStorage.setItem("ri_user_id", session.user.id);
-        }
-      }
+    const REVOKED_BASES = ["ri_revoked_search", "ri_revoked_filters", "ri_revoked_start", "ri_revoked_end"];
+    // Best-effort cleanup: remove any legacy un-namespaced revoked-filter keys
+    // from earlier versions. Per-user keys are already isolated by suffix.
+    if (typeof window !== "undefined") {
+      for (const b of REVOKED_BASES) window.localStorage.removeItem(b);
+    }
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
