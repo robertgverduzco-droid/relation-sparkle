@@ -73,7 +73,7 @@ function Welcome() {
             I already have an account
           </Link>
           <p className="pt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
-            By continuing you agree to our community guidelines and safety principles.
+            By continuing you agree to our community guidelines and safety principles. Read our <Link to="/privacy" className="underline">privacy explanation</Link>.
           </p>
         </footer>
       </main>
