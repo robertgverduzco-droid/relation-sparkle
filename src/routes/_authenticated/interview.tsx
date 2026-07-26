@@ -32,6 +32,7 @@ function InterviewPage() {
   const [resumed, setResumed] = useState(false);
   const [targetTurns, setTargetTurns] = useState<number>(7);
   const [started, setStarted] = useState(false);
+  const [adjustOpen, setAdjustOpen] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
