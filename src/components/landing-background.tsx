@@ -6,7 +6,9 @@ type Particle = {
   vx: number;
   vy: number;
   r: number;
+  drift: number;
   violet: boolean;
+  violetAt: number;
   pairedWith: number | null;
   merged: boolean;
 };
@@ -47,13 +49,17 @@ export function LandingBackground() {
       const area = width * height;
       const count = Math.min(260, Math.max(120, Math.floor(area / 3200)));
       for (let i = 0; i < count; i++) {
+        const speed = 0.08 + Math.random() * 0.08; // 0.08–0.16, varied
+        const ang = Math.random() * Math.PI * 2;
         particles.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.08,
-          vy: (Math.random() - 0.5) * 0.08,
-          r: 0.6 + Math.random() * 1.4,
+          vx: Math.cos(ang) * speed,
+          vy: Math.sin(ang) * speed,
+          r: 0.75 + Math.random() * 1.65, // ~17% larger
+          drift: 0.7 + Math.random() * 0.7, // per-particle variation
           violet: false,
+          violetAt: 0,
           pairedWith: null,
           merged: false,
         });
