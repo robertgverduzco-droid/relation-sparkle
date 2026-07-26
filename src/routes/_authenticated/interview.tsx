@@ -83,7 +83,8 @@ function InterviewPage() {
     setBusy(true);
     setResumed(false);
     try {
-      const res = await ask({ data: { messages: next } });
+      if (!started) setStarted(true);
+      const res = await ask({ data: { messages: next, targetTurns } });
       const withReply: Msg[] = [...next, { role: "assistant", content: res.reply }];
       setMessages(withReply);
       if (res.done) setDone(true);
