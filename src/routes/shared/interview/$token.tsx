@@ -52,7 +52,7 @@ function SharedInterview() {
         {data.messages.length === 0 ? (
           <p className="text-sm text-muted-foreground">No content yet.</p>
         ) : (
-          data.messages.map((m, i) => (
+          data.messages.map((m: { role: string; content: string; ts?: string }, i: number) => (
             <div key={i}>
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 {m.role === "user" ? "They said" : "Interviewer"} · {fmt(m.ts)}
