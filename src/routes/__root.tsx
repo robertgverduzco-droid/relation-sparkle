@@ -117,12 +117,6 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const REVOKED_BASES = ["ri_revoked_search", "ri_revoked_filters", "ri_revoked_start", "ri_revoked_end"];
-    // Best-effort cleanup: remove any legacy un-namespaced revoked-filter keys
-    // from earlier versions. Per-user keys are already isolated by suffix.
-    if (typeof window !== "undefined") {
-      for (const b of REVOKED_BASES) window.localStorage.removeItem(b);
-    }
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
