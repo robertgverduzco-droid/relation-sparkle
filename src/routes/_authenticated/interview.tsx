@@ -459,7 +459,7 @@ function InterviewPage() {
                       <span>
                         Created {new Date(s.created_at).toLocaleString()}
                         {" · "}
-                        {s.expires_at ? `Expires ${new Date(s.expires_at).toLocaleString()}` : "No expiry"}
+                        <ShareExpiry expiresAt={s.expires_at} />
                       </span>
                       <div className="flex gap-2">
                         <button
