@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
 import { checkExpiredShares, createShareLink, listActiveShares, revokeShareById } from "@/lib/interview-share.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 
 export const Route = createFileRoute("/_authenticated/interview")({
   head: () => ({ meta: [{ title: "The interview — Relationship Intelligence" }, { name: "robots", content: "noindex" }] }),
@@ -242,22 +242,16 @@ function InterviewPage() {
     }
   }
 
-  function askRevokeShare(id: string) {
-    setPendingRevokeId(id);
-  }
-
-  async function confirmRevokeShare() {
-    if (!pendingRevokeId) return;
+  async function revokeShare(id: string) {
     setShareBusy(true);
     try {
-      await revokeOne({ data: { id: pendingRevokeId } });
-      setShares((prev) => prev.filter((s) => s.id !== pendingRevokeId));
+      await revokeOne({ data: { id } });
+      setShares((prev) => prev.filter((s) => s.id !== id));
       toast.success("Link revoked");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't revoke");
     } finally {
       setShareBusy(false);
-      setPendingRevokeId(null);
     }
   }
 
