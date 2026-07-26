@@ -292,6 +292,7 @@ function InterviewPage() {
       await revokeAll();
       setShares([]);
       toast.success("All links revoked");
+      if (historyOpen || revokedLoaded) refreshRevoked();
     } catch (e) {
       const detail = e instanceof Error ? e.message : "Please try again.";
       toast.error(`Couldn’t revoke all links: ${detail}`);
