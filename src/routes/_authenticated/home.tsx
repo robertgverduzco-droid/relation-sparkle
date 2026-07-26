@@ -36,11 +36,18 @@ function Home() {
       ]);
       setProfile(p as ProfileRow | null);
       const msgs = Array.isArray(s?.messages) ? (s!.messages as unknown[]) : [];
-      setHasStartedAthena(msgs.length > 0);
-      setLoading(false);
+      const started = msgs.length > 0;
+      setHasStartedAthena(started);
       if (p && !p.onboarding_completed_at) {
         navigate({ to: "/onboarding" });
+        return;
       }
+      // First meeting always happens before the dashboard has context.
+      if (!started) {
+        navigate({ to: "/athena" });
+        return;
+      }
+      setLoading(false);
     })();
   }, [navigate]);
 
@@ -51,15 +58,17 @@ function Home() {
       </div>
     );
 
+  const firstName = profile?.display_name?.split(" ")[0] ?? null;
+
   return (
     <div className="screen-shell safe-top pb-24">
       <header className="px-6 pt-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Today</p>
         <h1 className="mt-2 font-display text-[2.25rem] leading-tight text-foreground">
-          Welcome
-          {profile?.display_name ? (
+          Welcome back
+          {firstName ? (
             <>
-              , <em className="italic text-primary">{profile.display_name.split(" ")[0]}</em>
+              , <em className="italic text-primary">{firstName}</em>
             </>
           ) : (
             ""
@@ -67,7 +76,7 @@ function Home() {
           .
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Athena is here. Introductions will follow, in time — always after understanding.
+          Athena has already begun understanding you. Introductions will follow, in time — always after understanding.
         </p>
       </header>
 
