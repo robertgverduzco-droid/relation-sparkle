@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, generateObject, type ModelMessage } from "ai";
 import { z } from "zod";
+import { FACET_KEYS, type FacetKey } from "./facets";
 
 const messageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
@@ -35,21 +36,20 @@ How you talk:
 - if they are brief, gently invite a little more depth; if they are deep, honor it and move with them
 - you may briefly acknowledge silences, but do not push; the person sets the pace
 - you never announce that the conversation is "complete" — understanding continues to evolve
+- if they seem pressed for time or the conversation has reached a natural resting place, you may warmly offer to continue another day
 
 Internal framework (guides your curiosity — never presented to the user as a list, checklist, or category name):
-identity (values, beliefs, character, self-perception, life philosophy);
-personality (communication, decision-making, emotional regulation, temperament, humor, openness, adaptability);
-relationships (attachment tendencies, expectations, trust, conflict, affection, availability, boundaries, commitment readiness);
-lifestyle (daily habits, career, financial philosophy, health, hobbies, travel, social life, family);
-motivation (goals, ambitions, purpose, sources of fulfillment, curiosity, learning, creativity);
-resilience (stress, coping, recovery, optimism, self-awareness, growth, willingness to change);
-compatibility (values alignment, lifestyle, communication, emotional and intellectual fit, long-term vision, pacing);
-growth (changing priorities, new experiences, lessons, transitions).
+identity, personality, relationships, lifestyle, motivation, resilience, compatibility, growth.
 
-Choose the area that would most deepen your understanding of this specific person right now, given everything they've told you so far. Ask about it naturally, in your own words. Never name the categories.
+Choose the area that would most deepen your understanding of this specific person right now. Ask about it naturally, in your own words. Never name the categories.
 
 If this is the very beginning of the conversation, introduce yourself briefly and warmly — you are Athena, and you'd like to get to know them. Make clear there are no right or wrong answers, and that your goal is simply to understand them as a person. Then ask your first question.`;
 }
+
+const askOutput = z.object({
+  reply: z.string(),
+  pacing: z.enum(["continue", "wind_down", "offer_return"]),
+});
 
 export const askAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -57,29 +57,53 @@ export const askAthena = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { createLovableGateway } = await import("./ai-gateway.server");
     const gateway = createLovableGateway();
+
+    const userTurns = data.messages.filter((m) => m.role === "user").length;
+    const pacingHint =
+      userTurns >= 14
+        ? "You have spoken with them for a while. If you feel a natural resting place, you may warmly suggest continuing another day. Do not force it."
+        : userTurns >= 10
+          ? "You've been speaking for a while. Let the conversation breathe. If it feels right, you may gently note this is a good pause."
+          : "Stay curious. There is time.";
+
     const messages: ModelMessage[] = [
       { role: "system", content: athenaSystemPrompt() },
+      { role: "system", content: pacingHint },
       ...data.messages.filter((m) => m.role !== "system"),
     ];
+
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
       messages,
       providerOptions: { lovable: { reasoningEffort: "none" } },
     });
-    return { reply: text.trim() };
+
+    const reply = text.trim();
+    const lowered = reply.toLowerCase();
+    const offerReturn =
+      userTurns >= 10 &&
+      /(another day|another time|pick this back up|come back|next time|good place to (pause|stop|rest))/.test(lowered);
+    const windDown = !offerReturn && userTurns >= 8;
+    const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
+
+    return askOutput.parse({ reply, pacing });
   });
 
 const reflectInput = z.object({ messages: z.array(messageSchema) });
 
-const understandingSchema = z.object({
-  core_values: z.array(z.string()),
-  life_direction: z.string().nullable(),
-  self_understanding: z.string().nullable(),
-  communication_style: z.string().nullable(),
-  conflict_style: z.string().nullable(),
-  partnership_vision: z.string().nullable(),
-  readiness_summary: z.string().nullable(),
+const facetSchema = z.object({
+  key: z.enum(FACET_KEYS),
+  understanding: z.string(),
+  reasoning: z.string(),
+  evidence: z.array(z.string()).max(6),
+  confidence: z.number().min(0).max(1),
 });
+
+const reflectSchema = z.object({
+  facets: z.array(facetSchema).max(FACET_KEYS.length),
+});
+
+const CONFIDENCE_EPS = 0.05;
 
 export const reflectAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -87,6 +111,7 @@ export const reflectAthena = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { createLovableGateway } = await import("./ai-gateway.server");
     const gateway = createLovableGateway();
+
     const transcript = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => `${m.role === "user" ? "THEY" : "ATHENA"}: ${m.content}`)
@@ -94,33 +119,141 @@ export const reflectAthena = createServerFn({ method: "POST" })
 
     const { object } = await generateObject({
       model: gateway("openai/gpt-5.5"),
-      schema: understandingSchema,
+      schema: reflectSchema,
       providerOptions: { lovable: { reasoningEffort: "none" } },
-      prompt: `You are Athena, quietly refining your understanding of this person from the conversation so far. This understanding is provisional and will keep evolving — capture only what is genuinely supported by what they've said. Never invent, never diagnose, never label permanently.
+      prompt: `You are Athena, quietly refining your understanding of this person from the conversation so far.
+
+For any facet where the conversation offers genuine, non-speculative signal, produce one entry:
+- key: one of ${FACET_KEYS.join(", ")}
+- understanding: 1–3 sentences, in your own considered voice
+- reasoning: 1–2 sentences explaining why you currently hold this view based on what they said
+- evidence: 1–5 short direct quotes or near-quotes from THEY, each under 200 chars
+- confidence: 0.1–0.9 based on how much they've shown you. Never 1.0. Be conservative.
 
 Rules:
-- core_values: 0–7 short lowercase phrases they actually expressed (e.g. "honesty", "growth", "family closeness"). If nothing is clearly expressed yet, return an empty array.
-- Each other field: 1–3 sentences in their voice where possible, or null if not yet supported by the conversation.
-- Prefer null over speculation.
+- Skip any facet you cannot honestly support yet. Fewer, better entries are correct.
+- Never invent quotes; evidence must come from THEY's words.
+- Understanding is provisional and will keep evolving. Prefer nuance over labels.
 
-CONVERSATION:\n\n${transcript}`,
+CONVERSATION:
+
+${transcript}`,
     });
 
     const { supabase, userId } = context;
-    const { error } = await supabase.from("user_intelligence").upsert(
+    const now = new Date().toISOString();
+
+    // For each returned facet: if it materially refines the prior understanding,
+    // snapshot the previous row into facet_history and upsert the new one.
+    const keys = object.facets.map((f) => f.key);
+    const { data: existingRows } = await supabase
+      .from("understanding_facets")
+      .select("facet_key, understanding, reasoning, evidence, confidence")
+      .in("facet_key", keys);
+
+    const existing = new Map<string, {
+      understanding: string | null;
+      reasoning: string | null;
+      evidence: unknown;
+      confidence: number;
+    }>();
+    for (const r of existingRows ?? []) {
+      existing.set(r.facet_key as string, {
+        understanding: (r.understanding as string | null) ?? null,
+        reasoning: (r.reasoning as string | null) ?? null,
+        evidence: r.evidence,
+        confidence: Number(r.confidence ?? 0),
+      });
+    }
+
+    const upserts: Array<{
+      user_id: string;
+      facet_key: FacetKey;
+      understanding: string;
+      reasoning: string;
+      evidence: string[];
+      confidence: number;
+      refined_at: string;
+    }> = [];
+    const historyInserts: Array<{
+      user_id: string;
+      facet_key: FacetKey;
+      understanding: string | null;
+      reasoning: string | null;
+      evidence: unknown;
+      confidence: number;
+    }> = [];
+
+    for (const f of object.facets) {
+      const prev = existing.get(f.key);
+      const materiallyChanged =
+        !prev ||
+        (prev.understanding ?? "").trim() !== f.understanding.trim() ||
+        Math.abs(prev.confidence - f.confidence) > CONFIDENCE_EPS;
+      if (!materiallyChanged) continue;
+
+      if (prev) {
+        historyInserts.push({
+          user_id: userId,
+          facet_key: f.key,
+          understanding: prev.understanding,
+          reasoning: prev.reasoning,
+          evidence: prev.evidence,
+          confidence: prev.confidence,
+        });
+      }
+      upserts.push({
+        user_id: userId,
+        facet_key: f.key,
+        understanding: f.understanding,
+        reasoning: f.reasoning,
+        evidence: f.evidence,
+        confidence: f.confidence,
+        refined_at: now,
+      });
+    }
+
+    if (historyInserts.length > 0) {
+      await supabase.from("facet_history").insert(historyInserts);
+    }
+    if (upserts.length > 0) {
+      await supabase.from("understanding_facets").upsert(upserts, { onConflict: "user_id,facet_key" });
+    }
+
+    // Also maintain the backward-compatible projection on user_intelligence
+    // used by the legacy Living Profile summary.
+    const byKey = new Map(object.facets.map((f) => [f.key, f]));
+    const pick = (k: FacetKey) => byKey.get(k)?.understanding ?? null;
+    const values = byKey.get("core_values");
+    const coreValuesList =
+      values?.evidence && Array.isArray(values.evidence) && values.evidence.length > 0
+        ? values.understanding
+            .split(/[,;]|\band\b/i)
+            .map((s) => s.trim().toLowerCase())
+            .filter((s) => s.length > 0 && s.length < 40)
+            .slice(0, 7)
+        : [];
+
+    await supabase.from("user_intelligence").upsert(
       {
         user_id: userId,
-        core_values: object.core_values,
-        life_direction: object.life_direction,
-        self_understanding: object.self_understanding,
-        communication_style: object.communication_style,
-        conflict_style: object.conflict_style,
-        partnership_vision: object.partnership_vision,
-        readiness_summary: object.readiness_summary,
-        last_interview_at: new Date().toISOString(),
+        core_values: coreValuesList,
+        life_direction: pick("life_direction"),
+        self_understanding: pick("self_understanding"),
+        communication_style: pick("communication_style"),
+        conflict_style: pick("conflict_style"),
+        partnership_vision: pick("partnership_vision"),
+        readiness_summary: pick("readiness"),
+        last_interview_at: now,
       },
       { onConflict: "user_id" },
     );
-    if (error) throw new Error(error.message);
-    return { ok: true };
+
+    // Mark any pair reasoning involving this user as stale so Athena reconsiders.
+    await supabase
+      .from("pair_reasoning")
+      .update({ is_stale: true, stale_reason: "understanding refined" })
+      .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+
+    return { ok: true, refined: upserts.length };
   });
