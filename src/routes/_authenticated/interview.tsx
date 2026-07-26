@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askInterview, finalizeInterview } from "@/lib/interview.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/interview")({
   head: () => ({ meta: [{ title: "The interview — Relationship Intelligence" }, { name: "robots", content: "noindex" }] }),
@@ -27,14 +28,43 @@ function InterviewPage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [resumed, setResumed] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("interview_sessions")
+        .select("messages, completed_at")
+        .maybeSingle();
+      if (data && Array.isArray(data.messages) && data.messages.length > 0) {
+        setMessages(data.messages as Msg[]);
+        if (data.completed_at) setDone(true);
+        else setResumed(true);
+      }
+      setHydrated(true);
+    })();
+  }, []);
+
+  const persist = useCallback(async (msgs: Msg[], completed: boolean) => {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    if (!uid) return;
+    await supabase.from("interview_sessions").upsert(
+      { user_id: uid, messages: msgs, completed_at: completed ? new Date().toISOString() : null },
+      { onConflict: "user_id" },
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, busy]);
+  }, [messages, busy, hydrated]);
 
   useEffect(() => { inputRef.current?.focus(); }, [busy, done]);
+
 
   async function send() {
     const text = input.trim();
