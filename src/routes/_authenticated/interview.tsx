@@ -336,6 +336,62 @@ function InterviewPage() {
             </div>
           </div>
         )}
+        {shareOpen && (
+          <div className="mt-3 rounded-2xl border border-border/60 bg-card/80 p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Shareable link</p>
+              <button
+                type="button"
+                onClick={() => setShareOpen(false)}
+                className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
+            </div>
+            {shareUrl ? (
+              <>
+                <p className="mt-2 text-xs text-ink-soft">
+                  Anyone with this link can read your transcript until you revoke it.
+                </p>
+                <div className="mt-2 truncate rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground">
+                  {shareUrl}
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    onClick={createOrCopy}
+                    className="flex-1 rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+                  >
+                    Copy link
+                  </button>
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    onClick={revoke}
+                    className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-2 text-xs text-ink-soft">
+                  No active link. Generate one to share this transcript with someone. You can revoke it anytime.
+                </p>
+                <button
+                  type="button"
+                  disabled={shareBusy}
+                  onClick={createOrCopy}
+                  className="mt-2 w-full rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-[0.15em] text-primary-foreground disabled:opacity-60"
+                >
+                  {shareBusy ? "Creating…" : "Create share link"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </header>
 
 
