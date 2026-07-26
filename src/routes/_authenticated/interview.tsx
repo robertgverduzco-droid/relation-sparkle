@@ -111,10 +111,17 @@ function InterviewPage() {
     }
   }
 
-  const TARGET_TURNS = 7;
+  const TARGET_TURNS = targetTurns;
   const userTurns = messages.filter((m) => m.role === "user").length;
   const completedTurns = done ? TARGET_TURNS : Math.min(userTurns, TARGET_TURNS);
   const progressPct = (completedTurns / TARGET_TURNS) * 100;
+  const showSettings = hydrated && !started && !done;
+
+  const TURN_OPTIONS = [5, 7, 10, 12];
+  function chooseTurns(n: number) {
+    setTargetTurns(n);
+    if (typeof window !== "undefined") window.localStorage.setItem("ri_target_turns", String(n));
+  }
 
   return (
     <div className="screen-shell safe-top">
