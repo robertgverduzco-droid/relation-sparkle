@@ -36,10 +36,13 @@ function InterviewPage() {
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
+  const [expiresInHours, setExpiresInHours] = useState<number>(0);
   const createShare = useServerFn(getOrCreateShareLink);
   const fetchShare = useServerFn(getActiveShare);
   const revokeShare = useServerFn(revokeShareLink);
+  const checkExpired = useServerFn(checkExpiredShares);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
