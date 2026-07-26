@@ -19,6 +19,18 @@ export const Route = createFileRoute("/_authenticated/athena")({
 
 type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
+function buildIntro(firstName: string | null): string[] {
+  const greeting = firstName ? `Hello, ${firstName}.` : "Hello.";
+  return [
+    greeting,
+    "I'm Athena.",
+    "It's a pleasure to finally meet you.",
+    "Before I ever introduce you to another person, I'd like the opportunity to understand you.",
+    "There are no questionnaires. There are no right answers. Simply speak naturally — every conversation helps me better understand who you are.",
+    "Whenever you're ready… what's something you've been thinking about recently?",
+  ];
+}
+
 function AthenaPage() {
   const navigate = useNavigate();
   const ask = useServerFn(askAthena);
@@ -26,40 +38,11 @@ function AthenaPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [introducing, setIntroducing] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastReflectedTurnRef = useRef(0);
-
-  // Hydrate from Supabase, or ask Athena to introduce herself.
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("interview_sessions")
-        .select("messages")
-        .maybeSingle();
-      const stored = Array.isArray(data?.messages) ? (data!.messages as Msg[]) : [];
-      if (stored.length > 0) {
-        setMessages(stored);
-        lastReflectedTurnRef.current = stored.filter((m) => m.role === "user").length;
-        setHydrated(true);
-        return;
-      }
-      // First-time: let Athena introduce herself naturally.
-      try {
-        const res = await ask({ data: { messages: [] } });
-        const intro: Msg[] = [
-          { role: "assistant", content: res.reply, ts: new Date().toISOString() },
-        ];
-        setMessages(intro);
-        void persist(intro);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Athena is quiet right now.");
-      } finally {
-        setHydrated(true);
-      }
-    })();
-  }, []);
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -71,21 +54,66 @@ function AthenaPage() {
     );
   }, []);
 
+  // Hydrate from Supabase, or let Athena introduce herself with a scripted first meeting.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [{ data: session }, { data: profile }] = await Promise.all([
+        supabase.from("interview_sessions").select("messages").maybeSingle(),
+        supabase.from("profiles").select("display_name").maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const stored = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
+      if (stored.length > 0) {
+        setMessages(stored);
+        lastReflectedTurnRef.current = stored.filter((m) => m.role === "user").length;
+        setHydrated(true);
+        return;
+      }
+      // First meeting — Athena speaks first, on her own terms.
+      setHydrated(true);
+      setIntroducing(true);
+      const firstName = (profile?.display_name as string | null)?.split(" ")[0] ?? null;
+      const lines = buildIntro(firstName);
+      const accumulated: Msg[] = [];
+      // Small opening beat before the first word.
+      await wait(600);
+      for (let i = 0; i < lines.length; i++) {
+        if (cancelled) return;
+        // Typing indicator beat before each line.
+        await wait(i === 0 ? 400 : 900);
+        if (cancelled) return;
+        accumulated.push({
+          role: "assistant",
+          content: lines[i],
+          ts: new Date().toISOString(),
+        });
+        setMessages([...accumulated]);
+      }
+      if (cancelled) return;
+      setIntroducing(false);
+      void persist(accumulated);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [persist]);
+
   useEffect(() => {
     if (!hydrated) return;
     scrollerRef.current?.scrollTo({
       top: scrollerRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages, busy, hydrated]);
+  }, [messages, busy, introducing, hydrated]);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, [busy]);
+    if (!introducing && !busy) inputRef.current?.focus();
+  }, [busy, introducing]);
 
   async function send() {
     const text = input.trim();
-    if (!text || busy) return;
+    if (!text || busy || introducing) return;
     const now = new Date().toISOString();
     const next: Msg[] = [...messages, { role: "user", content: text, ts: now }];
     setMessages(next);
@@ -100,7 +128,6 @@ function AthenaPage() {
       setMessages(withReply);
       void persist(withReply);
 
-      // Every ~6 user turns, quietly refine Athena's understanding.
       const userTurns = withReply.filter((m) => m.role === "user").length;
       if (userTurns - lastReflectedTurnRef.current >= 6) {
         lastReflectedTurnRef.current = userTurns;
@@ -108,13 +135,21 @@ function AthenaPage() {
           /* silent — understanding evolves; a missed pass is fine */
         });
       }
-    } catch (e) {
+    } catch {
       void persist(next);
-      toast.error(e instanceof Error ? e.message : "Athena couldn't respond just now.");
+      // Never surface developer/system errors in Athena's voice.
+      toast("Athena is gathering her thoughts. Try again in a moment.");
     } finally {
       setBusy(false);
     }
   }
+
+  const inputDisabled = busy || introducing || !hydrated;
+  const placeholder = introducing || !hydrated
+    ? ""
+    : busy
+      ? "…"
+      : "Say it the way you'd actually say it";
 
   return (
     <div className="screen-shell safe-top pb-24">
@@ -133,13 +168,15 @@ function AthenaPage() {
 
       <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
         {!hydrated ? (
-          <p className="text-center text-sm text-muted-foreground">A moment…</p>
+          <p className="text-center text-sm text-muted-foreground fade-in-slow">
+            Athena is preparing to meet you…
+          </p>
         ) : (
           <>
             {messages.map((m, i) => (
               <Bubble key={i} role={m.role} content={m.content} />
             ))}
-            {busy && <TypingBubble />}
+            {(busy || introducing) && <TypingBubble />}
           </>
         )}
       </div>
@@ -151,7 +188,7 @@ function AthenaPage() {
         }}
         className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
       >
-        <div className="flex items-end gap-2 rounded-3xl border border-input bg-card px-3 py-2">
+        <div className="flex items-end gap-2 rounded-3xl border border-input bg-card px-3 py-2 transition-opacity" style={{ opacity: introducing ? 0.5 : 1 }}>
           <textarea
             ref={inputRef}
             value={input}
@@ -163,13 +200,13 @@ function AthenaPage() {
               }
             }}
             rows={1}
-            placeholder={busy ? "…" : "Say it the way you'd actually say it"}
-            disabled={busy}
+            placeholder={placeholder}
+            disabled={inputDisabled}
             className="min-h-[24px] max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
           />
           <button
             type="submit"
-            disabled={!input.trim() || busy}
+            disabled={!input.trim() || inputDisabled}
             className="rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition disabled:opacity-40"
           >
             Send
@@ -182,10 +219,14 @@ function AthenaPage() {
   );
 }
 
+function wait(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 function Bubble({ role, content }: { role: "user" | "assistant"; content: string }) {
   const isUser = role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex fade-in-slow ${isUser ? "justify-end" : "justify-start"}`}>
       <div
         className={
           isUser
