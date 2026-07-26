@@ -4,7 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 
 export const Route = createFileRoute("/_authenticated/home")({
-  head: () => ({ meta: [{ title: "Home — Relationship Intelligence" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Today — Relationship Intelligence" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: Home,
 });
 
@@ -17,51 +22,74 @@ type ProfileRow = {
 function Home() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [hasStartedAthena, setHasStartedAthena] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, onboarding_stage, onboarding_completed_at")
-        .maybeSingle();
-      setProfile(data as ProfileRow | null);
+      const [{ data: p }, { data: s }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("display_name, onboarding_stage, onboarding_completed_at")
+          .maybeSingle(),
+        supabase.from("interview_sessions").select("messages").maybeSingle(),
+      ]);
+      setProfile(p as ProfileRow | null);
+      const msgs = Array.isArray(s?.messages) ? (s!.messages as unknown[]) : [];
+      setHasStartedAthena(msgs.length > 0);
       setLoading(false);
-      if (data && !data.onboarding_completed_at) {
+      if (p && !p.onboarding_completed_at) {
         navigate({ to: "/onboarding" });
       }
     })();
   }, [navigate]);
 
-  if (loading) return <div className="screen-shell items-center justify-center"><p className="text-sm text-muted-foreground">Loading…</p></div>;
+  if (loading)
+    return (
+      <div className="screen-shell items-center justify-center">
+        <p className="text-sm text-muted-foreground">A moment…</p>
+      </div>
+    );
 
   return (
     <div className="screen-shell safe-top pb-24">
       <header className="px-6 pt-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Today</p>
         <h1 className="mt-2 font-display text-[2.25rem] leading-tight text-foreground">
-          Good to see you{profile?.display_name ? <>, <em className="italic text-primary">{profile.display_name.split(" ")[0]}</em></> : ""}.
+          Welcome
+          {profile?.display_name ? (
+            <>
+              , <em className="italic text-primary">{profile.display_name.split(" ")[0]}</em>
+            </>
+          ) : (
+            ""
+          )}
+          .
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Your next introduction is being considered with care. We only send one when it feels right.
+          Athena is here. Introductions will follow, in time — always after understanding.
         </p>
       </header>
 
       <section className="mt-8 space-y-4 px-6">
         <Card
-          title="Sit with the interviewer"
-          body="A five-minute conversation that helps us understand who you are beneath the surface. Every introduction we make begins here."
-          actionLabel="Begin the interview"
-          actionTo="/interview"
+          title={hasStartedAthena ? "Continue your conversation with Athena" : "Meet Athena"}
+          body={
+            hasStartedAthena
+              ? "Pick up where you left off. Athena remembers, and she is in no hurry."
+              : "Athena would like to get to know you. There is nothing to fill out — just a conversation, at your pace."
+          }
+          actionLabel={hasStartedAthena ? "Continue" : "Begin"}
+          actionTo="/athena"
         />
         <Card
-          title="No open introduction yet"
-          body="We're studying your values, readiness, and preferences against the current community. This is deliberate — you'll be notified when someone worth meeting appears."
+          title="No introductions yet"
+          body="Introductions arrive when they are worth arriving. Athena is quietly listening for a fit."
         />
         <Card
-          title="Deepen your profile"
-          body="The more we understand you, the better the introductions become. Add a prompt, a photo, or refine what you're looking for."
-          actionLabel="Continue building"
+          title="Your Living Profile"
+          body="See what Athena is coming to understand about you. Correct anything that doesn't sound like you."
+          actionLabel="Open"
           actionTo="/profile"
         />
       </section>
@@ -71,13 +99,26 @@ function Home() {
   );
 }
 
-function Card({ title, body, actionLabel, actionTo }: { title: string; body: string; actionLabel?: string; actionTo?: "/profile" | "/introductions" | "/conversations" | "/interview" }) {
+function Card({
+  title,
+  body,
+  actionLabel,
+  actionTo,
+}: {
+  title: string;
+  body: string;
+  actionLabel?: string;
+  actionTo?: "/profile" | "/introductions" | "/athena";
+}) {
   return (
     <article className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
       <h3 className="font-display text-xl text-foreground">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">{body}</p>
       {actionLabel && actionTo && (
-        <Link to={actionTo} className="mt-4 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline">
+        <Link
+          to={actionTo}
+          className="mt-4 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
           {actionLabel} →
         </Link>
       )}
