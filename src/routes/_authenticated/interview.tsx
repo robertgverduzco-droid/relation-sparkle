@@ -212,17 +212,27 @@ function InterviewPage() {
             ← Leave
           </button>
           <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">The Interview</span>
-          {started && !done ? (
-            <button
-              type="button"
-              onClick={() => setAdjustOpen((v) => !v)}
-              className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
-            >
-              Length
-            </button>
-          ) : (
-            <span className="w-10" />
-          )}
+          <div className="flex items-center gap-3">
+            {started && !done && (
+              <button
+                type="button"
+                onClick={() => setAdjustOpen((v) => !v)}
+                className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+              >
+                Length
+              </button>
+            )}
+            {hydrated && messages.length > 1 && (
+              <button
+                type="button"
+                onClick={exportPdf}
+                className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground"
+              >
+                Export
+              </button>
+            )}
+            {!(started && !done) && !(hydrated && messages.length > 1) && <span className="w-10" />}
+          </div>
         </div>
         {hydrated && (
           <div className="mt-3">
