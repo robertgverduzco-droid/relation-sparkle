@@ -46,6 +46,7 @@ function SharedInterview() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {data.completedAt ? `Completed ${fmt(data.completedAt)}` : "In progress"} · Shared {fmt(data.sharedAt)}
+          {data.expiresAt ? ` · Expires ${fmt(data.expiresAt)}` : ""}
         </p>
       </header>
       <div className="mt-8 space-y-6">
