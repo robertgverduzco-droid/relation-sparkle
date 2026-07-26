@@ -757,6 +757,49 @@ function InterviewPage() {
               </div>
               {historyOpen && (
                 <div className="mt-2 space-y-2">
+                  {revokedLoaded && availableCategories.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {availableCategories.map(([key, label]) => {
+                        const active = revokedFilters.has(key);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => {
+                              setRevokedFilters((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(key)) next.delete(key);
+                                else next.add(key);
+                                return next;
+                              });
+                              setRevokedPage(0);
+                            }}
+                            className={
+                              "rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] transition " +
+                              (active
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border bg-background text-muted-foreground hover:text-foreground")
+                            }
+                            aria-pressed={active}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                      {revokedFilters.size > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRevokedFilters(new Set());
+                            setRevokedPage(0);
+                          }}
+                          className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
