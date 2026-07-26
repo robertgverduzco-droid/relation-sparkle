@@ -79,6 +79,30 @@ export type Database = {
           },
         ]
       }
+      interview_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          messages: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          messages?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          messages?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       introductions: {
         Row: {
           ai_opening: string | null
