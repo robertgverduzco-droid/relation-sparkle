@@ -49,6 +49,12 @@ function Home() {
 
       <section className="mt-8 space-y-4 px-6">
         <Card
+          title="Sit with the interviewer"
+          body="A five-minute conversation that helps us understand who you are beneath the surface. Every introduction we make begins here."
+          actionLabel="Begin the interview"
+          actionTo="/interview"
+        />
+        <Card
           title="No open introduction yet"
           body="We're studying your values, readiness, and preferences against the current community. This is deliberate — you'll be notified when someone worth meeting appears."
         />
@@ -65,7 +71,7 @@ function Home() {
   );
 }
 
-function Card({ title, body, actionLabel, actionTo }: { title: string; body: string; actionLabel?: string; actionTo?: "/profile" | "/introductions" | "/conversations" }) {
+function Card({ title, body, actionLabel, actionTo }: { title: string; body: string; actionLabel?: string; actionTo?: "/profile" | "/introductions" | "/conversations" | "/interview" }) {
   return (
     <article className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
       <h3 className="font-display text-xl text-foreground">{title}</h3>
