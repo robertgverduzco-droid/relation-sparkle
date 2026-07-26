@@ -65,6 +65,48 @@ function ShareExpiry({ expiresAt }: { expiresAt?: string | null }) {
   );
 }
 
+function splitHighlight(text: string, query: string) {
+  if (!query.trim()) return [{ text, match: false }];
+  const q = query.toLowerCase();
+  const parts: { text: string; match: boolean }[] = [];
+  let remaining = text;
+  while (remaining.length) {
+    const idx = remaining.toLowerCase().indexOf(q);
+    if (idx < 0) {
+      parts.push({ text: remaining, match: false });
+      break;
+    }
+    if (idx > 0) parts.push({ text: remaining.slice(0, idx), match: false });
+    parts.push({ text: remaining.slice(idx, idx + q.length), match: true });
+    remaining = remaining.slice(idx + q.length);
+  }
+  return parts;
+}
+
+function Highlight({ text, query }: { text?: string | null; query: string }) {
+  if (!text) return null;
+  return (
+    <>
+      {splitHighlight(text, query).map((part, i) =>
+        part.match ? (
+          <span key={i} className="rounded bg-primary/20 px-0.5 text-foreground">{part.text}</span>
+        ) : (
+          <span key={i}>{part.text}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function useDebouncedValue<T>(value: T, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
 type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 
 const OPENING: Msg = {
