@@ -42,10 +42,17 @@ function InterviewPage() {
         const n = parseInt(saved, 10);
         if (!Number.isNaN(n)) setTargetTurns(n);
       }
-      const { data } = await supabase
-        .from("interview_sessions")
-        .select("messages, completed_at")
-        .maybeSingle();
+      const [sessionRes, intelRes] = await Promise.all([
+        supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
+        supabase.from("user_intelligence").select("interview_target_turns").maybeSingle(),
+      ]);
+      if (intelRes.data?.interview_target_turns) {
+        setTargetTurns(intelRes.data.interview_target_turns);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("ri_target_turns", String(intelRes.data.interview_target_turns));
+        }
+      }
+      const data = sessionRes.data;
       if (data && Array.isArray(data.messages) && data.messages.length > 0) {
         setMessages(data.messages as Msg[]);
         setStarted(true);
