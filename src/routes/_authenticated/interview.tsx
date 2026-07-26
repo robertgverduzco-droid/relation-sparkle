@@ -418,10 +418,10 @@ function InterviewPage() {
                         >
                           Copy
                         </button>
-                        <button
+                          <button
                           type="button"
                           disabled={shareBusy}
-                          onClick={() => revokeOneShare(s.id)}
+                          onClick={() => askRevokeShare(s.id)}
                           className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-foreground hover:border-destructive/60 disabled:opacity-60"
                         >
                           Revoke
