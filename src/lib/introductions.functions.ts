@@ -1,149 +1,39 @@
+// Thin wrapper. All helpers/schemas live in ./introductions.server.ts.
+//
+// Matchmaking design: cross-user reads and pair writes use the service-role
+// admin client, loaded inside the handler. The caller is still authenticated
+// via requireSupabaseAuth — Athena never reveals another user's private data
+// to the caller; only the presentation she chose for them is returned.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { generateObject } from "ai";
 import { z } from "zod";
-import { FACET_KEYS } from "./facets";
-
-// Confidence thresholds. Exploratory introductions require lower confidence
-// on both sides; stronger introductions require more.
-const EXPLORATORY_MIN_AVG = 0.35;
-const STRONG_MIN_AVG = 0.55;
-const MIN_FACETS_EACH = 4;
-const MAX_INTRODUCTIONS_PER_USER = 2;
-
-type FacetRow = {
-  facet_key: string;
-  understanding: string | null;
-  reasoning: string | null;
-  confidence: number;
-};
-
-type ProfileRow = {
-  id: string;
-  display_name: string | null;
-  birth_date: string | null;
-  gender: string | null;
-  city: string | null;
-  is_paused: boolean | null;
-};
-
-type PrefsRow = {
-  user_id: string;
-  seeking_genders: string[] | null;
-  age_min: number | null;
-  age_max: number | null;
-  relationship_intent: string | null;
-  wants_children: string | null;
-};
-
-function ageFromDob(dob: string | null): number | null {
-  if (!dob) return null;
-  const d = new Date(dob);
-  if (Number.isNaN(d.getTime())) return null;
-  const now = new Date();
-  let a = now.getFullYear() - d.getFullYear();
-  const m = now.getMonth() - d.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a -= 1;
-  return a;
-}
-
-function mutuallyEligible(
-  a: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
-  b: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
-): boolean {
-  if (a.profile.is_paused || b.profile.is_paused) return false;
-
-  const checkOne = (
-    self: { profile: ProfileRow; prefs: PrefsRow | null },
-    other: { profile: ProfileRow; ageA: number | null },
-  ) => {
-    const p = self.prefs;
-    if (!p) return true; // no preferences yet — do not exclude, but weak signal
-    if (p.seeking_genders && p.seeking_genders.length > 0 && other.profile.gender) {
-      if (!p.seeking_genders.includes(other.profile.gender)) return false;
-    }
-    if (other.ageA != null) {
-      if (p.age_min != null && other.ageA < p.age_min) return false;
-      if (p.age_max != null && other.ageA > p.age_max) return false;
-    }
-    return true;
-  };
-
-  if (!checkOne(a, b)) return false;
-  if (!checkOne(b, a)) return false;
-
-  // Intent compatibility — if both declared, they should match.
-  const ia = a.prefs?.relationship_intent ?? null;
-  const ib = b.prefs?.relationship_intent ?? null;
-  if (ia && ib && ia !== ib) return false;
-
-  return true;
-}
-
-function facetAverage(rows: FacetRow[]): number {
-  if (rows.length === 0) return 0;
-  return rows.reduce((s, r) => s + Number(r.confidence ?? 0), 0) / rows.length;
-}
-
-const reasoningSchema = z.object({
-  status: z.enum(["considering", "withheld", "introduced"]),
-  confidence: z.number().min(0).max(1),
-  reasoning: z.string(),
-  alignments: z.array(z.string()).max(6),
-  complementary: z.array(z.string()).max(6),
-  frictions: z.array(z.string()).max(6),
-  hard_conflicts: z.array(z.string()).max(4),
-  presentation_for_a: z.string(),
-  presentation_for_b: z.string(),
-});
-
-function summarizeFacets(rows: FacetRow[]): string {
-  return rows
-    .filter((r) => r.understanding)
-    .map(
-      (r) =>
-        `- ${r.facet_key} [confidence ${Number(r.confidence).toFixed(2)}]: ${r.understanding}`,
-    )
-    .join("\n");
-}
-
-async function reasonPair(args: {
-  a: { name: string; facets: FacetRow[] };
-  b: { name: string; facets: FacetRow[] };
-}) {
-  const { createLovableGateway } = await import("./ai-gateway.server");
-  const gateway = createLovableGateway();
-  const { object } = await generateObject({
-    model: gateway("openai/gpt-5.5"),
-    schema: reasoningSchema,
-    providerOptions: { lovable: { reasoningEffort: "none" } },
-    prompt: `You are Athena. Consider whether these two people might be worth introducing.
-
-Reason across values, communication, emotional regulation, expectations, attachment, conflict/repair, boundaries, affection, lifestyle, social/family, purpose, intellectual fit, humor, finance, health, pacing, attraction preferences, resilience, and complementary strengths. Similarity alone is not compatibility.
-
-- status "withheld" if there is a hard conflict (essential boundary or incompatible core direction).
-- status "introduced" only when you are genuinely willing to reflect this to both of them.
-- status "considering" otherwise.
-- confidence 0–1 based on how well you understand each of them.
-- reasoning: 2–4 sentences of your private thinking.
-- presentation_for_a and presentation_for_b: written directly to that person in your voice; 3–5 sentences each; do NOT reveal the other person's private confidences or evidence quotes; do not use a percentage.
-
-PERSON A — ${args.a.name}
-${summarizeFacets(args.a.facets)}
-
-PERSON B — ${args.b.name}
-${summarizeFacets(args.b.facets)}`,
-  });
-  return object;
-}
+import {
+  EXPLORATORY_MIN_AVG,
+  STRONG_MIN_AVG,
+  MIN_FACETS_EACH,
+  MAX_INTRODUCTIONS_PER_USER,
+  ageFromDob,
+  mutuallyEligible,
+  facetAverage,
+  reasonPair,
+  type FacetRow,
+  type ProfileRow,
+  type PrefsRow,
+} from "./introductions.server";
 
 export const considerIntroductions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+    // Matchmaking requires reading other users' facets/prefs/profiles.
+    // Use the service-role client for cross-user reads — it bypasses RLS
+    // safely because this handler is server-only and Athena's outputs
+    // never leak other users' raw data.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const supabase = supabaseAdmin;
 
-    // 1. Load self.
-    const [{ data: selfProfile }, { data: selfPrefs }, { data: selfFacets }] =
+    // 1. Load self, including foundational-conversation completion.
+    const [{ data: selfProfile }, { data: selfPrefs }, { data: selfFacets }, { data: selfIntel }] =
       await Promise.all([
         supabase
           .from("profiles")
@@ -159,20 +49,47 @@ export const considerIntroductions = createServerFn({ method: "POST" })
           .from("understanding_facets")
           .select("facet_key, understanding, reasoning, confidence")
           .eq("user_id", userId),
+        supabase
+          .from("user_intelligence")
+          .select("last_interview_at")
+          .eq("user_id", userId)
+          .maybeSingle(),
       ]);
 
     if (!selfProfile) return { ok: false, reason: "no_profile" };
+
+    // Single authoritative eligibility rule for THIS caller (mirrors the
+    // gate applied to every candidate below):
+    //   1. Foundational conversation completed (last_interview_at set).
+    //   2. AND enough facets refined at meaningful confidence.
+    // Foundational completion is the primary gate. Facet count/confidence
+    // are quality safeguards — a user who never completes the initial
+    // conversation is never eligible, regardless of facet counts.
+    if (!selfIntel?.last_interview_at) {
+      return { ok: true, considered: 0, reason: "foundation_incomplete" };
+    }
 
     const selfFacetRows = (selfFacets ?? []) as FacetRow[];
     if (selfFacetRows.length < MIN_FACETS_EACH || facetAverage(selfFacetRows) < EXPLORATORY_MIN_AVG) {
       return { ok: true, considered: 0, reason: "self_understanding_too_thin" };
     }
 
-    // 2. Load candidate pool — everyone else with enough understanding.
+    // 2. Load candidate pool — everyone else who has completed foundation.
+    const { data: eligibleIntel } = await supabase
+      .from("user_intelligence")
+      .select("user_id")
+      .not("last_interview_at", "is", null)
+      .neq("user_id", userId)
+      .limit(500);
+    const eligibleIds = new Set(
+      (eligibleIntel ?? []).map((r) => r.user_id as string),
+    );
+    if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
+
     const { data: others } = await supabase
       .from("profiles")
       .select("id, display_name, birth_date, gender, city, is_paused")
-      .neq("id", userId)
+      .in("id", Array.from(eligibleIds))
       .eq("is_paused", false)
       .limit(200);
 
@@ -235,11 +152,7 @@ export const considerIntroductions = createServerFn({ method: "POST" })
       ageA: selfAge,
     };
 
-    // 3. Filter for eligibility + minimum understanding.
-    type Candidate = {
-      other: ProfileRow;
-      otherFacets: FacetRow[];
-    };
+    type Candidate = { other: ProfileRow; otherFacets: FacetRow[] };
     const eligible: Candidate[] = [];
     for (const o of others as ProfileRow[]) {
       if (blockedIds.has(o.id)) continue;
@@ -255,7 +168,6 @@ export const considerIntroductions = createServerFn({ method: "POST" })
 
     if (eligible.length === 0) return { ok: true, considered: 0, reason: "no_eligible" };
 
-    // 4. Reason across each candidate, prefer those with highest average confidence.
     eligible.sort(
       (x, y) => facetAverage(y.otherFacets) - facetAverage(x.otherFacets),
     );
@@ -270,20 +182,13 @@ export const considerIntroductions = createServerFn({ method: "POST" })
       const selfIsLow = userId === low;
 
       const object = await reasonPair({
-        a: {
-          name: (selfProfile.display_name as string) ?? "them",
-          facets: selfFacetRows,
-        },
-        b: {
-          name: (c.other.display_name as string) ?? "them",
-          facets: c.otherFacets,
-        },
+        a: { name: (selfProfile.display_name as string) ?? "them", facets: selfFacetRows },
+        b: { name: (c.other.display_name as string) ?? "them", facets: c.otherFacets },
       });
 
       const wantsIntroduction =
         object.status === "introduced" && object.confidence >= STRONG_MIN_AVG;
 
-      // Upsert reasoning row.
       const nowIso = new Date().toISOString();
       const presentedForLow = selfIsLow ? object.presentation_for_a : object.presentation_for_b;
       const presentedForHigh = selfIsLow ? object.presentation_for_b : object.presentation_for_a;
@@ -318,7 +223,6 @@ export const considerIntroductions = createServerFn({ method: "POST" })
 
       if (upErr || !upserted) continue;
 
-      // Append history snapshot.
       await supabase.from("pair_reasoning_history").insert({
         pair_id: upserted.id as string,
         user_low: low,
@@ -336,7 +240,6 @@ export const considerIntroductions = createServerFn({ method: "POST" })
 
       if (wantsIntroduction) {
         introduced += 1;
-        // Ensure a pending response row exists for the presented user.
         await supabase.from("introduction_responses").upsert(
           { pair_id: upserted.id, user_id: userId, response: "pending" },
           { onConflict: "pair_id,user_id" },
@@ -347,7 +250,6 @@ export const considerIntroductions = createServerFn({ method: "POST" })
     return { ok: true, considered: toReason.length, introduced };
   });
 
-// List introductions currently visible to the caller.
 export const listMyIntroductions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -364,7 +266,19 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
       .order("last_reasoned_at", { ascending: false })
       .limit(20);
 
-    if (!pairs || pairs.length === 0) return { introductions: [] as ReturnType<typeof shape>[] };
+    if (!pairs || pairs.length === 0) {
+      return { introductions: [] as Array<{
+        id: string;
+        other_id: string;
+        other_name: string;
+        other_city: string | null;
+        other_age: number | null;
+        presentation: string | null;
+        confidence: number;
+        response: string;
+        presented_at: string | null;
+      }> };
+    }
 
     const otherIds = pairs.map((p) =>
       (p.user_low as string) === userId ? (p.user_high as string) : (p.user_low as string),
@@ -392,7 +306,7 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
     const respMap = new Map<string, string>();
     for (const r of responses ?? []) respMap.set(r.pair_id as string, r.response as string);
 
-    const shape = (p: (typeof pairs)[number]) => {
+    const shape = pairs.map((p) => {
       const isLow = p.user_low === userId;
       const otherId = isLow ? (p.user_high as string) : (p.user_low as string);
       const prof = profMap.get(otherId);
@@ -407,9 +321,9 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         response: respMap.get(p.id as string) ?? "pending",
         presented_at: (isLow ? p.presented_to_a_at : p.presented_to_b_at) as string | null,
       };
-    };
+    });
 
-    return { introductions: pairs.map(shape) };
+    return { introductions: shape };
   });
 
 const respondInput = z.object({
@@ -424,7 +338,6 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Verify the pair was actually presented to this user.
     const { data: pair } = await supabase
       .from("pair_reasoning")
       .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at")
@@ -444,7 +357,6 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       { onConflict: "pair_id,user_id" },
     );
 
-    // Feedback becomes signal to Athena — perspective, not verdict.
     await supabase.from("introduction_feedback").insert({
       pair_id: data.pair_id,
       user_id: userId,
@@ -453,10 +365,9 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       signals: {},
     });
 
-    // When both people accept, Athena quietly opens a shared connection.
     let connectionId: string | null = null;
     if (data.response === "accepted") {
-      const { openConnectionIfMutual } = await import("./connections.functions");
+      const { openConnectionIfMutual } = await import("./connections.server");
       connectionId = await openConnectionIfMutual(supabase, data.pair_id);
     }
 

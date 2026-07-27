@@ -57,13 +57,13 @@ function Welcome() {
           <Link
             to="/auth"
             search={{ mode: "signup" } as never}
-            className="block w-full rounded-full bg-[#1a2540] px-6 py-4 text-center text-[15px] font-medium text-white shadow-lg shadow-black/10 transition active:scale-[0.98]"
+            className="block w-full rounded-full bg-primary px-6 py-4 text-center text-[15px] font-medium text-primary-foreground shadow-lg shadow-black/10 transition active:scale-[0.98]"
           >
             Begin
           </Link>
           <Link
             to="/auth"
-            className="block w-full rounded-full border border-white/70 bg-white/60 backdrop-blur px-6 py-4 text-center text-[15px] font-medium text-[#1a2540] transition active:scale-[0.98]"
+            className="block w-full rounded-full border border-border/60 bg-card/70 backdrop-blur px-6 py-4 text-center text-[15px] font-medium text-ink transition active:scale-[0.98]"
           >
             I already have an account
           </Link>
