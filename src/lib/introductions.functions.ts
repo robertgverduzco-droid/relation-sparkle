@@ -367,7 +367,7 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
 
     let connectionId: string | null = null;
     if (data.response === "accepted") {
-      const { openConnectionIfMutual } = await import("./connections.functions");
+      const { openConnectionIfMutual } = await import("./connections.server");
       connectionId = await openConnectionIfMutual(supabase, data.pair_id);
     }
 
