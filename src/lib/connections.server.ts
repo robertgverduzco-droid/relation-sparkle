@@ -1,5 +1,6 @@
-// Server-only helpers for post-meeting reflection with Athena.
+// Server-only helpers for connections & post-meeting reflection.
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const messageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
@@ -57,4 +58,49 @@ Voice:
 - do not push toward a verdict — the goal is honest reflection, not a rating
 
 If this is the very beginning, greet them gently and ask how the meeting was, in your own words. Let them set the pace.`;
+}
+
+export async function openConnectionIfMutual(
+  supabase: SupabaseClient,
+  pairId: string,
+): Promise<string | null> {
+  const { data: pair } = await supabase
+    .from("pair_reasoning")
+    .select("id, user_low, user_high")
+    .eq("id", pairId)
+    .maybeSingle();
+  if (!pair) return null;
+
+  const { data: responses } = await supabase
+    .from("introduction_responses")
+    .select("user_id, response")
+    .eq("pair_id", pairId);
+
+  const accepted = new Set(
+    (responses ?? [])
+      .filter((r) => r.response === "accepted")
+      .map((r) => r.user_id as string),
+  );
+  if (!accepted.has(pair.user_low as string) || !accepted.has(pair.user_high as string)) {
+    return null;
+  }
+
+  const { data: existing } = await supabase
+    .from("connections")
+    .select("id")
+    .eq("pair_id", pairId)
+    .maybeSingle();
+  if (existing) return existing.id as string;
+
+  const { data: opened } = await supabase
+    .from("connections")
+    .insert({
+      pair_id: pairId,
+      user_low: pair.user_low,
+      user_high: pair.user_high,
+      status: "open",
+    })
+    .select("id")
+    .maybeSingle();
+  return (opened?.id as string) ?? null;
 }
