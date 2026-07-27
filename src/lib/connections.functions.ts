@@ -1,57 +1,15 @@
+// Thin wrapper. All helpers, schemas, and prompts live in ./connections.server.ts.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, generateObject, type ModelMessage } from "ai";
-import { z } from "zod";
-
-// -------- Helpers --------
-
-async function openConnectionIfMutual(
-  supabase: Awaited<ReturnType<typeof getCtx>>["supabase"],
-  pairId: string,
-) {
-  const { data: pair } = await supabase
-    .from("pair_reasoning")
-    .select("id, user_low, user_high")
-    .eq("id", pairId)
-    .maybeSingle();
-  if (!pair) return null;
-
-  const { data: responses } = await supabase
-    .from("introduction_responses")
-    .select("user_id, response")
-    .eq("pair_id", pairId);
-
-  const accepted = new Set((responses ?? []).filter((r) => r.response === "accepted").map((r) => r.user_id as string));
-  if (!accepted.has(pair.user_low as string) || !accepted.has(pair.user_high as string)) return null;
-
-  const { data: existing } = await supabase
-    .from("connections")
-    .select("id")
-    .eq("pair_id", pairId)
-    .maybeSingle();
-  if (existing) return existing.id as string;
-
-  const { data: opened } = await supabase
-    .from("connections")
-    .insert({
-      pair_id: pairId,
-      user_low: pair.user_low,
-      user_high: pair.user_high,
-      status: "open",
-    })
-    .select("id")
-    .maybeSingle();
-  return (opened?.id as string) ?? null;
-}
-// Re-exported for use from introductions.functions.ts.
-export { openConnectionIfMutual };
-
-async function getCtx() {
-  // helper type-shim so openConnectionIfMutual can share the supabase type
-  return {} as unknown as { supabase: import("@supabase/supabase-js").SupabaseClient };
-}
-
-// -------- List connections --------
+import {
+  idInput,
+  proposeInput,
+  proposalActionInput,
+  reflectAskInput,
+  reflectDistillInput,
+  reflectionSchema,
+} from "./connections.server";
 
 export const listMyConnections = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -64,17 +22,29 @@ export const listMyConnections = createServerFn({ method: "GET" })
       .neq("status", "closed")
       .order("opened_at", { ascending: false });
 
-    if (!conns || conns.length === 0) return { connections: [] as Array<{
-      id: string; other_id: string; other_name: string; status: string; opened_at: string;
-    }> };
+    if (!conns || conns.length === 0) {
+      return {
+        connections: [] as Array<{
+          id: string;
+          other_id: string;
+          other_name: string;
+          status: string;
+          opened_at: string;
+        }>,
+      };
+    }
 
-    const otherIds = conns.map((c) => (c.user_low === userId ? c.user_high : c.user_low) as string);
+    const otherIds = conns.map((c) =>
+      (c.user_low === userId ? c.user_high : c.user_low) as string,
+    );
     const { data: profs } = await supabase
       .from("profiles")
       .select("id, display_name")
       .in("id", otherIds);
     const nameOf = new Map<string, string>();
-    for (const p of profs ?? []) nameOf.set(p.id as string, (p.display_name as string | null) ?? "Someone");
+    for (const p of profs ?? []) {
+      nameOf.set(p.id as string, (p.display_name as string | null) ?? "Someone");
+    }
 
     return {
       connections: conns.map((c) => {
@@ -89,10 +59,6 @@ export const listMyConnections = createServerFn({ method: "GET" })
       }),
     };
   });
-
-// -------- Connection detail --------
-
-const idInput = z.object({ connection_id: z.string().uuid() });
 
 export const getConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -109,28 +75,35 @@ export const getConnection = createServerFn({ method: "POST" })
 
     const otherId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
 
-    const [{ data: prof }, { data: proposals }, { data: reflection }, { data: pair }] = await Promise.all([
-      supabase.from("profiles").select("display_name, city, birth_date").eq("id", otherId).maybeSingle(),
-      supabase
-        .from("meeting_proposals")
-        .select("id, proposed_by, when_text, where_text, notes, scheduled_for, status, confirmed_at, completed_at, created_at")
-        .eq("connection_id", conn.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("post_meeting_reflections")
-        .select("id, transcript, summary, sentiment, would_meet_again, refined_at")
-        .eq("connection_id", conn.id)
-        .eq("user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from("pair_reasoning")
-        .select("presentation_a, presentation_b, user_low")
-        .eq("id", conn.pair_id as string)
-        .maybeSingle(),
-    ]);
+    const [{ data: prof }, { data: proposals }, { data: reflection }, { data: pair }] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select("display_name, city, birth_date")
+          .eq("id", otherId)
+          .maybeSingle(),
+        supabase
+          .from("meeting_proposals")
+          .select(
+            "id, proposed_by, when_text, where_text, notes, scheduled_for, status, confirmed_at, completed_at, created_at",
+          )
+          .eq("connection_id", conn.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("post_meeting_reflections")
+          .select("id, transcript, summary, sentiment, would_meet_again, refined_at")
+          .eq("connection_id", conn.id)
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("pair_reasoning")
+          .select("presentation_a, presentation_b, user_low")
+          .eq("id", conn.pair_id as string)
+          .maybeSingle(),
+      ]);
 
     const myPresentation = pair
-      ? (pair.user_low === userId ? pair.presentation_a : pair.presentation_b) as string | null
+      ? ((pair.user_low === userId ? pair.presentation_a : pair.presentation_b) as string | null)
       : null;
 
     return {
@@ -158,7 +131,10 @@ export const getConnection = createServerFn({ method: "POST" })
       reflection: reflection
         ? {
             id: reflection.id as string,
-            transcript: (reflection.transcript ?? []) as Array<{ role: "user" | "assistant"; content: string }>,
+            transcript: (reflection.transcript ?? []) as Array<{
+              role: "user" | "assistant";
+              content: string;
+            }>,
             summary: reflection.summary as string | null,
             sentiment: reflection.sentiment as string | null,
             would_meet_again: reflection.would_meet_again as boolean | null,
@@ -167,22 +143,11 @@ export const getConnection = createServerFn({ method: "POST" })
     };
   });
 
-// -------- Meeting proposals --------
-
-const proposeInput = z.object({
-  connection_id: z.string().uuid(),
-  when_text: z.string().max(200).optional(),
-  where_text: z.string().max(200).optional(),
-  notes: z.string().max(1000).optional(),
-  scheduled_for: z.string().datetime().optional(),
-});
-
 export const proposeMeeting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => proposeInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    // RLS covers participant check; still verify status.
     const { data: conn } = await supabase
       .from("connections")
       .select("id, status")
@@ -203,11 +168,6 @@ export const proposeMeeting = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
-
-const proposalActionInput = z.object({
-  proposal_id: z.string().uuid(),
-  action: z.enum(["confirm", "complete", "cancel"]),
-});
 
 export const updateMeetingProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -231,42 +191,18 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
     if (error || !updated) throw new Error(error?.message ?? "Update failed");
 
     if (data.action === "confirm") {
-      await supabase.from("connections").update({ status: "meeting_planned" }).eq("id", updated.connection_id as string);
+      await supabase
+        .from("connections")
+        .update({ status: "meeting_planned" })
+        .eq("id", updated.connection_id as string);
     } else if (data.action === "complete") {
-      await supabase.from("connections").update({ status: "met" }).eq("id", updated.connection_id as string);
+      await supabase
+        .from("connections")
+        .update({ status: "met" })
+        .eq("id", updated.connection_id as string);
     }
     return { ok: true };
   });
-
-// -------- Post-meeting reflection with Athena --------
-
-const messageSchema = z.object({
-  role: z.enum(["system", "user", "assistant"]),
-  content: z.string(),
-});
-const reflectAskInput = z.object({
-  connection_id: z.string().uuid(),
-  messages: z.array(messageSchema),
-});
-
-function reflectSystemPrompt(otherName: string): string {
-  return `You are Athena.
-
-You are speaking privately with someone who has just met ${otherName} in person. They agreed to meet after you introduced them. This conversation is completely private — ${otherName} will never see any of it.
-
-Your purpose here:
-- help them make sense of the meeting, honestly and without pressure
-- listen for how they actually felt, not how they think they should have felt
-- pay attention to what surprised them, what resonated, what didn't land
-- notice anything that shifts your understanding of them as a person
-
-Voice:
-- quiet, patient, warm; never leading, never scoring, never coaching
-- one thoughtful question at a time; reflect briefly on what they shared before asking the next
-- do not push toward a verdict — the goal is honest reflection, not a rating
-
-If this is the very beginning, greet them gently and ask how the meeting was, in your own words. Let them set the pace.`;
-}
 
 export const askAthenaReflection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -290,6 +226,7 @@ export const askAthenaReflection = createServerFn({ method: "POST" })
     const otherName = (prof?.display_name as string | null) ?? "them";
 
     const { createLovableGateway } = await import("./ai-gateway.server");
+    const { reflectSystemPrompt } = await import("./connections.server");
     const gateway = createLovableGateway();
     const messages: ModelMessage[] = [
       { role: "system", content: reflectSystemPrompt(otherName) },
@@ -301,7 +238,6 @@ export const askAthenaReflection = createServerFn({ method: "POST" })
       providerOptions: { lovable: { reasoningEffort: "none" } },
     });
 
-    // Persist transcript after each turn.
     const nextTranscript = [
       ...data.messages.filter((m) => m.role !== "system"),
       { role: "assistant" as const, content: text.trim() },
@@ -317,20 +253,6 @@ export const askAthenaReflection = createServerFn({ method: "POST" })
 
     return { reply: text.trim() };
   });
-
-const reflectDistillInput = z.object({ connection_id: z.string().uuid() });
-
-const reflectionSchema = z.object({
-  summary: z.string(),
-  sentiment: z.enum(["warm", "neutral", "off", "unsure"]),
-  would_meet_again: z.boolean().nullable(),
-  understanding_updates: z.array(
-    z.object({
-      note: z.string(),
-      about: z.enum(["self", "other"]),
-    }),
-  ),
-});
 
 export const distillReflection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
