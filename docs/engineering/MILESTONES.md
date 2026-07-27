@@ -1,5 +1,27 @@
 # Project Milestones
 
+## Constitutional Architecture v1 — Scaffold
+Date: 2026-07-27
+Status: Layered constitutional scaffold in place; substantive content migration pending.
+
+- New tree created under `docs/constitution/` with 7 layers (L1–L7), a Voice &
+  Expression cross-cutting guide, and a META-PREAMBLE governing constitutional
+  evolution.
+- Product architecture introduced under `docs/product/` (Relationship Support,
+  Introduction Experience) — governed by, not part of, the constitution.
+- Engineering logs moved to `docs/engineering/` (this file).
+- Legacy documents at `docs/athena-ultimate-goal.md` and
+  `docs/athena-ethical-constitution.md` preserved verbatim with SUPERSEDED
+  banners pointing to canonical layers. Redirect stub added at
+  `docs/MILESTONES.md`.
+- Directionality rule (L1 → L7) established and enforced in each layer stub.
+- No production code touched. No substantive constitutional language rewritten.
+
+Next: content migration pass per the approved plan (`.lovable/plan.md` §2),
+followed by verification checklist (§8) and a "Constitutional Architecture v1 —
+Content Migrated" milestone.
+
+
 ## Athena Foundation Stable v1
 Date: 2026-07-27
 Status: Permanent rollback point — do not overwrite.
