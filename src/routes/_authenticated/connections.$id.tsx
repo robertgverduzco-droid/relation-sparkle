@@ -466,3 +466,35 @@ function ConnectionDetail() {
     </div>
   );
 }
+
+function RatingRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <p className="text-sm text-foreground">{label}</p>
+      <div className="mt-2 flex gap-2">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            className={`h-9 w-9 rounded-full border text-sm transition ${
+              value === n
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-foreground"
+            }`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
