@@ -83,6 +83,10 @@ function IntroductionsPage() {
         No swiping. No inventory. Only people Athena has come to understand well enough to
         consider — and then, when she believes it's worth your attention, she reflects it here.
       </p>
+      <p className="mt-2 text-[12px] text-muted-foreground">
+        Athena keeps up to three introductions active at a time. Close out an existing one by
+        meeting, passing, or reflecting — then she'll consider the next.
+      </p>
 
       <div className="mt-6">
         <button
