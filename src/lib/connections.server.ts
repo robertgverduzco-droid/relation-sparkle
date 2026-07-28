@@ -41,6 +41,23 @@ export const proposalActionInput = z.object({
   action: z.enum(["confirm", "complete", "cancel"]),
 });
 
+// Private, internal-only post-meeting feedback about the OTHER person.
+// Athena uses this to build understanding of how someone actually shows up
+// in real meetings. The subject never sees any of it. When concerning
+// patterns emerge across multiple independent authors, safety review kicks in.
+export const partnerPerceptionInput = z.object({
+  connection_id: z.string().uuid(),
+  warmth: z.number().int().min(1).max(5).nullable().optional(),
+  honesty: z.number().int().min(1).max(5).nullable().optional(),
+  safety: z.number().int().min(1).max(5).nullable().optional(),
+  chemistry: z.number().int().min(1).max(5).nullable().optional(),
+  would_meet_again: z.boolean().nullable().optional(),
+  surprised_by: z.string().max(1000).optional(),
+  concerns: z.string().max(1000).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+
 export function reflectSystemPrompt(otherName: string): string {
   return `You are Athena.
 
