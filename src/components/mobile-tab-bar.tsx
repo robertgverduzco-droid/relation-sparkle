@@ -1,17 +1,18 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Sparkles, MessageCircle, User } from "lucide-react";
+import { Home, Sparkles, MessageCircle, Mail, User } from "lucide-react";
 
-type Tab = "home" | "athena" | "introductions" | "profile";
+type Tab = "home" | "athena" | "introductions" | "messages" | "profile";
 
 const tabs: {
   key: Tab;
-  to: "/home" | "/athena" | "/introductions" | "/profile";
+  to: "/home" | "/athena" | "/introductions" | "/messages" | "/profile";
   label: string;
   Icon: typeof Home;
 }[] = [
   { key: "home", to: "/home", label: "Today", Icon: Home },
   { key: "athena", to: "/athena", label: "Athena", Icon: MessageCircle },
   { key: "introductions", to: "/introductions", label: "Meet", Icon: Sparkles },
+  { key: "messages", to: "/messages", label: "Chats", Icon: Mail },
   { key: "profile", to: "/profile", label: "You", Icon: User },
 ];
 
@@ -21,7 +22,7 @@ export function MobileTabBar({ current }: { current: Tab }) {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[480px] border-t border-border/70 bg-background/85 backdrop-blur-xl safe-bottom"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {tabs.map(({ key, to, label, Icon }) => {
           const active = key === current;
           return (
