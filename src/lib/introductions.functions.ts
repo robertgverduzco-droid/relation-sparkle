@@ -211,7 +211,7 @@ export const considerIntroductions = createServerFn({ method: "POST" })
 
     let introduced = 0;
     for (const c of toReason) {
-      if (introduced >= MAX_INTRODUCTIONS_PER_USER) break;
+      if (introduced >= remainingSlots) break;
 
       const [low, high] =
         userId < c.other.id ? [userId, c.other.id] : [c.other.id, userId];
@@ -222,8 +222,11 @@ export const considerIntroductions = createServerFn({ method: "POST" })
         b: { name: (c.other.display_name as string) ?? "them", facets: c.otherFacets },
       });
 
-      const wantsIntroduction =
-        object.status === "introduced" && object.confidence >= STRONG_MIN_AVG;
+      // Athena decides introductions on the strength of her reasoning, not
+      // on a numeric confidence floor. A low-confidence pair can still be
+      // introduced if she genuinely believes it's worth surfacing.
+      const wantsIntroduction = object.status === "introduced";
+
 
       const nowIso = new Date().toISOString();
       const presentedForLow = selfIsLow ? object.presentation_for_a : object.presentation_for_b;
