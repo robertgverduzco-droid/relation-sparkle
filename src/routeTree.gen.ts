@@ -17,11 +17,13 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
+import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
 import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
 
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -63,6 +65,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedIntroductionsRoute =
   AuthenticatedIntroductionsRouteImport.update({
     id: '/introductions',
@@ -91,6 +98,11 @@ const AuthenticatedProfileReviewRoute =
     path: '/review',
     getParentRoute: () => AuthenticatedProfileRoute,
   } as any)
+const AuthenticatedMessagesIdRoute = AuthenticatedMessagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedMessagesRoute,
+} as any)
 const AuthenticatedConnectionsIdRoute =
   AuthenticatedConnectionsIdRouteImport.update({
     id: '/$id',
@@ -106,11 +118,13 @@ export interface FileRoutesByFullPath {
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
+  '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRoutesByTo {
@@ -121,11 +135,13 @@ export interface FileRoutesByTo {
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRoute
+  '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRoutesById {
@@ -138,11 +154,13 @@ export interface FileRoutesById {
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
+  '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRouteTypes {
@@ -155,11 +173,13 @@ export interface FileRouteTypes {
     | '/connections'
     | '/home'
     | '/introductions'
+    | '/messages'
     | '/onboarding'
     | '/profile'
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
+    | '/messages/$id'
     | '/profile/review'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,11 +190,13 @@ export interface FileRouteTypes {
     | '/connections'
     | '/home'
     | '/introductions'
+    | '/messages'
     | '/onboarding'
     | '/profile'
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
+    | '/messages/$id'
     | '/profile/review'
   id:
     | '__root__'
@@ -186,11 +208,13 @@ export interface FileRouteTypes {
     | '/_authenticated/connections'
     | '/_authenticated/home'
     | '/_authenticated/introductions'
+    | '/_authenticated/messages'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/connections/$id'
+    | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
   fileRoutesById: FileRoutesById
 }
@@ -261,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/messages': {
+      id: '/_authenticated/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/introductions': {
       id: '/_authenticated/introductions'
       path: '/introductions'
@@ -296,6 +327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileReviewRouteImport
       parentRoute: typeof AuthenticatedProfileRoute
     }
+    '/_authenticated/messages/$id': {
+      id: '/_authenticated/messages/$id'
+      path: '/$id'
+      fullPath: '/messages/$id'
+      preLoaderRoute: typeof AuthenticatedMessagesIdRouteImport
+      parentRoute: typeof AuthenticatedMessagesRoute
+    }
     '/_authenticated/connections/$id': {
       id: '/_authenticated/connections/$id'
       path: '/$id'
@@ -320,6 +358,19 @@ const AuthenticatedConnectionsRouteWithChildren =
     AuthenticatedConnectionsRouteChildren,
   )
 
+interface AuthenticatedMessagesRouteChildren {
+  AuthenticatedMessagesIdRoute: typeof AuthenticatedMessagesIdRoute
+}
+
+const AuthenticatedMessagesRouteChildren: AuthenticatedMessagesRouteChildren = {
+  AuthenticatedMessagesIdRoute: AuthenticatedMessagesIdRoute,
+}
+
+const AuthenticatedMessagesRouteWithChildren =
+  AuthenticatedMessagesRoute._addFileChildren(
+    AuthenticatedMessagesRouteChildren,
+  )
+
 interface AuthenticatedProfileRouteChildren {
   AuthenticatedProfileReviewRoute: typeof AuthenticatedProfileReviewRoute
 }
@@ -336,6 +387,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRoute
+  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
 }
@@ -345,6 +397,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRoute,
+  AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
 }
