@@ -9,9 +9,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import {
   EXPLORATORY_MIN_AVG,
-  STRONG_MIN_AVG,
   MIN_FACETS_EACH,
-  MAX_INTRODUCTIONS_PER_USER,
+  MAX_ACTIVE_INTRODUCTIONS,
   ageFromDob,
   mutuallyEligible,
   facetAverage,
@@ -20,6 +19,7 @@ import {
   type ProfileRow,
   type PrefsRow,
 } from "./introductions.server";
+
 
 export const considerIntroductions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
