@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.ensure_conversation_for_connection() FROM PUBLIC, anon, authenticated;
