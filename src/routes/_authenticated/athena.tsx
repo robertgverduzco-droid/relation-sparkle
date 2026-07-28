@@ -232,7 +232,7 @@ function AthenaPage() {
       }
 
       // Log usage for later billing (Stripe deferred). Rough estimate: 4 chars/token.
-      void logUsage({
+      void logUsageFn({
         data: {
           kind: voiceMode === "voice" ? "athena_voice" : "athena_text",
           input_tokens: Math.ceil(text.length / 4),
