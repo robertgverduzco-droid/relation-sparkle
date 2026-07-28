@@ -35,6 +35,8 @@ function ConnectionDetail() {
   const updateProp = useServerFn(updateMeetingProposal);
   const askReflect = useServerFn(askAthenaReflection);
   const distill = useServerFn(distillReflection);
+  const submitPerception = useServerFn(submitPartnerPerception);
+  const getPerception = useServerFn(getMyPartnerPerception);
 
   const [data, setData] = useState<Data | null>(null);
   const [tab, setTab] = useState<"plan" | "reflect">("plan");
@@ -49,22 +51,69 @@ function ConnectionDetail() {
   const [thinking, setThinking] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  const [perc, setPerc] = useState<{
+    warmth: number | null;
+    honesty: number | null;
+    safety: number | null;
+    chemistry: number | null;
+    would_meet_again: boolean | null;
+    concerns: string;
+  }>({ warmth: null, honesty: null, safety: null, chemistry: null, would_meet_again: null, concerns: "" });
+  const [percSaved, setPercSaved] = useState(false);
+  const [percSaving, setPercSaving] = useState(false);
+
   const load = useCallback(async () => {
     try {
       const res = await get({ data: { connection_id: id } });
       setData(res);
       if (res.reflection?.transcript?.length) setMessages(res.reflection.transcript);
       if (res.connection.status === "met" && !res.reflection?.summary) setTab("reflect");
+      const p = await getPerception({ data: { connection_id: id } });
+      if (p.perception) {
+        setPerc({
+          warmth: p.perception.warmth,
+          honesty: p.perception.honesty,
+          safety: p.perception.safety,
+          chemistry: p.perception.chemistry,
+          would_meet_again: p.perception.would_meet_again,
+          concerns: p.perception.concerns ?? "",
+        });
+        setPercSaved(true);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't load this connection.");
     }
-  }, [get, id]);
+  }, [get, getPerception, id]);
 
   useEffect(() => { void load(); }, [load]);
 
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
+
+  async function savePerception() {
+    setPercSaving(true);
+    try {
+      await submitPerception({
+        data: {
+          connection_id: id,
+          warmth: perc.warmth,
+          honesty: perc.honesty,
+          safety: perc.safety,
+          chemistry: perc.chemistry,
+          would_meet_again: perc.would_meet_again,
+          concerns: perc.concerns.trim() || undefined,
+        },
+      });
+      setPercSaved(true);
+      toast.success("Kept privately with Athena.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't save that.");
+    } finally {
+      setPercSaving(false);
+    }
+  }
+
 
   async function submitProposal(e: React.FormEvent) {
     e.preventDefault();
