@@ -9,9 +9,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import {
   EXPLORATORY_MIN_AVG,
-  STRONG_MIN_AVG,
   MIN_FACETS_EACH,
-  MAX_INTRODUCTIONS_PER_USER,
+  MAX_ACTIVE_INTRODUCTIONS,
   ageFromDob,
   mutuallyEligible,
   facetAverage,
@@ -20,6 +19,7 @@ import {
   type ProfileRow,
   type PrefsRow,
 } from "./introductions.server";
+
 
 export const considerIntroductions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -73,6 +73,42 @@ export const considerIntroductions = createServerFn({ method: "POST" })
     if (selfFacetRows.length < MIN_FACETS_EACH || facetAverage(selfFacetRows) < EXPLORATORY_MIN_AVG) {
       return { ok: true, considered: 0, reason: "self_understanding_too_thin" };
     }
+
+    // Count currently-active introductions for this user. An "active"
+    // introduction is one Athena has presented to them and that has not yet
+    // been resolved — pending / deferred / accepted-waiting-for-other.
+    // Once feedback exists on all active intros (declined, or the pair
+    // moved into a connection), Athena is free to consider more.
+    const { data: activePairs } = await supabase
+      .from("pair_reasoning")
+      .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at")
+      .or(`user_low.eq.${userId},user_high.eq.${userId}`)
+      .eq("status", "introduced");
+    const presentedPairIds = (activePairs ?? [])
+      .filter((p) => (p.user_low === userId ? p.presented_to_a_at : p.presented_to_b_at))
+      .map((p) => p.id as string);
+    let activeCount = 0;
+    if (presentedPairIds.length > 0) {
+      const { data: myResp } = await supabase
+        .from("introduction_responses")
+        .select("pair_id, response")
+        .eq("user_id", userId)
+        .in("pair_id", presentedPairIds);
+      const respByPair = new Map<string, string>();
+      for (const r of myResp ?? []) respByPair.set(r.pair_id as string, r.response as string);
+      // "Active" from this user's side = pending, deferred, or accepted.
+      // Declined is resolved. Accepted stays active until it either becomes
+      // a connection (both accepted) or the other side declines.
+      activeCount = presentedPairIds.filter((pid) => {
+        const r = respByPair.get(pid) ?? "pending";
+        return r === "pending" || r === "deferred" || r === "accepted";
+      }).length;
+    }
+    if (activeCount >= MAX_ACTIVE_INTRODUCTIONS) {
+      return { ok: true, considered: 0, reason: "active_cap_reached", active: activeCount };
+    }
+    const remainingSlots = MAX_ACTIVE_INTRODUCTIONS - activeCount;
+
 
     // 2. Load candidate pool — everyone else who has completed foundation.
     const { data: eligibleIntel } = await supabase
@@ -175,7 +211,7 @@ export const considerIntroductions = createServerFn({ method: "POST" })
 
     let introduced = 0;
     for (const c of toReason) {
-      if (introduced >= MAX_INTRODUCTIONS_PER_USER) break;
+      if (introduced >= remainingSlots) break;
 
       const [low, high] =
         userId < c.other.id ? [userId, c.other.id] : [c.other.id, userId];
@@ -186,8 +222,11 @@ export const considerIntroductions = createServerFn({ method: "POST" })
         b: { name: (c.other.display_name as string) ?? "them", facets: c.otherFacets },
       });
 
-      const wantsIntroduction =
-        object.status === "introduced" && object.confidence >= STRONG_MIN_AVG;
+      // Athena decides introductions on the strength of her reasoning, not
+      // on a numeric confidence floor. A low-confidence pair can still be
+      // introduced if she genuinely believes it's worth surfacing.
+      const wantsIntroduction = object.status === "introduced";
+
 
       const nowIso = new Date().toISOString();
       const presentedForLow = selfIsLow ? object.presentation_for_a : object.presentation_for_b;

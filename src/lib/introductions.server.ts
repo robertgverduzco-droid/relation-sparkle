@@ -6,12 +6,19 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 
-// Confidence thresholds. Exploratory introductions require lower confidence
-// on both sides; stronger introductions require more.
+// Understanding thresholds. Athena needs enough understanding of each person
+// before she is willing to reason about them at all. She does NOT gate
+// introductions on any minimum "score" — a low-confidence pair may still be
+// introduced when her reasoning is strong. Confidence expresses how well
+// she understands them, not whether they are compatible.
 export const EXPLORATORY_MIN_AVG = 0.35;
-export const STRONG_MIN_AVG = 0.55;
 export const MIN_FACETS_EACH = 4;
-export const MAX_INTRODUCTIONS_PER_USER = 2;
+
+// Active-introduction cap: a person never has more than this many open
+// introductions at once. New introductions are only considered after prior
+// ones have feedback (declined, deferred, or moved into a connection).
+export const MAX_ACTIVE_INTRODUCTIONS = 3;
+
 
 export type FacetRow = {
   facet_key: string;
