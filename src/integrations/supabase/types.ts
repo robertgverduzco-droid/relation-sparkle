@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      athena_usage_log: {
+        Row: {
+          billed_at: string | null
+          created_at: string
+          id: string
+          input_tokens: number | null
+          kind: string
+          metadata: Json
+          model: string | null
+          output_tokens: number | null
+          seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          billed_at?: string | null
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          kind: string
+          metadata?: Json
+          model?: string | null
+          output_tokens?: number | null
+          seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          billed_at?: string | null
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          kind?: string
+          metadata?: Json
+          model?: string | null
+          output_tokens?: number | null
+          seconds?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
