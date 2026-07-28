@@ -8,7 +8,10 @@ import {
   getConnection,
   proposeMeeting,
   updateMeetingProposal,
+  submitPartnerPerception,
+  getMyPartnerPerception,
 } from "@/lib/connections.functions";
+
 
 export const Route = createFileRoute("/_authenticated/connections/$id")({
   head: () => ({
