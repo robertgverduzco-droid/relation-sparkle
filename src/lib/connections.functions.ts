@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, generateObject, type ModelMessage } from "ai";
+import { z } from "zod";
 import {
   idInput,
   proposeInput,
@@ -9,7 +10,9 @@ import {
   reflectAskInput,
   reflectDistillInput,
   reflectionSchema,
+  partnerPerceptionInput,
 } from "./connections.server";
+
 
 export const listMyConnections = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
