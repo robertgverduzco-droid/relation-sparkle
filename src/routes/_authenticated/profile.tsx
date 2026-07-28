@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { PhotoUploader } from "@/components/photo-uploader";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -151,6 +152,12 @@ function ProfilePage() {
             />
             <Field label="Where you are right now" value={intel?.readiness_summary} />
           </section>
+
+          <section className="mt-6 px-6">
+            <PhotoUploader />
+          </section>
+
+
 
           <div className="mt-8 px-6">
             <Link

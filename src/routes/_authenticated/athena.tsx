@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askAthena, reflectAthena } from "@/lib/athena.functions";
+import { logUsage } from "@/lib/messaging.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 
@@ -63,6 +64,7 @@ function AthenaPage() {
   const navigate = useNavigate();
   const ask = useServerFn(askAthena);
   const reflect = useServerFn(reflectAthena);
+  const logUsageFn = useServerFn(logUsage);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -228,6 +230,16 @@ function AthenaPage() {
         const abort = new AbortController();
         void playLine(res.reply, abort.signal);
       }
+
+      // Log usage for later billing (Stripe deferred). Rough estimate: 4 chars/token.
+      void logUsageFn({
+        data: {
+          kind: voiceMode === "voice" ? "athena_voice" : "athena_text",
+          input_tokens: Math.ceil(text.length / 4),
+          output_tokens: Math.ceil((res.reply?.length ?? 0) / 4),
+          model: "openai/gpt-5.5",
+        },
+      }).catch(() => { /* silent */ });
 
       const userTurns = withReply.filter((m) => m.role === "user").length;
       if (userTurns - lastReflectedTurnRef.current >= 6) {
