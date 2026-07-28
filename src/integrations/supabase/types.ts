@@ -588,6 +588,65 @@ export type Database = {
           },
         ]
       }
+      partner_perception: {
+        Row: {
+          author_id: string
+          chemistry: number | null
+          concerns: string | null
+          connection_id: string
+          created_at: string
+          honesty: number | null
+          id: string
+          notes: string | null
+          safety: number | null
+          subject_id: string
+          surprised_by: string | null
+          updated_at: string
+          warmth: number | null
+          would_meet_again: boolean | null
+        }
+        Insert: {
+          author_id: string
+          chemistry?: number | null
+          concerns?: string | null
+          connection_id: string
+          created_at?: string
+          honesty?: number | null
+          id?: string
+          notes?: string | null
+          safety?: number | null
+          subject_id: string
+          surprised_by?: string | null
+          updated_at?: string
+          warmth?: number | null
+          would_meet_again?: boolean | null
+        }
+        Update: {
+          author_id?: string
+          chemistry?: number | null
+          concerns?: string | null
+          connection_id?: string
+          created_at?: string
+          honesty?: number | null
+          id?: string
+          notes?: string | null
+          safety?: number | null
+          subject_id?: string
+          surprised_by?: string | null
+          updated_at?: string
+          warmth?: number | null
+          would_meet_again?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_perception_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_meeting_reflections: {
         Row: {
           connection_id: string
