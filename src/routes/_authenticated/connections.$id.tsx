@@ -341,7 +341,69 @@ function ConnectionDetail() {
         </section>
       ) : (
         <section className="flex-1 flex flex-col">
+          <div className="px-5 pt-5 pb-2">
+            <div className="rounded-3xl border border-border/70 bg-card/70 p-5">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                Five questions Athena always asks
+              </p>
+              <p className="mt-2 text-xs text-ink-soft">
+                Private. {data.connection.other_name} never sees any of this. Athena uses it to
+                understand you better and to notice patterns over time.
+              </p>
+              <div className="mt-4 space-y-4">
+                <RatingRow label="Did they feel warm and present?" value={perc.warmth} onChange={(v) => setPerc((p) => ({ ...p, warmth: v }))} />
+                <RatingRow label="Did they feel honest?" value={perc.honesty} onChange={(v) => setPerc((p) => ({ ...p, honesty: v }))} />
+                <RatingRow label="Did you feel safe with them?" value={perc.safety} onChange={(v) => setPerc((p) => ({ ...p, safety: v }))} />
+                <RatingRow label="Was there any real chemistry?" value={perc.chemistry} onChange={(v) => setPerc((p) => ({ ...p, chemistry: v }))} />
+                <div>
+                  <p className="text-sm text-foreground">Would you meet them again?</p>
+                  <div className="mt-2 flex gap-2">
+                    {[
+                      { v: true, label: "Yes" },
+                      { v: false, label: "No" },
+                      { v: null, label: "Unsure" },
+                    ].map((o) => (
+                      <button
+                        key={String(o.v)}
+                        type="button"
+                        onClick={() => setPerc((p) => ({ ...p, would_meet_again: o.v }))}
+                        className={`rounded-full border px-4 py-1.5 text-sm transition ${
+                          perc.would_meet_again === o.v
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border text-foreground"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-foreground">Anything that concerned you? (optional)</p>
+                  <textarea
+                    value={perc.concerns}
+                    onChange={(e) => setPerc((p) => ({ ...p, concerns: e.target.value }))}
+                    rows={2}
+                    placeholder="Only Athena sees this."
+                    className="mt-2 w-full resize-none rounded-2xl border border-input bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void savePerception()}
+                  disabled={percSaving}
+                  className="w-full rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-40"
+                >
+                  {percSaving ? "Saving…" : percSaved ? "Update Athena's private notes" : "Share with Athena, privately"}
+                </button>
+              </div>
+            </div>
+            <p className="mt-4 px-1 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+              Or talk it through with Athena
+            </p>
+          </div>
           <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+
             {messages.length === 0 && !thinking ? (
               <p className="text-center text-sm text-muted-foreground">
                 Say hello when you're ready — Athena will take it from there. This is private.
