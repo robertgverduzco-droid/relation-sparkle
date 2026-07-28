@@ -230,6 +230,16 @@ function AthenaPage() {
         void playLine(res.reply, abort.signal);
       }
 
+      // Log usage for later billing (Stripe deferred). Rough estimate: 4 chars/token.
+      void logUsage({
+        data: {
+          kind: voiceMode === "voice" ? "athena_voice" : "athena_text",
+          input_tokens: Math.ceil(text.length / 4),
+          output_tokens: Math.ceil((res.reply?.length ?? 0) / 4),
+          model: "openai/gpt-5.5",
+        },
+      }).catch(() => { /* silent */ });
+
       const userTurns = withReply.filter((m) => m.role === "user").length;
       if (userTurns - lastReflectedTurnRef.current >= 6) {
         lastReflectedTurnRef.current = userTurns;
