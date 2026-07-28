@@ -296,3 +296,58 @@ export const distillReflection = createServerFn({ method: "POST" })
 
     return { ok: true, summary: object.summary, sentiment: object.sentiment };
   });
+
+// Save (or update) the current user's private perception of the person they
+// met. Never surfaced to the subject.
+export const submitPartnerPerception = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => partnerPerceptionInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: conn } = await supabase
+      .from("connections")
+      .select("id, user_low, user_high")
+      .eq("id", data.connection_id)
+      .maybeSingle();
+    if (!conn) throw new Error("Not found");
+    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
+    const subjectId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
+
+    const { error } = await supabase
+      .from("partner_perception")
+      .upsert(
+        {
+          connection_id: data.connection_id,
+          author_id: userId,
+          subject_id: subjectId,
+          warmth: data.warmth ?? null,
+          honesty: data.honesty ?? null,
+          safety: data.safety ?? null,
+          chemistry: data.chemistry ?? null,
+          would_meet_again: data.would_meet_again ?? null,
+          surprised_by: data.surprised_by ?? null,
+          concerns: data.concerns ?? null,
+          notes: data.notes ?? null,
+        },
+        { onConflict: "connection_id,author_id" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const getMyPartnerPerception = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => z.object({ connection_id: z.string().uuid() }).parse(v))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row } = await supabase
+      .from("partner_perception")
+      .select(
+        "warmth, honesty, safety, chemistry, would_meet_again, surprised_by, concerns, notes, updated_at",
+      )
+      .eq("connection_id", data.connection_id)
+      .eq("author_id", userId)
+      .maybeSingle();
+    return { perception: row ?? null };
+  });
+
