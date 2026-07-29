@@ -3,13 +3,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-async function assertModerator(supabase: {
-  rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-}, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "moderator" });
-  if (error) throw new Error("Role check failed");
-  const { data: adminCheck } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (!data && !adminCheck) throw new Error("Forbidden");
+type SbCtx = { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" | "moderator" | "user" }) => Promise<{ data: unknown; error: unknown }> } };
+
+async function assertModerator(supabase: SbCtx["supabase"], userId: string) {
+  const [{ data: mod }, { data: admin }] = await Promise.all([
+    supabase.rpc("has_role", { _user_id: userId, _role: "moderator" }),
+    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
+  ]);
+  if (!mod && !admin) throw new Error("Forbidden");
 }
 
 export const amIModerator = createServerFn({ method: "GET" })
