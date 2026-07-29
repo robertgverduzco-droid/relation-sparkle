@@ -121,3 +121,86 @@ export async function openConnectionIfMutual(
     .maybeSingle();
   return (opened?.id as string) ?? null;
 }
+
+
+// ---------------------------------------------------------------------------
+// Athena Reflection Flow (post-date experience)
+//
+// North star: every reflection should leave the member feeling more understood
+// than when they began, while helping Athena understand them more deeply for
+// every future introduction.
+//
+// This is additive. The free-form reflection conversation and the private
+// partner-perception questions above remain exactly as they were.
+// ---------------------------------------------------------------------------
+
+export const REFLECTION_INTRO =
+  "Your reflections help me understand both the person you met and the person you are becoming. The more honestly you share your experience, the more thoughtfully I can guide future introductions.";
+
+export const REFLECTION_FEELINGS = [
+  "Comfortable",
+  "Relaxed",
+  "Excited",
+  "Curious",
+  "Nervous",
+  "Unsure",
+  "Disconnected",
+  "Other",
+] as const;
+
+export const REFLECTION_CLOSINGS: Record<"yes" | "no" | "not_sure", string> = {
+  yes: "I'm happy to hear that. I'll continue supporting you as you get to know one another. Whenever you'd like to reflect on your experiences together or talk something through, I'm here.",
+  not_sure:
+    "That's perfectly okay. Meaningful relationships sometimes take time to understand. Whenever you're ready to reflect again, I'll be here.",
+  no: "Thank you for telling me honestly. I'll carry what you shared into every introduction that comes next.",
+};
+
+export const reflectionSubmitInput = z.object({
+  connection_id: z.string().uuid(),
+  feeling_tags: z.array(z.string().max(40)).max(10).default([]),
+  feeling_other: z.string().max(200).optional(),
+  most_genuine: z.string().max(4000).optional(),
+  greatest_difference: z.string().max(4000).optional(),
+  self_understanding: z.string().max(4000).optional(),
+  continue_decision: z.enum(["yes", "no", "not_sure"]),
+  decision_reason: z.string().max(4000).optional(),
+  anything_else: z.string().max(4000).optional(),
+});
+
+/**
+ * When a member says they don't want to continue, the introduction is
+ * complete: the connection closes, the pair leaves their active set, and the
+ * slot frees up for a future introduction. "Yes" and "not sure yet" both leave
+ * the introduction active — nothing changes.
+ */
+export async function applyReflectionOutcome(
+  supabase: SupabaseClient,
+  args: { connectionId: string; userId: string; decision: "yes" | "no" | "not_sure" },
+): Promise<{ closed: boolean }> {
+  if (args.decision !== "no") return { closed: false };
+
+  const { data: conn } = await supabase
+    .from("connections")
+    .select("id, pair_id, status")
+    .eq("id", args.connectionId)
+    .maybeSingle();
+  if (!conn) return { closed: false };
+
+  await supabase
+    .from("connections")
+    .update({
+      status: "closed",
+      closed_at: new Date().toISOString(),
+      close_reason: "reflection_complete",
+    })
+    .eq("id", args.connectionId);
+
+  if (conn.pair_id) {
+    await supabase
+      .from("pair_reasoning")
+      .update({ status: "closed", is_stale: true, stale_reason: "reflection complete" })
+      .eq("id", conn.pair_id as string);
+  }
+
+  return { closed: true };
+}
