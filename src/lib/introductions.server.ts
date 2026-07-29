@@ -359,3 +359,101 @@ export async function runMatchmakingForUser(
   return { ok: true, considered: toReason.length, introduced };
 }
 
+/**
+ * Re-reason any pair_reasoning rows involving `userId` that are marked
+ * `is_stale = true`. Refreshes reasoning, confidence, and both presentations
+ * in place. Does NOT create new introductions; existing `introduced` pairs
+ * keep their presented_to_* timestamps so both sides continue to see the same
+ * intro (with updated text).
+ */
+export async function refreshStalePairsForUser(userId: string): Promise<{ refreshed: number }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const supabase = supabaseAdmin as SupabaseClient;
+
+  const { data: stale } = await supabase
+    .from("pair_reasoning")
+    .select("id, user_low, user_high, status, presented_to_a_at, presented_to_b_at")
+    .or(`user_low.eq.${userId},user_high.eq.${userId}`)
+    .eq("is_stale", true)
+    .limit(10);
+  if (!stale || stale.length === 0) return { refreshed: 0 };
+
+  const otherIds = Array.from(
+    new Set(stale.map((p) => (p.user_low === userId ? p.user_high : p.user_low) as string)),
+  );
+  const [{ data: profs }, { data: allFacets }] = await Promise.all([
+    supabase.from("profiles").select("id, display_name").in("id", [userId, ...otherIds]),
+    supabase.from("understanding_facets").select("user_id, facet_key, understanding, reasoning, confidence").in("user_id", [userId, ...otherIds]),
+  ]);
+  const nameOf = new Map<string, string>();
+  for (const p of profs ?? []) nameOf.set(p.id as string, (p.display_name as string | null) ?? "them");
+  const facetsBy = new Map<string, FacetRow[]>();
+  for (const f of allFacets ?? []) {
+    const arr = facetsBy.get(f.user_id as string) ?? [];
+    arr.push({
+      facet_key: f.facet_key as string,
+      understanding: (f.understanding as string | null) ?? null,
+      reasoning: (f.reasoning as string | null) ?? null,
+      confidence: Number(f.confidence ?? 0),
+    });
+    facetsBy.set(f.user_id as string, arr);
+  }
+  const selfFacets = facetsBy.get(userId) ?? [];
+  if (selfFacets.length === 0) return { refreshed: 0 };
+
+  let refreshed = 0;
+  for (const pair of stale) {
+    const otherId = (pair.user_low === userId ? pair.user_high : pair.user_low) as string;
+    const otherFacets = facetsBy.get(otherId) ?? [];
+    if (otherFacets.length < MIN_FACETS_EACH) continue;
+
+    try {
+      const object = await reasonPair({
+        a: { name: nameOf.get(pair.user_low as string) ?? "them", facets: pair.user_low === userId ? selfFacets : otherFacets },
+        b: { name: nameOf.get(pair.user_high as string) ?? "them", facets: pair.user_high === userId ? selfFacets : otherFacets },
+      });
+      const wasIntroduced = Boolean(pair.presented_to_a_at && pair.presented_to_b_at);
+      // Preserve already-presented intros; downgrading a live intro would
+      // yank it from users mid-flow. Update presentation text either way.
+      const nextStatus = wasIntroduced ? "introduced" : object.status;
+      await supabase
+        .from("pair_reasoning")
+        .update({
+          status: nextStatus,
+          confidence: object.confidence,
+          reasoning: object.reasoning,
+          alignments: object.alignments,
+          complementary: object.complementary,
+          frictions: object.frictions,
+          hard_conflicts: object.hard_conflicts,
+          presentation_a: object.presentation_for_a,
+          presentation_b: object.presentation_for_b,
+          is_stale: false,
+          stale_reason: null,
+          last_reasoned_at: new Date().toISOString(),
+        })
+        .eq("id", pair.id as string);
+      await supabase.from("pair_reasoning_history").insert({
+        pair_id: pair.id as string,
+        user_low: pair.user_low as string,
+        user_high: pair.user_high as string,
+        status: nextStatus,
+        confidence: object.confidence,
+        reasoning: object.reasoning,
+        snapshot: {
+          alignments: object.alignments,
+          complementary: object.complementary,
+          frictions: object.frictions,
+          hard_conflicts: object.hard_conflicts,
+          refresh: true,
+        },
+      });
+      refreshed += 1;
+    } catch {
+      /* skip this pair */
+    }
+  }
+  return { refreshed };
+}
+
+
