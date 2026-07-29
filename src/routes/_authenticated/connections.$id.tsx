@@ -496,6 +496,14 @@ function ConnectionDetail() {
           </form>
         </section>
       )}
+
+      {reportOpen && (
+        <ReportSheet
+          other={data.connection.other_name}
+          onClose={() => setReportOpen(false)}
+          onSubmit={submitReport}
+        />
+      )}
     </div>
   );
 }
