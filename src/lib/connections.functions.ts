@@ -543,7 +543,17 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       const gateway = createLovableGateway();
       const { text } = await generateText({
         model: gateway("openai/gpt-5.5"),
-        prompt: acknowledgementPrompt({ otherName, feelings: data.feeling_tags, ...payload }),
+        prompt: acknowledgementPrompt({
+          otherName,
+          feelings: data.feeling_tags,
+          feelingOther: payload.feeling_other,
+          mostGenuine: payload.most_genuine,
+          greatestDifference: payload.greatest_difference,
+          selfUnderstanding: payload.self_understanding,
+          decision: data.continue_decision,
+          decisionReason: payload.decision_reason,
+          anythingElse: payload.anything_else,
+        }),
         providerOptions: { lovable: { reasoningEffort: "none" } },
       });
       if (text.trim()) acknowledgement = text.trim();
