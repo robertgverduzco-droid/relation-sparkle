@@ -544,7 +544,19 @@ function AthenaPage() {
         />
       )}
 
+      {showClosingCard && (
+        <ClosingSheet
+          busy={completing}
+          onKeepTalking={() => setShowClosingCard(false)}
+          onFinish={() => {
+            setShowClosingCard(false);
+            void finalizeAndLeave();
+          }}
+        />
+      )}
+
       <MobileTabBar current="athena" />
+
     </div>
   );
 }
@@ -594,6 +606,51 @@ function VoiceSettingsSheet({
     </div>
   );
 }
+
+function ClosingSheet({
+  busy,
+  onKeepTalking,
+  onFinish,
+}: {
+  busy: boolean;
+  onKeepTalking: () => void;
+  onFinish: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
+      <div
+        className="w-full max-w-md rounded-t-3xl bg-background border-t border-border/60 p-6 pb-8 fade-in-slow"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
+        <h2 className="text-lg font-display mb-2">A natural place to pause</h2>
+        <p className="text-sm text-ink-soft leading-relaxed">
+          Athena has enough of a foundation to begin thinking carefully about who
+          you might connect with. You can keep talking as long as you'd like —
+          every conversation from here refines her understanding — or close for
+          now and let her start reflecting.
+        </p>
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            onClick={onFinish}
+            disabled={busy}
+            className="rounded-full bg-primary px-6 py-3 text-[15px] font-medium text-primary-foreground disabled:opacity-60"
+          >
+            {busy ? "Saving…" : "Finish for now"}
+          </button>
+          <button
+            onClick={onKeepTalking}
+            disabled={busy}
+            className="rounded-full border border-border px-6 py-3 text-[15px] text-foreground disabled:opacity-60"
+          >
+            Keep talking
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function MicIcon() {
   return (
