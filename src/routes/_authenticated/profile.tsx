@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
+import { setAccountPaused, deleteMyAccount } from "@/lib/account.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -24,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
-type ProfileRow = { display_name: string | null; city: string | null };
+type ProfileRow = { display_name: string | null; city: string | null; is_paused: boolean | null };
 type IntelligenceRow = {
   core_values: unknown;
   life_direction: string | null;
