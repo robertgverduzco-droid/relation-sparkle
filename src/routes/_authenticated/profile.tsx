@@ -54,7 +54,7 @@ function ProfilePage() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: p }, { data: i }] = await Promise.all([
+      const [{ data: p }, { data: i }, mod] = await Promise.all([
         supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
         supabase
           .from("user_intelligence")
@@ -62,12 +62,15 @@ function ProfilePage() {
             "core_values, life_direction, self_understanding, communication_style, conflict_style, partnership_vision, readiness_summary, last_interview_at",
           )
           .maybeSingle(),
+        modCheck({}).catch(() => ({ moderator: false })),
       ]);
       setProfile(p as ProfileRow | null);
       setIntel(i as IntelligenceRow | null);
+      setIsModerator(Boolean(mod?.moderator));
       setLoading(false);
     })();
-  }, []);
+  }, [modCheck]);
+
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -235,6 +238,15 @@ function ProfilePage() {
         >
           Privacy
         </Link>
+        {isModerator && (
+          <Link
+            to="/moderation"
+            className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
+          >
+            Moderation review
+          </Link>
+        )}
+
         <button
           onClick={signOut}
           className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground"
