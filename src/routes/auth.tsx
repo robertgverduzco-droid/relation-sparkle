@@ -5,7 +5,10 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).optional(),
+  verify: z.union([z.literal(1), z.literal("1"), z.boolean()]).optional(),
+});
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => searchSchema.parse(s),
