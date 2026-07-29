@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
+import { setAccountPaused, deleteMyAccount } from "@/lib/account.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -24,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
-type ProfileRow = { display_name: string | null; city: string | null };
+type ProfileRow = { display_name: string | null; city: string | null; is_paused: boolean | null };
 type IntelligenceRow = {
   core_values: unknown;
   life_direction: string | null;
@@ -38,14 +40,17 @@ type IntelligenceRow = {
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const pauseFn = useServerFn(setAccountPaused);
+  const deleteFn = useServerFn(deleteMyAccount);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     (async () => {
       const [{ data: p }, { data: i }] = await Promise.all([
-        supabase.from("profiles").select("display_name, city").maybeSingle(),
+        supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
         supabase
           .from("user_intelligence")
           .select(
@@ -63,6 +68,36 @@ function ProfilePage() {
     await supabase.auth.signOut();
     toast("You've signed out.");
     navigate({ to: "/" });
+  }
+
+  async function togglePause() {
+    if (!profile) return;
+    setBusy(true);
+    try {
+      const next = !profile.is_paused;
+      await pauseFn({ data: { paused: next } });
+      setProfile({ ...profile, is_paused: next });
+      toast(next ? "Athena has paused your matches." : "Welcome back — matches resumed.");
+    } catch {
+      toast.error("Couldn't update pause state.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeAccount() {
+    const answer = prompt('This permanently deletes your account and everything Athena has come to understand about you. To confirm, type: delete my account');
+    if (answer !== "delete my account") return;
+    setBusy(true);
+    try {
+      await deleteFn({ data: { confirm: "delete my account" } });
+      await supabase.auth.signOut();
+      toast("Your account has been deleted.");
+      navigate({ to: "/" });
+    } catch {
+      toast.error("Couldn't delete the account.");
+      setBusy(false);
+    }
   }
 
   const values = Array.isArray(intel?.core_values)
@@ -177,6 +212,18 @@ function ProfilePage() {
         >
           Continue with Athena
         </Link>
+        <button
+          onClick={togglePause}
+          disabled={busy || !profile}
+          className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground disabled:opacity-60"
+        >
+          {profile?.is_paused ? "Resume matches" : "Pause matches"}
+        </button>
+        {profile?.is_paused && (
+          <p className="text-center text-xs text-muted-foreground">
+            You're paused. Athena won't create introductions until you resume.
+          </p>
+        )}
         <Link
           to="/privacy"
           className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
@@ -188,6 +235,13 @@ function ProfilePage() {
           className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground"
         >
           Sign out
+        </button>
+        <button
+          onClick={removeAccount}
+          disabled={busy}
+          className="w-full rounded-full border border-destructive/60 px-6 py-3 text-sm text-destructive disabled:opacity-60"
+        >
+          Delete my account
         </button>
       </div>
 

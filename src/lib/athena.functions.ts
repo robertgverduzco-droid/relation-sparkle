@@ -71,17 +71,19 @@ Use this memory to:
 
     const userTurns = data.messages.filter((m) => m.role === "user").length;
     const elapsed = data.elapsedMinutes ?? 0;
+    // 12 min is an internal courtesy check-in only. The foundational
+    // conversation itself is designed to last approximately 20 minutes.
     const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= 12;
 
     const pacingHint =
-      userTurns >= 14
-        ? "You have spoken with them for a while. If you feel a natural resting place, you may warmly suggest continuing another day. Do not force it."
-        : userTurns >= 10
-          ? "You've been speaking for a while. Let the conversation breathe. If it feels right, you may gently note this is a good pause."
-          : "Stay curious. There is time.";
+      elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
+        ? "You have now been speaking for around twenty minutes — the length this foundational conversation is designed for. If a natural resting place is near, warmly offer to continue another day. Do not cut them off; let the closing feel like a graceful pause, not an ending."
+        : elapsed >= 18
+          ? "You are approaching the natural length of this foundational conversation. Let it breathe. If a good pause presents itself, you may gently note it."
+          : "Stay curious. There is time — the foundational conversation is designed to last approximately twenty minutes.";
 
     const timeHint = shouldAcknowledgeTime
-      ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not necessarily at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes. I'm happy to keep going — I just wanted to make sure that still works for your schedule." Then either continue naturally or invite them to choose. Do this only once per conversation.`
+      ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes now — our foundational conversation is designed for around twenty, and I'm happy to keep going if that still works for you." Then either continue naturally or invite them to choose. Do this only once per conversation.`
       : "Do not comment on how long the conversation has been going.";
 
     const messages: ModelMessage[] = data.messages
@@ -97,10 +99,15 @@ Use this memory to:
 
     const reply = text.trim();
     const lowered = reply.toLowerCase();
-    const offerReturn =
-      userTurns >= 10 &&
+    // Pacing is driven primarily by elapsed minutes (foundational = ~20 min),
+    // with turn-count as a secondary signal so unusually terse users still
+    // reach a natural close.
+    const readyToOffer =
+      (elapsed >= 20 && userTurns >= 10) || elapsed >= 24 || userTurns >= 16;
+    const languageOffersReturn =
       /(another day|another time|pick this back up|come back|next time|good place to (pause|stop|rest))/.test(lowered);
-    const windDown = !offerReturn && userTurns >= 8;
+    const offerReturn = readyToOffer && (languageOffersReturn || elapsed >= 22);
+    const windDown = !offerReturn && (elapsed >= 18 || userTurns >= 12);
     const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
 
     return askOutput.parse({ reply, pacing, timeAcknowledged: shouldAcknowledgeTime });
@@ -360,6 +367,15 @@ ${transcript}`,
       .from("pair_reasoning")
       .update({ is_stale: true, stale_reason: "understanding refined" })
       .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+
+    // Automatic matchmaking trigger: whenever Athena's understanding
+    // materially deepens (facets changed) OR the foundational conversation
+    // has just completed, reconsider introductions for this user in the
+    // background. Cooldown inside runMatchmakingForUser prevents thrash.
+    if (upserts.length > 0) {
+      const { runMatchmakingForUser } = await import("./introductions.server");
+      void runMatchmakingForUser(userId).catch(() => { /* silent */ });
+    }
 
     return {
       ok: true,

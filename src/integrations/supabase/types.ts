@@ -843,7 +843,11 @@ export type Database = {
           id: string
           reported_id: string
           reporter_id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           severity: Database["public"]["Enums"]["safety_severity"]
+          status: string
         }
         Insert: {
           category: string
@@ -853,7 +857,11 @@ export type Database = {
           id?: string
           reported_id: string
           reporter_id: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           severity?: Database["public"]["Enums"]["safety_severity"]
+          status?: string
         }
         Update: {
           category?: string
@@ -863,7 +871,11 @@ export type Database = {
           id?: string
           reported_id?: string
           reporter_id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           severity?: Database["public"]["Enums"]["safety_severity"]
+          status?: string
         }
         Relationships: [
           {
@@ -1031,6 +1043,7 @@ export type Database = {
           ideal_week: string | null
           interview_target_turns: number
           last_interview_at: string | null
+          last_matchmaking_at: string | null
           life_direction: string | null
           meaning_of_relationship: string | null
           partnership_vision: string | null
@@ -1052,6 +1065,7 @@ export type Database = {
           ideal_week?: string | null
           interview_target_turns?: number
           last_interview_at?: string | null
+          last_matchmaking_at?: string | null
           life_direction?: string | null
           meaning_of_relationship?: string | null
           partnership_vision?: string | null
@@ -1073,6 +1087,7 @@ export type Database = {
           ideal_week?: string | null
           interview_target_turns?: number
           last_interview_at?: string | null
+          last_matchmaking_at?: string | null
           life_direction?: string | null
           meaning_of_relationship?: string | null
           partnership_vision?: string | null
@@ -1228,14 +1243,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       match_status:
         | "proposed"
         | "accepted_by_a"
@@ -1382,6 +1425,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       match_status: [
         "proposed",
         "accepted_by_a",
