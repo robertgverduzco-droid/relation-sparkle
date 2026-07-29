@@ -17,6 +17,9 @@ import {
 const INTRO =
   "Your reflections help me understand both the person you met and the person you are becoming. The more honestly you share your experience, the more thoughtfully I can guide future introductions.";
 
+const NOT_YET =
+  "There's no rush. Once you've actually spent time together, I'll be here to reflect on it with you.";
+
 const FEELINGS = [
   "Comfortable",
   "Relaxed",
@@ -37,14 +40,31 @@ const CLOSINGS: Record<"yes" | "no" | "not_sure", string> = {
 
 type Decision = "yes" | "no" | "not_sure";
 
+type HistoryRow = {
+  id: string;
+  sequence: number;
+  feeling_tags: string[] | null;
+  feeling_other: string | null;
+  most_genuine: string | null;
+  greatest_difference: string | null;
+  self_understanding: string | null;
+  continue_decision: string | null;
+  decision_reason: string | null;
+  anything_else: string | null;
+  athena_acknowledgement: string | null;
+  submitted_at: string | null;
+};
+
 export function ReflectionFlow({
   connectionId,
   otherName,
   onCompleted,
+  onReportSafety,
 }: {
   connectionId: string;
   otherName: string;
   onCompleted?: () => void;
+  onReportSafety?: () => void;
 }) {
   const load = useServerFn(getGuidedReflection);
   const submit = useServerFn(submitGuidedReflection);
@@ -52,6 +72,15 @@ export function ReflectionFlow({
   const [ready, setReady] = useState(false);
   const [done, setDone] = useState<Decision | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const [available, setAvailable] = useState(false);
+  const [required, setRequired] = useState(false);
+  const [requiredInvite, setRequiredInvite] = useState<string | null>(null);
+  const [checkin, setCheckin] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryRow[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [acknowledgement, setAcknowledgement] = useState<string | null>(null);
+  const [reflectAgain, setReflectAgain] = useState(false);
 
   const [feelings, setFeelings] = useState<string[]>([]);
   const [feelingOther, setFeelingOther] = useState("");
@@ -62,10 +91,26 @@ export function ReflectionFlow({
   const [reason, setReason] = useState("");
   const [anythingElse, setAnythingElse] = useState("");
 
+  function clearDraft() {
+    setFeelings([]);
+    setFeelingOther("");
+    setMostGenuine("");
+    setDifference("");
+    setSelfLearning("");
+    setDecision(null);
+    setReason("");
+    setAnythingElse("");
+  }
+
   const fetchIt = useCallback(async () => {
     try {
       const res = await load({ data: { connection_id: connectionId } });
       const r = res.reflection;
+      setAvailable(Boolean(res.available));
+      setRequired(Boolean(res.required));
+      setRequiredInvite(res.required_invite ?? null);
+      setCheckin(res.checkin ?? null);
+      setHistory((res.history ?? []) as unknown as HistoryRow[]);
       if (r) {
         setFeelings((r.feeling_tags as string[] | null) ?? []);
         setFeelingOther(r.feeling_other ?? "");
@@ -74,6 +119,7 @@ export function ReflectionFlow({
         setSelfLearning(r.self_understanding ?? "");
         setReason(r.decision_reason ?? "");
         setAnythingElse(r.anything_else ?? "");
+        setAcknowledgement(r.athena_acknowledgement ?? null);
         if (r.submitted_at && r.continue_decision) {
           setDone(r.continue_decision as Decision);
         }
@@ -96,7 +142,7 @@ export function ReflectionFlow({
   async function send(d: Decision) {
     setBusy(true);
     try {
-      await submit({
+      const res = await submit({
         data: {
           connection_id: connectionId,
           feeling_tags: feelings,
@@ -109,7 +155,12 @@ export function ReflectionFlow({
           anything_else: anythingElse.trim() || undefined,
         },
       });
+      setAcknowledgement(res.acknowledgement ?? CLOSINGS[d]);
       setDone(d);
+      setReflectAgain(false);
+      setRequired(false);
+      setCheckin(null);
+      void fetchIt();
       onCompleted?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't save that just yet.");
@@ -120,16 +171,96 @@ export function ReflectionFlow({
 
   if (!ready) return null;
 
-  if (done) {
+  const safetyLink = onReportSafety ? (
+    <button
+      type="button"
+      onClick={onReportSafety}
+      className="mt-5 text-xs text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+    >
+      Report a safety concern
+    </button>
+  ) : null;
+
+  const earlier = history.length > 0 ? (
+    <div className="mt-5 border-t border-border/60 pt-4">
+      <button
+        type="button"
+        onClick={() => setShowHistory((v) => !v)}
+        className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
+      >
+        {showHistory ? "Hide" : "Earlier reflections"} · {history.length}
+      </button>
+      {showHistory ? (
+        <div className="mt-4 space-y-4">
+          {history.map((h) => (
+            <div key={h.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                {h.submitted_at ? new Date(h.submitted_at).toLocaleDateString() : "—"} ·{" "}
+                {h.continue_decision === "yes"
+                  ? "Wanted to continue"
+                  : h.continue_decision === "no"
+                    ? "Chose to conclude"
+                    : "Not sure yet"}
+              </p>
+              {(h.feeling_tags ?? []).length > 0 ? (
+                <p className="mt-2 text-sm text-ink-soft">{(h.feeling_tags ?? []).join(" · ")}</p>
+              ) : null}
+              {h.most_genuine ? (
+                <p className="mt-2 text-sm text-foreground whitespace-pre-wrap">{h.most_genuine}</p>
+              ) : null}
+              {h.athena_acknowledgement ? (
+                <p className="mt-3 text-sm italic leading-relaxed text-ink-soft">
+                  {h.athena_acknowledgement}
+                </p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  ) : null;
+
+  // Nothing meaningful has happened yet — Athena waits.
+  if (!available && !reflectAgain) {
     return (
       <div className="rounded-3xl border border-border/70 bg-card/70 p-6">
         <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Athena</p>
-        <p className="mt-3 text-[15px] leading-relaxed text-foreground">{CLOSINGS[done]}</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-foreground">{NOT_YET}</p>
+        {safetyLink}
+      </div>
+    );
+  }
+
+  if (done && !reflectAgain) {
+    return (
+      <div className="rounded-3xl border border-border/70 bg-card/70 p-6">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Athena</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-foreground">
+          {acknowledgement ?? CLOSINGS[done]}
+        </p>
         {done === "no" ? (
           <p className="mt-3 text-xs text-ink-soft">
             This introduction is complete. When the time is right, I'll bring you someone new.
           </p>
-        ) : null}
+        ) : (
+          <>
+            {checkin ? (
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">{checkin}</p>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                clearDraft();
+                setReflectAgain(true);
+              }}
+              className="mt-4 rounded-full border border-border px-4 py-2 text-sm text-foreground transition hover:border-primary/60"
+            >
+              Reflect again
+            </button>
+          </>
+        )}
+        {earlier}
+        {safetyLink}
       </div>
     );
   }
@@ -139,6 +270,12 @@ export function ReflectionFlow({
       <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
         Reflecting with Athena
       </p>
+      {required && requiredInvite ? (
+        <p className="mt-3 text-[15px] leading-relaxed text-foreground">{requiredInvite}</p>
+      ) : null}
+      {checkin ? (
+        <p className="mt-3 text-[15px] leading-relaxed text-foreground">{checkin}</p>
+      ) : null}
       <p className="mt-3 text-[15px] leading-relaxed text-foreground">{INTRO}</p>
 
       <div className="mt-6 space-y-6">
@@ -244,6 +381,9 @@ export function ReflectionFlow({
           </div>
         ) : null}
       </div>
+
+      {earlier}
+      {safetyLink}
     </div>
   );
 }

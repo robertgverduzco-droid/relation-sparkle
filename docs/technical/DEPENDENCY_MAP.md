@@ -122,3 +122,14 @@ Framework wiring. Touch only when changing router config or middleware chain.
   route still loads and no public loader calls a protected server fn.
 - **Add a route** → verify `routeTree.gen.ts` regenerated and no duplicate
   index claimants exist.
+
+## Reflection extensions (added with the seven approved decisions)
+
+- `reflection_submissions` (new) → written by `connections.functions.ts`, read by
+  `reflection-flow.tsx` history and by `detectMutualYes`.
+- `post_meeting_reflections.reflection_required` → read by
+  `introductions.server.ts` eligibility gate (14-day grace).
+- `connections.status = 'mutual_interest'` → any read that filters on `open`
+  must also accept `mutual_interest`.
+- `src/components/report-sheet.tsx` (new, extracted verbatim from
+  `messages.$id.tsx`) → consumed by `messages.$id.tsx` and `connections.$id.tsx`.

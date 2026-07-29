@@ -689,6 +689,7 @@ export type Database = {
       post_meeting_reflections: {
         Row: {
           anything_else: string | null
+          athena_acknowledgement: string | null
           connection_id: string
           continue_decision: string | null
           created_at: string
@@ -697,8 +698,11 @@ export type Database = {
           feeling_tags: string[]
           greatest_difference: string | null
           id: string
+          last_checkin_at: string | null
           most_genuine: string | null
           refined_at: string | null
+          reflection_required: boolean
+          required_since: string | null
           self_understanding: string | null
           sentiment: string | null
           submitted_at: string | null
@@ -710,6 +714,7 @@ export type Database = {
         }
         Insert: {
           anything_else?: string | null
+          athena_acknowledgement?: string | null
           connection_id: string
           continue_decision?: string | null
           created_at?: string
@@ -718,8 +723,11 @@ export type Database = {
           feeling_tags?: string[]
           greatest_difference?: string | null
           id?: string
+          last_checkin_at?: string | null
           most_genuine?: string | null
           refined_at?: string | null
+          reflection_required?: boolean
+          required_since?: string | null
           self_understanding?: string | null
           sentiment?: string | null
           submitted_at?: string | null
@@ -731,6 +739,7 @@ export type Database = {
         }
         Update: {
           anything_else?: string | null
+          athena_acknowledgement?: string | null
           connection_id?: string
           continue_decision?: string | null
           created_at?: string
@@ -739,8 +748,11 @@ export type Database = {
           feeling_tags?: string[]
           greatest_difference?: string | null
           id?: string
+          last_checkin_at?: string | null
           most_genuine?: string | null
           refined_at?: string | null
+          reflection_required?: boolean
+          required_since?: string | null
           self_understanding?: string | null
           sentiment?: string | null
           submitted_at?: string | null
@@ -816,6 +828,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reflection_submissions: {
+        Row: {
+          anything_else: string | null
+          athena_acknowledgement: string | null
+          connection_id: string
+          continue_decision: string | null
+          created_at: string
+          decision_reason: string | null
+          feeling_other: string | null
+          feeling_tags: string[]
+          greatest_difference: string | null
+          id: string
+          most_genuine: string | null
+          self_understanding: string | null
+          sequence: number
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          anything_else?: string | null
+          athena_acknowledgement?: string | null
+          connection_id: string
+          continue_decision?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          feeling_other?: string | null
+          feeling_tags?: string[]
+          greatest_difference?: string | null
+          id?: string
+          most_genuine?: string | null
+          self_understanding?: string | null
+          sequence?: number
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          anything_else?: string | null
+          athena_acknowledgement?: string | null
+          connection_id?: string
+          continue_decision?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          feeling_other?: string | null
+          feeling_tags?: string[]
+          greatest_difference?: string | null
+          id?: string
+          most_genuine?: string | null
+          self_understanding?: string | null
+          sequence?: number
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflection_submissions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reflections: {
         Row: {

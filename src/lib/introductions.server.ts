@@ -209,6 +209,26 @@ export async function runMatchmakingForUser(
   if (activeCount >= MAX_ACTIVE_INTRODUCTIONS) {
     return { ok: true, considered: 0, reason: "active_cap_reached", active: activeCount };
   }
+
+  // A member completes every reflection Athena is waiting on before she
+  // introduces them to someone new. A 14-day grace keeps a silent member from
+  // being locked out forever.
+  const { REQUIRED_REFLECTION_GRACE_DAYS } = await import("./connections.server");
+  const graceCutoff = new Date(
+    Date.now() - REQUIRED_REFLECTION_GRACE_DAYS * 864e5,
+  ).toISOString();
+  const { data: outstanding } = await supabase
+    .from("post_meeting_reflections")
+    .select("id, required_since")
+    .eq("user_id", userId)
+    .eq("reflection_required", true)
+    .is("submitted_at", null)
+    .gt("required_since", graceCutoff)
+    .limit(1);
+  if ((outstanding ?? []).length > 0) {
+    return { ok: true, considered: 0, reason: "reflection_outstanding", active: activeCount };
+  }
+
   const remainingSlots = MAX_ACTIVE_INTRODUCTIONS - activeCount;
 
   const { data: eligibleIntel } = await supabase

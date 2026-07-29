@@ -1,101 +1,79 @@
-# Athena Corrections Plan — Phases 1 & 2
+# Athena Reflection Flow — Technical Specification (7 Decisions)
 
-Verified against AI Gateway logs: `openai/gpt-5.5` is live and returning HTTP 200 (e.g. log `019fa026-977f-7378-aecd-eca679a55de9`, 2026-07-26T20:38:36Z, 8419→215 tokens). No model swap needed. STT is already `openai/gpt-4o-transcribe`; TTS is `openai/gpt-4o-mini-tts` — both correctly separated from the reasoning model.
+Nothing below removes, renames, or weakens existing behavior. The current reflection component, the legacy free-form reflection conversation, the private partner-perception questions, the safety/report system, matchmaking gates, and the 3-introduction cap all remain exactly as implemented.
 
-Governing anchors: L1 Identity (Mission), L6a Conversational Reasoning (foundational conversation), L6c Decision & Introduction (eligibility gate, 3-intro cap, matchmaking triggers), L4 Epistemics (contradictions & confidence), L2 Ethics (safety/pause/delete).
+## Conflict review (read this first)
 
----
+Three items need your decision before implementation:
 
-## Phase 1 — Verify and stabilize
+1. **Relationship Focus Mode does not exist in the codebase.** You refer to it as "already approved," but there is no such system in code or in the constitution docs. I will not invent a second one. Recommendation: build mutual-yes as a small `connections.status = 'mutual_interest'` transition plus an Athena acknowledgement, and leave a documented hook for Focus Mode when you supply that spec. If Focus Mode was specified elsewhere, send it and I'll integrate into it instead.
+2. **"Complete every required reflection before another introduction"** conflicts with today's eligibility gate, which only counts open connections. This adds a new blocking condition: an unsubmitted reflection on a concluded introduction will hold up matchmaking. That is a real behavior change for members who go quiet. Recommend a 14-day grace expiry so a silent member is never permanently locked out.
+3. **Multiple reflections vs. one row per connection.** Today `post_meeting_reflections` is effectively one submitted row per member per connection. Supporting repeat reflections requires either many rows or a history table. Recommendation below is the smaller of the two.
 
-### 1.1 Restore 20-minute foundational conversation
-Anchor: `L6a-conversational-reasoning.md`, `L6c-decision-and-introduction.md#foundational-conversation-eligibility-gate`.
+## 1. One member selects "No"
 
-Files:
-- `src/lib/athena.server.ts` — system prompt: any "12 minute" language → "approximately 20 minutes". Keep 12 min only as an internal check-in cue.
-- `src/lib/athena.functions.ts` — `shouldAcknowledgeTime` stays at 12 min (internal courtesy check-in). Add a second, distinct closing hint at ~18–20 min (`offer_return` / `wind_down` shifts from turn-count to elapsed-minutes primary, turn-count secondary).
-- `src/routes/_authenticated/athena.tsx` — completion state (marks `interview_sessions.completed_at`, `user_intelligence.profile_approved_at` eligibility) triggers at ≥20 min elapsed AND ≥10 substantive user turns, not the current turn-only threshold. Closing monologue copy updated to 20-min framing.
-- `src/lib/introductions.server.ts` — eligibility gate reads `last_interview_at` + minutes elapsed in that session; ensure it requires the 20-min foundational, not the 12-min checkpoint.
+- Keep `applyReflectionOutcome` exactly as it is (closes connection, marks pair closed).
+- Add: when it closes, write a `system` message into the pair's conversation with neutral copy — "This introduction has concluded. Continuing requires mutual interest from both people." No identity, no reasoning, no quoted answers.
+- Add: set `connections.close_reason = 'reflection_complete'` (already done) and mark the *other* member's reflection as `required = true` so Athena invites them to reflect privately.
+- The deciding member's follow-up questions already run before closure — unchanged.
 
-Acceptance:
-- New user reaching ~12 min sees one gentle time acknowledgement, conversation continues.
-- At ~20 min Athena offers a natural close; completion recorded; user becomes match-eligible.
-- Existing users' `completed_at` not retroactively cleared.
+## 2. Reflection timing
 
-### 1.2 Model identifier audit (no swap)
-- Confirm every `gateway("openai/…")` call in `src/lib/*.server.ts` and `src/routes/api/*.ts` uses the exact catalog id. Current state (verified): chat = `openai/gpt-5.5` ✅, STT = `openai/gpt-4o-transcribe` ✅, TTS = `openai/gpt-4o-mini-tts` ✅. No code change unless a stray id is found during the sweep.
+Use existing signals; do not add new tracking.
 
-Acceptance: `rg "openai/" src` shows only the three ids above; a fresh Athena turn logs a 200 in AI Gateway.
+A reflection becomes available when **either**:
+- a `meeting_proposals` row for the connection reaches `status = 'completed'` or its `scheduled_for` is more than 4 hours in the past, **or**
+- the pair has exchanged messages on at least two distinct calendar days *and* the connection is at least 72 hours old.
 
----
+Before that, the Reflect tab shows Athena's gentle "not yet" state instead of the question flow. This is a UI gate plus one server-side check — no schema change.
 
-## Phase 2 — Complete the core relationship loop
+## 3. "I'm Not Sure Yet"
 
-### 2.1 Automatic matchmaking
-Anchor: `L6c-decision-and-introduction.md`.
+- No change to slots: the introduction stays open and keeps occupying one of three.
+- No replacement introduction is created (already true).
+- Add a lightweight check-in: if the last `not_sure` reflection is 10+ days old and there have been no new messages and no new meeting proposal since, Athena surfaces a Today-card prompt inviting another reflection or a conversation. Driven by timestamps at read time — no cron, no new table.
 
-Triggers:
-1. Foundational conversation completes (`reflectAthena` marks `profile_approved_at`).
-2. A subsequent `reflectAthena` run materially changes ≥1 facet (already computed as `facetsRefined`) — schedule a re-run.
-3. A `connections.status` transitions from `open` → closed OR a `matches.status` becomes `declined/expired`, freeing an intro slot.
+## 4. Multiple reflections
 
-Implementation:
-- New server fn `runMatchmakingForUser(userId)` in `src/lib/introductions.server.ts` wrapping existing scoring logic; safe to call idempotently and honors the 3-active cap.
-- Call sites: end of `reflectAthena` handler (when `facetsRefined > 0` OR foundational just completed); end of `blockUser` / `closeConnection` / decline flows in `src/lib/connections.server.ts` and `src/lib/introductions.server.ts` — for BOTH users involved.
-- Guard with a per-user cooldown row on `user_intelligence` (`last_matchmaking_at`) to prevent thrash — min 60s between runs.
+Smallest additive change: drop the one-row assumption instead of adding a table.
 
-Acceptance: after foundational completes, user sees a Meet card without any manual trigger. Declining an intro frees a slot and a new candidate appears (if one exists) within one refresh.
+- Add `sequence integer not null default 1` to `post_meeting_reflections`; remove the unique constraint on (connection_id, user_id) if present and index the pair instead.
+- Each submission inserts a **new** row; earlier rows are never updated or deleted.
+- `getGuidedReflection` returns the latest row for prefill plus a `history` array for display.
+- The connection detail view gains a collapsed "Earlier reflections" list.
+- `applyReflectionOutcome` acts only on the newest submission.
 
-### 2.2 Feedback loops into relational reasoning
-- When a `partner_perception` or `post_meeting_reflections` row is inserted, mark all `pair_reasoning` rows for that user `is_stale = true, stale_reason = 'post-meeting signal'` (DB trigger).
-- Extend `pair_reasoning.server.ts` prompt input to include latest perception scores + reflection summary for both users, weighted as recent evidence per L4 Epistemics.
+## 5. Mutual "Yes"
 
-Migration:
-```sql
-CREATE OR REPLACE FUNCTION public.tg_mark_pair_reasoning_stale_for_user()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-BEGIN
-  UPDATE public.pair_reasoning
-     SET is_stale = true, stale_reason = 'post-meeting signal'
-   WHERE user_low = NEW.author_id OR user_high = NEW.author_id
-      OR user_low = NEW.subject_id OR user_high = NEW.subject_id;
-  RETURN NEW;
-END $$;
+- On submit, if the other member's most recent submitted reflection also has `continue_decision = 'yes'`, set `connections.status = 'mutual_interest'` (new allowed value; `open` remains valid and nothing that reads `open` breaks — reads become `in ('open','mutual_interest')`).
+- Athena posts one system message to both: interest is mutual. Nothing else changes.
+- This is the entry point Focus Mode will later attach to. No parallel system is created.
 
-CREATE TRIGGER tg_perception_marks_stale
-AFTER INSERT ON public.partner_perception
-FOR EACH ROW EXECUTE FUNCTION public.tg_mark_pair_reasoning_stale_for_user();
+## 6. Safety
 
--- analogous trigger on post_meeting_reflections keyed on user_id
-```
+- No change to reports, blocks, safety flags, or the moderation dashboard.
+- Add a quiet text link — "Report a safety concern" — at the foot of the reflection card that opens the **existing** report dialog already used on the connection screen.
 
-Acceptance: submitting perception on a connection flips affected `pair_reasoning.is_stale` to true; next matchmaking run re-reasons with the new signal.
+## 7. Athena's response
 
-### 2.3 Account pause & permanent deletion
-Anchor: `L2-ethics.md`.
+- After a submission, one short generated acknowledgement via the existing AI gateway, tone-matched to the member's feeling tags and free text.
+- Hard constraints in the prompt: never advise, never nudge toward or away from continuing, never reference the other member's answers, 2-3 sentences.
+- Falls back to the existing static `REFLECTION_CLOSINGS` copy if the model call fails, so the flow never breaks.
 
-- `profiles.is_paused` already exists — add UI on `/profile`: toggle → sets flag; paused users excluded from candidate pool in `introductions.server.ts` (`WHERE is_paused = false`).
-- New server fn `deleteMyAccount` (authenticated) → calls `supabaseAdmin.auth.admin.deleteUser(userId)` inside handler after re-auth confirmation prompt. Cascade already handled via `ON DELETE CASCADE` on FKs to `auth.users`.
+## Technical summary
 
-Acceptance: pausing hides user from all future matchmaking runs; delete removes auth user + cascades; user is signed out.
+| Area | Change |
+|---|---|
+| Migration | `post_meeting_reflections.sequence`, `required` flag, relax uniqueness; allow `connections.status = 'mutual_interest'` |
+| `connections.server.ts` | availability predicate, mutual-yes detection, check-in predicate, acknowledgement prompt |
+| `connections.functions.ts` | insert-not-upsert, return history, post system messages, extend eligibility gate |
+| `reflection-flow.tsx` | not-yet state, earlier-reflections list, safety link, Athena acknowledgement |
+| `introductions.server.ts` | eligibility also requires no outstanding required reflection (14-day grace) |
+| Docs | update `docs/product/relationship-support.md` and `docs/technical/DEPENDENCY_MAP.md` |
 
-### 2.4 Email verification gate
-- `src/routes/_authenticated/route.tsx` `beforeLoad`: if `session.user.email_confirmed_at` is null, redirect to `/auth?verify=1` with resend button.
-- Supabase auth config: ensure email confirmation is required (leave existing config).
+No existing file is rewritten; all edits are extensions.
 
-Acceptance: unverified user cannot reach `/home`, `/athena`, `/meet`, `/chats`; verification link → normal flow.
+## What I need from you
 
-### 2.5 Report review & moderation workflow
-- New enum role via existing `user_roles` pattern (spec in system prompt): `app_role.moderator`. Migration adds enum value + `has_role` already generalized.
-- New route `src/routes/_authenticated/moderation.tsx` gated by `has_role(auth.uid(),'moderator')`: lists `reports` newest-first with reporter/reported profile links, message context, and actions: dismiss, warn (system message into conversation), suspend (`profiles.is_paused = true` + note), ban (delete auth user).
-- Migration: `reports` add `status text default 'open'`, `resolved_by uuid`, `resolved_at timestamptz`, `resolution_note text`. GRANTs + RLS: only moderators SELECT/UPDATE.
-
-Acceptance: a moderator sees new reports; resolving one updates status and (if suspend) pauses the account.
-
----
-
-## Deferred to Phase 3
-ToS/Community Guidelines pages, conversation history browser, deep "Why Athena sees potential" explanations, PWA install prompt. Called out here only so scope is explicit.
-
-## Out of scope this plan
-Stripe/payments (user deferred), native shell packaging.
+- Approve or correct the three conflict items above (especially Focus Mode).
+- Confirm the 14-day grace on the reflection-blocks-matchmaking rule.

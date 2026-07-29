@@ -377,15 +377,73 @@ export const getGuidedReflection = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => idInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: row } = await supabase
-      .from("post_meeting_reflections")
-      .select(
-        "feeling_tags, feeling_other, most_genuine, greatest_difference, self_understanding, continue_decision, decision_reason, anything_else, submitted_at",
-      )
-      .eq("connection_id", data.connection_id)
-      .eq("user_id", userId)
+
+    const { data: conn } = await supabase
+      .from("connections")
+      .select("id, user_low, user_high, status, opened_at")
+      .eq("id", data.connection_id)
       .maybeSingle();
-    return { reflection: row ?? null };
+    if (!conn) throw new Error("Not found");
+    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
+
+    const [{ data: row }, { data: history }] = await Promise.all([
+      supabase
+        .from("post_meeting_reflections")
+        .select(
+          "feeling_tags, feeling_other, most_genuine, greatest_difference, self_understanding, continue_decision, decision_reason, anything_else, submitted_at, reflection_required, last_checkin_at, athena_acknowledgement",
+        )
+        .eq("connection_id", data.connection_id)
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase
+        .from("reflection_submissions")
+        .select(
+          "id, sequence, feeling_tags, feeling_other, most_genuine, greatest_difference, self_understanding, continue_decision, decision_reason, anything_else, athena_acknowledgement, submitted_at",
+        )
+        .eq("connection_id", data.connection_id)
+        .eq("user_id", userId)
+        .order("sequence", { ascending: false }),
+    ]);
+
+    const {
+      computeReflectionAvailability,
+      shouldCheckInAfterUnsure,
+      REFLECTION_CHECKIN_COPY,
+      REFLECTION_CONCLUDED_INVITE,
+    } = await import("./connections.server");
+
+    const availability = await computeReflectionAvailability(supabase, {
+      connectionId: conn.id as string,
+      openedAt: conn.opened_at as string,
+      userLow: conn.user_low as string,
+      userHigh: conn.user_high as string,
+    });
+
+    const rows = history ?? [];
+    const latest = rows[0] ?? null;
+    const required = Boolean(row?.reflection_required);
+
+    const checkin = shouldCheckInAfterUnsure({
+      lastDecision: (latest?.continue_decision as string | null) ?? null,
+      lastSubmittedAt: (latest?.submitted_at as string | null) ?? null,
+      lastActivityAt: null,
+      lastCheckinAt: (row?.last_checkin_at as string | null) ?? null,
+    })
+      ? REFLECTION_CHECKIN_COPY
+      : null;
+
+    return {
+      reflection: row ?? null,
+      history: rows,
+      // Required reflections always open, even before the timing signals fire:
+      // the introduction has already concluded and Athena is waiting.
+      available: availability.available || required || rows.length > 0,
+      availability_reason: availability.reason,
+      required,
+      required_invite: required ? REFLECTION_CONCLUDED_INVITE : null,
+      checkin,
+      connection_status: conn.status as string,
+    };
   });
 
 export const submitGuidedReflection = createServerFn({ method: "POST" })
@@ -396,27 +454,70 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
 
     const { data: conn } = await supabase
       .from("connections")
-      .select("id, user_low, user_high")
+      .select("id, user_low, user_high, status")
       .eq("id", data.connection_id)
       .maybeSingle();
     if (!conn) throw new Error("Not found");
     if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
+    const otherId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
 
-    const { applyReflectionOutcome, REFLECTION_CLOSINGS } = await import("./connections.server");
+    const {
+      applyReflectionOutcome,
+      REFLECTION_CLOSINGS,
+      acknowledgementPrompt,
+      detectMutualYes,
+      markReflectionRequired,
+      findConversationId,
+      postSystemMessage,
+      REFLECTION_CONCLUDED_NOTICE,
+      MUTUAL_YES_NOTICE,
+    } = await import("./connections.server");
 
+    const submittedAt = new Date().toISOString();
+
+    // Every reflection is kept. Earlier ones are never overwritten.
+    const { data: prior } = await supabase
+      .from("reflection_submissions")
+      .select("sequence")
+      .eq("connection_id", data.connection_id)
+      .eq("user_id", userId)
+      .order("sequence", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const sequence = ((prior?.sequence as number | null) ?? 0) + 1;
+
+    const payload = {
+      feeling_tags: data.feeling_tags,
+      feeling_other: data.feeling_other ?? null,
+      most_genuine: data.most_genuine ?? null,
+      greatest_difference: data.greatest_difference ?? null,
+      self_understanding: data.self_understanding ?? null,
+      continue_decision: data.continue_decision,
+      decision_reason: data.decision_reason ?? null,
+      anything_else: data.anything_else ?? null,
+    };
+
+    const { data: submission, error: subError } = await supabase
+      .from("reflection_submissions")
+      .insert({
+        connection_id: data.connection_id,
+        user_id: userId,
+        sequence,
+        ...payload,
+        submitted_at: submittedAt,
+      })
+      .select("id")
+      .maybeSingle();
+    if (subError) throw new Error(subError.message);
+
+    // The existing current-state row keeps working exactly as before.
     const { error } = await supabase.from("post_meeting_reflections").upsert(
       {
         connection_id: data.connection_id,
         user_id: userId,
-        feeling_tags: data.feeling_tags,
-        feeling_other: data.feeling_other ?? null,
-        most_genuine: data.most_genuine ?? null,
-        greatest_difference: data.greatest_difference ?? null,
-        self_understanding: data.self_understanding ?? null,
-        continue_decision: data.continue_decision,
-        decision_reason: data.decision_reason ?? null,
-        anything_else: data.anything_else ?? null,
-        submitted_at: new Date().toISOString(),
+        ...payload,
+        submitted_at: submittedAt,
+        reflection_required: false,
         would_meet_again:
           data.continue_decision === "yes"
             ? true
@@ -428,11 +529,92 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     );
     if (error) throw new Error(error.message);
 
+    // Athena's acknowledgement — personal, tone-matched, never directive.
+    const { data: otherProf } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", otherId)
+      .maybeSingle();
+    const otherName = (otherProf?.display_name as string | null) ?? "them";
+
+    let acknowledgement = REFLECTION_CLOSINGS[data.continue_decision];
+    try {
+      const { createLovableGateway } = await import("./ai-gateway.server");
+      const gateway = createLovableGateway();
+      const { text } = await generateText({
+        model: gateway("openai/gpt-5.5"),
+        prompt: acknowledgementPrompt({
+          otherName,
+          feelings: data.feeling_tags,
+          feelingOther: payload.feeling_other,
+          mostGenuine: payload.most_genuine,
+          greatestDifference: payload.greatest_difference,
+          selfUnderstanding: payload.self_understanding,
+          decision: data.continue_decision,
+          decisionReason: payload.decision_reason,
+          anythingElse: payload.anything_else,
+        }),
+        providerOptions: { lovable: { reasoningEffort: "none" } },
+      });
+      if (text.trim()) acknowledgement = text.trim();
+    } catch {
+      /* the static closing copy is a complete, safe fallback */
+    }
+
+    await supabase
+      .from("post_meeting_reflections")
+      .update({ athena_acknowledgement: acknowledgement })
+      .eq("connection_id", data.connection_id)
+      .eq("user_id", userId);
+    if (submission?.id) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("reflection_submissions")
+        .update({ athena_acknowledgement: acknowledgement })
+        .eq("id", submission.id as string);
+    }
+
     const { closed } = await applyReflectionOutcome(supabase, {
       connectionId: data.connection_id,
       userId,
       decision: data.continue_decision,
     });
+
+    // Cross-member effects are platform actions, not member-scoped writes.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as unknown as typeof supabase;
+    const conversationId = await findConversationId(
+      admin,
+      conn.user_low as string,
+      conn.user_high as string,
+    );
+
+    let mutual = false;
+    if (closed) {
+      // The other member learns only that the introduction concluded, and is
+      // invited to complete their own private reflection.
+      await markReflectionRequired(admin, {
+        connectionId: data.connection_id,
+        userId: otherId,
+      });
+      if (conversationId) {
+        await postSystemMessage(admin, conversationId, REFLECTION_CONCLUDED_NOTICE);
+      }
+    } else if (data.continue_decision === "yes") {
+      mutual = await detectMutualYes(admin, {
+        connectionId: data.connection_id,
+        otherUserId: otherId,
+      });
+      if (mutual) {
+        await admin
+          .from("connections")
+          .update({ status: "mutual_interest" })
+          .eq("id", data.connection_id);
+        if (conversationId) {
+          await postSystemMessage(admin, conversationId, MUTUAL_YES_NOTICE);
+        }
+      }
+    }
 
     // Reflection is high-signal for understanding; refresh what's gone stale.
     const { refreshStalePairsForUser, runMatchmakingForUser } = await import(
@@ -444,5 +626,11 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       void runMatchmakingForUser(userId).catch(() => {});
     }
 
-    return { ok: true, closed, closing: REFLECTION_CLOSINGS[data.continue_decision] };
+    return {
+      ok: true,
+      closed,
+      mutual,
+      acknowledgement,
+      closing: REFLECTION_CLOSINGS[data.continue_decision],
+    };
   });
