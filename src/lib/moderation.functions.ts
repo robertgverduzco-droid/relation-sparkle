@@ -1,11 +1,11 @@
 // Moderator-only report review workflow.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 
-type SbCtx = { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" | "moderator" | "user" }) => Promise<{ data: unknown; error: unknown }> } };
-
-async function assertModerator(supabase: SbCtx["supabase"], userId: string) {
+async function assertModerator(supabase: SupabaseClient<Database>, userId: string) {
   const [{ data: mod }, { data: admin }] = await Promise.all([
     supabase.rpc("has_role", { _user_id: userId, _role: "moderator" }),
     supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
