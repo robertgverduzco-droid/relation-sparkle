@@ -11,7 +11,9 @@ import {
   submitPartnerPerception,
   getMyPartnerPerception,
 } from "@/lib/connections.functions";
+import { reportUser } from "@/lib/messaging.functions";
 import { ReflectionFlow } from "@/components/reflection-flow";
+import { ReportSheet, type ReportCategory } from "@/components/report-sheet";
 
 
 export const Route = createFileRoute("/_authenticated/connections/$id")({
@@ -38,6 +40,8 @@ function ConnectionDetail() {
   const distill = useServerFn(distillReflection);
   const submitPerception = useServerFn(submitPartnerPerception);
   const getPerception = useServerFn(getMyPartnerPerception);
+  const report = useServerFn(reportUser);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const [data, setData] = useState<Data | null>(null);
   const [tab, setTab] = useState<"plan" | "reflect">("plan");
@@ -190,7 +194,26 @@ function ConnectionDetail() {
     );
   }
 
-  const canReflect = data.connection.status === "met";
+  // Athena decides server-side whether a reflection is actually available yet
+  // (a completed meeting, a passed meeting time, or a sustained conversation).
+  // The tab stays reachable; the flow itself shows her gentle "not yet" state.
+  const canReflect = data.connection.status !== "closed";
+
+  async function submitReport(category: ReportCategory, details: string) {
+    try {
+      await report({
+        data: {
+          reported_id: data!.connection.other_id,
+          category,
+          details: details || undefined,
+        },
+      });
+      toast.success("Thank you. Athena's safety team will look into this.");
+      setReportOpen(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't submit report.");
+    }
+  }
 
   return (
     <div className="screen-shell safe-top pb-16 flex flex-col">
@@ -228,7 +251,7 @@ function ConnectionDetail() {
             className={`px-4 py-1.5 rounded-full transition ${tab === "reflect" ? "bg-primary text-primary-foreground" : "text-muted-foreground"} ${!canReflect ? "opacity-50" : ""}`}
             onClick={() => canReflect && setTab("reflect")}
             disabled={!canReflect}
-            title={canReflect ? "" : "Available after the meeting is marked complete"}
+            title={canReflect ? "" : "This introduction has concluded"}
           >
             Reflect
           </button>
@@ -347,6 +370,7 @@ function ConnectionDetail() {
               connectionId={id}
               otherName={data.connection.other_name}
               onCompleted={() => void load()}
+              onReportSafety={() => setReportOpen(true)}
             />
             <p className="mt-6 px-1 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
               A few private impressions
