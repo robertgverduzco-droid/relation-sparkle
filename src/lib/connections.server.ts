@@ -174,10 +174,14 @@ export const reflectionSubmitInput = z.object({
  * the introduction active — nothing changes.
  */
 export async function applyReflectionOutcome(
-  supabase: SupabaseClient,
+  userScoped: SupabaseClient,
   args: { connectionId: string; userId: string; decision: "yes" | "no" | "not_sure" },
 ): Promise<{ closed: boolean }> {
   if (args.decision !== "no") return { closed: false };
+  // Closing the pair is a platform action, not a member-scoped write.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const supabase = supabaseAdmin as unknown as SupabaseClient;
+  void userScoped;
 
   const { data: conn } = await supabase
     .from("connections")
