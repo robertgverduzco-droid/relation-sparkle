@@ -121,13 +121,15 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       connectionId = await openConnectionIfMutual(supabase, data.pair_id);
     }
 
-    // Declining or deferring may free a slot — reconsider matchmaking for
-    // this user, and for the other person too (their intro state also changed).
-    if (data.response === "declined" || data.response === "deferred") {
-      void runMatchmakingForUser(userId).catch(() => {});
-      const otherId = (isLow ? pair.user_high : pair.user_low) as string;
-      void runMatchmakingForUser(otherId).catch(() => {});
-    }
+    // Any response (accept / decline / defer) can change available capacity
+    // for either user. Re-evaluate matchmaking for both sides — the
+    // 3-active-cap and cooldown inside runMatchmakingForUser protect against
+    // thrash. If mutual acceptance opened a connection, the pair is out of
+    // the intro pool and slots may have freed up.
+    const otherId = (isLow ? pair.user_high : pair.user_low) as string;
+    void runMatchmakingForUser(userId).catch(() => {});
+    void runMatchmakingForUser(otherId).catch(() => {});
 
     return { ok: true, connection_id: connectionId };
   });
+
