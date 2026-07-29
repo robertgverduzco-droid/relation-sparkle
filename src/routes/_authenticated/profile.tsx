@@ -220,6 +220,12 @@ function ProfilePage() {
         >
           Continue with Athena
         </Link>
+        <Link
+          to="/conversations"
+          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[15px] text-foreground"
+        >
+          Your conversations
+        </Link>
         <button
           onClick={togglePause}
           disabled={busy || !profile}
@@ -237,6 +243,18 @@ function ProfilePage() {
           className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
         >
           Privacy
+        </Link>
+        <Link
+          to="/terms"
+          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+        >
+          Terms of Service
+        </Link>
+        <Link
+          to="/community-guidelines"
+          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+        >
+          Community Guidelines
         </Link>
         {isModerator && (
           <Link

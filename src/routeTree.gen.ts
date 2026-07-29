@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,15 +23,27 @@ import { Route as AuthenticatedModerationRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
+import { Route as AuthenticatedIntroductionsIdRouteImport } from './routes/_authenticated/introductions.$id'
 import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityGuidelinesRoute = CommunityGuidelinesRouteImport.update({
+  id: '/community-guidelines',
+  path: '/community-guidelines',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -87,6 +101,12 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConversationsRoute =
+  AuthenticatedConversationsRouteImport.update({
+    id: '/conversations',
+    path: '/conversations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConnectionsRoute =
   AuthenticatedConnectionsRouteImport.update({
     id: '/connections',
@@ -109,6 +129,12 @@ const AuthenticatedMessagesIdRoute = AuthenticatedMessagesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMessagesRoute,
 } as any)
+const AuthenticatedIntroductionsIdRoute =
+  AuthenticatedIntroductionsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedIntroductionsRoute,
+  } as any)
 const AuthenticatedConnectionsIdRoute =
   AuthenticatedConnectionsIdRouteImport.update({
     id: '/$id',
@@ -119,11 +145,14 @@ const AuthenticatedConnectionsIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
+  '/conversations': typeof AuthenticatedConversationsRoute
   '/home': typeof AuthenticatedHomeRoute
-  '/introductions': typeof AuthenticatedIntroductionsRoute
+  '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/moderation': typeof AuthenticatedModerationRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -131,17 +160,21 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
+  '/conversations': typeof AuthenticatedConversationsRoute
   '/home': typeof AuthenticatedHomeRoute
-  '/introductions': typeof AuthenticatedIntroductionsRoute
+  '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/moderation': typeof AuthenticatedModerationRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -149,6 +182,7 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
 }
@@ -157,11 +191,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
+  '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
-  '/_authenticated/introductions': typeof AuthenticatedIntroductionsRoute
+  '/_authenticated/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -169,6 +206,7 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/_authenticated/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
 }
@@ -177,9 +215,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/community-guidelines'
     | '/privacy'
+    | '/terms'
     | '/athena'
     | '/connections'
+    | '/conversations'
     | '/home'
     | '/introductions'
     | '/messages'
@@ -189,15 +230,19 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
+    | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/community-guidelines'
     | '/privacy'
+    | '/terms'
     | '/athena'
     | '/connections'
+    | '/conversations'
     | '/home'
     | '/introductions'
     | '/messages'
@@ -207,6 +252,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
+    | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
   id:
@@ -214,9 +260,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/community-guidelines'
     | '/privacy'
+    | '/terms'
     | '/_authenticated/athena'
     | '/_authenticated/connections'
+    | '/_authenticated/conversations'
     | '/_authenticated/home'
     | '/_authenticated/introductions'
     | '/_authenticated/messages'
@@ -226,6 +275,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/connections/$id'
+    | '/_authenticated/introductions/$id'
     | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
   fileRoutesById: FileRoutesById
@@ -234,18 +284,34 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community-guidelines': {
+      id: '/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof CommunityGuidelinesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -325,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversations': {
+      id: '/_authenticated/conversations'
+      path: '/conversations'
+      fullPath: '/conversations'
+      preLoaderRoute: typeof AuthenticatedConversationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/connections': {
       id: '/_authenticated/connections'
       path: '/connections'
@@ -353,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMessagesIdRouteImport
       parentRoute: typeof AuthenticatedMessagesRoute
     }
+    '/_authenticated/introductions/$id': {
+      id: '/_authenticated/introductions/$id'
+      path: '/$id'
+      fullPath: '/introductions/$id'
+      preLoaderRoute: typeof AuthenticatedIntroductionsIdRouteImport
+      parentRoute: typeof AuthenticatedIntroductionsRoute
+    }
     '/_authenticated/connections/$id': {
       id: '/_authenticated/connections/$id'
       path: '/$id'
@@ -375,6 +455,20 @@ const AuthenticatedConnectionsRouteChildren: AuthenticatedConnectionsRouteChildr
 const AuthenticatedConnectionsRouteWithChildren =
   AuthenticatedConnectionsRoute._addFileChildren(
     AuthenticatedConnectionsRouteChildren,
+  )
+
+interface AuthenticatedIntroductionsRouteChildren {
+  AuthenticatedIntroductionsIdRoute: typeof AuthenticatedIntroductionsIdRoute
+}
+
+const AuthenticatedIntroductionsRouteChildren: AuthenticatedIntroductionsRouteChildren =
+  {
+    AuthenticatedIntroductionsIdRoute: AuthenticatedIntroductionsIdRoute,
+  }
+
+const AuthenticatedIntroductionsRouteWithChildren =
+  AuthenticatedIntroductionsRoute._addFileChildren(
+    AuthenticatedIntroductionsRouteChildren,
   )
 
 interface AuthenticatedMessagesRouteChildren {
@@ -404,8 +498,9 @@ const AuthenticatedProfileRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
+  AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
-  AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRoute
+  AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRouteWithChildren
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -415,8 +510,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
+  AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
-  AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRoute,
+  AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRouteWithChildren,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
@@ -430,7 +526,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
 }

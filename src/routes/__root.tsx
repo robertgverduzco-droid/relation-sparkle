@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 
 import { Toaster } from "sonner";
 
@@ -130,6 +131,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <PWAInstallPrompt />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
