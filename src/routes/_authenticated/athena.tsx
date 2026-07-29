@@ -108,10 +108,11 @@ function AthenaPage() {
       const stored = typeof window !== "undefined" ? (localStorage.getItem(VOICE_KEY) as VoiceMode | null) : null;
 
       const [{ data: session }, { data: profile }] = await Promise.all([
-        supabase.from("interview_sessions").select("messages").maybeSingle(),
+        supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
         supabase.from("profiles").select("display_name").maybeSingle(),
       ]);
       if (cancelled) return;
+      foundationCompleteRef.current = Boolean(session?.completed_at);
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
         setMessages(priorMessages);
@@ -121,6 +122,7 @@ function AthenaPage() {
         conversationStartRef.current = Date.now();
         return;
       }
+
 
       // First meeting.
       setHydrated(true);
@@ -193,7 +195,7 @@ function AthenaPage() {
     messages: Msg[];
     elapsedMinutes: number;
     timeAcknowledged: boolean;
-  }): Promise<{ reply: string; timeAcknowledged?: boolean } | null> {
+  }): Promise<{ reply: string; pacing?: string; timeAcknowledged?: boolean } | null> {
     try {
       return await ask({ data: payload });
     } catch {
@@ -203,6 +205,60 @@ function AthenaPage() {
       } catch {
         return null;
       }
+    }
+  }
+
+  // Keep a live ref of messages so unmount/beforeunload flush uses the latest.
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Durable backup: if the user leaves after adding new turns, best-effort
+  // fire a final reflect. The graceful closing card is the primary path;
+  // this only exists to avoid losing insight if they never confirm it.
+  // Deduped via flushingRef and lastReflectedTurnRef.
+  const flushReflect = useCallback(() => {
+    if (flushingRef.current) return;
+    const msgs = messagesRef.current;
+    const userTurns = msgs.filter((m) => m.role === "user").length;
+    if (userTurns <= lastReflectedTurnRef.current) return;
+    flushingRef.current = true;
+    lastReflectedTurnRef.current = userTurns;
+    reflect({ data: { messages: msgs } })
+      .catch(() => { /* silent */ })
+      .finally(() => { flushingRef.current = false; });
+  }, [reflect]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const onHide = () => flushReflect();
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("beforeunload", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("beforeunload", onHide);
+      flushReflect();
+    };
+  }, [hydrated, flushReflect]);
+
+  async function finalizeAndLeave() {
+    if (completing) return;
+    setCompleting(true);
+    try {
+      // 1. Save current transcript.
+      await persist(messagesRef.current);
+      // 2. Run one final reflect so understanding is fully up to date.
+      try {
+        await reflect({ data: { messages: messagesRef.current } });
+        lastReflectedTurnRef.current = messagesRef.current.filter((m) => m.role === "user").length;
+      } catch { /* non-fatal */ }
+      // 3. Mark session complete and force matchmaking.
+      try { await complete({}); } catch { /* non-fatal */ }
+      foundationCompleteRef.current = true;
+      toast("Athena has what she needs for now. She'll begin reflecting.");
+      navigate({ to: "/home" });
+    } finally {
+      setCompleting(false);
     }
   }
 
@@ -253,10 +309,18 @@ function AthenaPage() {
         lastReflectedTurnRef.current = userTurns;
         void reflect({ data: { messages: withReply } }).catch(() => { /* silent */ });
       }
+
+      // Athena's server-side pacing tells us when she's offering to close
+      // this foundational conversation gracefully. Show the closing card
+      // once — only if the foundation isn't already marked complete.
+      if (res.pacing === "offer_return" && !foundationCompleteRef.current) {
+        setShowClosingCard(true);
+      }
     } finally {
       setBusy(false);
     }
   }
+
 
   // ---- Voice input (mic) ----
   const stopStream = useCallback(() => {
