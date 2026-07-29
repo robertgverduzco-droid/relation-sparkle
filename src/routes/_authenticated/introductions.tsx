@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -133,6 +133,13 @@ function IntroductionsPage() {
                   {it.presentation}
                 </p>
               )}
+              <Link
+                to="/introductions/$id"
+                params={{ id: it.id }}
+                className="mt-3 inline-block text-[13px] text-primary underline underline-offset-2"
+              >
+                Why Athena sees potential here →
+              </Link>
               <div className="mt-5 flex gap-2">
                 {it.response === "pending" || it.response === "deferred" ? (
                   <>

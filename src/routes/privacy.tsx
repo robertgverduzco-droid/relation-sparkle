@@ -85,7 +85,19 @@ function PrivacyPage() {
         </Section>
       </main>
 
-      <div className="mt-10 px-6">
+      <div className="mt-10 flex flex-col gap-2 px-6">
+        <Link
+          to="/terms"
+          className="block w-full rounded-full border border-border/70 bg-background/60 px-6 py-4 text-center text-[15px] font-medium text-foreground"
+        >
+          Terms of Service
+        </Link>
+        <Link
+          to="/community-guidelines"
+          className="block w-full rounded-full border border-border/70 bg-background/60 px-6 py-4 text-center text-[15px] font-medium text-foreground"
+        >
+          Community Guidelines
+        </Link>
         <Link
           to="/"
           className="block w-full rounded-full border border-border/70 bg-background/60 px-6 py-4 text-center text-[15px] font-medium text-foreground"
