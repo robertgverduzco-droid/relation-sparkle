@@ -87,7 +87,7 @@ function ModerationPage() {
           ))}
         </ul>
       )}
-      <MobileTabBar current="profile" />
+      <MobileTabBar current="none" />
     </div>
   );
 }

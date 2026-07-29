@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { setAccountPaused, deleteMyAccount } from "@/lib/account.functions";
+import { amIModerator } from "@/lib/moderation.functions";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -42,14 +44,17 @@ function ProfilePage() {
   const navigate = useNavigate();
   const pauseFn = useServerFn(setAccountPaused);
   const deleteFn = useServerFn(deleteMyAccount);
+  const modCheck = useServerFn(amIModerator);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+
 
   useEffect(() => {
     (async () => {
-      const [{ data: p }, { data: i }] = await Promise.all([
+      const [{ data: p }, { data: i }, mod] = await Promise.all([
         supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
         supabase
           .from("user_intelligence")
@@ -57,12 +62,15 @@ function ProfilePage() {
             "core_values, life_direction, self_understanding, communication_style, conflict_style, partnership_vision, readiness_summary, last_interview_at",
           )
           .maybeSingle(),
+        modCheck({}).catch(() => ({ moderator: false })),
       ]);
       setProfile(p as ProfileRow | null);
       setIntel(i as IntelligenceRow | null);
+      setIsModerator(Boolean(mod?.moderator));
       setLoading(false);
     })();
-  }, []);
+  }, [modCheck]);
+
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -230,6 +238,15 @@ function ProfilePage() {
         >
           Privacy
         </Link>
+        {isModerator && (
+          <Link
+            to="/moderation"
+            className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
+          >
+            Moderation review
+          </Link>
+        )}
+
         <button
           onClick={signOut}
           className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground"

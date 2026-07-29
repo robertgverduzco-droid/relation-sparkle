@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Home, Sparkles, MessageCircle, Mail, User } from "lucide-react";
 
-type Tab = "home" | "athena" | "introductions" | "messages" | "profile";
+type Tab = "home" | "athena" | "introductions" | "messages" | "profile" | "none";
 
 const tabs: {
-  key: Tab;
+  key: Exclude<Tab, "none">;
   to: "/home" | "/athena" | "/introductions" | "/messages" | "/profile";
   label: string;
   Icon: typeof Home;

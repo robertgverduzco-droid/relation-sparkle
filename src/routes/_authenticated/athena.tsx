@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
-import { askAthena, reflectAthena } from "@/lib/athena.functions";
+import { askAthena, reflectAthena, completeFoundationalConversation } from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
@@ -64,6 +64,7 @@ function AthenaPage() {
   const navigate = useNavigate();
   const ask = useServerFn(askAthena);
   const reflect = useServerFn(reflectAthena);
+  const complete = useServerFn(completeFoundationalConversation);
   const logUsageFn = useServerFn(logUsage);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -75,14 +76,20 @@ function AthenaPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const [showClosingCard, setShowClosingCard] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastReflectedTurnRef = useRef(0);
   const conversationStartRef = useRef<number>(Date.now());
   const timeAcknowledgedRef = useRef(false);
+  const foundationCompleteRef = useRef(false);
+  const flushingRef = useRef(false);
+  const messagesRef = useRef<Msg[]>([]);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -101,10 +108,11 @@ function AthenaPage() {
       const stored = typeof window !== "undefined" ? (localStorage.getItem(VOICE_KEY) as VoiceMode | null) : null;
 
       const [{ data: session }, { data: profile }] = await Promise.all([
-        supabase.from("interview_sessions").select("messages").maybeSingle(),
+        supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
         supabase.from("profiles").select("display_name").maybeSingle(),
       ]);
       if (cancelled) return;
+      foundationCompleteRef.current = Boolean(session?.completed_at);
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
         setMessages(priorMessages);
@@ -114,6 +122,7 @@ function AthenaPage() {
         conversationStartRef.current = Date.now();
         return;
       }
+
 
       // First meeting.
       setHydrated(true);
@@ -186,7 +195,7 @@ function AthenaPage() {
     messages: Msg[];
     elapsedMinutes: number;
     timeAcknowledged: boolean;
-  }): Promise<{ reply: string; timeAcknowledged?: boolean } | null> {
+  }): Promise<{ reply: string; pacing?: string; timeAcknowledged?: boolean } | null> {
     try {
       return await ask({ data: payload });
     } catch {
@@ -196,6 +205,60 @@ function AthenaPage() {
       } catch {
         return null;
       }
+    }
+  }
+
+  // Keep a live ref of messages so unmount/beforeunload flush uses the latest.
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Durable backup: if the user leaves after adding new turns, best-effort
+  // fire a final reflect. The graceful closing card is the primary path;
+  // this only exists to avoid losing insight if they never confirm it.
+  // Deduped via flushingRef and lastReflectedTurnRef.
+  const flushReflect = useCallback(() => {
+    if (flushingRef.current) return;
+    const msgs = messagesRef.current;
+    const userTurns = msgs.filter((m) => m.role === "user").length;
+    if (userTurns <= lastReflectedTurnRef.current) return;
+    flushingRef.current = true;
+    lastReflectedTurnRef.current = userTurns;
+    reflect({ data: { messages: msgs } })
+      .catch(() => { /* silent */ })
+      .finally(() => { flushingRef.current = false; });
+  }, [reflect]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const onHide = () => flushReflect();
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("beforeunload", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("beforeunload", onHide);
+      flushReflect();
+    };
+  }, [hydrated, flushReflect]);
+
+  async function finalizeAndLeave() {
+    if (completing) return;
+    setCompleting(true);
+    try {
+      // 1. Save current transcript.
+      await persist(messagesRef.current);
+      // 2. Run one final reflect so understanding is fully up to date.
+      try {
+        await reflect({ data: { messages: messagesRef.current } });
+        lastReflectedTurnRef.current = messagesRef.current.filter((m) => m.role === "user").length;
+      } catch { /* non-fatal */ }
+      // 3. Mark session complete and force matchmaking.
+      try { await complete({}); } catch { /* non-fatal */ }
+      foundationCompleteRef.current = true;
+      toast("Athena has what she needs for now. She'll begin reflecting.");
+      navigate({ to: "/home" });
+    } finally {
+      setCompleting(false);
     }
   }
 
@@ -246,10 +309,18 @@ function AthenaPage() {
         lastReflectedTurnRef.current = userTurns;
         void reflect({ data: { messages: withReply } }).catch(() => { /* silent */ });
       }
+
+      // Athena's server-side pacing tells us when she's offering to close
+      // this foundational conversation gracefully. Show the closing card
+      // once — only if the foundation isn't already marked complete.
+      if (res.pacing === "offer_return" && !foundationCompleteRef.current) {
+        setShowClosingCard(true);
+      }
     } finally {
       setBusy(false);
     }
   }
+
 
   // ---- Voice input (mic) ----
   const stopStream = useCallback(() => {
@@ -473,7 +544,19 @@ function AthenaPage() {
         />
       )}
 
+      {showClosingCard && (
+        <ClosingSheet
+          busy={completing}
+          onKeepTalking={() => setShowClosingCard(false)}
+          onFinish={() => {
+            setShowClosingCard(false);
+            void finalizeAndLeave();
+          }}
+        />
+      )}
+
       <MobileTabBar current="athena" />
+
     </div>
   );
 }
@@ -523,6 +606,51 @@ function VoiceSettingsSheet({
     </div>
   );
 }
+
+function ClosingSheet({
+  busy,
+  onKeepTalking,
+  onFinish,
+}: {
+  busy: boolean;
+  onKeepTalking: () => void;
+  onFinish: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
+      <div
+        className="w-full max-w-md rounded-t-3xl bg-background border-t border-border/60 p-6 pb-8 fade-in-slow"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
+        <h2 className="text-lg font-display mb-2">A natural place to pause</h2>
+        <p className="text-sm text-ink-soft leading-relaxed">
+          Athena has enough of a foundation to begin thinking carefully about who
+          you might connect with. You can keep talking as long as you'd like —
+          every conversation from here refines her understanding — or close for
+          now and let her start reflecting.
+        </p>
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            onClick={onFinish}
+            disabled={busy}
+            className="rounded-full bg-primary px-6 py-3 text-[15px] font-medium text-primary-foreground disabled:opacity-60"
+          >
+            {busy ? "Saving…" : "Finish for now"}
+          </button>
+          <button
+            onClick={onKeepTalking}
+            disabled={busy}
+            className="rounded-full border border-border px-6 py-3 text-[15px] text-foreground disabled:opacity-60"
+          >
+            Keep talking
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function MicIcon() {
   return (

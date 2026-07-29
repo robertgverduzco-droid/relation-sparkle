@@ -294,8 +294,14 @@ export const distillReflection = createServerFn({ method: "POST" })
       .eq("connection_id", data.connection_id)
       .eq("user_id", userId);
 
+    // Post-meeting reflection is high-signal — refresh any pair reasoning
+    // the DB triggers have marked stale for this user.
+    const { refreshStalePairsForUser } = await import("./introductions.server");
+    void refreshStalePairsForUser(userId).catch(() => {});
+
     return { ok: true, summary: object.summary, sentiment: object.sentiment };
   });
+
 
 // Save (or update) the current user's private perception of the person they
 // met. Never surfaced to the subject.
@@ -332,8 +338,16 @@ export const submitPartnerPerception = createServerFn({ method: "POST" })
         { onConflict: "connection_id,author_id" },
       );
     if (error) throw new Error(error.message);
+
+    // Partner perception updates Athena's view of the subject; refresh any
+    // stale pair reasoning for BOTH users (the trigger marks both sides).
+    const { refreshStalePairsForUser } = await import("./introductions.server");
+    void refreshStalePairsForUser(userId).catch(() => {});
+    void refreshStalePairsForUser(subjectId).catch(() => {});
+
     return { ok: true };
   });
+
 
 export const getMyPartnerPerception = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
