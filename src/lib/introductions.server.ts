@@ -5,6 +5,7 @@
 // Athena chooses for them.
 import { generateObject } from "ai";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Understanding thresholds. Athena needs enough understanding of each person
 // before she is willing to reason about them at all. She does NOT gate
