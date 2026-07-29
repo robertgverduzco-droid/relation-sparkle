@@ -11,6 +11,7 @@ import {
   submitPartnerPerception,
   getMyPartnerPerception,
 } from "@/lib/connections.functions";
+import { ReflectionFlow } from "@/components/reflection-flow";
 
 
 export const Route = createFileRoute("/_authenticated/connections/$id")({
@@ -342,7 +343,15 @@ function ConnectionDetail() {
       ) : (
         <section className="flex-1 flex flex-col">
           <div className="px-5 pt-5 pb-2">
-            <div className="rounded-3xl border border-border/70 bg-card/70 p-5">
+            <ReflectionFlow
+              connectionId={id}
+              otherName={data.connection.other_name}
+              onCompleted={() => void load()}
+            />
+            <p className="mt-6 px-1 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+              A few private impressions
+            </p>
+            <div className="mt-3 rounded-3xl border border-border/70 bg-card/70 p-5">
               <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
                 Five questions Athena always asks
               </p>

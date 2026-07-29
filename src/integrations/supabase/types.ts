@@ -688,11 +688,20 @@ export type Database = {
       }
       post_meeting_reflections: {
         Row: {
+          anything_else: string | null
           connection_id: string
+          continue_decision: string | null
           created_at: string
+          decision_reason: string | null
+          feeling_other: string | null
+          feeling_tags: string[]
+          greatest_difference: string | null
           id: string
+          most_genuine: string | null
           refined_at: string | null
+          self_understanding: string | null
           sentiment: string | null
+          submitted_at: string | null
           summary: string | null
           transcript: Json
           updated_at: string
@@ -700,11 +709,20 @@ export type Database = {
           would_meet_again: boolean | null
         }
         Insert: {
+          anything_else?: string | null
           connection_id: string
+          continue_decision?: string | null
           created_at?: string
+          decision_reason?: string | null
+          feeling_other?: string | null
+          feeling_tags?: string[]
+          greatest_difference?: string | null
           id?: string
+          most_genuine?: string | null
           refined_at?: string | null
+          self_understanding?: string | null
           sentiment?: string | null
+          submitted_at?: string | null
           summary?: string | null
           transcript?: Json
           updated_at?: string
@@ -712,11 +730,20 @@ export type Database = {
           would_meet_again?: boolean | null
         }
         Update: {
+          anything_else?: string | null
           connection_id?: string
+          continue_decision?: string | null
           created_at?: string
+          decision_reason?: string | null
+          feeling_other?: string | null
+          feeling_tags?: string[]
+          greatest_difference?: string | null
           id?: string
+          most_genuine?: string | null
           refined_at?: string | null
+          self_understanding?: string | null
           sentiment?: string | null
+          submitted_at?: string | null
           summary?: string | null
           transcript?: Json
           updated_at?: string

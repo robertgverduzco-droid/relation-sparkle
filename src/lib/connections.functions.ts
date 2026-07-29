@@ -11,6 +11,7 @@ import {
   reflectDistillInput,
   reflectionSchema,
   partnerPerceptionInput,
+  reflectionSubmitInput,
 } from "./connections.server";
 
 
@@ -365,3 +366,83 @@ export const getMyPartnerPerception = createServerFn({ method: "POST" })
     return { perception: row ?? null };
   });
 
+
+
+// --- Athena Reflection Flow (post-date experience) --------------------------
+// Additive: sits alongside the free-form reflection conversation and the
+// private partner-perception questions, neither of which changed.
+
+export const getGuidedReflection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => idInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row } = await supabase
+      .from("post_meeting_reflections")
+      .select(
+        "feeling_tags, feeling_other, most_genuine, greatest_difference, self_understanding, continue_decision, decision_reason, anything_else, submitted_at",
+      )
+      .eq("connection_id", data.connection_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    return { reflection: row ?? null };
+  });
+
+export const submitGuidedReflection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => reflectionSubmitInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const { data: conn } = await supabase
+      .from("connections")
+      .select("id, user_low, user_high")
+      .eq("id", data.connection_id)
+      .maybeSingle();
+    if (!conn) throw new Error("Not found");
+    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
+
+    const { applyReflectionOutcome, REFLECTION_CLOSINGS } = await import("./connections.server");
+
+    const { error } = await supabase.from("post_meeting_reflections").upsert(
+      {
+        connection_id: data.connection_id,
+        user_id: userId,
+        feeling_tags: data.feeling_tags,
+        feeling_other: data.feeling_other ?? null,
+        most_genuine: data.most_genuine ?? null,
+        greatest_difference: data.greatest_difference ?? null,
+        self_understanding: data.self_understanding ?? null,
+        continue_decision: data.continue_decision,
+        decision_reason: data.decision_reason ?? null,
+        anything_else: data.anything_else ?? null,
+        submitted_at: new Date().toISOString(),
+        would_meet_again:
+          data.continue_decision === "yes"
+            ? true
+            : data.continue_decision === "no"
+              ? false
+              : null,
+      },
+      { onConflict: "connection_id,user_id" },
+    );
+    if (error) throw new Error(error.message);
+
+    const { closed } = await applyReflectionOutcome(supabase, {
+      connectionId: data.connection_id,
+      userId,
+      decision: data.continue_decision,
+    });
+
+    // Reflection is high-signal for understanding; refresh what's gone stale.
+    const { refreshStalePairsForUser, runMatchmakingForUser } = await import(
+      "./introductions.server"
+    );
+    void refreshStalePairsForUser(userId).catch(() => {});
+    if (closed) {
+      // A slot just opened — consider a new introduction when appropriate.
+      void runMatchmakingForUser(userId).catch(() => {});
+    }
+
+    return { ok: true, closed, closing: REFLECTION_CLOSINGS[data.continue_decision] };
+  });
