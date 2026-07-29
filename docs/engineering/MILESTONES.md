@@ -67,3 +67,34 @@ introduced this file as the canonical rollback anchor for "Foundation Stable v1"
 ### Rollback guidance
 To return to this state, restore the chat to the message that created this
 file. Do not edit this entry; add new milestones below it as forward progress.
+
+
+## Athena Foundation Stable v2
+Date: 2026-07-29
+Status: Permanent rollback point — do not overwrite.
+
+Marks completion of Phase 2 and Phase 2.5 (Core Loop stabilization) prior to
+Phase 3 (Trust, History, Explainability, PWA install).
+
+### What's included beyond v1
+- 20-minute foundational conversation pacing consumed in the Athena UI, with
+  a graceful `ClosingSheet` that saves progress, runs the final reflection,
+  marks the session complete, and force-triggers matchmaking.
+- Durable exit-flush backup for reflection on `pagehide` / `beforeunload`.
+- Server-side refresh of stale `pair_reasoning` after partner perception and
+  post-meeting reflection submissions.
+- Introduction capacity re-evaluated on every response (accept / decline /
+  defer) for both parties, respecting the 3-active cap and cooldown.
+- Moderation dashboard visible to moderators from `/profile` with a
+  moderator-only link and correctly untabbed active state.
+- Account controls: pause / resume matching and permanent account deletion
+  from `/profile`; email verification gate enforced in `_authenticated/route.tsx`.
+- Real-time messaging with mutual-match trigger; block/report affordances in
+  `messages.$id.tsx`.
+- Athena AI turns and reflections tracked through `athena_usage_log` for
+  future billing.
+
+### Rollback guidance
+Restore the chat to the message that introduced this milestone entry. Do not
+edit this entry; add Phase 3 completion as a new milestone below it.
+
