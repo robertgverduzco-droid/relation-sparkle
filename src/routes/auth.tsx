@@ -17,7 +17,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode: initialMode } = Route.useSearch();
+  const { mode: initialMode, verify } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
@@ -65,6 +65,23 @@ function AuthPage() {
   return (
     <div className="screen-shell safe-top safe-bottom px-6 pt-10 pb-10">
       <Link to="/" className="text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
+      {verify && (
+        <div className="mt-6 rounded-2xl border border-border/70 bg-card p-4 text-sm text-foreground">
+          Please confirm your email address to continue. Check your inbox for the verification link. If you don't see it, sign in below to have a new one sent.
+          <button
+            onClick={async () => {
+              const { data } = await supabase.auth.getUser();
+              const em = data.user?.email;
+              if (!em) return;
+              await supabase.auth.resend({ type: "signup", email: em });
+              toast.success("Verification email sent.");
+            }}
+            className="mt-3 block w-full rounded-full border border-border px-4 py-2 text-center text-xs"
+          >
+            Resend verification email
+          </button>
+        </div>
+      )}
 
       <div className="mt-10 fade-in-slow">
         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
