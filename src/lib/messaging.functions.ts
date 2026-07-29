@@ -132,13 +132,16 @@ export const blockUser = createServerFn({ method: "POST" })
       reason: data.reason ?? null,
     });
     if (error && !error.message.includes("duplicate")) throw new Error(error.message);
-    // close any shared connections
     await supabase
       .from("connections")
       .update({ status: "closed", closed_at: new Date().toISOString(), close_reason: "blocked" })
       .or(
         `and(user_low.eq.${userId},user_high.eq.${data.user_id}),and(user_low.eq.${data.user_id},user_high.eq.${userId})`,
       );
+    // Closing a connection frees an active-intro slot for both parties.
+    const { runMatchmakingForUser } = await import("./introductions.server");
+    void runMatchmakingForUser(userId).catch(() => {});
+    void runMatchmakingForUser(data.user_id).catch(() => {});
     return { ok: true };
   });
 
