@@ -441,7 +441,7 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     void refreshStalePairsForUser(userId).catch(() => {});
     if (closed) {
       // A slot just opened — consider a new introduction when appropriate.
-      void runMatchmakingForUser(supabase, userId).catch(() => {});
+      void runMatchmakingForUser(userId).catch(() => {});
     }
 
     return { ok: true, closed, closing: REFLECTION_CLOSINGS[data.continue_decision] };
