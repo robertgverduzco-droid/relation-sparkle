@@ -368,6 +368,15 @@ ${transcript}`,
       .update({ is_stale: true, stale_reason: "understanding refined" })
       .or(`user_low.eq.${userId},user_high.eq.${userId}`);
 
+    // Automatic matchmaking trigger: whenever Athena's understanding
+    // materially deepens (facets changed) OR the foundational conversation
+    // has just completed, reconsider introductions for this user in the
+    // background. Cooldown inside runMatchmakingForUser prevents thrash.
+    if (upserts.length > 0) {
+      const { runMatchmakingForUser } = await import("./introductions.server");
+      void runMatchmakingForUser(userId).catch(() => { /* silent */ });
+    }
+
     return {
       ok: true,
       facetsRefined: upserts.length,
