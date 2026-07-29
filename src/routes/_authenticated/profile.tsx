@@ -40,14 +40,17 @@ type IntelligenceRow = {
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const pauseFn = useServerFn(setAccountPaused);
+  const deleteFn = useServerFn(deleteMyAccount);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     (async () => {
       const [{ data: p }, { data: i }] = await Promise.all([
-        supabase.from("profiles").select("display_name, city").maybeSingle(),
+        supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
         supabase
           .from("user_intelligence")
           .select(
@@ -65,6 +68,36 @@ function ProfilePage() {
     await supabase.auth.signOut();
     toast("You've signed out.");
     navigate({ to: "/" });
+  }
+
+  async function togglePause() {
+    if (!profile) return;
+    setBusy(true);
+    try {
+      const next = !profile.is_paused;
+      await pauseFn({ data: { paused: next } });
+      setProfile({ ...profile, is_paused: next });
+      toast(next ? "Athena has paused your matches." : "Welcome back — matches resumed.");
+    } catch {
+      toast.error("Couldn't update pause state.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeAccount() {
+    const answer = prompt('This permanently deletes your account and everything Athena has come to understand about you. To confirm, type: delete my account');
+    if (answer !== "delete my account") return;
+    setBusy(true);
+    try {
+      await deleteFn({ data: { confirm: "delete my account" } });
+      await supabase.auth.signOut();
+      toast("Your account has been deleted.");
+      navigate({ to: "/" });
+    } catch {
+      toast.error("Couldn't delete the account.");
+      setBusy(false);
+    }
   }
 
   const values = Array.isArray(intel?.core_values)
