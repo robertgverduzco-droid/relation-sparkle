@@ -208,3 +208,228 @@ export async function applyReflectionOutcome(
 
   return { closed: true };
 }
+
+// ---------------------------------------------------------------------------
+// Reflection extensions (seven approved product decisions).
+//
+// Everything below is additive. The guided reflection flow, the free-form
+// reflection conversation, the private partner-perception questions, and the
+// existing safety system all keep working exactly as they did.
+// ---------------------------------------------------------------------------
+
+/** Neutral copy shown to the member who did not select "No". */
+export const REFLECTION_CONCLUDED_NOTICE =
+  "This introduction has concluded. Continuing requires mutual interest from both people. Nothing about the other person's reflection is shared.";
+
+export const REFLECTION_CONCLUDED_INVITE =
+  "When you're ready, I'd still like to hear how the experience was for you. Your private reflection helps me understand you better for what comes next.";
+
+export const MUTUAL_YES_NOTICE =
+  "You've both said you'd like to keep getting to know one another. I'll stay close as this unfolds.";
+
+/** Athena's gentle "not yet" state before a meeting has plausibly happened. */
+export const REFLECTION_NOT_YET =
+  "There's no rush. Once you've actually spent time together, I'll be here to reflect on it with you.";
+
+export const REFLECTION_CHECKIN_DAYS = 10;
+export const REQUIRED_REFLECTION_GRACE_DAYS = 14;
+
+/** Find the conversation shared by a pair, if one exists. */
+export async function findConversationId(
+  supabase: SupabaseClient,
+  a: string,
+  b: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("conversations")
+    .select("id, user_a, user_b")
+    .or(`and(user_a.eq.${a},user_b.eq.${b}),and(user_a.eq.${b},user_b.eq.${a})`)
+    .maybeSingle();
+  return (data?.id as string | undefined) ?? null;
+}
+
+/** Post a neutral Athena system message into a pair's conversation. */
+export async function postSystemMessage(
+  supabase: SupabaseClient,
+  conversationId: string,
+  body: string,
+): Promise<void> {
+  await supabase.from("messages").insert({
+    conversation_id: conversationId,
+    sender_id: null,
+    kind: "system",
+    body,
+  });
+}
+
+/**
+ * Decision 2 — reflection timing.
+ *
+ * A reflection only opens once Athena has a reasonable indication that a
+ * meaningful interaction actually happened. Uses existing signals only:
+ *   - a meeting proposal completed, or scheduled more than 4 hours ago, OR
+ *   - the pair has messaged on two distinct days and the connection is 72h old.
+ */
+export async function computeReflectionAvailability(
+  supabase: SupabaseClient,
+  args: { connectionId: string; openedAt: string; userLow: string; userHigh: string },
+): Promise<{ available: boolean; reason: string }> {
+  const now = Date.now();
+
+  const { data: proposals } = await supabase
+    .from("meeting_proposals")
+    .select("status, scheduled_for, completed_at")
+    .eq("connection_id", args.connectionId);
+
+  for (const p of proposals ?? []) {
+    if (p.status === "completed" || p.completed_at) {
+      return { available: true, reason: "meeting_completed" };
+    }
+    const when = p.scheduled_for as string | null;
+    if (when && now - new Date(when).getTime() > 4 * 60 * 60 * 1000) {
+      return { available: true, reason: "meeting_time_passed" };
+    }
+  }
+
+  const ageHours = (now - new Date(args.openedAt).getTime()) / 36e5;
+  if (ageHours >= 72) {
+    const conversationId = await findConversationId(supabase, args.userLow, args.userHigh);
+    if (conversationId) {
+      const { data: msgs } = await supabase
+        .from("messages")
+        .select("created_at, sender_id")
+        .eq("conversation_id", conversationId)
+        .not("sender_id", "is", null)
+        .limit(500);
+      const days = new Set(
+        (msgs ?? []).map((m) => (m.created_at as string).slice(0, 10)),
+      );
+      if (days.size >= 2) return { available: true, reason: "sustained_conversation" };
+    }
+  }
+
+  return { available: false, reason: "too_early" };
+}
+
+/**
+ * Decision 3 — "I'm not sure yet" check-in.
+ *
+ * Read-time only: no cron, no new state machine. True when the last
+ * "not sure" reflection is old, nothing has happened since, and Athena
+ * hasn't already checked in about it.
+ */
+export function shouldCheckInAfterUnsure(args: {
+  lastDecision: string | null;
+  lastSubmittedAt: string | null;
+  lastActivityAt: string | null;
+  lastCheckinAt: string | null;
+}): boolean {
+  if (args.lastDecision !== "not_sure" || !args.lastSubmittedAt) return false;
+  const submitted = new Date(args.lastSubmittedAt).getTime();
+  const ageDays = (Date.now() - submitted) / 864e5;
+  if (ageDays < REFLECTION_CHECKIN_DAYS) return false;
+  if (args.lastActivityAt && new Date(args.lastActivityAt).getTime() > submitted) return false;
+  if (args.lastCheckinAt && new Date(args.lastCheckinAt).getTime() > submitted) return false;
+  return true;
+}
+
+export const REFLECTION_CHECKIN_COPY =
+  "It's been a little while since you last reflected on this introduction. Whenever you're ready, I'd like to hear where things stand for you now.";
+
+/**
+ * Decision 7 — Athena's acknowledgement prompt.
+ *
+ * She reflects back what she heard. She never advises, never nudges toward or
+ * away from continuing, and never references the other person's answers.
+ */
+export function acknowledgementPrompt(args: {
+  otherName: string;
+  feelings: string[];
+  feelingOther?: string | null;
+  mostGenuine?: string | null;
+  greatestDifference?: string | null;
+  selfUnderstanding?: string | null;
+  decision: "yes" | "no" | "not_sure";
+  decisionReason?: string | null;
+  anythingElse?: string | null;
+}): string {
+  const lines = [
+    `Feelings named: ${[...args.feelings, args.feelingOther].filter(Boolean).join(", ") || "none named"}`,
+    `Most genuine moment: ${args.mostGenuine || "—"}`,
+    `Greatest difference noticed: ${args.greatestDifference || "—"}`,
+    `What they learned about themselves: ${args.selfUnderstanding || "—"}`,
+    `Their decision: ${args.decision}`,
+    `Reason given: ${args.decisionReason || "—"}`,
+    `Anything else: ${args.anythingElse || "—"}`,
+  ].join("\n");
+
+  return `You are Athena, speaking privately with a member who has just finished reflecting on time spent with ${args.otherName}.
+
+Write a brief acknowledgement — two or three sentences, no more.
+
+Absolute constraints:
+- Reflect back what you actually heard, in your own quiet, warm, unhurried voice.
+- Match their emotional tone. Do not brighten it, do not darken it.
+- Never advise, never evaluate, never encourage or discourage continuing.
+- Never mention or imply anything about the other person's reflection.
+- No questions, no lists, no headings. Plain prose.
+
+WHAT THEY SHARED:
+${lines}`;
+}
+
+/**
+ * Decision 1 — the other member must still reflect before Athena introduces
+ * them to someone new. Mark the reflection as required and record when the
+ * wait began (a 14-day grace keeps a silent member from being locked out).
+ */
+export async function markReflectionRequired(
+  supabase: SupabaseClient,
+  args: { connectionId: string; userId: string },
+): Promise<void> {
+  const { data: existing } = await supabase
+    .from("post_meeting_reflections")
+    .select("id, submitted_at, reflection_required")
+    .eq("connection_id", args.connectionId)
+    .eq("user_id", args.userId)
+    .maybeSingle();
+
+  if (existing?.submitted_at) return; // already reflected — nothing required
+
+  if (existing) {
+    await supabase
+      .from("post_meeting_reflections")
+      .update({ reflection_required: true, required_since: new Date().toISOString() })
+      .eq("id", existing.id as string);
+    return;
+  }
+
+  await supabase.from("post_meeting_reflections").insert({
+    connection_id: args.connectionId,
+    user_id: args.userId,
+    transcript: [],
+    reflection_required: true,
+    required_since: new Date().toISOString(),
+  });
+}
+
+/**
+ * Decision 5 — mutual "Yes". Returns true when the other member's most recent
+ * submitted reflection also says yes. Callers move the connection into
+ * `mutual_interest`, which is the entry point Relationship Focus Mode will
+ * attach to later. No parallel system is created here.
+ */
+export async function detectMutualYes(
+  supabase: SupabaseClient,
+  args: { connectionId: string; otherUserId: string },
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("reflection_submissions")
+    .select("continue_decision")
+    .eq("connection_id", args.connectionId)
+    .eq("user_id", args.otherUserId)
+    .order("sequence", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.continue_decision as string | null) === "yes";
+}
