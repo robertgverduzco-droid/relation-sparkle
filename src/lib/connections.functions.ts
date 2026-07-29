@@ -338,8 +338,16 @@ export const submitPartnerPerception = createServerFn({ method: "POST" })
         { onConflict: "connection_id,author_id" },
       );
     if (error) throw new Error(error.message);
+
+    // Partner perception updates Athena's view of the subject; refresh any
+    // stale pair reasoning for BOTH users (the trigger marks both sides).
+    const { refreshStalePairsForUser } = await import("./introductions.server");
+    void refreshStalePairsForUser(userId).catch(() => {});
+    void refreshStalePairsForUser(subjectId).catch(() => {});
+
     return { ok: true };
   });
+
 
 export const getMyPartnerPerception = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

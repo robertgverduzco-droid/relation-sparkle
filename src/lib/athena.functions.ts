@@ -383,3 +383,41 @@ ${transcript}`,
       topicsTouched: topicUpserts.length,
     };
   });
+
+// Called by the client when the user accepts Athena's graceful close of the
+// foundational conversation, or as a best-effort backup when they exit.
+// Idempotent: safe to call multiple times. Marks the session complete and
+// force-triggers matchmaking past the cooldown.
+export const completeFoundationalConversation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const now = new Date().toISOString();
+
+    const { data: session } = await supabase
+      .from("interview_sessions")
+      .select("completed_at")
+      .maybeSingle();
+    const alreadyComplete = Boolean(session?.completed_at);
+
+    if (!alreadyComplete) {
+      await supabase
+        .from("interview_sessions")
+        .update({ completed_at: now })
+        .eq("user_id", userId);
+      // Ensure last_interview_at is set even if reflect hasn't run yet, so
+      // the matchmaking eligibility gate opens.
+      await supabase
+        .from("user_intelligence")
+        .upsert(
+          { user_id: userId, last_interview_at: now },
+          { onConflict: "user_id" },
+        );
+    }
+
+    const { runMatchmakingForUser } = await import("./introductions.server");
+    void runMatchmakingForUser(userId, { force: true }).catch(() => {});
+
+    return { ok: true, alreadyComplete };
+  });
+
