@@ -212,6 +212,18 @@ function ProfilePage() {
         >
           Continue with Athena
         </Link>
+        <button
+          onClick={togglePause}
+          disabled={busy || !profile}
+          className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground disabled:opacity-60"
+        >
+          {profile?.is_paused ? "Resume matches" : "Pause matches"}
+        </button>
+        {profile?.is_paused && (
+          <p className="text-center text-xs text-muted-foreground">
+            You're paused. Athena won't create introductions until you resume.
+          </p>
+        )}
         <Link
           to="/privacy"
           className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
@@ -223,6 +235,13 @@ function ProfilePage() {
           className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground"
         >
           Sign out
+        </button>
+        <button
+          onClick={removeAccount}
+          disabled={busy}
+          className="w-full rounded-full border border-destructive/60 px-6 py-3 text-sm text-destructive disabled:opacity-60"
+        >
+          Delete my account
         </button>
       </div>
 
