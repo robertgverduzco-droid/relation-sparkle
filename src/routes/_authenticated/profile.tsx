@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { setAccountPaused, deleteMyAccount } from "@/lib/account.functions";
+import { amIModerator } from "@/lib/moderation.functions";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -42,10 +44,13 @@ function ProfilePage() {
   const navigate = useNavigate();
   const pauseFn = useServerFn(setAccountPaused);
   const deleteFn = useServerFn(deleteMyAccount);
+  const modCheck = useServerFn(amIModerator);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+
 
   useEffect(() => {
     (async () => {
