@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
-import { askAthena, reflectAthena } from "@/lib/athena.functions";
+import { askAthena, reflectAthena, completeFoundationalConversation } from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
@@ -64,6 +64,7 @@ function AthenaPage() {
   const navigate = useNavigate();
   const ask = useServerFn(askAthena);
   const reflect = useServerFn(reflectAthena);
+  const complete = useServerFn(completeFoundationalConversation);
   const logUsageFn = useServerFn(logUsage);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -75,14 +76,20 @@ function AthenaPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const [showClosingCard, setShowClosingCard] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastReflectedTurnRef = useRef(0);
   const conversationStartRef = useRef<number>(Date.now());
   const timeAcknowledgedRef = useRef(false);
+  const foundationCompleteRef = useRef(false);
+  const flushingRef = useRef(false);
+  const messagesRef = useRef<Msg[]>([]);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
