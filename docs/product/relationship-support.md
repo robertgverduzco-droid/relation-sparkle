@@ -69,3 +69,20 @@ Everything previously implemented is preserved. These seven decisions extend it.
 
 **Eligibility.** A member with an outstanding required reflection is not offered
 a new introduction until it is complete, subject to a 14-day grace period.
+
+## Terminology note — meeting reflection
+
+**Meeting reflection** is member-submitted guided feedback following an
+introduction or meaningful interaction. It is owned by Relationship Support and
+the connection lifecycle, and it is how a member tells Athena how an experience
+actually went.
+
+It is distinct from **conversation reflection** — Athena's AI-generated
+post-conversation distillation — which is owned by L5 Memory and the Living
+Profile system. See `docs/constitution/L5-memory.md`.
+
+The two systems share the word "reflection" in their code identifiers
+(`reflections` for conversation reflection; `post_meeting_reflections`,
+`reflection_submissions`, and `reflection-flow.tsx` for meeting reflection).
+Those identifiers are intentionally left unchanged so that no working system is
+disturbed; this note exists to prevent the ambiguity from causing confusion.

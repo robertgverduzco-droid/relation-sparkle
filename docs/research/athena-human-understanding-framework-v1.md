@@ -1,7 +1,7 @@
 # Athena Human Understanding Framework — v1 (Research & Architecture)
 
 Status: Draft for review. **Do not implement.** Supersedes nothing yet.
-Companion to: `docs/research/athena-human-understanding-frameworks-v1.md` (source synthesis).
+Companion to: `docs/research/athena-human-understanding-frameworks-v1.md` — the upstream review of established external frameworks that this document synthesizes into Athena's own architecture. That file is the source review; this file is the derived framework. Neither supersedes the other.
 
 ---
 

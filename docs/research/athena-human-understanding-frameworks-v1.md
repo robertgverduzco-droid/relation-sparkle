@@ -1,5 +1,7 @@
 # Athena Research Brief — Frameworks of Human Understanding, v1
 
+Companion to: `docs/research/athena-human-understanding-framework-v1.md` — the downstream Athena Human Understanding Framework that synthesizes this research into Athena's own architecture. This file is the upstream source review; that file is the derived framework. Neither supersedes the other.
+
 Status: Research only. Do not modify production conversation logic based on this document alone. Any adoption requires an explicit implementation approval from the product owner.
 
 Purpose: Study established psychological, behavioral, communication, and relationship frameworks; extract what each teaches about *understanding a person*; and synthesize those lessons into an original Athena methodology. Athena must never label users with types, scores, or categories, and must never reproduce any copyrighted assessment item.
