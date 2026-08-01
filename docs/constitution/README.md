@@ -22,8 +22,8 @@ constitution but is not part of it.
 | L6c | Decision & Introduction | [L6c-decision-and-introduction.md](./L6c-decision-and-introduction.md) | How reasoning becomes action. |
 | L7 | Operational | [L7-operational.md](./L7-operational.md) | Engineering and implementation constraints only. |
 
-Cross-cutting:
-- [Voice & Expression](./cross-cutting/voice-and-expression.md) — how conclusions from every layer are communicated.
+Cross-cutting (canonical, not a numbered layer — there is no L8):
+- [Voice & Expression](./cross-cutting/voice-and-expression.md) — canonical doctrine governing how conclusions from every layer are expressed. Binding on all user-facing layers, product behavior, and the runtime prompt. Substantive document *Athena — Personality & Conversation Style* pending.
 
 Meta:
 - [META-PREAMBLE](./META-PREAMBLE.md) — how this constitution evolves.
