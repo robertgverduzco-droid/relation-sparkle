@@ -1,210 +1,135 @@
-# Proposal — Addressing Athena Architectural Recommendations
+# Consolidated Documentation Plan — Approved Architectural Actions
 
-Date: 2026-08-01
-Status: Awaiting approval
+Covers only Recommendations 2, 3 (audit), 4, and 5. Recommendation 1 (L6d) is deferred and appears nowhere in this plan.
 
-## Background
+## Guarantees
 
-The recent architectural inventory identified five design/doc gaps that are not yet owned by any existing document or layer. This proposal lists each gap, the conflict or risk it creates, the smallest recommended fix, and the exact files that would change. No implementation is performed in this document.
+- No runtime behavior will change.
+- No prompt text will change.
+- No database, schema, table, function, route, or component will change.
+- No existing constitutional directionality rule will be violated.
+- Voice & Expression remains structurally cross-cutting while becoming canonical.
+- Constitutional doctrine governs the runtime prompt; the prompt never governs doctrine.
+- The two research files are audited only — nothing merged, deleted, renamed, or redirected.
+- Reflection terminology is clarified without renaming any working system.
 
-## Scope boundary
-
-- This proposal only creates or reorganizes **documents, file names, and terminology**. It does not change prompts, runtime behavior, or database schema unless explicitly noted.
-- If any recommendation below is approved, a follow-up implementation plan will be written before code changes.
-
----
-
-## Recommendation 1 — §11 (Self-evaluation) needs a constitutional layer
-
-### What was observed
-
-§11 (Athena's own self-evaluation / performance calibration) is discussed in the inventory but has no canonical owner in the current 7-layer constitution. It is not L4 (epistemics is about belief formation regarding members, not Athena's own model performance) and it is not L7 (operational is about engineering/runtime constraints, not cognitive self-assessment).
-
-### Conflict / risk
-
-Without a clear layer, any future self-evaluation rule could be pushed into L4 or L7 improperly, violating the directionality rule (L4 and L7 must not depend on higher layers). It also creates confusion about where to place model drift, calibration, and quality-loop governance.
-
-### Proposed fix
-
-Add a new constitutional layer: **L6d — Self-Reflective Reasoning**. Placement: after L6c (Decision & Introduction) so the directionality rule still holds.
-
-`docs/constitution/L6d-self-reflective-reasoning.md` would own:
-
-- Athena's own performance calibration and quality loops.
-- When and how Athena questions its own conclusions.
-- Model drift, confidence recalibration, and systematic error correction.
-- Feedback loops between introductions and reasoning quality.
-
-It would depend on L6c (outcomes from introductions feed self-reflection) and all lower layers, but no lower layer would depend on it.
-
-### Files changed
-
-- `docs/constitution/L6d-self-reflective-reasoning.md` (new)
-- `docs/constitution/README.md` (add L6d to layers table)
-- `docs/constitution/META-PREAMBLE.md` (if cross-layer index references §11)
-- `docs/technical/DEPENDENCY_MAP.md` (add L6d dependency arrow)
-- `docs/technical/SYSTEM_OVERVIEW.md` (add L6d to cognition layer)
-
-### Risk / trade-off
-
-Adding a layer is a structural change. Downstream product or technical docs that mention the seven layers would need to be updated to mention eight. This is a one-time terminology change, not a behavior change.
+Every edit below is to a Markdown file under `docs/`. No file in `src/`, `supabase/`, or any config is touched.
 
 ---
 
-## Recommendation 2 — Promote Voice & Expression to a canonical layer
+## Recommendation 3 — Audit report (already performed, read-only)
 
-### What was observed
+This was the only approved action I could complete without modifying anything, so the findings are below rather than deferred to implementation.
 
-Voice & Expression currently lives at `docs/constitution/cross-cutting/voice-and-expression.md` with the status "cross-cutting, not a layer." However, §2 (Conversational Reasoning) and §9 (L2 Ethics and refusal language) both depend on it, and the live AI prompt in `src/lib/athena.server.ts` is effectively the de-facto specification. It is already used as canonical guidance but is not formally recognized as a layer.
+**Headline finding: these are not duplicates.** They are two different documents whose filenames collided by accident. Neither should be deleted.
 
-### Conflict / risk
+| | `athena-human-understanding-framework-v1.md` (singular) | `athena-human-understanding-frameworks-v1.md` (plural) |
+|---|---|---|
+| Title | Athena Human Understanding Framework — v1 (Research & Architecture) | Athena Research Brief — Frameworks of Human Understanding, v1 |
+| Lines | 361 | 208 |
+| Nature | Athena's **own** original framework | Survey of **external** established frameworks |
+| Status line | "Draft for review. Do not implement." | "Research only." |
 
-Keeping Voice & Expression as advisory creates a status mismatch: it is treated as canonical but not structurally canonical. Future changes to Athena's tone, refusal language, or uncertainty expression could be edited in the code prompt without any constitutional review path. This quietly bypasses the explicit-approval requirement in the Meta-Preamble.
+**Content unique to the singular file:** Athena's 21 dimensions across Families A–D, evidence and confidence methodology, contradiction handling, pair-level compatibility reasoning, introduction derivation, integration with the existing architecture, duplication/conflict analysis, and next-artifact recommendations.
 
-### Proposed fix
+**Content unique to the plural file:** Reviews of Big Five/OCEAN, Attachment Theory, VIA Character Strengths, Gottman, Motivational Interviewing, and adjacent traditions; cross-framework recurring concepts; the three listening registers; question philosophy; adapted OARS listening moves; source provenance.
 
-Promote Voice & Expression to a full canonical layer. Two options:
+**Shared content:** Essentially none at the section level. The only overlap is thematic — both reject labels and typologies, and the singular file's "Guiding Principles" section is explicitly derived from the plural file. The singular file already names the plural file as "Companion to: ... (source synthesis)."
 
-**Option A — Standalone layer (L8 or cross-layer canonical)**
+**Existing references:** Four constitutional layers cite the **singular** file as their migration source — L3 (§3), L4 (§§4–5), L5 (§8), and L6b (§6). The plural file has **zero** inbound references outside my own proposal document.
 
-Create `docs/constitution/L8-voice-and-expression.md` as a canonical layer, placed after L7. It would still be referenced by all lower layers, but its own status would be "canonical" rather than "cross-cutting." This preserves the rule that higher layers may depend on lower layers, while making Voice & Expression a formal constitutional document.
+**Which is more complete:** Neither supersedes the other. The singular file is the more complete *architecture* document and is the one the constitution was built from. The plural file is the more complete *research* document and is the upstream evidence base the singular file synthesizes.
 
-**Option B — Merge into L2 Ethics**
+**Recommendation:** Keep both. The problem is naming, not duplication. The lowest-risk fix is to leave both files exactly where they are and add a one-line cross-reference header to the plural file pointing to the singular file as its downstream synthesis — mirroring the pointer that already exists in the other direction. A rename of the plural file to something like `athena-source-frameworks-review-v1.md` would be clearer still, but it is not necessary and I am not proposing it unless you ask.
 
-Move the refusal, tone, and uncertainty-expression rules into L2 Ethics (where permission to speak or refuse is governed). Keep a redirect stub at the old location. This is the smaller change but it makes Voice & Expression a subordinate of ethics rather than a first-class cross-cutting concern.
-
-### Recommended option
-
-**Option A** — make it canonical as L8. Voice & Expression is broader than ethics (it covers warmth, clarity, uncertainty expression, and explanation framing), so it deserves its own layer. This also makes it easier to require explicit review for any prompt change that affects Athena's voice.
-
-### Files changed
-
-- `docs/constitution/L8-voice-and-expression.md` (new, promoted from cross-cutting)
-- `docs/constitution/cross-cutting/voice-and-expression.md` (redirect stub pointing to new layer)
-- `docs/constitution/README.md` (add L8 to layers table)
-- `docs/technical/DEPENDENCY_MAP.md` (add L8 references)
-
-### Risk / trade-off
-
-Promoting to a layer requires that every prompt change that affects voice, tone, or refusal language be treated as a constitutional change. This is more rigorous but may slow down minor wording tweaks. If you prefer lighter governance, Option B is safer.
+**This plan makes no change to either file.** If you approve the cross-reference header, I will treat that as a separate, explicit approval.
 
 ---
 
-## Recommendation 3 — Resolve the duplicate research filename
+## Recommendation 2 — Voice & Expression becomes cross-cutting canonical
 
-### What was observed
+Smallest change that promotes status without creating L8 and without merging into L2.
 
-`docs/research/` contains two files with nearly identical names:
+### Edit 2a — `docs/constitution/cross-cutting/voice-and-expression.md`
 
-- `athena-human-understanding-framework-v1.md`
-- `athena-human-understanding-frameworks-v1.md`
+Change the status line from advisory to canonical, and add a short subsection establishing the substantive document that will fill it.
 
-They differ only by the plural "s" and by 153 lines. This makes it unclear which is authoritative.
+- Status line changes from `Status: charter. This is not a constitutional layer.` to a canonical cross-cutting status: canonical doctrine, cross-cutting rather than layered, binding on every user-facing layer.
+- Add a "Canonical status and structure" subsection stating that Voice & Expression is canonical doctrine that applies across layers rather than sitting at a fixed position in the L1→L7 chain, and that being cross-cutting does not make it advisory.
+- Add a "Substantive canonical document" subsection naming **Athena — Personality & Conversation Style** as the forthcoming document that will carry the substantive definition of Athena's expressed identity within this domain, and stating that until it is written and approved, this charter's scope section governs and all current runtime behavior is preserved unchanged.
+- Add a "Binding effect" subsection: all user-facing constitutional layers, product behavior, and runtime prompts must remain aligned with this doctrine.
+- Add a row to the existing revision history table.
 
-### Conflict / risk
+### Edit 2b — `docs/constitution/README.md`
 
-Future references may point to the wrong file. If the files diverge further, the Human Understanding Framework could be read from a stale or partial copy. This is a documentation hygiene issue, not a runtime bug, but it threatens consistency.
+The layers table stays exactly as it is — L1 through L7, no L8. Only the "Cross-cutting" line below the table changes, from a plain bullet to a line marking Voice & Expression as canonical cross-cutting doctrine binding on all user-facing layers, with Personality & Conversation Style noted as pending.
 
-### Proposed fix
+### Directionality
 
-1. Read both files and determine which one is the complete/authoritative version.
-2. Keep the authoritative version under a clear name, e.g. `athena-human-understanding-framework-v1.md`.
-3. Replace the duplicate with a redirect stub that points to the canonical file.
-4. Search the codebase for references to either filename and point them all to the canonical file.
-
-### Files changed
-
-- One of the two files becomes a redirect stub.
-- Any code or docs referencing the removed filename get updated.
-
-### Risk / trade-off
-
-If both files contain distinct content, merging them may be necessary instead of deleting one. This is a documentation-only operation; no runtime risk.
+Unaffected. A cross-cutting domain sits outside the L1→L7 chain, so no upward dependency is introduced. The existing rule in the charter — that Voice & Expression depends on the layers below it and modifies none of them — is preserved verbatim.
 
 ---
 
-## Recommendation 4 — Document the system prompt as canonical
+## Recommendation 4 — Prompt governance in L7, with corrected authority hierarchy
 
-### What was observed
+### Edit 4a — `docs/constitution/L7-operational.md`
 
-Athena's actual personality and voice live in a string inside `src/lib/athena.server.ts`. The constitution and Voice & Expression guide describe the desired voice, but there is no single document that mirrors the live system prompt itself. This means any prompt edit is currently an unreviewed constitutional change, even though it has the largest direct impact on user-facing behavior.
+Append one section, "Athena System Prompt — Runtime Implementation Governance," containing:
 
-### Conflict / risk
+1. **Authority hierarchy**, stated in this order and explicitly non-negotiable:
+   1. Athena's constitutional doctrine governs.
+   2. The canonical Personality & Conversation Style document (within cross-cutting Voice & Expression) defines Athena's expressed identity.
+   3. The runtime system prompt *implements* that doctrine.
+   4. Every prompt change is reviewed against the governing constitutional documents before implementation.
+2. **An explicit non-authority clause**: the source-code prompt is an implementation artifact and never governs, overrides, amends, or supersedes constitutional doctrine. Where prompt and doctrine diverge, doctrine is correct and the prompt is defective.
+3. **Location**: the runtime prompt lives in `src/lib/athena.server.ts`, recorded as location only, not as source of truth.
+4. **Purpose**: translating doctrine into model-executable instruction.
+5. **Version and change history**: a table for recording prompt changes, seeded with the current state as the baseline entry. No prompt text is copied into the document.
+6. **Review requirements**: which layers must be checked for which kinds of change — L2 for refusal and boundary language, L3 for anything touching how a person is understood or the no-labels rule, L6a for conversational conduct, and cross-cutting Voice & Expression for tone, warmth, uncertainty expression, and explanation framing.
+7. **Governing documents list**: the specific documents that govern the prompt.
 
-The Meta-Preamble requires explicit review for changes to constitutional rules. The prompt is the most concrete expression of those rules, yet it has no reviewable canonical document. This is a governance gap. It also makes future changes to Athena's voice harder to reason about: you must read the source code to know what she actually says.
+The section will state that it deliberately does not restate prompt text, because restating creates drift.
 
-### Proposed fix
+### Not done
 
-Create a canonical document that references the prompt as the source of truth, rather than restating it.
-
-**Recommended location:** `docs/constitution/L7-operational.md` is the correct layer because this is about how the constitution is implemented at runtime, not what the constitution says. Add a section to L7-operational.md titled "Athena System Prompt — Canonical Reference" that states:
-
-- The canonical system prompt lives in `src/lib/athena.server.ts` (and any related prompt files).
-- This document does not duplicate the prompt text; it describes the prompt's purpose, version policy, and review rules.
-- Any change to the prompt that affects voice, refusal language, ethical boundaries, or explanation framing must be reviewed against the relevant constitutional layers (L2, L3, L6a, L8 if promoted).
-- A small "key design choices" summary (e.g., "no labels," "no percentages," "quiet confidence") can be listed here as reference anchors, with the exact wording governed by the source file.
-
-This keeps the live prompt as the single source of truth while making the prompt's governance visible in the constitution.
-
-### Files changed
-
-- `docs/constitution/L7-operational.md` (add prompt governance section)
-- Optionally `docs/constitution/L8-voice-and-expression.md` if Recommendation 2 is approved (cross-reference the prompt section)
-
-### Risk / trade-off
-
-This does not change the prompt itself. It only documents where the prompt lives and how it is reviewed. The only risk is that future prompt edits become slightly more formal, which is the intended effect.
+The runtime prompt is not modified, read into the document, or referenced as authoritative.
 
 ---
 
-## Recommendation 5 — Disambiguate the two "reflection" concepts
+## Recommendation 5 — Reflection terminology notes
 
-### What was observed
+Two documentation-only notes, no renames anywhere.
 
-Two distinct systems use the word "reflection":
+### Edit 5a — `docs/constitution/L5-memory.md`
 
-1. `reflections` (post-conversation distillation) — generated after Athena conversations, stored in the `reflections` table, part of the Living Profile / memory system.
-2. `post_meeting_reflections` / `reflection_submissions` (post-meeting guided flow) — completed after a member meets an introduction, part of the connection lifecycle.
+Add a short "Terminology note — conversation reflection" subsection defining **conversation reflection** as Athena's AI-generated post-conversation distillation, owned by L5 Memory and the Living Profile system, and distinguishing it by name from meeting reflection, which L5 does not own.
 
-They are unrelated but share vocabulary. This can cause confusion in code, docs, and future prompts.
+### Edit 5b — `docs/product/relationship-support.md`
 
-### Conflict / risk
+Add the mirrored "Terminology note — meeting reflection" subsection defining **meeting reflection** as member-submitted guided feedback following an introduction or meaningful interaction, owned by Relationship Support and the connection lifecycle, and distinguishing it from conversation reflection.
 
-Miscommunication in future specs, debugging, and AI training. A developer or future AI assistant might assume "reflection" means only one of these systems. No runtime bug exists today, but it is a naming debt.
+Both notes will state plainly that the underlying code identifiers are intentionally left unchanged to avoid touching working systems.
 
-### Proposed fix
+### Not done
 
-Do not rename tables or files (renaming would touch working code). Instead, add a terminology note in a visible document.
-
-**Recommended location:** `docs/constitution/L5-memory.md` and `docs/product/relationship-support.md` each get a small "Terminology note" that clarifies:
-
-- **Conversation reflection** = the AI-generated distillation after a conversation with Athena. Owned by L5 Memory / Living Profile.
-- **Meeting reflection** = the member-submitted guided reflection after an introduction. Owned by Relationship Support / connection lifecycle.
-
-This is a documentation-only change. The code terms remain unchanged to preserve working code.
-
-### Files changed
-
-- `docs/constitution/L5-memory.md` (add terminology note)
-- `docs/product/relationship-support.md` (add terminology note)
-- Optionally `docs/technical/DEPENDENCY_MAP.md` if the terms are listed there
-
-### Risk / trade-off
-
-Zero runtime risk. The only downside is that the vocabulary remains slightly ambiguous in code, which is mitigated by the documentation note.
+No table, column, file, function, route, or component is renamed. `reflections`, `post_meeting_reflections`, `reflection_submissions`, `reflection-flow.tsx`, and every related identifier stay exactly as they are.
 
 ---
 
-## Implementation order
+## Complete file manifest
 
-If all five recommendations are approved, the recommended order is:
+| File | Change |
+|---|---|
+| `docs/constitution/cross-cutting/voice-and-expression.md` | Status advisory to canonical; add canonical-status, substantive-document, and binding-effect subsections; revision history row |
+| `docs/constitution/README.md` | Cross-cutting line updated to reflect canonical status; layers table untouched |
+| `docs/constitution/L7-operational.md` | Append prompt-governance section with corrected authority hierarchy |
+| `docs/constitution/L5-memory.md` | Append conversation-reflection terminology note |
+| `docs/product/relationship-support.md` | Append meeting-reflection terminology note |
 
-1. **Recommendation 5** (terminology note) — no risk, purely additive.
-2. **Recommendation 3** (duplicate filename) — documentation cleanup.
-3. **Recommendation 4** (prompt governance) — documentation-only, but depends on L7.
-4. **Recommendation 2** (Voice & Expression layer) — structural layer change.
-5. **Recommendation 1** (L6d layer) — structural layer change.
+Five Markdown files. No other file of any kind is modified. Recommendation 1 produces no edits. Recommendation 3 produces no edits.
 
-## What I need from you
+---
 
-For each recommendation, please approve or reject. If you want a different option (e.g., merge Voice & Expression into L2 instead of promoting to L8), say so. No code changes will be made until you explicitly approve each one.
+## Open question for you
+
+The Recommendation 3 audit found the two research files are genuinely different documents, not duplicates. Confirm whether you want the one-line cross-reference header added to the plural file, or whether both files should be left completely untouched for now.
