@@ -67,9 +67,25 @@ understand about this person now," the current-state view is used; history
 is consulted when reasoning about growth, contradiction, or re-emergence of
 prior patterns.
 
+## Terminology note — conversation reflection
+
+**Conversation reflection** is Athena's AI-generated distillation produced
+after a conversation with a member. It is owned by L5 Memory and the Living
+Profile system, and it is how a conversation becomes durable understanding.
+
+It is distinct from **meeting reflection** — member-submitted guided feedback
+following an introduction or meaningful interaction — which is owned by
+Relationship Support and the connection lifecycle, and which L5 does not own.
+See `docs/product/relationship-support.md`.
+
+The two systems share the word "reflection" in their code identifiers. Those
+identifiers are intentionally left unchanged so that no working system is
+disturbed; this note exists to prevent the ambiguity from causing confusion.
+
 ## Revision history
 
 | Version | Date | Description |
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created. |
 | 1.0 | 2026-07-27 | Living Profile / Topic Map / Facets lifecycle migrated from research v1 §8. |
+| 1.1 | 2026-08-01 | Added conversation-reflection terminology note. Documentation only; nothing renamed. |
