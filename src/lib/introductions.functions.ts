@@ -121,6 +121,31 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       connectionId = await openConnectionIfMutual(supabase, data.pair_id);
     }
 
+    // Outcome-learning (recording only): categorical, anonymized, no influence
+    // on this or any future introduction decision.
+    {
+      const { emitOutcomeSignal } = await import("./learning.server");
+      const both = {
+        userA: pair.user_low as string,
+        userB: pair.user_high as string,
+      };
+      if (data.response === "declined") {
+        emitOutcomeSignal({
+          ...both,
+          kind: "introduction_declined",
+          reason: "unspecified",
+          dedupeKey: `${data.pair_id}:${userId}`,
+        });
+      } else if (connectionId) {
+        emitOutcomeSignal({
+          ...both,
+          kind: "introduction_accepted_both",
+          dedupeKey: data.pair_id,
+        });
+      }
+    }
+
+
     // Any response (accept / decline / defer) can change available capacity
     // for either user. Re-evaluate matchmaking for both sides — the
     // 3-active-cap and cooldown inside runMatchmakingForUser protect against
