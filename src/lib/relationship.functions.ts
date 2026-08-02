@@ -68,7 +68,6 @@ export const chooseEndingPath = createServerFn({ method: "POST" })
       .eq("id", data.transition_id)
       .eq("user_id", userId);
     if (error) throw new Error(error.message);
-    if (error) throw new Error(error.message);
 
     if (data.choice === "resume") {
       const { runMatchmakingForUser } = await import("./introductions.server");
