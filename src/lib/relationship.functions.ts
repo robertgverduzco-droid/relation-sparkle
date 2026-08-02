@@ -192,6 +192,15 @@ export const optIntoFocus = createServerFn({ method: "POST" })
         conn.user_high as string,
       );
       if (conversationId) await postSystemMessage(admin, conversationId, FOCUS_STARTED_NOTICE);
+
+      // Outcome-learning (recording only): the strongest sanctioned signal.
+      const { emitOutcomeSignal } = await import("./learning.server");
+      emitOutcomeSignal({
+        userA: conn.user_low as string,
+        userB: conn.user_high as string,
+        kind: "focus_started",
+        dedupeKey: data.connection_id,
+      });
     }
 
     return {
