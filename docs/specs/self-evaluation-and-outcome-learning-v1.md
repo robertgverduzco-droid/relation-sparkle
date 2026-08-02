@@ -442,12 +442,24 @@ Both depend on: existing auth middleware, `athena_usage_log`, admin role via
 - `pair_reasoning` rows gain a `learning_version` column (nullable, backfilled null).
 - New admin review surface.
 - Doctrine files updated to v1.1 with implementation status.
-- No change to any member-facing flow other than an optional transparency disclosure.
+- No change to any member-facing flow. Athena's self-evaluations are strictly
+  internal and never surfaced to members.
 
 ### 3.5 Recommended implementation order
 
-1. Part 1 schema + `self-evaluation.server.ts` (generation only, no prompt injection)
+**Approved scope: Step 1 only.** Steps 2–7 require separate explicit approval.
+No prompt influence, behavioral adaptation, or reasoning influence occurs until
+the observation phase has accumulated sufficient evidence and is approved.
+
+1. **[APPROVED — executing]** Part 1 schema + `self-evaluation.server.ts` +
+   `evaluateConversation` (generation and storage only, no prompt injection,
+   no member visibility)
 2. Part 1 observation period; verify note quality and cost
+3. Part 1 prompt injection behind kill switch + tests — REQUIRES APPROVAL
+4. Part 2 signal recording only (no aggregation, no influence) — REQUIRES APPROVAL
+5. Part 2 aggregation + candidate surfacing, human review, no influence
+6. Part 2 promotion pipeline + advisory block behind kill switch
+7. Doctrine updates to v1.1 and milestone record
 3. Part 1 prompt injection behind kill switch + tests
 4. Part 2 signal recording only (no aggregation, no influence)
 5. Part 2 aggregation + candidate surfacing, human review, no influence
