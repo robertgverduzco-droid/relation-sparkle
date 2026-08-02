@@ -25,6 +25,7 @@ constitution but is not part of it.
 Cross-cutting (canonical, not a numbered layer — there is no L8):
 - [Voice & Expression](./cross-cutting/voice-and-expression.md) — canonical doctrine governing how conclusions from every layer are expressed. Binding on all user-facing layers, product behavior, and the runtime prompt.
 - [Athena — Personality & Conversation Style](./cross-cutting/personality-and-conversation-style.md) — canonical substantive definition of Athena's expressed identity within the Voice & Expression domain.
+- [Athena — Relationship Journey](./cross-cutting/relationship-journey.md) — canonical doctrine for Athena's role after an introduction: Relationship Focus Mode, neutrality, celebration, presence without intrusion, difficulty, endings, and boundaries.
 
 
 Meta:

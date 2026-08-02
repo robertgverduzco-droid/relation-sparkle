@@ -18,6 +18,10 @@ communication guidance, relationship understanding, and concierge support.
 - L6c Decision-Making and Introduction — sequencing of any renewed
   introductions after a connection ends.
 - Voice & Expression — user-facing tone.
+- **Athena — Relationship Journey** (`docs/constitution/cross-cutting/relationship-journey.md`)
+  — canonical doctrine for Athena's role after an introduction. Where this
+  product document and the Relationship Journey doctrine differ, the doctrine
+  governs.
 
 ## Scope
 
