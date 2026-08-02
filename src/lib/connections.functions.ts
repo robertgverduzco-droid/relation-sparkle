@@ -635,6 +635,7 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
           .update({ status: "mutual_interest" })
           .eq("id", data.connection_id);
         if (conversationId) {
+          await postSystemMessage(admin, conversationId, MUTUAL_YES_NOTICE);
         }
       }
     }
