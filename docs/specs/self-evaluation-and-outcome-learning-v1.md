@@ -90,12 +90,18 @@ Storage discipline:
 - Rows older than 180 days are pruned by a scheduled cleanup; the last 10 rows per
   member are always retained regardless of age.
 
-Access:
-- `GRANT SELECT, INSERT ON ... TO authenticated` is **not** given for SELECT of others.
-- RLS: members may read **their own** rows (transparency: L2 requires Athena be
-  willing to show her reasoning), no insert/update/delete from clients.
-  Writes only via `service_role` inside the server function.
-- Admin role may read all rows for audit.
+Access (REFINED — v1.1, approved):
+- **Strictly internal. No member visibility, ever.** Members never see Athena's
+  internal scoring, self-critique, missed openings, question evaluations, trust
+  movement assessments, or any related internal reasoning.
+- RLS: no client read, insert, update, or delete. Writes and reads only via
+  `service_role` inside server-only code. No `authenticated` grants.
+- Admin role may read rows for audit and quality review only.
+- Member-facing transparency is served instead by the existing surfaces:
+  why an introduction was made, Athena's current understanding of them, what
+  she remembers about them, their own submitted reflections, and their own
+  reflection history over time. Those remain unchanged.
+
 
 ### 1.5 Distinctness from existing systems
 
