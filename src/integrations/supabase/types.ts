@@ -467,6 +467,50 @@ export type Database = {
           },
         ]
       }
+      member_transitions: {
+        Row: {
+          choice: string | null
+          chosen_at: string | null
+          connection_id: string | null
+          created_at: string
+          hold_until: string | null
+          id: string
+          resolved_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          choice?: string | null
+          chosen_at?: string | null
+          connection_id?: string | null
+          created_at?: string
+          hold_until?: string | null
+          id?: string
+          resolved_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          choice?: string | null
+          chosen_at?: string | null
+          connection_id?: string | null
+          created_at?: string
+          hold_until?: string | null
+          id?: string
+          resolved_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_transitions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -931,6 +975,59 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      relationship_focus: {
+        Row: {
+          connection_id: string
+          created_at: string
+          ended_at: string | null
+          ended_reason: string | null
+          high_opted_in_at: string | null
+          id: string
+          last_checkin_at: string | null
+          low_opted_in_at: string | null
+          started_at: string | null
+          updated_at: string
+          user_high: string
+          user_low: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          ended_at?: string | null
+          ended_reason?: string | null
+          high_opted_in_at?: string | null
+          id?: string
+          last_checkin_at?: string | null
+          low_opted_in_at?: string | null
+          started_at?: string | null
+          updated_at?: string
+          user_high: string
+          user_low: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          ended_at?: string | null
+          ended_reason?: string | null
+          high_opted_in_at?: string | null
+          id?: string
+          last_checkin_at?: string | null
+          low_opted_in_at?: string | null
+          started_at?: string | null
+          updated_at?: string
+          user_high?: string
+          user_low?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_focus_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "connections"
             referencedColumns: ["id"]
           },
         ]

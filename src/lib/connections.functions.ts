@@ -600,6 +600,12 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       if (conversationId) {
         await postSystemMessage(admin, conversationId, REFLECTION_CONCLUDED_NOTICE);
       }
+
+      // Relationship Journey doctrine: an ending is not an automatic return to
+      // matchmaking. Athena offers each member the three paths instead.
+      const { openEndingChoice } = await import("./relationship.server");
+      await openEndingChoice(admin, { userId, connectionId: data.connection_id });
+      await openEndingChoice(admin, { userId: otherId, connectionId: data.connection_id });
     } else if (data.continue_decision === "yes") {
       mutual = await detectMutualYes(admin, {
         connectionId: data.connection_id,

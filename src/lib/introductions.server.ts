@@ -174,6 +174,15 @@ export async function runMatchmakingForUser(
   if ((selfProfile as { is_paused: boolean | null }).is_paused) return { ok: true, reason: "paused" };
   if (!selfIntel?.last_interview_at) return { ok: true, considered: 0, reason: "foundation_incomplete" };
 
+  // Relationship Journey doctrine: Athena does not look for anyone while a
+  // member is in Relationship Focus, resting after an ending, or still
+  // deciding which path they want.
+  {
+    const { matchmakingHold } = await import("./relationship.server");
+    const hold = await matchmakingHold(supabase, userId);
+    if (hold.held) return { ok: true, considered: 0, reason: hold.reason ?? "held" };
+  }
+
   if (!opts?.force && selfIntel.last_matchmaking_at) {
     const since = (Date.now() - new Date(selfIntel.last_matchmaking_at as string).getTime()) / 1000;
     if (since < MATCHMAKING_COOLDOWN_SECONDS) return { ok: true, reason: "cooldown", considered: 0 };
@@ -239,6 +248,28 @@ export async function runMatchmakingForUser(
     .limit(500);
   const eligibleIds = new Set((eligibleIntel ?? []).map((r) => r.user_id as string));
   if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
+
+  // Never introduce someone who is in Relationship Focus, resting after an
+  // ending, or still choosing their path.
+  {
+    const [{ data: focused }, { data: holding }] = await Promise.all([
+      supabase.from("relationship_focus").select("user_low, user_high").is("ended_at", null).not("started_at", "is", null),
+      supabase.from("member_transitions").select("user_id, choice, hold_until").is("resolved_at", null),
+    ]);
+    for (const f of focused ?? []) {
+      eligibleIds.delete(f.user_low as string);
+      eligibleIds.delete(f.user_high as string);
+    }
+    for (const t of holding ?? []) {
+      const restingOver =
+        t.choice === "rest" &&
+        t.hold_until &&
+        new Date(t.hold_until as string).getTime() <= Date.now();
+      if (t.choice === "resume" || restingOver) continue;
+      eligibleIds.delete(t.user_id as string);
+    }
+    if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
+  }
 
   const { data: others } = await supabase
     .from("profiles")
