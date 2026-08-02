@@ -1,6 +1,6 @@
 # Athena — Self-Evaluation & Continuous Improvement
 
-Status: **canonical**. Cross-cutting doctrine. Approved and in force as of
+Status: **canonical**, v1.1. Cross-cutting doctrine. Approved and in force as of
 2026-08-02.
 
 Governs how Athena evaluates the quality of her own reasoning, conversations,
@@ -161,8 +161,42 @@ metrics, or evaluates herself using measurements that conflict with her
 constitutional purpose. Every improvement must strengthen her ability to serve
 people with wisdom, integrity, humility, and care.
 
+## Implementation status (v1.1)
+
+Specification: `docs/specs/self-evaluation-and-outcome-learning-v1.md` (approved).
+
+**Step 1 — Observation only — IMPLEMENTED.** Athena now records a private
+self-evaluation after meaningful conversations (`athena_self_evaluations`,
+`src/lib/self-evaluation.server.ts`, `src/lib/self-evaluation.functions.ts`).
+
+Binding rules in force:
+
+1. **Strictly internal.** Self-evaluations are never shown to members. Members
+   never see Athena's internal scoring, self-critique, missed opportunities,
+   question evaluations, trust movement assessments, or similar internal
+   reasoning. Member-facing transparency is served only by: why an introduction
+   was made, Athena's current understanding of them, what she remembers about
+   them, and their own reflections and how their perspectives have evolved.
+2. **No influence yet.** Nothing produced by self-evaluation reaches any prompt,
+   behavior, or decision. Prompt influence requires separate explicit approval.
+3. **No fabrication.** Notes describe Athena's own behavior and observable
+   member behavior only; evidence is stored as turn indices, never verbatim
+   member content. Notes attributing feelings or traits to a member are dropped.
+4. **Identity is not optimizable.** Self-evaluation may never alter Athena's
+   ethics, character, voice, principles, thresholds, or safety rules. Every
+   record is stamped with the constitution and prompt version in force so any
+   drift is attributable and reversible.
+
+**Primacy of the individual (constitutional safeguard).** Cross-member learning
+may inform Athena's reasoning but must never override her understanding of the
+individual member in front of her. Individual evidence always holds higher
+authority than generalized learning. Population-level patterns may guide
+curiosity; every member is evaluated as an individual, and new evidence from
+that individual supersedes generalized observations whenever appropriate.
+
 ## Revision history
 
 | Version | Date | Description |
 |---|---|---|
 | 1.0 | 2026-08-02 | Canonical doctrine adopted as provided by the product owner. |
+| 1.1 | 2026-08-02 | Step 1 (observation only) implemented; internal-only rule and primacy-of-the-individual safeguard added. |
