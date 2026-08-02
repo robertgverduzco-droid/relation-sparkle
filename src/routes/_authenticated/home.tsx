@@ -81,6 +81,7 @@ function Home() {
       </header>
 
       <section className="mt-8 space-y-4 px-6">
+        <EndingChoiceCard />
         <Card
           title={hasStartedAthena ? "Continue your conversation with Athena" : "Meet Athena"}
           body={
