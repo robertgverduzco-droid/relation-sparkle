@@ -13,6 +13,7 @@ import {
 } from "@/lib/connections.functions";
 import { reportUser } from "@/lib/messaging.functions";
 import { ReflectionFlow } from "@/components/reflection-flow";
+import { FocusModeCard } from "@/components/focus-mode-card";
 import { ReportSheet, type ReportCategory } from "@/components/report-sheet";
 
 
