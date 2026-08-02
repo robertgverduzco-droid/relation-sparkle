@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { EndingChoiceCard } from "@/components/ending-choice-card";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
