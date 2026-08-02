@@ -249,6 +249,28 @@ export async function runMatchmakingForUser(
   const eligibleIds = new Set((eligibleIntel ?? []).map((r) => r.user_id as string));
   if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
 
+  // Never introduce someone who is in Relationship Focus, resting after an
+  // ending, or still choosing their path.
+  {
+    const [{ data: focused }, { data: holding }] = await Promise.all([
+      supabase.from("relationship_focus").select("user_low, user_high").is("ended_at", null).not("started_at", "is", null),
+      supabase.from("member_transitions").select("user_id, choice, hold_until").is("resolved_at", null),
+    ]);
+    for (const f of focused ?? []) {
+      eligibleIds.delete(f.user_low as string);
+      eligibleIds.delete(f.user_high as string);
+    }
+    for (const t of holding ?? []) {
+      const restingOver =
+        t.choice === "rest" &&
+        t.hold_until &&
+        new Date(t.hold_until as string).getTime() <= Date.now();
+      if (t.choice === "resume" || restingOver) continue;
+      eligibleIds.delete(t.user_id as string);
+    }
+    if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
+  }
+
   const { data: others } = await supabase
     .from("profiles")
     .select("id, display_name, birth_date, gender, city, is_paused")
