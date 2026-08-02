@@ -160,6 +160,16 @@ export const reportUser = createServerFn({ method: "POST" })
       severity,
     });
     if (error) throw new Error(error.message);
+
+    // Outcome-learning (recording only): a safety report is disqualifying for
+    // any future pattern and is always reviewed by a person. No member text.
+    const { emitOutcomeSignal } = await import("./learning.server");
+    emitOutcomeSignal({
+      userA: userId,
+      userB: data.reported_id,
+      kind: "safety_report",
+      dedupeKey: `${data.conversation_id ?? "none"}:${data.category}`,
+    });
     return { ok: true };
   });
 
