@@ -161,13 +161,38 @@ metrics, or evaluates herself using measurements that conflict with her
 constitutional purpose. Every improvement must strengthen her ability to serve
 people with wisdom, integrity, humility, and care.
 
-## Implementation status (v1.1)
+## Implementation status (v1.2)
 
 Specification: `docs/specs/self-evaluation-and-outcome-learning-v1.md` (approved).
 
 **Step 1 — Observation only — IMPLEMENTED.** Athena now records a private
 self-evaluation after meaningful conversations (`athena_self_evaluations`,
 `src/lib/self-evaluation.server.ts`, `src/lib/self-evaluation.functions.ts`).
+
+**Step 4 — Outcome signal recording only — IMPLEMENTED.** Athena records
+anonymized, categorical outcome signals against a salted pair token
+(`athena_outcome_signals`, `src/lib/learning.server.ts`,
+`src/lib/learning.functions.ts`). Signals are emitted on introduction response,
+meeting confirmation and completion, reflection submission, mutual interest,
+Relationship Focus start, duration milestones and end, connection close, and
+safety report. Nothing is aggregated, promoted, or allowed to influence
+reasoning. Additional binding rules in force for this layer:
+
+- **No identity, no member words.** Rows carry a one-way pair token, a signal
+  kind, a valence and strength class, and a reason drawn from a closed
+  vocabulary. Member-authored text is never stored.
+- **Engagement is never success.** Message volume, response latency, session
+  length, app opens, acceptance rate, match counts, and speed to match are
+  prohibited as signals. The only sanctioned outcome variable is relationship
+  quality and endurance.
+- **Prohibited dimensions.** Age, gender, location, ethnicity-adjacent,
+  religion, and income proxies may never become pattern dimensions.
+- **Consent.** A member may opt out (`profiles.learning_opt_out`); either
+  member opting out excludes the pair entirely. Their own experience is
+  unchanged.
+- **Contradictory outcomes** (one continuing, one closing) are flagged and
+  excluded from any future aggregation.
+- **Kill switch.** `ATHENA_LEARNING_ENABLED=false` disables all recording.
 
 Binding rules in force:
 
@@ -177,8 +202,9 @@ Binding rules in force:
    reasoning. Member-facing transparency is served only by: why an introduction
    was made, Athena's current understanding of them, what she remembers about
    them, and their own reflections and how their perspectives have evolved.
-2. **No influence yet.** Nothing produced by self-evaluation reaches any prompt,
-   behavior, or decision. Prompt influence requires separate explicit approval.
+2. **No influence yet.** Nothing produced by self-evaluation or outcome
+   recording reaches any prompt, behavior, or decision. Prompt influence
+   requires separate explicit approval.
 3. **No fabrication.** Notes describe Athena's own behavior and observable
    member behavior only; evidence is stored as turn indices, never verbatim
    member content. Notes attributing feelings or traits to a member are dropped.
@@ -200,3 +226,4 @@ that individual supersedes generalized observations whenever appropriate.
 |---|---|---|
 | 1.0 | 2026-08-02 | Canonical doctrine adopted as provided by the product owner. |
 | 1.1 | 2026-08-02 | Step 1 (observation only) implemented; internal-only rule and primacy-of-the-individual safeguard added. |
+| 1.2 | 2026-08-02 | Step 4 implemented: anonymized outcome signal recording, consent opt-out, prohibited-signal and prohibited-dimension rules, kill switch. |
