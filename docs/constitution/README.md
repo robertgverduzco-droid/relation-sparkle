@@ -68,6 +68,8 @@ Common canonical anchors (populated during content migration):
 - Max 3 active introductions → `L6c-decision-and-introduction.md`
 - Foundational-conversation eligibility gate → `L6c-decision-and-introduction.md`
 - Pair reasoning schema → `L6b-relational-reasoning.md`
+- Never conduct interviews / conversation strategy → `L6a-conversational-reasoning.md`
+- Listening before questioning; trust before depth → `L6a-conversational-reasoning.md`
 
 ## What lives outside the constitution
 
