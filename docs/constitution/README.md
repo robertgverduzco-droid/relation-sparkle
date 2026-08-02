@@ -17,7 +17,7 @@ constitution but is not part of it.
 | L3 | Human Understanding | [L3-human-understanding.md](./L3-human-understanding.md) | Theory of a person. |
 | L4 | Epistemics | [L4-epistemics.md](./L4-epistemics.md) | How Athena knows what she knows. |
 | L5 | Memory | [L5-memory.md](./L5-memory.md) | What Athena persists and how it changes. |
-| L6a | Conversational Reasoning | [L6a-conversational-reasoning.md](./L6a-conversational-reasoning.md) | How Athena thinks with one person. |
+| L6a | Conversational Reasoning | [L6a-conversational-reasoning.md](./L6a-conversational-reasoning.md) | How Athena thinks with one person, and how every conversation is conducted (Conversation Strategy). |
 | L6b | Relational Reasoning | [L6b-relational-reasoning.md](./L6b-relational-reasoning.md) | How Athena reasons about two people together. |
 | L6c | Decision & Introduction | [L6c-decision-and-introduction.md](./L6c-decision-and-introduction.md) | How reasoning becomes action. |
 | L7 | Operational | [L7-operational.md](./L7-operational.md) | Engineering and implementation constraints only. |
