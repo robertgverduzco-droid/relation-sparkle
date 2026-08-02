@@ -54,24 +54,20 @@ export const chooseEndingPath = createServerFn({ method: "POST" })
     const { ENDING_ACKNOWLEDGEMENTS, REST_HOLD_DAYS } = await import("./relationship.server");
 
     const now = new Date();
-    const patch: Record<string, string | null> = {
-      choice: data.choice,
-      chosen_at: now.toISOString(),
-      hold_until: null,
-      resolved_at: null,
-    };
-    if (data.choice === "rest") {
-      patch["hold_until"] = new Date(now.getTime() + REST_HOLD_DAYS * 864e5).toISOString();
-    }
-    if (data.choice === "resume") {
-      patch["resolved_at"] = now.toISOString();
-    }
-
     const { error } = await supabase
       .from("member_transitions")
-      .update(patch)
+      .update({
+        choice: data.choice,
+        chosen_at: now.toISOString(),
+        hold_until:
+          data.choice === "rest"
+            ? new Date(now.getTime() + REST_HOLD_DAYS * 864e5).toISOString()
+            : null,
+        resolved_at: data.choice === "resume" ? now.toISOString() : null,
+      })
       .eq("id", data.transition_id)
       .eq("user_id", userId);
+    if (error) throw new Error(error.message);
     if (error) throw new Error(error.message);
 
     if (data.choice === "resume") {
