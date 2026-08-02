@@ -353,3 +353,4 @@ constitution.
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created. |
 | 1.0 | 2026-07-27 | Introduction Philosophy and Exploration Mode migrated from `_legacy/athena-ethical-constitution.md` Part II and Future Concept. |
+| 2.0 | 2026-08-02 | Matchmaking Intelligence adopted as Section 1 governing doctrine; prior rules retained unchanged as Section 2; runtime pair-reasoning prompt in `src/lib/introductions.server.ts` aligned; no-numerical-score rule made explicit. |
