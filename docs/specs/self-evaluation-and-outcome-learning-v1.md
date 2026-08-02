@@ -1,7 +1,9 @@
 # Athena — Self-Evaluation & Outcome-Learning Implementation Specification
 
-Status: PROPOSED (awaiting approval — no code, schema, prompt, or behavior changes made)
-Version: 1.0
+Status: PARTIALLY IMPLEMENTED — Step 1 (self-evaluation, observation only) and
+Step 4 (outcome signal recording only) are live. No prompt, reasoning, or
+behavioral influence exists from either system.
+Version: 1.2
 Governing doctrine: `docs/constitution/cross-cutting/self-evaluation-and-improvement.md`,
 L1 Identity, L2 Ethics, L4 Epistemics, L5 Memory, L6a/L6c Reasoning, L7 Operational.
 
