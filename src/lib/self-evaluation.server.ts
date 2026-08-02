@@ -242,3 +242,102 @@ ALSO PROVIDE
 
 The transcript below is compressed: each line is prefixed with its turn index and truncated. Use the indices for evidence.`;
 }
+
+// ---------------------------------------------------------------------------
+// Runtime — generation + storage. Server-only. Invoked fire-and-forget from
+// the conversation close path and from the `evaluateConversation` server fn.
+// Never throws to the caller: a failed self-evaluation must never degrade a
+// member's conversation.
+// ---------------------------------------------------------------------------
+
+export type SelfEvalResult = { stored: boolean; reason: string };
+
+export async function runSelfEvaluation(
+  userId: string,
+  input: SelfEvalInput,
+): Promise<SelfEvalResult> {
+  try {
+    if (!selfEvalEnabled()) return { stored: false, reason: "disabled" };
+
+    const gate = qualifies(input);
+    if (!gate.qualifies) return { stored: false, reason: gate.reason };
+
+    const sessionKey = deriveSessionKey(input);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: existing } = await supabaseAdmin
+      .from("athena_self_evaluations")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("session_key", sessionKey)
+      .maybeSingle();
+    if (existing) return { stored: false, reason: "already_evaluated" };
+
+    const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("athena_self_evaluations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", since);
+    if ((count ?? 0) > 0 && !input.foundational) {
+      return { stored: false, reason: "rate_limited" };
+    }
+
+    const visibleTurns = input.messages.filter((m) => m.role !== "system").length;
+    const transcript = compressTranscript(input.messages);
+    const model = "openai/gpt-5-mini";
+
+    const { generateObject } = await import("ai");
+    const { createLovableGateway } = await import("./ai-gateway.server");
+    const gateway = createLovableGateway();
+
+    const { object } = await generateObject({
+      model: gateway(model),
+      schema: selfEvaluationSchema,
+      system: selfEvaluationPrompt(),
+      prompt: `COMPRESSED TRANSCRIPT (${visibleTurns} turns, ${gate.turnCount} of them theirs):\n\n${transcript}`,
+      providerOptions: { lovable: { reasoningEffort: "none" } },
+    });
+
+    const cleaned = sanitizeEvaluation(object, visibleTurns);
+    const selfConfidence = calibrateConfidence(cleaned, gate.turnCount);
+
+    const { error } = await supabaseAdmin.from("athena_self_evaluations").insert({
+      user_id: userId,
+      session_key: sessionKey,
+      turn_count: gate.turnCount,
+      duration_seconds: input.elapsedSeconds ?? null,
+      dimensions: {
+        missed_openings: cleaned.missed_openings,
+        question_quality: cleaned.question_quality,
+        repetition: cleaned.repetition,
+        trust_movement: cleaned.trust_movement,
+        pacing: cleaned.pacing,
+        member_correction: cleaned.member_correction,
+        unresolved_uncertainty: cleaned.unresolved_uncertainty,
+        constitutional_alignment: cleaned.constitutional_alignment,
+      },
+      overall_note: cleaned.overall_note || null,
+      next_conversation_intents: cleaned.next_conversation_intents,
+      self_confidence: selfConfidence,
+      constitution_version: CONSTITUTION_VERSION,
+      prompt_version: SELF_EVAL_PROMPT_VERSION,
+      model,
+    });
+    if (error) return { stored: false, reason: "write_failed" };
+
+    await supabaseAdmin
+      .from("athena_usage_log")
+      .insert({
+        user_id: userId,
+        kind: "self_evaluation",
+        model,
+        metadata: { session_key: sessionKey, turns: gate.turnCount },
+      })
+      .then(() => undefined, () => undefined);
+
+    return { stored: true, reason: gate.reason };
+  } catch {
+    return { stored: false, reason: "generation_failed" };
+  }
+}
