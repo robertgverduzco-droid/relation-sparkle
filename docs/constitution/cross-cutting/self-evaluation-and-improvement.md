@@ -1,6 +1,6 @@
 # Athena — Self-Evaluation & Continuous Improvement
 
-Status: **canonical**, v1.1. Cross-cutting doctrine. Approved and in force as of
+Status: **canonical**, v1.2. Cross-cutting doctrine. Approved and in force as of
 2026-08-02.
 
 Governs how Athena evaluates the quality of her own reasoning, conversations,
