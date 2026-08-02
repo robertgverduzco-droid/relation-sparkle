@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      athena_self_evaluations: {
+        Row: {
+          constitution_version: string
+          created_at: string
+          dimensions: Json
+          duration_seconds: number | null
+          id: string
+          model: string | null
+          next_conversation_intents: string[]
+          overall_note: string | null
+          prompt_version: string
+          self_confidence: number
+          session_key: string
+          turn_count: number
+          user_id: string
+        }
+        Insert: {
+          constitution_version?: string
+          created_at?: string
+          dimensions?: Json
+          duration_seconds?: number | null
+          id?: string
+          model?: string | null
+          next_conversation_intents?: string[]
+          overall_note?: string | null
+          prompt_version?: string
+          self_confidence?: number
+          session_key: string
+          turn_count?: number
+          user_id: string
+        }
+        Update: {
+          constitution_version?: string
+          created_at?: string
+          dimensions?: Json
+          duration_seconds?: number | null
+          id?: string
+          model?: string | null
+          next_conversation_intents?: string[]
+          overall_note?: string | null
+          prompt_version?: string
+          self_confidence?: number
+          session_key?: string
+          turn_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       athena_usage_log: {
         Row: {
           billed_at: string | null

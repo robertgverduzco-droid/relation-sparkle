@@ -90,12 +90,18 @@ Storage discipline:
 - Rows older than 180 days are pruned by a scheduled cleanup; the last 10 rows per
   member are always retained regardless of age.
 
-Access:
-- `GRANT SELECT, INSERT ON ... TO authenticated` is **not** given for SELECT of others.
-- RLS: members may read **their own** rows (transparency: L2 requires Athena be
-  willing to show her reasoning), no insert/update/delete from clients.
-  Writes only via `service_role` inside the server function.
-- Admin role may read all rows for audit.
+Access (REFINED — v1.1, approved):
+- **Strictly internal. No member visibility, ever.** Members never see Athena's
+  internal scoring, self-critique, missed openings, question evaluations, trust
+  movement assessments, or any related internal reasoning.
+- RLS: no client read, insert, update, or delete. Writes and reads only via
+  `service_role` inside server-only code. No `authenticated` grants.
+- Admin role may read rows for audit and quality review only.
+- Member-facing transparency is served instead by the existing surfaces:
+  why an introduction was made, Athena's current understanding of them, what
+  she remembers about them, their own submitted reflections, and their own
+  reflection history over time. Those remain unchanged.
+
 
 ### 1.5 Distinctness from existing systems
 
@@ -178,18 +184,19 @@ Added:
 - migration: `athena_self_evaluations` (+ GRANTs, RLS, indexes on `user_id, created_at`)
 - `src/lib/self-evaluation.server.ts` — evaluator prompt, schema, transcript
   compression, note validators, self-notes block builder (pure, budgeted)
-- `src/lib/self-evaluation.functions.ts` — `evaluateConversation` (auth'd, idempotent),
-  `listMySelfEvaluations` (member transparency read)
+- `src/lib/self-evaluation.functions.ts` — `evaluateConversation` (auth'd, idempotent);
+  **no member-facing read function** (records are strictly internal)
 - `docs/constitution/cross-cutting/self-evaluation-and-improvement.md` → v1.1
-  (mark implemented, record advisory-subordinate rule)
+  (mark implemented, record advisory-subordinate rule and internal-only rule)
 
 Modified (additively):
 - `src/lib/athena.functions.ts` — after `completeFoundationalConversation` and on
   session close, fire-and-forget `evaluateConversation`
-- `src/lib/athena.server.ts` — `athenaSystemPrompt()` gains optional `selfNotes`
-  parameter appended last; prompt version → 1.3
-- `src/routes/_authenticated/conversations.tsx` — optional "Athena's notes to herself"
-  disclosure (member-visible, read-only)
+- `src/lib/athena.server.ts` — (Step 3 only) `athenaSystemPrompt()` gains optional
+  `selfNotes` parameter appended last; prompt version → 1.3
+
+No member-facing route or component is added or modified by Part 1.
+
 
 Unchanged: `reflectAthena`, facets, topic map, contradictions, matchmaking, reflection flow.
 
@@ -315,6 +322,18 @@ prompt used by `introductions.server.ts`. Patterns are phrased as considerations
 ("pairs where both cited conflict-avoidance as a friction have more often ended
 before meeting — probe this rather than assume"), never as scores or filters.
 
+**Primacy of the individual (constitutional safeguard — approved v1.1).**
+Cross-member learning may inform Athena's reasoning but must NEVER override her
+understanding of the individual member in front of her. Individual evidence always
+holds higher authority than generalized learning. Population-level patterns may
+guide curiosity and shape which questions are worth asking; they may never
+substitute for, contradict, or outweigh what this person has actually shown.
+Whenever new individual evidence conflicts with a promoted pattern, the individual
+evidence supersedes it, and the conflict is recorded as a counter-example for
+review. Enforcement: the advisory block is placed **below** the individual's
+Living Profile and pair evidence in the prompt, is explicitly labeled subordinate,
+and no promoted pattern may act as a filter, score, or gate on any individual.
+
 Hard invariants preserved: confidence gates, 3-introduction cap, foundational
 conversation requirement, Focus Mode/transition holds, and reasoning-based (not
 score-based) decisions all remain exactly as implemented.
@@ -423,12 +442,24 @@ Both depend on: existing auth middleware, `athena_usage_log`, admin role via
 - `pair_reasoning` rows gain a `learning_version` column (nullable, backfilled null).
 - New admin review surface.
 - Doctrine files updated to v1.1 with implementation status.
-- No change to any member-facing flow other than an optional transparency disclosure.
+- No change to any member-facing flow. Athena's self-evaluations are strictly
+  internal and never surfaced to members.
 
 ### 3.5 Recommended implementation order
 
-1. Part 1 schema + `self-evaluation.server.ts` (generation only, no prompt injection)
+**Approved scope: Step 1 only.** Steps 2–7 require separate explicit approval.
+No prompt influence, behavioral adaptation, or reasoning influence occurs until
+the observation phase has accumulated sufficient evidence and is approved.
+
+1. **[APPROVED — executing]** Part 1 schema + `self-evaluation.server.ts` +
+   `evaluateConversation` (generation and storage only, no prompt injection,
+   no member visibility)
 2. Part 1 observation period; verify note quality and cost
+3. Part 1 prompt injection behind kill switch + tests — REQUIRES APPROVAL
+4. Part 2 signal recording only (no aggregation, no influence) — REQUIRES APPROVAL
+5. Part 2 aggregation + candidate surfacing, human review, no influence
+6. Part 2 promotion pipeline + advisory block behind kill switch
+7. Doctrine updates to v1.1 and milestone record
 3. Part 1 prompt injection behind kill switch + tests
 4. Part 2 signal recording only (no aggregation, no influence)
 5. Part 2 aggregation + candidate surfacing, human review, no influence

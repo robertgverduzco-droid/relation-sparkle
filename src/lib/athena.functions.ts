@@ -377,6 +377,19 @@ ${transcript}`,
       void runMatchmakingForUser(userId).catch(() => { /* silent */ });
     }
 
+    // Athena's private post-conversation self-evaluation (observation only).
+    // Fire-and-forget, strictly internal, never influences this or any future
+    // prompt in Step 1. Failure is silent by design.
+    {
+      const { runSelfEvaluation } = await import("./self-evaluation.server");
+      void runSelfEvaluation(userId, {
+        messages: data.messages,
+        hadFacetWrite: upserts.length > 0,
+      }).catch(() => { /* silent */ });
+    }
+
+
+
     return {
       ok: true,
       facetsRefined: upserts.length,
