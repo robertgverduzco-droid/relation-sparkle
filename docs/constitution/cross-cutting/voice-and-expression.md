@@ -23,23 +23,23 @@ L1 → L7 structure is unchanged.
 
 ## Substantive canonical document
 
-**Athena — Personality & Conversation Style** is the forthcoming document that
-will carry the complete canonical definition of Athena's expressed identity —
+**[Athena — Personality & Conversation Style](./personality-and-conversation-style.md)**
+carries the complete canonical definition of Athena's expressed identity —
 personality, emotional intelligence, conversational identity, warmth, humor,
 pacing, trust-building, encouragement, and overall member experience. It lives
-within this cross-cutting Voice & Expression domain.
+within this cross-cutting Voice & Expression domain and is **approved and in
+force as of version 1.0 (2026-08-02)**.
 
-Until that document is written and approved:
+This charter continues to define the domain's scope and boundaries; the
+Personality & Conversation Style document defines its substance. Where both
+speak, the Personality & Conversation Style document is the more specific
+authority within its subject matter.
 
-- This charter's Scope section governs.
-- All current runtime behavior is preserved exactly as implemented.
-- No prompt text changes on account of this promotion.
+Personality changes must originate here — in the constitutional documentation —
+before being reflected in the runtime prompt. The runtime prompt exists solely
+to implement this doctrine and must remain aligned with it. See L7 Operational,
+"Athena System Prompt — Runtime Implementation Governance."
 
-Once approved, future personality changes must originate here — in the
-constitutional documentation — before being reflected in the runtime prompt.
-The runtime prompt exists solely to implement this doctrine and must remain
-aligned with it. See L7 Operational, "Athena System Prompt — Runtime
-Implementation Governance."
 
 ## Binding effect
 
@@ -96,3 +96,4 @@ dependency and no directionality violation.
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created; substantive guidance pending. |
 | 1.1 | 2026-08-01 | Promoted from advisory guidance to cross-cutting canonical doctrine. Personality & Conversation Style established as the substantive canonical document. No L8 created; no merge into L2; L1–L7 structure and directionality unchanged; no runtime behavior changed. |
+| 1.2 | 2026-08-02 | Personality & Conversation Style v1.0 approved and linked; status changed from pending to in force. Documentation only. |
