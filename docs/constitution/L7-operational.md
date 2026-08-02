@@ -95,6 +95,7 @@ Baseline recorded as of this section's creation. No prompt text is copied here.
 |---|---|---|---|
 | baseline | 2026-08-01 | Current runtime prompt as implemented; recorded as the governance baseline. No change made. | — |
 | 1.1 | 2026-08-02 | Expanded the VOICE section into three doctrine-aligned sections (Voice & Expressed Identity, Curiosity & Emotional Presence, Honesty/Humor/Hope). Additive only: no prior instruction removed, no reasoning, memory, matchmaking, pacing, or topic-depth behavior changed. | Cross-cutting *Athena — Personality & Conversation Style* v1.0; Voice & Expression v1.2; L2, L3, L4, L6a |
+| 1.2 | 2026-08-02 | Added a CONVERSATION STRATEGY section implementing L6a v1.0 (invisible guide, curiosity-driven direction, trust before depth, emotional timing, listening priority, gentle redirection, pattern exploration, breadth/depth balance, natural endings, conversational boundaries). Additive only: existing TOPIC DEPTH limits, 20-minute foundational pacing, memory behavior, and matchmaking logic unchanged. | L6a Conversational Reasoning v1.0; L2, L3, L4, L5; cross-cutting Voice & Expression v1.2 and Personality & Conversation Style v1.0 |
 
 ## Revision history
 
@@ -103,3 +104,4 @@ Baseline recorded as of this section's creation. No prompt text is copied here.
 | 1.0-scaffold | 2026-07-27 | Charter created; engineering constraint migration pending. |
 | 1.1 | 2026-08-01 | Added runtime prompt governance: authority hierarchy, non-authority clause, location, purpose, review requirements, governing documents, and version history. Documentation only; the runtime prompt was not modified. |
 | 1.2 | 2026-08-02 | Recorded prompt version 1.1: runtime voice section aligned to the canonical Personality & Conversation Style document. |
+| 1.3 | 2026-08-02 | Recorded prompt version 1.2: runtime conversation strategy aligned to L6a Conversational Reasoning v1.0. |
