@@ -6,6 +6,13 @@ The constitution is living but not casual. It evolves intentionally,
 transparently, and through explicit review. Silent drift is the failure mode
 this preamble exists to prevent.
 
+This preamble owns the *procedure* for amending constitutional text. The
+philosophy every amendment must satisfy — identity permanence, earned
+knowledge, constitutional authority over new research, observation before
+influence, and evolution boundaries — is owned by
+[Evolution Engine](./cross-cutting/evolution-engine.md).
+
+
 ## Principles
 
 1. **Explicit review.** No constitutional clause is added, edited, or removed
