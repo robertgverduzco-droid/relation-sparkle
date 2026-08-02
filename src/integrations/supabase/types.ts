@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      athena_outcome_signals: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          id: string
+          is_contradictory: boolean
+          learning_version: string
+          occurred_at: string
+          pair_token: string
+          reason_category: string | null
+          signal_kind: string
+          strength: string
+          valence: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          is_contradictory?: boolean
+          learning_version?: string
+          occurred_at?: string
+          pair_token: string
+          reason_category?: string | null
+          signal_kind: string
+          strength: string
+          valence: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          is_contradictory?: boolean
+          learning_version?: string
+          occurred_at?: string
+          pair_token?: string
+          reason_category?: string | null
+          signal_kind?: string
+          strength?: string
+          valence?: string
+        }
+        Relationships: []
+      }
       athena_self_evaluations: {
         Row: {
           constitution_version: string
@@ -875,6 +917,7 @@ export type Database = {
           gender: string | null
           id: string
           is_paused: boolean
+          learning_opt_out: boolean
           location_lat: number | null
           location_lng: number | null
           onboarding_completed_at: string | null
@@ -893,6 +936,7 @@ export type Database = {
           gender?: string | null
           id: string
           is_paused?: boolean
+          learning_opt_out?: boolean
           location_lat?: number | null
           location_lng?: number | null
           onboarding_completed_at?: string | null
@@ -911,6 +955,7 @@ export type Database = {
           gender?: string | null
           id?: string
           is_paused?: boolean
+          learning_opt_out?: boolean
           location_lat?: number | null
           location_lng?: number | null
           onboarding_completed_at?: string | null
