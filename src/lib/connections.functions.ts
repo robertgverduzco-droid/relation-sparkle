@@ -205,6 +205,24 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
         .update({ status: "met" })
         .eq("id", updated.connection_id as string);
     }
+
+    // Outcome-learning: anonymized signal only. No influence on reasoning.
+    if (data.action === "confirm" || data.action === "complete") {
+      const { data: pair } = await supabase
+        .from("connections")
+        .select("user_low, user_high")
+        .eq("id", updated.connection_id as string)
+        .maybeSingle();
+      if (pair) {
+        const { emitOutcomeSignal } = await import("./learning.server");
+        emitOutcomeSignal({
+          userA: pair.user_low as string,
+          userB: pair.user_high as string,
+          kind: data.action === "confirm" ? "meeting_confirmed" : "meeting_completed",
+          dedupeKey: data.proposal_id,
+        });
+      }
+    }
     return { ok: true };
   });
 
