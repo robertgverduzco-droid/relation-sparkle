@@ -240,6 +240,14 @@ function ConnectionDetail() {
       ) : null}
 
       <div className="px-6 pt-5">
+        <FocusModeCard
+          connectionId={data.connection.id}
+          otherName={data.connection.other_name ?? null}
+        />
+      </div>
+
+      <div className="px-6 pt-5">
+
         <div className="inline-flex rounded-full border border-border p-1 text-xs">
           <button
             className={`px-4 py-1.5 rounded-full transition ${tab === "plan" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
