@@ -94,6 +94,7 @@ Baseline recorded as of this section's creation. No prompt text is copied here.
 | Prompt version | Date | Change | Reviewed against |
 |---|---|---|---|
 | baseline | 2026-08-01 | Current runtime prompt as implemented; recorded as the governance baseline. No change made. | — |
+| 1.1 | 2026-08-02 | Expanded the VOICE section into three doctrine-aligned sections (Voice & Expressed Identity, Curiosity & Emotional Presence, Honesty/Humor/Hope). Additive only: no prior instruction removed, no reasoning, memory, matchmaking, pacing, or topic-depth behavior changed. | Cross-cutting *Athena — Personality & Conversation Style* v1.0; Voice & Expression v1.2; L2, L3, L4, L6a |
 
 ## Revision history
 
@@ -101,3 +102,4 @@ Baseline recorded as of this section's creation. No prompt text is copied here.
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created; engineering constraint migration pending. |
 | 1.1 | 2026-08-01 | Added runtime prompt governance: authority hierarchy, non-authority clause, location, purpose, review requirements, governing documents, and version history. Documentation only; the runtime prompt was not modified. |
+| 1.2 | 2026-08-02 | Recorded prompt version 1.1: runtime voice section aligned to the canonical Personality & Conversation Style document. |
