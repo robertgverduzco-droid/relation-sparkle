@@ -172,19 +172,18 @@ living it.
 
 ## Implementation status (not doctrine)
 
-Doctrine is in force now; the product surfaces below are not yet built and are
-recorded here so no reader mistakes documentation for implementation.
-
 | Doctrine element | Current code state |
 |---|---|
-| Relationship Focus Mode | Entry hook only: `connections.status = 'mutual_interest'`. No mode, no couple surface. |
+| Relationship Focus Mode | Implemented: mutual opt-in from `connections.status = 'mutual_interest'`, `relationship_focus` table, role-change notice posted once, member-initiated exit. |
 | Couple conversations with Athena | Not implemented. |
-| Gentle check-ins after Focus Mode | Not implemented. |
-| Three paths after an ending | Not implemented; eligibility currently resumes automatically after closure. |
+| Gentle check-ins after Focus Mode | Implemented as an infrequent system note while Focus is active. |
+| Three paths after an ending | Implemented: `member_transitions` plus the ending-choice card; matchmaking is held until a path is chosen. |
 | "Becoming someone new" re-understanding | Not implemented as a distinct pass. |
+| Matchmaking during Focus / rest | Implemented: held for the member and excluded from everyone else's candidate pool. |
 
 ## Revision history
 
 | Version | Date | Description |
 |---|---|---|
 | 1.0 | 2026-08-02 | Canonical Relationship Journey doctrine established. |
+| 1.1 | 2026-08-02 | Implementation status updated: three paths after an ending, Relationship Focus Mode, gentle check-ins, and matchmaking holds are now built. Doctrine text unchanged. |
