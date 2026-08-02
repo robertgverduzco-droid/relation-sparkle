@@ -184,18 +184,19 @@ Added:
 - migration: `athena_self_evaluations` (+ GRANTs, RLS, indexes on `user_id, created_at`)
 - `src/lib/self-evaluation.server.ts` — evaluator prompt, schema, transcript
   compression, note validators, self-notes block builder (pure, budgeted)
-- `src/lib/self-evaluation.functions.ts` — `evaluateConversation` (auth'd, idempotent),
-  `listMySelfEvaluations` (member transparency read)
+- `src/lib/self-evaluation.functions.ts` — `evaluateConversation` (auth'd, idempotent);
+  **no member-facing read function** (records are strictly internal)
 - `docs/constitution/cross-cutting/self-evaluation-and-improvement.md` → v1.1
-  (mark implemented, record advisory-subordinate rule)
+  (mark implemented, record advisory-subordinate rule and internal-only rule)
 
 Modified (additively):
 - `src/lib/athena.functions.ts` — after `completeFoundationalConversation` and on
   session close, fire-and-forget `evaluateConversation`
-- `src/lib/athena.server.ts` — `athenaSystemPrompt()` gains optional `selfNotes`
-  parameter appended last; prompt version → 1.3
-- `src/routes/_authenticated/conversations.tsx` — optional "Athena's notes to herself"
-  disclosure (member-visible, read-only)
+- `src/lib/athena.server.ts` — (Step 3 only) `athenaSystemPrompt()` gains optional
+  `selfNotes` parameter appended last; prompt version → 1.3
+
+No member-facing route or component is added or modified by Part 1.
+
 
 Unchanged: `reflectAthena`, facets, topic map, contradictions, matchmaking, reflection flow.
 
