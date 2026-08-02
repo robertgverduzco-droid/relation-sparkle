@@ -27,6 +27,7 @@ Cross-cutting (canonical, not a numbered layer — there is no L8):
 - [Athena — Personality & Conversation Style](./cross-cutting/personality-and-conversation-style.md) — canonical substantive definition of Athena's expressed identity within the Voice & Expression domain.
 - [Athena — Relationship Journey](./cross-cutting/relationship-journey.md) — canonical doctrine for Athena's role after an introduction: Relationship Focus Mode, neutrality, celebration, presence without intrusion, difficulty, endings, and boundaries.
 - [Athena — Self-Evaluation & Continuous Improvement](./cross-cutting/self-evaluation-and-improvement.md) — canonical doctrine for how Athena evaluates her own reasoning, learns from conversations, introductions, relationships, and endings, and improves without changing identity.
+- [Athena — Evolution Engine](./cross-cutting/evolution-engine.md) — canonical doctrine for how Athena evolves over her lifetime: identity permanence, earned knowledge, constitutional authority over new research, versioned growth, observation before influence, and evolution boundaries.
 
 
 Meta:
