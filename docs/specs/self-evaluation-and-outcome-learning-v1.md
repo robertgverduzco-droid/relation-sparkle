@@ -1,7 +1,9 @@
 # Athena — Self-Evaluation & Outcome-Learning Implementation Specification
 
-Status: PROPOSED (awaiting approval — no code, schema, prompt, or behavior changes made)
-Version: 1.0
+Status: PARTIALLY IMPLEMENTED — Step 1 (self-evaluation, observation only) and
+Step 4 (outcome signal recording only) are live. No prompt, reasoning, or
+behavioral influence exists from either system.
+Version: 1.2
 Governing doctrine: `docs/constitution/cross-cutting/self-evaluation-and-improvement.md`,
 L1 Identity, L2 Ethics, L4 Epistemics, L5 Memory, L6a/L6c Reasoning, L7 Operational.
 
@@ -447,18 +449,22 @@ Both depend on: existing auth middleware, `athena_usage_log`, admin role via
 
 ### 3.5 Recommended implementation order
 
-**Approved scope: Step 1 only.** Steps 2–7 require separate explicit approval.
-No prompt influence, behavioral adaptation, or reasoning influence occurs until
-the observation phase has accumulated sufficient evidence and is approved.
+**Approved scope: Steps 1 and 4 (outcome signal recording).** Steps 3, 5, 6, 7
+require separate explicit approval. No prompt influence, behavioral adaptation,
+or reasoning influence occurs until each is approved.
 
-1. **[APPROVED — executing]** Part 1 schema + `self-evaluation.server.ts` +
+1. **[IMPLEMENTED]** Part 1 schema + `self-evaluation.server.ts` +
    `evaluateConversation` (generation and storage only, no prompt injection,
    no member visibility)
-2. Part 1 observation period; verify note quality and cost
+2. Part 1 observation period; verify note quality and cost — in progress
 3. Part 1 prompt injection behind kill switch + tests — REQUIRES APPROVAL
-4. Part 2 signal recording only (no aggregation, no influence) — REQUIRES APPROVAL
-5. Part 2 aggregation + candidate surfacing, human review, no influence
-6. Part 2 promotion pipeline + advisory block behind kill switch
+4. **[IMPLEMENTED]** Part 2 signal recording only — `athena_outcome_signals`,
+   `profiles.learning_opt_out`, `learning.server.ts`, `learning.functions.ts`,
+   emission at introduction response, meeting confirm/complete, reflection
+   submit, mutual interest, Focus start/milestones/end, connection close, and
+   safety report. No aggregation, no promotion, no influence.
+5. Part 2 aggregation + candidate surfacing, human review, no influence — REQUIRES APPROVAL
+6. Part 2 promotion pipeline + advisory block behind kill switch — REQUIRES APPROVAL
 7. Doctrine updates to v1.1 and milestone record
 3. Part 1 prompt injection behind kill switch + tests
 4. Part 2 signal recording only (no aggregation, no influence)

@@ -192,6 +192,15 @@ export const optIntoFocus = createServerFn({ method: "POST" })
         conn.user_high as string,
       );
       if (conversationId) await postSystemMessage(admin, conversationId, FOCUS_STARTED_NOTICE);
+
+      // Outcome-learning (recording only): the strongest sanctioned signal.
+      const { emitOutcomeSignal } = await import("./learning.server");
+      emitOutcomeSignal({
+        userA: conn.user_low as string,
+        userB: conn.user_high as string,
+        kind: "focus_started",
+        dedupeKey: data.connection_id,
+      });
     }
 
     return {
@@ -242,6 +251,30 @@ export const endFocus = createServerFn({ method: "POST" })
 
     for (const uid of [conn.user_low as string, conn.user_high as string]) {
       await openEndingChoice(admin, { userId: uid, connectionId: data.connection_id });
+    }
+
+    // Outcome-learning (recording only). Duration milestones reached while
+    // Focus was active are recorded alongside the ending, so endurance —
+    // never engagement — is what the record reflects.
+    {
+      const { emitOutcomeSignal, focusMilestones } = await import("./learning.server");
+      const both = {
+        userA: conn.user_low as string,
+        userB: conn.user_high as string,
+      };
+      const startedAt = row.started_at as string | null;
+      if (startedAt) {
+        for (const kind of focusMilestones(startedAt)) {
+          emitOutcomeSignal({ ...both, kind, dedupeKey: data.connection_id });
+        }
+      }
+      emitOutcomeSignal({ ...both, kind: "focus_ended", dedupeKey: data.connection_id });
+      emitOutcomeSignal({
+        ...both,
+        kind: "connection_ended",
+        reason: "focus_ended",
+        dedupeKey: data.connection_id,
+      });
     }
 
     return { ok: true };
