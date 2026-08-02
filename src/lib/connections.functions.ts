@@ -637,7 +637,48 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
         if (conversationId) {
           await postSystemMessage(admin, conversationId, MUTUAL_YES_NOTICE);
         }
+    }
+
+    // Outcome-learning (recording only): anonymized categorical signals.
+    // A single ending is evidence about fit, never about a member's worth.
+    {
+      const { emitOutcomeSignal } = await import("./learning.server");
+      const both = {
+        userA: conn.user_low as string,
+        userB: conn.user_high as string,
+      };
+      emitOutcomeSignal({
+        ...both,
+        kind: "reflection_submitted",
+        dedupeKey: `${data.connection_id}:${sequence}`,
+      });
+      if (data.continue_decision === "not_sure") {
+        emitOutcomeSignal({
+          ...both,
+          kind: "reflection_uncertain",
+          dedupeKey: `${data.connection_id}:${sequence}`,
+        });
       }
+      if (closed) {
+        emitOutcomeSignal({
+          ...both,
+          kind: "connection_ended",
+          reason:
+            data.continue_decision === "no" ? "member_declined_continue" : "reflection_complete",
+          // One member continuing while the other closes is contradictory
+          // evidence: recorded, but excluded from any future aggregation.
+          isContradictory: data.continue_decision !== "no",
+          dedupeKey: data.connection_id,
+        });
+      }
+      if (mutual) {
+        emitOutcomeSignal({
+          ...both,
+          kind: "mutual_interest",
+          dedupeKey: data.connection_id,
+        });
+      }
+    }
     }
 
     // Reflection is high-signal for understanding; refresh what's gone stale.
