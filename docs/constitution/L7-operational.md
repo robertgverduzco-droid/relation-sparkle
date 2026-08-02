@@ -78,14 +78,14 @@ live conversation runtime.
 | Conversational conduct, pacing, question depth | L6a Conversational Reasoning |
 | Pair-level explanation | L6b Relational Reasoning |
 | Recommendation, deferral, introduction framing | L6c Decision & Introduction |
-| Tone, warmth, humor, uncertainty phrasing, explanation framing | Cross-cutting Voice & Expression, and Personality & Conversation Style once approved |
+| Tone, warmth, humor, uncertainty phrasing, explanation framing | Cross-cutting Voice & Expression, and *Athena — Personality & Conversation Style* |
 
 ### Governing documents
 
 - `docs/constitution/META-PREAMBLE.md`
 - `docs/constitution/L1-identity.md` through `L7-operational.md`
 - `docs/constitution/cross-cutting/voice-and-expression.md`
-- *Athena — Personality & Conversation Style* (pending)
+- `docs/constitution/cross-cutting/personality-and-conversation-style.md`
 
 ### Prompt version and change history
 

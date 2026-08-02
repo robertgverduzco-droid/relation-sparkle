@@ -96,3 +96,4 @@ dependency and no directionality violation.
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created; substantive guidance pending. |
 | 1.1 | 2026-08-01 | Promoted from advisory guidance to cross-cutting canonical doctrine. Personality & Conversation Style established as the substantive canonical document. No L8 created; no merge into L2; L1–L7 structure and directionality unchanged; no runtime behavior changed. |
+| 1.2 | 2026-08-02 | Personality & Conversation Style v1.0 approved and linked; status changed from pending to in force. Documentation only. |
