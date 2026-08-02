@@ -161,14 +161,15 @@ export const optIntoFocus = createServerFn({ method: "POST" })
         connection_id: data.connection_id,
         user_low: conn.user_low as string,
         user_high: conn.user_high as string,
-        [isLow ? "low_opted_in_at" : "high_opted_in_at"]: nowIso,
+        low_opted_in_at: isLow ? nowIso : null,
+        high_opted_in_at: isLow ? null : nowIso,
       });
       if (error) throw new Error(error.message);
       row = await getFocusRow(supabase, data.connection_id);
     } else if (!(isLow ? row.low_opted_in_at : row.high_opted_in_at)) {
       const { error } = await supabase
         .from("relationship_focus")
-        .update({ [isLow ? "low_opted_in_at" : "high_opted_in_at"]: nowIso })
+        .update(isLow ? { low_opted_in_at: nowIso } : { high_opted_in_at: nowIso })
         .eq("id", row.id as string);
       if (error) throw new Error(error.message);
       row = await getFocusRow(supabase, data.connection_id);
