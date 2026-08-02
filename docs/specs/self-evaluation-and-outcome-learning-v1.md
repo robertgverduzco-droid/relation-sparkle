@@ -322,6 +322,18 @@ prompt used by `introductions.server.ts`. Patterns are phrased as considerations
 ("pairs where both cited conflict-avoidance as a friction have more often ended
 before meeting — probe this rather than assume"), never as scores or filters.
 
+**Primacy of the individual (constitutional safeguard — approved v1.1).**
+Cross-member learning may inform Athena's reasoning but must NEVER override her
+understanding of the individual member in front of her. Individual evidence always
+holds higher authority than generalized learning. Population-level patterns may
+guide curiosity and shape which questions are worth asking; they may never
+substitute for, contradict, or outweigh what this person has actually shown.
+Whenever new individual evidence conflicts with a promoted pattern, the individual
+evidence supersedes it, and the conflict is recorded as a counter-example for
+review. Enforcement: the advisory block is placed **below** the individual's
+Living Profile and pair evidence in the prompt, is explicitly labeled subordinate,
+and no promoted pattern may act as a filter, score, or gate on any individual.
+
 Hard invariants preserved: confidence gates, 3-introduction cap, foundational
 conversation requirement, Focus Mode/transition holds, and reasoning-based (not
 score-based) decisions all remain exactly as implemented.
