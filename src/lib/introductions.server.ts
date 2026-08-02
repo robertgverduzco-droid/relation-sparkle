@@ -174,6 +174,15 @@ export async function runMatchmakingForUser(
   if ((selfProfile as { is_paused: boolean | null }).is_paused) return { ok: true, reason: "paused" };
   if (!selfIntel?.last_interview_at) return { ok: true, considered: 0, reason: "foundation_incomplete" };
 
+  // Relationship Journey doctrine: Athena does not look for anyone while a
+  // member is in Relationship Focus, resting after an ending, or still
+  // deciding which path they want.
+  {
+    const { matchmakingHold } = await import("./relationship.server");
+    const hold = await matchmakingHold(supabase, userId);
+    if (hold.held) return { ok: true, considered: 0, reason: hold.reason ?? "held" };
+  }
+
   if (!opts?.force && selfIntel.last_matchmaking_at) {
     const since = (Date.now() - new Date(selfIntel.last_matchmaking_at as string).getTime()) / 1000;
     if (since < MATCHMAKING_COOLDOWN_SECONDS) return { ok: true, reason: "cooldown", considered: 0 };
