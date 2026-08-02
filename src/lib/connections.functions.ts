@@ -635,8 +635,8 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
           .update({ status: "mutual_interest" })
           .eq("id", data.connection_id);
         if (conversationId) {
-          await postSystemMessage(admin, conversationId, MUTUAL_YES_NOTICE);
         }
+      }
     }
 
     // Outcome-learning (recording only): anonymized categorical signals.
@@ -678,7 +678,6 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
           dedupeKey: data.connection_id,
         });
       }
-    }
     }
 
     // Reflection is high-signal for understanding; refresh what's gone stale.
