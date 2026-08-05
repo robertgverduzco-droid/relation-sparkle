@@ -43,9 +43,13 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Chris Voss | College of Communication | [chris-voss.md](./chris-voss.md) |
 | Paul Ekman | College of Communication | [paul-ekman.md](./paul-ekman.md) |
 | Douglas Stone, Bruce Patton, and Sheila Heen | College of Communication | [stone-patton-and-heen.md](./stone-patton-and-heen.md) |
+| Jean Piaget | College of Human Development | [jean-piaget.md](./jean-piaget.md) |
+| Lev Vygotsky | College of Human Development | [lev-vygotsky.md](./lev-vygotsky.md) |
+| Carol Dweck | College of Human Development | [carol-dweck.md](./carol-dweck.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
 canonical. The College of Communication's founding faculty profiles are
-complete and canonical.
+complete and canonical. The College of Human Development's founding faculty is
+in progress; Part I admits Piaget, Vygotsky, and Dweck.
 
 

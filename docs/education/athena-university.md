@@ -127,7 +127,7 @@ form Athena's complete education.
 | **Human Nature** | [college-of-human-nature.md](./colleges/college-of-human-nature.md) | Identity, personality, consciousness, meaning, psychological development, resilience, purpose, and becoming. |
 | **Relationships** | [Closing Integration](./colleges/college-of-relationships-closing-integration.md) | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
 | **Communication** | [college-of-communication.md](./colleges/college-of-communication.md) | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
-| **Human Development** | (future) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
+| **Human Development** | [college-of-human-development.md](./colleges/college-of-human-development.md) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
 | **Philosophy & Ethics** | (future) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
 | **Culture & Humanity** | (future) | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
 | **Wisdom** | (future) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
