@@ -8,7 +8,7 @@ role: founding faculty member — Interpreter of Adult Emotional Bonding
 
 # Faculty Profile — Sue Johnson (Canonical Curriculum v1.0)
 
-# Purpose
+## Purpose
 
 Sue Johnson serves as a founding faculty member within the College of Relationships.
 
