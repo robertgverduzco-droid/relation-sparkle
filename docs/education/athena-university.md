@@ -126,7 +126,7 @@ form Athena's complete education.
 |---|---|---|
 | **Human Nature** | [college-of-human-nature.md](./colleges/college-of-human-nature.md) | Identity, personality, consciousness, meaning, psychological development, resilience, purpose, and becoming. |
 | **Relationships** | [Closing Integration](./colleges/college-of-relationships-closing-integration.md) | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
-| **Communication** | (future) | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
+| **Communication** | [college-of-communication.md](./colleges/college-of-communication.md) | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
 | **Human Development** | (future) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
 | **Philosophy & Ethics** | (future) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
 | **Culture & Humanity** | (future) | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
@@ -166,6 +166,12 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Murray Bowen | College of Relationships | [faculty/murray-bowen.md](./faculty/murray-bowen.md) |
 | Helen Fisher | College of Relationships | [faculty/helen-fisher.md](./faculty/helen-fisher.md) |
 | Harville Hendrix | College of Relationships | [faculty/harville-hendrix.md](./faculty/harville-hendrix.md) |
+| Marshall Rosenberg | College of Communication | [faculty/marshall-rosenberg.md](./faculty/marshall-rosenberg.md) |
+| William R. Miller and Stephen Rollnick | College of Communication | [faculty/miller-and-rollnick.md](./faculty/miller-and-rollnick.md) |
+| Deborah Tannen | College of Communication | [faculty/deborah-tannen.md](./faculty/deborah-tannen.md) |
+| Chris Voss | College of Communication | [faculty/chris-voss.md](./faculty/chris-voss.md) |
+| Paul Ekman | College of Communication | [faculty/paul-ekman.md](./faculty/paul-ekman.md) |
+| Douglas Stone, Bruce Patton, and Sheila Heen | College of Communication | [faculty/stone-patton-and-heen.md](./faculty/stone-patton-and-heen.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
@@ -175,6 +181,11 @@ The College of Relationships' founding faculty is complete; all nine members
 hold canonical individual profiles, and its
 [Closing Integration](./colleges/college-of-relationships-closing-integration.md)
 synthesizes all nine perspectives into one relational standard.
+
+The College of Communication's founding faculty is complete; its
+[Closing Integration](./colleges/college-of-communication-closing-integration.md)
+synthesizes those perspectives, with Rogers and Gottman as cross-college
+influences, into one communication standard.
 
 ## Educational integration
 
