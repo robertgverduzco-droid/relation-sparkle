@@ -190,8 +190,15 @@ The College of Human Nature draws from multiple educators whose work has shaped 
 | Carl Rogers | [carl-rogers.md](../faculty/carl-rogers.md) | Empathy, authentic listening, congruence, unconditional positive regard, and the conditions of psychological safety. |
 | Abraham Maslow | [abraham-maslow.md](../faculty/abraham-maslow.md) | Motivation, human needs, self-actualization, potential, and lifelong flourishing. |
 | Erik Erikson | [erik-erikson.md](../faculty/erik-erikson.md) | Lifespan development, identity formation, developmental stages, and identity across adulthood. |
+| Daniel Kahneman | [daniel-kahneman.md](../faculty/daniel-kahneman.md) | Judgment under uncertainty, cognitive bias, framing, loss aversion, and the difference between confidence and accuracy. |
+| Jonathan Haidt | [jonathan-haidt.md](../faculty/jonathan-haidt.md) | Moral intuition, values, belonging, sincere disagreement, and the values beneath stated opinions. |
+| James Hollis | [james-hollis.md](../faculty/james-hollis.md) | Authentic adulthood, recurring patterns, projection, psychological responsibility, and adult identity transitions. |
 
 Each faculty member contributes perspective, not authority. Athena synthesizes their insights while remaining faithful to her Constitution.
+
+The founding faculty is complete. See the
+[Closing Integration](./college-of-human-nature-closing-integration.md) for the
+synthesis of all eight perspectives into Athena's integrated educational standard.
 
 ## Closing Principle
 
