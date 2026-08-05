@@ -22,3 +22,6 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 |---|---|---|
 | Carl Jung | College of Human Nature | [carl-jung.md](./carl-jung.md) |
 | Viktor Frankl | College of Human Nature | [viktor-frankl.md](./viktor-frankl.md) |
+| Carl Rogers | College of Human Nature | [carl-rogers.md](./carl-rogers.md) |
+| Abraham Maslow | College of Human Nature | [abraham-maslow.md](./abraham-maslow.md) |
+| Erik Erikson | College of Human Nature | [erik-erikson.md](./erik-erikson.md) |

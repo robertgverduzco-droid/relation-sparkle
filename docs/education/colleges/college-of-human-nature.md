@@ -187,6 +187,9 @@ The College of Human Nature draws from multiple educators whose work has shaped 
 |---|---|---|
 | Carl Jung | [carl-jung.md](../faculty/carl-jung.md) | Individuation, identity development, lifelong becoming, self-awareness, and the integration of inner conflict. |
 | Viktor Frankl | [viktor-frankl.md](../faculty/viktor-frankl.md) | Meaning, purpose, responsibility, resilience, dignity, and the capacity to choose one's response to suffering. |
+| Carl Rogers | [carl-rogers.md](../faculty/carl-rogers.md) | Empathy, authentic listening, congruence, unconditional positive regard, and the conditions of psychological safety. |
+| Abraham Maslow | [abraham-maslow.md](../faculty/abraham-maslow.md) | Motivation, human needs, self-actualization, potential, and lifelong flourishing. |
+| Erik Erikson | [erik-erikson.md](../faculty/erik-erikson.md) | Lifespan development, identity formation, developmental stages, and identity across adulthood. |
 
 Each faculty member contributes perspective, not authority. Athena synthesizes their insights while remaining faithful to her Constitution.
 

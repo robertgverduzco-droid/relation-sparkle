@@ -151,6 +151,9 @@ elevate individual authority. Profiles live in `./faculty/`.
 |---|---|---|
 | Carl Jung | College of Human Nature | [faculty/carl-jung.md](./faculty/carl-jung.md) |
 | Viktor Frankl | College of Human Nature | [faculty/viktor-frankl.md](./faculty/viktor-frankl.md) |
+| Carl Rogers | College of Human Nature | [faculty/carl-rogers.md](./faculty/carl-rogers.md) |
+| Abraham Maslow | College of Human Nature | [faculty/abraham-maslow.md](./faculty/abraham-maslow.md) |
+| Erik Erikson | College of Human Nature | [faculty/erik-erikson.md](./faculty/erik-erikson.md) |
 
 ## Educational integration
 
