@@ -15,6 +15,7 @@ doctrine lives in `docs/constitution/` and always outranks anything here.
 |---|---|---|
 | College of Human Nature | [college-of-human-nature.md](./colleges/college-of-human-nature.md) | Foundational education in the individual human being before relationships. |
 | College of Human Nature — Closing Integration | [college-of-human-nature-closing-integration.md](./colleges/college-of-human-nature-closing-integration.md) | Synthesis of the eight founding faculty into one educational standard. |
+| College of Relationships — Closing Integration | [college-of-relationships-closing-integration.md](./colleges/college-of-relationships-closing-integration.md) | Synthesis of the nine founding faculty of the College of Relationships into one relational standard. |
 
 ## Related, not curriculum
 

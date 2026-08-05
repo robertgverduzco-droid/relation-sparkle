@@ -125,7 +125,7 @@ form Athena's complete education.
 | College | File | Understands |
 |---|---|---|
 | **Human Nature** | [college-of-human-nature.md](./colleges/college-of-human-nature.md) | Identity, personality, consciousness, meaning, psychological development, resilience, purpose, and becoming. |
-| **Relationships** | (future) | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
+| **Relationships** | [Closing Integration](./colleges/college-of-relationships-closing-integration.md) | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
 | **Communication** | (future) | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
 | **Human Development** | (future) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
 | **Philosophy & Ethics** | (future) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
@@ -157,10 +157,21 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Daniel Kahneman | College of Human Nature | [faculty/daniel-kahneman.md](./faculty/daniel-kahneman.md) |
 | Jonathan Haidt | College of Human Nature | [faculty/jonathan-haidt.md](./faculty/jonathan-haidt.md) |
 | James Hollis | College of Human Nature | [faculty/james-hollis.md](./faculty/james-hollis.md) |
+| Esther Perel | College of Relationships | [faculty/esther-perel.md](./faculty/esther-perel.md) |
+| Terrence Real | College of Relationships | [faculty/terrence-real.md](./faculty/terrence-real.md) |
+| Murray Bowen | College of Relationships | [faculty/murray-bowen.md](./faculty/murray-bowen.md) |
+| Helen Fisher | College of Relationships | [faculty/helen-fisher.md](./faculty/helen-fisher.md) |
+| Harville Hendrix | College of Relationships | [faculty/harville-hendrix.md](./faculty/harville-hendrix.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
 synthesizes all eight perspectives into one educational standard.
+
+The College of Relationships' founding faculty comprises nine members; its
+[Closing Integration](./colleges/college-of-relationships-closing-integration.md)
+synthesizes all nine perspectives into one relational standard. Individual
+profiles for John Gottman, Sue Johnson, John Bowlby, and Mary Ainsworth remain
+pending.
 
 ## Educational integration
 

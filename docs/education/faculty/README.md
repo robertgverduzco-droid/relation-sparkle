@@ -28,3 +28,13 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Daniel Kahneman | College of Human Nature | [daniel-kahneman.md](./daniel-kahneman.md) |
 | Jonathan Haidt | College of Human Nature | [jonathan-haidt.md](./jonathan-haidt.md) |
 | James Hollis | College of Human Nature | [james-hollis.md](./james-hollis.md) |
+| Esther Perel | College of Relationships | [esther-perel.md](./esther-perel.md) |
+| Terrence Real | College of Relationships | [terrence-real.md](./terrence-real.md) |
+| Murray Bowen | College of Relationships | [murray-bowen.md](./murray-bowen.md) |
+| Helen Fisher | College of Relationships | [helen-fisher.md](./helen-fisher.md) |
+| Harville Hendrix | College of Relationships | [harville-hendrix.md](./harville-hendrix.md) |
+
+> Pending admission: John Gottman, Sue Johnson, John Bowlby, and Mary Ainsworth
+> are named as founding faculty of the College of Relationships in its Closing
+> Integration, but their individual profiles have not yet been provided.
+
