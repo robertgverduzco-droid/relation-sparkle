@@ -18,7 +18,8 @@ doctrine lives in `docs/constitution/` and always outranks anything here.
 | College of Relationships — Closing Integration | [college-of-relationships-closing-integration.md](./colleges/college-of-relationships-closing-integration.md) | Synthesis of the nine founding faculty of the College of Relationships into one relational standard. |
 | College of Communication | [college-of-communication.md](./colleges/college-of-communication.md) | Education in how understanding moves between people: listening, dialogue, feedback, conflict, negotiation, and repair. |
 | College of Communication — Closing Integration | [college-of-communication-closing-integration.md](./colleges/college-of-communication-closing-integration.md) | Synthesis of the founding communication faculty into Athena's integrated communication standard. |
-| College of Human Development | [college-of-human-development.md](./colleges/college-of-human-development.md) | How a human being continues becoming throughout life: cognitive, social, and adaptive development (Part I). |
+| College of Human Development | [college-of-human-development.md](./colleges/college-of-human-development.md) | How a human being continues becoming throughout life: cognitive, social, ecological, and adult development. |
+| College of Human Development — Closing Integration | [college-of-human-development-closing-integration.md](./colleges/college-of-human-development-closing-integration.md) | Synthesis of the five founding development faculty into Athena's permanent Developmental Standard. |
 
 ## Related, not curriculum
 

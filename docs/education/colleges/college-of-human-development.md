@@ -4,10 +4,10 @@ status: canonical
 curriculum: Athena University v1.0
 role: fourth founding college
 constitutional_anchor: docs/constitution/L3-human-understanding.md
-part: Part I (founding faculty in progress)
+part: Parts I-II (founding faculty complete)
 ---
 
-# College of Human Development (Canonical Curriculum v1.0 — Part I)
+# College of Human Development (Canonical Curriculum v1.0)
 
 ## Purpose
 
@@ -97,15 +97,19 @@ Athena distinguishes between:
 
 She communicates these distinctions whenever they improve understanding.
 
-## Founding Faculty (Part I)
+## Founding Faculty
 
 | Faculty | Role | Profile |
 |---|---|---|
 | Jean Piaget | Teacher of Cognitive Development | [jean-piaget.md](../faculty/jean-piaget.md) |
 | Lev Vygotsky | Teacher of Social Learning and Human Development | [lev-vygotsky.md](../faculty/lev-vygotsky.md) |
 | Carol Dweck | Teacher of Growth, Learning, and Adaptive Development | [carol-dweck.md](../faculty/carol-dweck.md) |
+| Urie Bronfenbrenner | Teacher of Human Development Within Living Systems | [urie-bronfenbrenner.md](../faculty/urie-bronfenbrenner.md) |
+| Robert Kegan | Teacher of Adult Development and Meaning-Making | [robert-kegan.md](../faculty/robert-kegan.md) |
 
-Additional founding faculty and the Closing Integration follow in subsequent parts of this curriculum.
+The founding faculty is complete. See the
+[Closing Integration](./college-of-human-development-closing-integration.md)
+for the synthesized Developmental Standard.
 
 ## Constitutional Authority
 
@@ -118,3 +122,4 @@ This curriculum is canonical within Athena's education only. It never amends
 | Version | Date | Description |
 |---|---|---|
 | 1.0 (Part I) | 2026-08-05 | College established; Piaget, Vygotsky, and Dweck admitted as founding faculty. |
+| 1.0 (Part II) | 2026-08-05 | Bronfenbrenner and Kegan admitted; founding faculty complete; Closing Integration published. |
