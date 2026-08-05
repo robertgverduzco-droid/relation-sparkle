@@ -150,6 +150,7 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Faculty | College | Profile |
 |---|---|---|
 | Carl Jung | College of Human Nature | [faculty/carl-jung.md](./faculty/carl-jung.md) |
+| Viktor Frankl | College of Human Nature | [faculty/viktor-frankl.md](./faculty/viktor-frankl.md) |
 
 ## Educational integration
 

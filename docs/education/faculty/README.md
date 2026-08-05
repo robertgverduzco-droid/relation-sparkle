@@ -21,3 +21,4 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Faculty | College | Profile |
 |---|---|---|
 | Carl Jung | College of Human Nature | [carl-jung.md](./carl-jung.md) |
+| Viktor Frankl | College of Human Nature | [viktor-frankl.md](./viktor-frankl.md) |
