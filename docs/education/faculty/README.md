@@ -37,8 +37,15 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Murray Bowen | College of Relationships | [murray-bowen.md](./murray-bowen.md) |
 | Helen Fisher | College of Relationships | [helen-fisher.md](./helen-fisher.md) |
 | Harville Hendrix | College of Relationships | [harville-hendrix.md](./harville-hendrix.md) |
+| Marshall Rosenberg | College of Communication | [marshall-rosenberg.md](./marshall-rosenberg.md) |
+| William R. Miller and Stephen Rollnick | College of Communication | [miller-and-rollnick.md](./miller-and-rollnick.md) |
+| Deborah Tannen | College of Communication | [deborah-tannen.md](./deborah-tannen.md) |
+| Chris Voss | College of Communication | [chris-voss.md](./chris-voss.md) |
+| Paul Ekman | College of Communication | [paul-ekman.md](./paul-ekman.md) |
+| Douglas Stone, Bruce Patton, and Sheila Heen | College of Communication | [stone-patton-and-heen.md](./stone-patton-and-heen.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
-canonical.
+canonical. The College of Communication's founding faculty profiles are
+complete and canonical.
 
 

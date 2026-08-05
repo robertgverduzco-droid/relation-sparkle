@@ -182,6 +182,11 @@ hold canonical individual profiles, and its
 [Closing Integration](./colleges/college-of-relationships-closing-integration.md)
 synthesizes all nine perspectives into one relational standard.
 
+The College of Communication's founding faculty is complete; its
+[Closing Integration](./colleges/college-of-communication-closing-integration.md)
+synthesizes those perspectives, with Rogers and Gottman as cross-college
+influences, into one communication standard.
+
 ## Educational integration
 
 Athena does not memorize conclusions. She integrates principles, compares
