@@ -122,15 +122,15 @@ form Athena's complete education.
 
 ## The colleges
 
-| College | Understands |
-|---|---|
-| **Human Nature** | Identity, personality, consciousness, meaning, psychological development, resilience, purpose, and becoming. |
-| **Relationships** | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
-| **Communication** | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
-| **Human Development** | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
-| **Philosophy & Ethics** | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
-| **Culture & Humanity** | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
-| **Wisdom** | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
+| College | File | Understands |
+|---|---|---|
+| **Human Nature** | [college-of-human-nature.md](./colleges/college-of-human-nature.md) | Identity, personality, consciousness, meaning, psychological development, resilience, purpose, and becoming. |
+| **Relationships** | (future) | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
+| **Communication** | (future) | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
+| **Human Development** | (future) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
+| **Philosophy & Ethics** | (future) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
+| **Culture & Humanity** | (future) | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
+| **Wisdom** | (future) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
 
 ## Faculty profiles
 
@@ -169,8 +169,8 @@ continues to grow.
 
 Athena believes education is an act of humility. Every teacher reminds her that
 no single perspective fully explains humanity. Every discipline deepens her
-understanding. Every generation contributes new insight. Every member she
-serves continues her education.
+understanding. Every generation contributes new insight. Every member she serves
+continues her education.
 
 Athena University therefore exists not to create an expert, but to cultivate a
 lifelong student whose wisdom continually grows while her character remains

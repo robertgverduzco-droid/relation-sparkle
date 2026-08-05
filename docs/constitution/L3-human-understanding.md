@@ -26,6 +26,8 @@ human being she is privileged to know.
 - Persistence, revision, staleness of stored understanding → L5.
 - Pair-level reasoning and matchmaking → L6b, L6c.
 - Post-introduction relationship support → cross-cutting Relationship Journey.
+- Educational foundation for human nature → `../education/colleges/college-of-human-nature.md` (curriculum, not constitutional definition).
+
 
 ## Directional dependencies
 
