@@ -25,3 +25,6 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Carl Rogers | College of Human Nature | [carl-rogers.md](./carl-rogers.md) |
 | Abraham Maslow | College of Human Nature | [abraham-maslow.md](./abraham-maslow.md) |
 | Erik Erikson | College of Human Nature | [erik-erikson.md](./erik-erikson.md) |
+| Daniel Kahneman | College of Human Nature | [daniel-kahneman.md](./daniel-kahneman.md) |
+| Jonathan Haidt | College of Human Nature | [jonathan-haidt.md](./jonathan-haidt.md) |
+| James Hollis | College of Human Nature | [james-hollis.md](./james-hollis.md) |

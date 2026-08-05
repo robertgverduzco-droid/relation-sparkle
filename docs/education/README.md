@@ -14,6 +14,7 @@ doctrine lives in `docs/constitution/` and always outranks anything here.
 | College | File | Purpose |
 |---|---|---|
 | College of Human Nature | [college-of-human-nature.md](./colleges/college-of-human-nature.md) | Foundational education in the individual human being before relationships. |
+| College of Human Nature — Closing Integration | [college-of-human-nature-closing-integration.md](./colleges/college-of-human-nature-closing-integration.md) | Synthesis of the eight founding faculty into one educational standard. |
 
 ## Related, not curriculum
 

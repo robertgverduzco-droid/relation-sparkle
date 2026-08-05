@@ -154,6 +154,13 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Carl Rogers | College of Human Nature | [faculty/carl-rogers.md](./faculty/carl-rogers.md) |
 | Abraham Maslow | College of Human Nature | [faculty/abraham-maslow.md](./faculty/abraham-maslow.md) |
 | Erik Erikson | College of Human Nature | [faculty/erik-erikson.md](./faculty/erik-erikson.md) |
+| Daniel Kahneman | College of Human Nature | [faculty/daniel-kahneman.md](./faculty/daniel-kahneman.md) |
+| Jonathan Haidt | College of Human Nature | [faculty/jonathan-haidt.md](./faculty/jonathan-haidt.md) |
+| James Hollis | College of Human Nature | [faculty/james-hollis.md](./faculty/james-hollis.md) |
+
+The College of Human Nature's founding faculty is complete; its
+[Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
+synthesizes all eight perspectives into one educational standard.
 
 ## Educational integration
 
