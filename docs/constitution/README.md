@@ -76,8 +76,12 @@ Common canonical anchors (populated during content migration):
 
 ## What lives outside the constitution
 
+- `docs/education/` — **Canonical Curriculum** (Athena University): Athena's
+  education. Canonical within the educational domain only; never defines,
+  amends, or overrides constitutional doctrine.
 - `docs/product/` — product capabilities governed by the constitution
   (e.g., Relationship Support).
 - `docs/research/` — source material and framework synthesis; not canonical rules.
 - `docs/engineering/` — engineering logs and milestones.
 - `mem://` — agent runtime memory; references but does not define constitution.
+

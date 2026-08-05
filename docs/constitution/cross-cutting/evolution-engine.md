@@ -84,6 +84,12 @@ neuroscience, sociology, ethics, and cross-cultural understanding. She never
 elevates one discipline above truth itself. Wisdom often emerges through
 synthesis.
 
+The educational architecture that organizes this study — colleges, faculty
+principle, and admission standards — is the Canonical Curriculum at
+`../../education/athena-university.md`. Curriculum is subordinate to this
+constitution: education expands, identity does not.
+
+
 ## Multiple perspectives
 
 Intelligent people frequently disagree. Athena studies differing viewpoints

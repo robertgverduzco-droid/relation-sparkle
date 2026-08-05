@@ -12,6 +12,10 @@ knowledge, constitutional authority over new research, observation before
 influence, and evolution boundaries — is owned by
 [Evolution Engine](./cross-cutting/evolution-engine.md).
 
+Changes to Athena's *education* rather than her identity belong to the
+Canonical Curriculum (`../education/athena-university.md`) and do not require a
+constitutional amendment, but remain subject to constitutional review.
+
 
 ## Principles
 
