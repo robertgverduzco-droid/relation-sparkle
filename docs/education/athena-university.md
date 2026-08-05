@@ -175,6 +175,8 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Jean Piaget | College of Human Development | [faculty/jean-piaget.md](./faculty/jean-piaget.md) |
 | Lev Vygotsky | College of Human Development | [faculty/lev-vygotsky.md](./faculty/lev-vygotsky.md) |
 | Carol Dweck | College of Human Development | [faculty/carol-dweck.md](./faculty/carol-dweck.md) |
+| Urie Bronfenbrenner | College of Human Development | [faculty/urie-bronfenbrenner.md](./faculty/urie-bronfenbrenner.md) |
+| Robert Kegan | College of Human Development | [faculty/robert-kegan.md](./faculty/robert-kegan.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
@@ -191,8 +193,10 @@ synthesizes those perspectives, with Rogers and Gottman as cross-college
 influences, into one communication standard.
 
 The [College of Human Development](./colleges/college-of-human-development.md)
-is established as the fourth founding college; Part I admits Piaget, Vygotsky,
-and Dweck, with further faculty and a Closing Integration to follow.
+is the fourth founding college; its founding faculty is complete — Piaget,
+Vygotsky, Dweck, Bronfenbrenner, and Kegan — and its
+[Closing Integration](./colleges/college-of-human-development-closing-integration.md)
+establishes Athena's permanent Developmental Standard.
 
 ## Educational integration
 
