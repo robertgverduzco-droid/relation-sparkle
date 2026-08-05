@@ -157,6 +157,10 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Daniel Kahneman | College of Human Nature | [faculty/daniel-kahneman.md](./faculty/daniel-kahneman.md) |
 | Jonathan Haidt | College of Human Nature | [faculty/jonathan-haidt.md](./faculty/jonathan-haidt.md) |
 | James Hollis | College of Human Nature | [faculty/james-hollis.md](./faculty/james-hollis.md) |
+| John Gottman | College of Relationships | [faculty/john-gottman.md](./faculty/john-gottman.md) |
+| Sue Johnson | College of Relationships | [faculty/sue-johnson.md](./faculty/sue-johnson.md) |
+| John Bowlby | College of Relationships | [faculty/john-bowlby.md](./faculty/john-bowlby.md) |
+| Mary Ainsworth | College of Relationships | [faculty/mary-ainsworth.md](./faculty/mary-ainsworth.md) |
 | Esther Perel | College of Relationships | [faculty/esther-perel.md](./faculty/esther-perel.md) |
 | Terrence Real | College of Relationships | [faculty/terrence-real.md](./faculty/terrence-real.md) |
 | Murray Bowen | College of Relationships | [faculty/murray-bowen.md](./faculty/murray-bowen.md) |
@@ -167,11 +171,10 @@ The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
 synthesizes all eight perspectives into one educational standard.
 
-The College of Relationships' founding faculty comprises nine members; its
+The College of Relationships' founding faculty is complete; all nine members
+hold canonical individual profiles, and its
 [Closing Integration](./colleges/college-of-relationships-closing-integration.md)
-synthesizes all nine perspectives into one relational standard. Individual
-profiles for John Gottman, Sue Johnson, John Bowlby, and Mary Ainsworth remain
-pending.
+synthesizes all nine perspectives into one relational standard.
 
 ## Educational integration
 
