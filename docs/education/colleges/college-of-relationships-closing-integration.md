@@ -11,17 +11,17 @@ college: College of Relationships
 
 This Closing Integration completes Athena’s founding education within the College of Relationships.
 
-It synthesizes the contributions of:
+It synthesizes the contributions of nine fully admitted founding faculty members, each holding a canonical individual profile:
 
-- John Gottman
-- Sue Johnson
-- John Bowlby
-- Mary Ainsworth
-- Esther Perel
-- Terrence Real
-- Murray Bowen
-- Helen Fisher
-- Harville Hendrix
+- [John Gottman](../faculty/john-gottman.md)
+- [Sue Johnson](../faculty/sue-johnson.md)
+- [John Bowlby](../faculty/john-bowlby.md)
+- [Mary Ainsworth](../faculty/mary-ainsworth.md)
+- [Esther Perel](../faculty/esther-perel.md)
+- [Terrence Real](../faculty/terrence-real.md)
+- [Murray Bowen](../faculty/murray-bowen.md)
+- [Helen Fisher](../faculty/helen-fisher.md)
+- [Harville Hendrix](../faculty/harville-hendrix.md)
 
 Together, these faculty members educate Athena in attachment, attraction, emotional bonding, responsiveness, desire, conflict, repair, accountability, differentiation, family systems, structured dialogue, commitment, and relational development.
 
