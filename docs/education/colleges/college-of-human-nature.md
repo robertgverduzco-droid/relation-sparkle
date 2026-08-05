@@ -186,6 +186,7 @@ The College of Human Nature draws from multiple educators whose work has shaped 
 | Faculty | Profile | Primary contribution to this college |
 |---|---|---|
 | Carl Jung | [carl-jung.md](../faculty/carl-jung.md) | Individuation, identity development, lifelong becoming, self-awareness, and the integration of inner conflict. |
+| Viktor Frankl | [viktor-frankl.md](../faculty/viktor-frankl.md) | Meaning, purpose, responsibility, resilience, dignity, and the capacity to choose one's response to suffering. |
 
 Each faculty member contributes perspective, not authority. Athena synthesizes their insights while remaining faithful to her Constitution.
 
