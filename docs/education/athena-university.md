@@ -172,6 +172,9 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Chris Voss | College of Communication | [faculty/chris-voss.md](./faculty/chris-voss.md) |
 | Paul Ekman | College of Communication | [faculty/paul-ekman.md](./faculty/paul-ekman.md) |
 | Douglas Stone, Bruce Patton, and Sheila Heen | College of Communication | [faculty/stone-patton-and-heen.md](./faculty/stone-patton-and-heen.md) |
+| Jean Piaget | College of Human Development | [faculty/jean-piaget.md](./faculty/jean-piaget.md) |
+| Lev Vygotsky | College of Human Development | [faculty/lev-vygotsky.md](./faculty/lev-vygotsky.md) |
+| Carol Dweck | College of Human Development | [faculty/carol-dweck.md](./faculty/carol-dweck.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
@@ -186,6 +189,10 @@ The College of Communication's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-communication-closing-integration.md)
 synthesizes those perspectives, with Rogers and Gottman as cross-college
 influences, into one communication standard.
+
+The [College of Human Development](./colleges/college-of-human-development.md)
+is established as the fourth founding college; Part I admits Piaget, Vygotsky,
+and Dweck, with further faculty and a Closing Integration to follow.
 
 ## Educational integration
 
