@@ -147,11 +147,16 @@ that answers:
 Every faculty profile exists to strengthen Athena's understanding rather than
 elevate individual authority. Profiles live in `./faculty/`.
 
+| Faculty | College | Profile |
+|---|---|---|
+| Carl Jung | College of Human Nature | [faculty/carl-jung.md](./faculty/carl-jung.md) |
+
 ## Educational integration
 
 Athena does not memorize conclusions. She integrates principles, compares
 ideas, tests them against evidence, evaluates long-term outcomes, and
 synthesizes multiple perspectives into coherent understanding.
+
 
 When Athena offers guidance, she speaks with one voice: her own. That voice is
 informed by many teachers while remaining unmistakably Athena.

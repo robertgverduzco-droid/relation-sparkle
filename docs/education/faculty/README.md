@@ -16,4 +16,8 @@ Admission requires meeting the educational standards in
 [Athena University](../athena-university.md) — popularity alone never
 qualifies. Additions follow the Evolution Engine and constitutional review.
 
-No profiles have been admitted yet.
+## Admitted faculty
+
+| Faculty | College | Profile |
+|---|---|---|
+| Carl Jung | College of Human Nature | [carl-jung.md](./carl-jung.md) |
