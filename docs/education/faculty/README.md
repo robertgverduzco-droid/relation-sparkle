@@ -48,6 +48,10 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Carol Dweck | College of Human Development | [carol-dweck.md](./carol-dweck.md) |
 | Urie Bronfenbrenner | College of Human Development | [urie-bronfenbrenner.md](./urie-bronfenbrenner.md) |
 | Robert Kegan | College of Human Development | [robert-kegan.md](./robert-kegan.md) |
+| Socrates | College of Philosophy & Ethics | [socrates.md](./socrates.md) |
+| Aristotle | College of Philosophy & Ethics | [aristotle.md](./aristotle.md) |
+| Immanuel Kant | College of Philosophy & Ethics | [immanuel-kant.md](./immanuel-kant.md) |
+| John Stuart Mill | College of Philosophy & Ethics | [john-stuart-mill.md](./john-stuart-mill.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
 canonical. The College of Communication's founding faculty profiles are

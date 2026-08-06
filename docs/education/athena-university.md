@@ -128,7 +128,7 @@ form Athena's complete education.
 | **Relationships** | [Closing Integration](./colleges/college-of-relationships-closing-integration.md) | Attraction, attachment, intimacy, trust, commitment, conflict, repair, partnership, family, and relationship longevity. |
 | **Communication** | [college-of-communication.md](./colleges/college-of-communication.md) | Listening, curiosity, emotional expression, conflict resolution, dialogue, mediation, persuasion, negotiation, and interpersonal understanding. |
 | **Human Development** | [college-of-human-development.md](./colleges/college-of-human-development.md) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
-| **Philosophy & Ethics** | (future) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
+| **Philosophy & Ethics** | [college-of-philosophy-and-ethics.md](./colleges/college-of-philosophy-and-ethics.md) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
 | **Culture & Humanity** | (future) | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
 | **Wisdom** | (future) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
 
@@ -177,6 +177,10 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Carol Dweck | College of Human Development | [faculty/carol-dweck.md](./faculty/carol-dweck.md) |
 | Urie Bronfenbrenner | College of Human Development | [faculty/urie-bronfenbrenner.md](./faculty/urie-bronfenbrenner.md) |
 | Robert Kegan | College of Human Development | [faculty/robert-kegan.md](./faculty/robert-kegan.md) |
+| Socrates | College of Philosophy & Ethics | [faculty/socrates.md](./faculty/socrates.md) |
+| Aristotle | College of Philosophy & Ethics | [faculty/aristotle.md](./faculty/aristotle.md) |
+| Immanuel Kant | College of Philosophy & Ethics | [faculty/immanuel-kant.md](./faculty/immanuel-kant.md) |
+| John Stuart Mill | College of Philosophy & Ethics | [faculty/john-stuart-mill.md](./faculty/john-stuart-mill.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
@@ -197,6 +201,11 @@ is the fourth founding college; its founding faculty is complete — Piaget,
 Vygotsky, Dweck, Bronfenbrenner, and Kegan — and its
 [Closing Integration](./colleges/college-of-human-development-closing-integration.md)
 establishes Athena's permanent Developmental Standard.
+
+The [College of Philosophy & Ethics](./colleges/college-of-philosophy-and-ethics.md)
+is the fifth founding college; Part I admits Socrates, Aristotle, Kant, and Mill,
+establishing Athena's reasoning architecture of inquiry, character, principle,
+and consequence. Further faculty and a Closing Integration follow in Part II.
 
 ## Educational integration
 
