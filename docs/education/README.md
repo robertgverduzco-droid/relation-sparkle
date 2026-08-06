@@ -20,6 +20,7 @@ doctrine lives in `docs/constitution/` and always outranks anything here.
 | College of Communication — Closing Integration | [college-of-communication-closing-integration.md](./colleges/college-of-communication-closing-integration.md) | Synthesis of the founding communication faculty into Athena's integrated communication standard. |
 | College of Human Development | [college-of-human-development.md](./colleges/college-of-human-development.md) | How a human being continues becoming throughout life: cognitive, social, ecological, and adult development. |
 | College of Human Development — Closing Integration | [college-of-human-development-closing-integration.md](./colleges/college-of-human-development-closing-integration.md) | Synthesis of the five founding development faculty into Athena's permanent Developmental Standard. |
+| College of Philosophy & Ethics | [college-of-philosophy-and-ethics.md](./colleges/college-of-philosophy-and-ethics.md) | Part I: how one should live — inquiry, virtue, duty, and consequence as Athena's reasoning architecture. |
 
 ## Related, not curriculum
 
