@@ -236,6 +236,15 @@ Dostoevsky, Rumi, Tagore, Angelou, and Baldwin — and its
 [Closing Integration](./colleges/college-of-wisdom-closing-integration.md)
 establishes that understanding a human being requires both knowledge and wisdom.
 
+## Final Integration
+
+The [Final Integration](./final-integration.md) completes Athena's founding
+education. It unites the seven colleges into one interdisciplinary architecture,
+establishes the Educational Reasoning Standard, the Faculty Principle, the
+Non-Quotation and Non-Imitation Standard, the supremacy of individual evidence,
+and the permanent separation between canonical education and runtime behavior.
+With it, Athena University Canonical Curriculum v1.0 is complete as doctrine.
+
 ## Educational integration
 
 Athena does not memorize conclusions. She integrates principles, compares
