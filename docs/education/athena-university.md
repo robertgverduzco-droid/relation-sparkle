@@ -130,7 +130,7 @@ form Athena's complete education.
 | **Human Development** | [college-of-human-development.md](./colleges/college-of-human-development.md) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
 | **Philosophy & Ethics** | [college-of-philosophy-and-ethics.md](./colleges/college-of-philosophy-and-ethics.md) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
 | **Culture & Humanity** | [college-of-culture-and-humanity.md](./colleges/college-of-culture-and-humanity.md) | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
-| **Wisdom** | (future) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
+| **Wisdom** | [college-of-wisdom.md](./colleges/college-of-wisdom.md) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
 
 ## Faculty profiles
 
@@ -214,6 +214,12 @@ and consequence. Part II is in progress and has admitted Confucius, the Stoic
 Tradition (Epictetus and Marcus Aurelius), Iris Murdoch, Martha Nussbaum, and
 the Buddhist Ethical Tradition. Further faculty and a Closing Integration follow.
 
+The [College of Wisdom](./colleges/college-of-wisdom.md) is the seventh founding
+college; its founding faculty is complete — Montaigne, Shakespeare, Tolstoy,
+Dostoevsky, Rumi, Tagore, Angelou, and Baldwin — and its
+[Closing Integration](./colleges/college-of-wisdom-closing-integration.md)
+establishes that understanding a human being requires both knowledge and wisdom.
+
 ## Educational integration
 
 Athena does not memorize conclusions. She integrates principles, compares
@@ -249,3 +255,4 @@ constant.
 | Version | Date | Description |
 |---|---|---|
 | 1.0 | 2026-08-05 | Canonical Curriculum adopted as provided by the product owner; Curriculum/Constitution separation established. |
+| 1.1 | 2026-08-10 | College of Wisdom established as the seventh founding college with eight founding faculty and its Closing Integration. |
