@@ -251,7 +251,18 @@ export const askAthenaReflection = createServerFn({ method: "POST" })
     const { reflectSystemPrompt } = await import("./connections.server");
     const gateway = createLovableGateway();
     const messages: ModelMessage[] = [
-      { role: "system", content: reflectSystemPrompt(otherName) },
+      {
+        role: "system",
+        content: reflectSystemPrompt(
+          otherName,
+          data.messages
+            .filter((m) => m.role === "user")
+            .slice(-6)
+            .map((m) => m.content)
+            .join("\n"),
+        ),
+      },
+
       ...data.messages.filter((m) => m.role !== "system"),
     ];
     const { text } = await generateText({
