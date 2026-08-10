@@ -75,10 +75,8 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         confidence: Number(p.confidence ?? 0),
         response: respMap.get(p.id as string) ?? "pending",
         presented_at: (isLow ? p.presented_to_a_at : p.presented_to_b_at) as string | null,
-        alignments: (p.alignments ?? []) as string[],
-        complementary: (p.complementary ?? []) as string[],
-        frictions: (p.frictions ?? []) as string[],
       };
+
     });
 
     return { introductions: shape };
