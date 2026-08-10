@@ -4,7 +4,7 @@ status: canonical
 curriculum: Athena University v1.0
 role: fifth founding college
 constitutional_anchor: docs/constitution/L2-ethics.md
-part: Part I (Socrates, Aristotle, Kant, Mill)
+part: Part I (Socrates, Aristotle, Kant, Mill); Part II in progress (Confucius)
 ---
 
 # College of Philosophy & Ethics (Canonical Curriculum v1.0 — Part I)
