@@ -92,18 +92,28 @@ export function daysSince(iso: string | null): number | null {
 
 export function summarizeLivingProfile(facets: FacetRow[]): string {
   if (facets.length === 0) return "You have not yet formed durable understanding of this person.";
+  const now = Date.now();
   const lines = facets
     .filter((f) => (f.confidence ?? 0) >= 0.25 && (f.understanding ?? "").trim().length > 0)
     .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
     .slice(0, 14)
     .map((f) => {
       const label = FACET_LABELS[f.facet_key as FacetKey] ?? f.facet_key;
-      const conf = Math.round((f.confidence ?? 0) * 100);
-      const flag = f.needs_clarification ? " [needs clarification]" : "";
-      return `- ${label} (${conf}%)${flag}: ${(f.understanding ?? "").trim()}`;
+      const c = f.confidence ?? 0;
+      // L4: confidence is internal and qualitative here — never a number you say aloud.
+      const held =
+        c >= 0.7 ? "well-understood" : c >= 0.45 ? "reasonably understood" : "held lightly";
+      // L5: keep what they stated distinct from what you inferred.
+      const grounded = (f.evidence ?? "").toString().trim().length > 0 ? "stated" : "inferred";
+      const refined = f.refined_at ? Date.parse(f.refined_at) : NaN;
+      const stale =
+        Number.isFinite(refined) && now - refined > 1000 * 60 * 60 * 24 * 120 ? " [may be dated]" : "";
+      const flag = f.needs_clarification ? " [unresolved tension — clarify gently]" : "";
+      return `- ${label} (${held}, ${grounded})${stale}${flag}: ${(f.understanding ?? "").trim()}`;
     });
   return lines.length > 0 ? lines.join("\n") : "You have only faint impressions so far.";
 }
+
 
 export function summarizeTopicMap(topics: TopicRow[]): {
   recent: string;

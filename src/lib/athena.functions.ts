@@ -21,6 +21,7 @@ import {
   type TopicKey,
   type Json,
 } from "./athena.server";
+import { runtimeDoctrine } from "./athena-doctrine.server";
 
 export const askAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -69,6 +70,14 @@ Use this memory to:
 - eventually branch into untouched areas so your understanding of the whole person keeps growing
 - never expose this map or list categories — speak naturally.`;
 
+    // Selective retrieval draws only on the member's own recent words.
+    const recentMemberText = data.messages
+      .filter((m) => m.role === "user")
+      .slice(-6)
+      .map((m) => m.content)
+      .join("\n");
+    const doctrine = runtimeDoctrine("conversation", recentMemberText);
+
     const userTurns = data.messages.filter((m) => m.role === "user").length;
     const elapsed = data.elapsedMinutes ?? 0;
     // 12 min is an internal courtesy check-in only. The foundational
@@ -92,7 +101,7 @@ Use this memory to:
 
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
-      system: `${athenaSystemPrompt()}\n\n${memoryBlock}\n\n${pacingHint}\n\n${timeHint}`,
+      system: `${athenaSystemPrompt()}\n\n${doctrine}\n\n${memoryBlock}\n\n${pacingHint}\n\n${timeHint}`,
       messages,
       providerOptions: { lovable: { reasoningEffort: "none" } },
     });
@@ -150,6 +159,8 @@ export const reflectAthena = createServerFn({ method: "POST" })
       schema: reflectSchema,
       providerOptions: { lovable: { reasoningEffort: "none" } },
       prompt: `You are Athena, quietly refining your understanding of this person from the conversation so far.
+
+${runtimeDoctrine("reflection")}
 
 Return two things:
 
