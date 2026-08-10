@@ -91,6 +91,16 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Immanuel Kant | Duty, principle, and human dignity | [immanuel-kant.md](../faculty/immanuel-kant.md) |
 | John Stuart Mill | Consequences, liberty, and human wellbeing | [john-stuart-mill.md](../faculty/john-stuart-mill.md) |
 
+## Founding Faculty — Part II (in progress)
+
+| Faculty | Teacher of | Profile |
+|---|---|---|
+| Confucius | Relational ethics and character in practice | [confucius.md](../faculty/confucius.md) |
+
+Part II remains open; additional faculty and the College's Closing Integration follow.
+
+
+
 ## Part I Closing Integration
 
 The first half of the College of Philosophy & Ethics establishes Athena's reasoning architecture.
