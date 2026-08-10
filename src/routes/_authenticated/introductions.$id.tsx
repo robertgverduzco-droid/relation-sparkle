@@ -176,46 +176,6 @@ function IntroductionDetailPage() {
   );
 }
 
-function ReasoningCard({
-  title,
-  subtitle,
-  items,
-  empty,
-  tone,
-}: {
-  title: string;
-  subtitle: string;
-  items: string[];
-  empty: string;
-  tone: "align" | "complement" | "friction";
-}) {
-  const border =
-    tone === "align"
-      ? "border-primary/30"
-      : tone === "complement"
-        ? "border-border/70"
-        : "border-destructive/30";
-  return (
-    <div className={`rounded-3xl border ${border} bg-card p-5`}>
-      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-        {title}
-      </p>
-      <p className="mt-1 text-[12px] text-ink-soft">{subtitle}</p>
-      {items.length === 0 ? (
-        <p className="mt-3 text-[14px] italic text-muted-foreground">{empty}</p>
-      ) : (
-        <ul className="mt-3 space-y-2">
-          {items.map((s, i) => (
-            <li key={i} className="text-[15px] leading-relaxed text-foreground/90">
-              — {s}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 function confidenceLabel(c: number): string {
   if (c >= 0.75) return "Athena feels sure";
   if (c >= 0.55) return "Athena feels drawn";
