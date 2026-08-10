@@ -101,67 +101,63 @@ perspectives without intellectual tribalism.
 | 2 | **College of Relationships** | COMPLETE — 9 faculty + Closing Integration |
 | 3 | **College of Communication** | COMPLETE — 6 faculty entries + Closing Integration |
 | 4 | **College of Human Development** | COMPLETE — 5 faculty + Closing Integration (Developmental Standard) |
-| 5 | **College of Philosophy & Ethics** | **IN PROGRESS — Part I only** |
-| 6 | **College of Culture & Humanity** | NOT STARTED |
-| 7 | **College of Wisdom** | NOT STARTED |
+| 5 | **College of Philosophy & Ethics** | COMPLETE — Parts I and II |
+| 6 | **College of Culture & Humanity** | COMPLETE — 8 faculty + Closing Integration |
+| 7 | **College of Wisdom** | COMPLETE — 8 faculty + Closing Integration |
+
+The **Final Integration** (`docs/education/final-integration.md`) unifies all
+seven colleges and establishes the Educational Reasoning Standard and the
+Non-Quotation and Non-Imitation Standard.
 
 ---
 
-## 4. Faculty admitted so far
+## 4. Faculty admitted
 
 **College of Human Nature (8):** Carl Jung, Viktor Frankl, Carl Rogers,
 Abraham Maslow, Erik Erikson, Daniel Kahneman, Jonathan Haidt, James Hollis.
-Closing Integration published.
 
 **College of Relationships (9):** John Gottman, Sue Johnson, John Bowlby,
 Mary Ainsworth, Esther Perel, Terrence Real, Murray Bowen, Helen Fisher,
-Harville Hendrix. Closing Integration published (attachment, friendship,
-desire, accountability, differentiation, repair, safety first).
+Harville Hendrix.
 
 **College of Communication (6 entries):** Marshall Rosenberg,
 William R. Miller & Stephen Rollnick, Deborah Tannen, Chris Voss, Paul Ekman,
-Douglas Stone / Bruce Patton / Sheila Heen. Closing Integration published,
-including the 7-step pattern-feedback sequence.
+Douglas Stone / Bruce Patton / Sheila Heen.
 
 **College of Human Development (5):** Jean Piaget, Lev Vygotsky, Carol Dweck,
-Urie Bronfenbrenner, Robert Kegan. Closing Integration published as Athena's
-permanent **Developmental Standard**.
+Urie Bronfenbrenner, Robert Kegan.
 
-**College of Philosophy & Ethics — Part I (4):** Socrates (inquiry and
-intellectual humility), Aristotle (virtue and flourishing), Immanuel Kant
-(duty, principle, human dignity), John Stuart Mill (consequences, liberty,
-wellbeing). A **Part I Closing Integration** exists, establishing the reasoning
-architecture: *inquiry → character → principle → consequence*.
+**College of Philosophy & Ethics (Part I, 4):** Socrates, Aristotle,
+Immanuel Kant, John Stuart Mill.
+**(Part II, 5):** Confucius, the Stoic tradition, Iris Murdoch,
+Martha Nussbaum, the Buddhist ethical tradition.
+
+**College of Culture & Humanity (8):** Franz Boas, Margaret Mead,
+Clifford Geertz, Edward T. Hall, Geert Hofstede, Stuart Hall,
+Kwame Anthony Appiah, bell hooks.
+
+**College of Wisdom (8):** Michel de Montaigne, William Shakespeare,
+Leo Tolstoy, Fyodor Dostoevsky, Rumi, Rabindranath Tagore, Maya Angelou,
+James Baldwin.
 
 ---
 
 ## 5. Exactly where we stand
 
-We are **halfway through the College of Philosophy & Ethics**. Part I is
-canonical. **Part II has not been written.**
+**Athena University Canonical Curriculum v1.0 is complete.** No further
+doctrine authoring is outstanding. Work has returned to product build-out and
+audit remediation:
 
-Note: the last Part II material we attempted in the old thread went sideways.
-**We are restarting Part II from scratch.** Assume nothing from that attempt.
-
-Part II should:
-- Admit the remaining founding faculty of the College of Philosophy & Ethics.
-  Candidates to propose and justify (not yet decided): Confucius, the Stoics
-  (Epictetus / Marcus Aurelius), Simone de Beauvoir, Martha Nussbaum,
-  Iris Murdoch, Emmanuel Levinas, Alasdair MacIntyre, Kwame Anthony Appiah,
-  Jonathan Sacks, the Buddhist ethical tradition. Each must satisfy the
-  admission standards and add a perspective the existing four lack —
-  especially **non-Western and relational/care traditions**, which Part I is
-  missing.
-- Deliver a **Closing Integration** that fuses Part I and Part II into Athena's
-  permanent **Ethical Reasoning Standard**, explicitly deferring to
-  `docs/constitution/L2-ethics.md` as binding authority.
-
-After Philosophy & Ethics closes, the remaining plan is:
-1. **College of Culture & Humanity** — history, culture, traditions, belief
-   systems, diversity, family structures, language.
-2. **College of Wisdom** — literature, biography, poetry, history, lived
-   experience, enduring human insight.
-3. Then education is complete; work returns to product build-out.
+- **Wave 1 (complete)** — privacy: full account/data deletion,
+  `pair_reasoning` protection, email-verification routing.
+- **Wave 2 (complete)** — constitution-to-runtime: `athena-doctrine.server.ts`
+  carries L4/L5/L7 plus a compact synthesis of all seven colleges into every AI
+  surface. See `docs/technical/RUNTIME-DOCTRINE.md`.
+- **Wave 3 (complete)** — structural cleanup: retired `interview_shares`,
+  legacy `reflections`, and the unused `matches`/`introductions` tables;
+  single reflection entry point; moderation split into
+  `moderation.server.ts` + thin wrapper; `has_role` restricted to self/admin;
+  documentation reconciled.
 
 ---
 

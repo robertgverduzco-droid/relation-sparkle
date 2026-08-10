@@ -2,6 +2,12 @@
 
 **Purpose:** Define how Athena’s value is packaged, priced, monetized, and governed commercially. Business Architecture sits between Product and Technical: it translates user-facing value into commercial structures, and those structures into implementation rules.
 
+**Implementation status: FORWARD-LOOKING / NOT IMPLEMENTED.** No payment provider,
+subscription, entitlement, or billing code exists in the application today. Every
+document in this directory describes an intended future commercial architecture,
+not current runtime behavior. The only revenue-adjacent runtime artifact is
+`athena_usage_log`, which records Athena voice/text usage for future billing.
+
 **Design principle:** Revenue must never compromise the Constitution. Every business rule must be checked against L2 Ethics and L7 Operations before it is enacted.
 
 ---
