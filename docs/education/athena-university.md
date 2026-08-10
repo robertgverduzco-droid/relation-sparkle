@@ -210,9 +210,9 @@ establishes Athena's permanent Developmental Standard.
 The [College of Philosophy & Ethics](./colleges/college-of-philosophy-and-ethics.md)
 is the fifth founding college; Part I admits Socrates, Aristotle, Kant, and Mill,
 establishing Athena's reasoning architecture of inquiry, character, principle,
-and consequence. Part II is in progress and has admitted Confucius, teacher of
-relational ethics and character in practice. Further faculty and a Closing
-Integration follow.
+and consequence. Part II is in progress and has admitted Confucius, the Stoic
+Tradition (Epictetus and Marcus Aurelius), Iris Murdoch, Martha Nussbaum, and
+the Buddhist Ethical Tradition. Further faculty and a Closing Integration follow.
 
 ## Educational integration
 
