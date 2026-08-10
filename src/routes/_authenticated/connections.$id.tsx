@@ -1,10 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  askAthenaReflection,
-  distillReflection,
   getConnection,
   proposeMeeting,
   updateMeetingProposal,
@@ -37,8 +35,6 @@ function ConnectionDetail() {
   const get = useServerFn(getConnection);
   const propose = useServerFn(proposeMeeting);
   const updateProp = useServerFn(updateMeetingProposal);
-  const askReflect = useServerFn(askAthenaReflection);
-  const distill = useServerFn(distillReflection);
   const submitPerception = useServerFn(submitPartnerPerception);
   const getPerception = useServerFn(getMyPartnerPerception);
   const report = useServerFn(reportUser);
@@ -52,10 +48,6 @@ function ConnectionDetail() {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
 
   const [perc, setPerc] = useState<{
     warmth: number | null;
@@ -72,7 +64,6 @@ function ConnectionDetail() {
     try {
       const res = await get({ data: { connection_id: id } });
       setData(res);
-      if (res.reflection?.transcript?.length) setMessages(res.reflection.transcript);
       if (res.connection.status === "met" && !res.reflection?.summary) setTab("reflect");
       const p = await getPerception({ data: { connection_id: id } });
       if (p.perception) {
@@ -93,9 +84,7 @@ function ConnectionDetail() {
 
   useEffect(() => { void load(); }, [load]);
 
-  useEffect(() => {
-    scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, thinking]);
+
 
   async function savePerception() {
     setPercSaving(true);
@@ -156,36 +145,6 @@ function ConnectionDetail() {
     }
   }
 
-  async function sendReflect() {
-    const text = input.trim();
-    if (!text || thinking) return;
-    const next: Msg[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
-    setInput("");
-    setThinking(true);
-    try {
-      const res = await askReflect({ data: { connection_id: id, messages: next } });
-      setMessages([...next, { role: "assistant", content: res.reply }]);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Athena is quiet right now.");
-    } finally {
-      setThinking(false);
-    }
-  }
-
-  async function saveReflection() {
-    setBusy(true);
-    try {
-      const res = await distill({ data: { connection_id: id } });
-      toast.success("Athena noted this quietly.");
-      await load();
-      void res;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't save the reflection yet.");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   if (!data) {
     return (
@@ -440,69 +399,7 @@ function ConnectionDetail() {
                 </button>
               </div>
             </div>
-            <p className="mt-4 px-1 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-              Or talk it through with Athena
-            </p>
           </div>
-          <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
-
-            {messages.length === 0 && !thinking ? (
-              <p className="text-center text-sm text-muted-foreground">
-                Say hello when you're ready — Athena will take it from there. This is private.
-              </p>
-            ) : (
-              messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={
-                      m.role === "user"
-                        ? "max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-4 py-3 text-[15px] text-primary-foreground"
-                        : "max-w-[90%] text-[15px] leading-relaxed text-foreground"
-                    }
-                  >
-                    <p className="whitespace-pre-wrap">{m.content}</p>
-                  </div>
-                </div>
-              ))
-            )}
-            {thinking && <p className="text-xs text-muted-foreground">Athena is thinking…</p>}
-          </div>
-
-          <form
-            onSubmit={(e) => { e.preventDefault(); void sendReflect(); }}
-            className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
-          >
-            <div className="flex items-end gap-2 rounded-3xl border border-input bg-card px-3 py-2">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void sendReflect(); }
-                }}
-                rows={1}
-                placeholder={thinking ? "…" : "How did it go, honestly?"}
-                disabled={thinking}
-                className="min-h-[24px] max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || thinking}
-                className="rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-40"
-              >
-                Send
-              </button>
-            </div>
-            {messages.filter((m) => m.role === "user").length >= 2 && (
-              <button
-                type="button"
-                onClick={saveReflection}
-                disabled={busy}
-                className="mt-2 w-full rounded-full border border-border px-4 py-2 text-xs text-muted-foreground disabled:opacity-50"
-              >
-                {data.reflection?.summary ? "Update Athena's notes" : "Let Athena hold what we've talked about"}
-              </button>
-            )}
-          </form>
         </section>
       )}
 

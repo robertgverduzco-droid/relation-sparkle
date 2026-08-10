@@ -61,7 +61,7 @@ This document is the canonical map of the Athena platform. Every future idea, re
 ## 4. Technical Architecture
 **Purpose:** How the platform is built, deployed, and run.
 
-**Location:** `docs/technical/` (to be created when needed)
+**Location:** `docs/technical/` — `SYSTEM_OVERVIEW.md`, `DEPENDENCY_MAP.md`, `RUNTIME-DOCTRINE.md`, `UNDERSTANDING-STORAGE.md`
 
 **Major components:**
 - Frontend stack (TanStack Start, React 19, Vite 7, Tailwind CSS v4)
@@ -77,7 +77,7 @@ This document is the canonical map of the Athena platform. Every future idea, re
 ## 5. Data Architecture
 **Purpose:** What data Athena stores, how it is modeled, and how it moves across the system.
 
-**Location:** `docs/data/` (to be created when needed)
+**Location:** `docs/technical/UNDERSTANDING-STORAGE.md` (Living Profile storage) and the migration history in `supabase/migrations/`. A dedicated `docs/data/` directory will be created when the schema warrants it.
 
 **Major components:**
 - Core schema (users, profiles, conversations, understanding, reasoning, connections)
@@ -92,7 +92,7 @@ This document is the canonical map of the Athena platform. Every future idea, re
 ## 6. Security & Privacy Operations
 **Purpose:** How the platform protects users, data, and trust.
 
-**Location:** `docs/security-privacy/` (to be created when needed)
+**Location:** `docs/security/README.md`
 
 **Major components:**
 - Authentication and session management
@@ -137,7 +137,7 @@ This document is the canonical map of the Athena platform. Every future idea, re
 ## 9. Governance
 **Purpose:** How decisions about the platform are made, reviewed, and documented.
 
-**Location:** `docs/governance/` (to be created when needed)
+**Location:** `docs/governance/`
 
 **Major components:**
 - Decision records and architectural decision logs (ADRs)
@@ -170,7 +170,9 @@ This document is the canonical map of the Athena platform. Every future idea, re
 **Location:** `docs/research/`
 
 **Major components:**
-- Athena Human Understanding Framework synthesis
+- `athena-human-understanding-frameworks-v1.md` — upstream review of established external frameworks (source)
+- `athena-human-understanding-framework-v1.md` — the derived Athena framework synthesized from that review
+- Neither supersedes the other; the pair is a source/derivative couple, not a duplicate
 - Big Five, Attachment, Gottman, and related frameworks
 - Conversation science and relationship research
 - Sources and bibliography

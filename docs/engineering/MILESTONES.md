@@ -98,3 +98,35 @@ Phase 3 (Trust, History, Explainability, PWA install).
 Restore the chat to the message that introduced this milestone entry. Do not
 edit this entry; add Phase 3 completion as a new milestone below it.
 
+
+
+---
+
+## Audit Remediation — Wave 3 (Structural Cleanup)
+
+Date: recorded at completion of Wave 3.
+
+Removes or reconciles legacy, duplicated, orphaned, and structurally
+inconsistent components identified by the Full Architecture + Implementation
+Audit. Not a rollback point in itself; Wave 3 builds on Waves 1 and 2.
+
+### What changed
+- Dropped `interview_shares` (unused, anon-readable share tokens).
+- Dropped legacy `reflections` (superseded by `post_meeting_reflections` and
+  `reflection_submissions`).
+- Dropped orphaned `matches` and `introductions`; removed
+  `conversations.introduction_id`; rewrote `ensure_conversation_for_connection()`
+  to create a conversation directly from a connection.
+- Restricted `has_role()` to self-checks, admin checks, and trusted
+  server contexts.
+- Single reflection entry point on `/connections/$id`; free-form reflection
+  chat removed from the UI and its server functions marked LEGACY.
+- Moderation logic moved to `src/lib/moderation.server.ts` with a thin
+  `moderation.functions.ts` wrapper; a ban now performs a full member purge.
+- Documentation reconciled: education index, ChatGPT handoff, docs router,
+  research source/derivative pairing, business docs marked forward-looking,
+  new `docs/technical/UNDERSTANDING-STORAGE.md`.
+
+### Rollback guidance
+Restore the chat to the message that introduced this entry. Do not edit this
+entry; record future waves below it.
