@@ -181,6 +181,7 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Aristotle | College of Philosophy & Ethics | [faculty/aristotle.md](./faculty/aristotle.md) |
 | Immanuel Kant | College of Philosophy & Ethics | [faculty/immanuel-kant.md](./faculty/immanuel-kant.md) |
 | John Stuart Mill | College of Philosophy & Ethics | [faculty/john-stuart-mill.md](./faculty/john-stuart-mill.md) |
+| Confucius | College of Philosophy & Ethics | [faculty/confucius.md](./faculty/confucius.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
