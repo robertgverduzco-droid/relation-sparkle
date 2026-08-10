@@ -28,9 +28,6 @@ type Intro = {
   confidence: number;
   response: string;
   presented_at: string | null;
-  alignments: string[];
-  complementary: string[];
-  frictions: string[];
 };
 
 function IntroductionDetailPage() {
@@ -132,30 +129,6 @@ function IntroductionDetailPage() {
           </p>
         </section>
       )}
-
-      <div className="mt-6 space-y-4 px-6">
-        <ReasoningCard
-          title="Where you seem to meet"
-          subtitle="Values, rhythms, and outlooks that appear to line up."
-          items={intro.alignments}
-          empty="Athena didn't want to overstate agreement here."
-          tone="align"
-        />
-        <ReasoningCard
-          title="Where you appear to balance each other"
-          subtitle="Different strengths that could steady, expand, or ground one another."
-          items={intro.complementary}
-          empty="Nothing conspicuous yet — she'll keep watching."
-          tone="complement"
-        />
-        <ReasoningCard
-          title="Where care will matter"
-          subtitle="Honest friction points to be aware of, not reasons to walk away."
-          items={intro.frictions}
-          empty="No significant friction visible from what she knows so far."
-          tone="friction"
-        />
-      </div>
 
       <section className="mx-6 mt-6 rounded-3xl border border-dashed border-border bg-background/40 p-5">
         <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
