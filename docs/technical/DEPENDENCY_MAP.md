@@ -42,9 +42,12 @@ Writes: `connections`, `meeting_proposals`, `partner_perception`,
 Consumed by: `messages.tsx`, `messages.$id.tsx`. Writes `messages`,
 updates `conversations.last_message_at`.
 
-### `src/lib/moderation.functions.ts`
-Consumed by: `src/routes/_authenticated/moderation.tsx`. Reads `reports`,
-`safety_flags`, `blocks`. Gated by `has_role(_, 'moderator')`.
+### `src/lib/moderation.server.ts` → `src/lib/moderation.functions.ts`
+`moderation.functions.ts` is a thin wrapper only. Logic (role check, report
+listing, resolution) lives in `moderation.server.ts` and is consumed by
+`src/routes/_authenticated/moderation.tsx`. Reads `reports`, `profiles`;
+gated by `has_role(_, 'moderator' | 'admin')`. A ban delegates to
+`account.server.ts` `purgeMemberAndDeleteAuthUser` for full data removal.
 
 ### `src/lib/account.functions.ts`
 Consumed by: `src/routes/_authenticated/profile.tsx`. Pause/resume/delete;
@@ -101,7 +104,7 @@ Framework wiring. Touch only when changing router config or middleware chain.
 | `interview_sessions`                  | athena.server, conversations                                     |
 | `understanding_facets`, `facet_history` | athena.server, introductions.server (reasoning inputs)         |
 | `topic_map`                           | athena.server, conversations                                     |
-| `matches`, `introductions`, `introduction_responses` | introductions.server, meet UI                     |
+| `introduction_responses`              | introductions.server, meet UI                                    |
 | `pair_reasoning` (+ history)          | introductions.server, introductions.$id                          |
 | `connections`, `conversations`, `messages` | connections.server, messaging.server, realtime chat         |
 | `partner_perception`, `post_meeting_reflections`, `reflections` | connections.server → stale pair refresh |
@@ -133,3 +136,28 @@ Framework wiring. Touch only when changing router config or middleware chain.
   must also accept `mutual_interest`.
 - `src/components/report-sheet.tsx` (new, extracted verbatim from
   `messages.$id.tsx`) → consumed by `messages.$id.tsx` and `connections.$id.tsx`.
+
+## Wave 3 structural cleanup (retired components)
+
+Removed from the database and from `account.server.ts` purge sweep:
+
+- `interview_shares` — public share-token table, unused and anon-readable.
+- `reflections` — legacy free-form reflection notes, superseded by
+  `post_meeting_reflections` + `reflection_submissions`.
+- `matches`, `introductions` — legacy matchmaking tables. The live path is
+  `pair_reasoning → introduction_responses → connections → conversations`.
+  `conversations.introduction_id` was dropped and
+  `ensure_conversation_for_connection()` now creates the conversation directly
+  from the connection (accepting `open` and `mutual_interest`).
+
+Other Wave 3 reconciliations:
+
+- `has_role()` now answers only for the caller themselves, or for anyone when
+  the caller is an admin, or for trusted server contexts with no JWT.
+- Legacy-named survivors carry `COMMENT ON` markers:
+  `interview_sessions`, `user_intelligence.last_interview_at`.
+- `askAthenaReflection` / `distillReflection` in `connections.functions.ts` are
+  marked LEGACY and have no UI caller; `/connections/$id` has a single
+  reflection entry point (`reflection-flow.tsx`).
+- Living Profile storage split documented in
+  `docs/technical/UNDERSTANDING-STORAGE.md`.

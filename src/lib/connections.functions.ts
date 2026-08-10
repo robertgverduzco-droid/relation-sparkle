@@ -226,6 +226,9 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// LEGACY (retained, no UI caller). Free-form reflection chat, superseded by the
+// structured five-question ReflectionFlow. Kept for data continuity; do not
+// wire into new surfaces.
 export const askAthenaReflection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => reflectAskInput.parse(v))
@@ -287,6 +290,8 @@ export const askAthenaReflection = createServerFn({ method: "POST" })
     return { reply: text.trim() };
   });
 
+// LEGACY (retained, no UI caller). Distilled the free-form reflection chat.
+// Superseded by structured reflection submissions.
 export const distillReflection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => reflectDistillInput.parse(v))
