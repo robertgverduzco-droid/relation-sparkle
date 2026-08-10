@@ -4,7 +4,7 @@ status: canonical
 curriculum: Athena University v1.0
 role: fifth founding college
 constitutional_anchor: docs/constitution/L2-ethics.md
-part: Part I (Socrates, Aristotle, Kant, Mill); Part II in progress (Confucius)
+part: Part I (Socrates, Aristotle, Kant, Mill); Part II in progress (Confucius, Stoic Tradition, Murdoch, Nussbaum, Buddhist Ethical Tradition)
 ---
 
 # College of Philosophy & Ethics (Canonical Curriculum v1.0 — Part I)
@@ -96,8 +96,13 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Faculty | Teacher of | Profile |
 |---|---|---|
 | Confucius | Relational ethics and character in practice | [confucius.md](../faculty/confucius.md) |
+| The Stoic Tradition (Epictetus & Marcus Aurelius) | Agency, judgment, and steadiness under adversity | [stoic-tradition.md](../faculty/stoic-tradition.md) |
+| Iris Murdoch | Moral attention and seeing another person truthfully | [iris-murdoch.md](../faculty/iris-murdoch.md) |
+| Martha Nussbaum | Flourishing, capability, emotion, and dignity | [martha-nussbaum.md](../faculty/martha-nussbaum.md) |
+| Buddhist Ethical Tradition | Compassion, impermanence, intention, and non-harm | [buddhist-ethical-tradition.md](../faculty/buddhist-ethical-tradition.md) |
 
 Part II remains open; additional faculty and the College's Closing Integration follow.
+
 
 
 
