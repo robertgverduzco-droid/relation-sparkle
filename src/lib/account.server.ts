@@ -140,18 +140,22 @@ export async function purgeMemberAndDeleteAuthUser(userId: string): Promise<{
   // Any row that somehow escaped the cascade (e.g. a future table added
   // without ON DELETE CASCADE) is deleted explicitly and reported.
   const residual: Record<string, number> = {};
+  // Untyped handle: table/column names are dynamic in this sweep.
+  const loose = admin as unknown as {
+    from: (t: string) => {
+      delete: () => {
+        eq: (c: string, v: string) => { select: (s: string) => Promise<{ data: unknown[] | null }> };
+      };
+    };
+  };
   for (const [table, columns] of MEMBER_KEYED_TABLES) {
     for (const column of columns) {
-      const { data } = await admin
-        .from(table)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .delete()
-        .eq(column, userId)
-        .select("*");
+      const { data } = await loose.from(table).delete().eq(column, userId).select("id");
       const n = data?.length ?? 0;
       if (n > 0) residual[`${table}.${column}`] = n;
     }
   }
+
 
   return {
     ok: true,
