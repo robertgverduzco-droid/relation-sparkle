@@ -130,7 +130,7 @@ form Athena's complete education.
 | **Human Development** | [college-of-human-development.md](./colleges/college-of-human-development.md) | How people grow across the lifespan, recover from adversity, form identity, develop resilience, and continue evolving throughout life. |
 | **Philosophy & Ethics** | [college-of-philosophy-and-ethics.md](./colleges/college-of-philosophy-and-ethics.md) | Virtue, responsibility, freedom, meaning, morality, wisdom, ethics, purpose, and how human beings ought to live. |
 | **Culture & Humanity** | [college-of-culture-and-humanity.md](./colleges/college-of-culture-and-humanity.md) | History, culture, traditions, belief systems, diversity, family structures, language, and the many ways people experience the world. |
-| **Wisdom** | (future) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
+| **Wisdom** | [college-of-wisdom.md](./colleges/college-of-wisdom.md) | Humanity through literature, biography, poetry, history, timeless writings, lived experience, and enduring human insight. |
 
 ## Faculty profiles
 
@@ -186,6 +186,22 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Iris Murdoch | College of Philosophy & Ethics | [faculty/iris-murdoch.md](./faculty/iris-murdoch.md) |
 | Martha Nussbaum | College of Philosophy & Ethics | [faculty/martha-nussbaum.md](./faculty/martha-nussbaum.md) |
 | Buddhist Ethical Tradition | College of Philosophy & Ethics | [faculty/buddhist-ethical-tradition.md](./faculty/buddhist-ethical-tradition.md) |
+| Franz Boas | College of Culture & Humanity | [faculty/franz-boas.md](./faculty/franz-boas.md) |
+| Margaret Mead | College of Culture & Humanity | [faculty/margaret-mead.md](./faculty/margaret-mead.md) |
+| Clifford Geertz | College of Culture & Humanity | [faculty/clifford-geertz.md](./faculty/clifford-geertz.md) |
+| Edward T. Hall | College of Culture & Humanity | [faculty/edward-t-hall.md](./faculty/edward-t-hall.md) |
+| Geert Hofstede | College of Culture & Humanity | [faculty/geert-hofstede.md](./faculty/geert-hofstede.md) |
+| Stuart Hall | College of Culture & Humanity | [faculty/stuart-hall.md](./faculty/stuart-hall.md) |
+| Kwame Anthony Appiah | College of Culture & Humanity | [faculty/kwame-anthony-appiah.md](./faculty/kwame-anthony-appiah.md) |
+| bell hooks | College of Culture & Humanity | [faculty/bell-hooks.md](./faculty/bell-hooks.md) |
+| Michel de Montaigne | College of Wisdom | [faculty/michel-de-montaigne.md](./faculty/michel-de-montaigne.md) |
+| William Shakespeare | College of Wisdom | [faculty/william-shakespeare.md](./faculty/william-shakespeare.md) |
+| Leo Tolstoy | College of Wisdom | [faculty/leo-tolstoy.md](./faculty/leo-tolstoy.md) |
+| Fyodor Dostoevsky | College of Wisdom | [faculty/fyodor-dostoevsky.md](./faculty/fyodor-dostoevsky.md) |
+| Rumi | College of Wisdom | [faculty/rumi.md](./faculty/rumi.md) |
+| Rabindranath Tagore | College of Wisdom | [faculty/rabindranath-tagore.md](./faculty/rabindranath-tagore.md) |
+| Maya Angelou | College of Wisdom | [faculty/maya-angelou.md](./faculty/maya-angelou.md) |
+| James Baldwin | College of Wisdom | [faculty/james-baldwin.md](./faculty/james-baldwin.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
@@ -213,6 +229,12 @@ establishing Athena's reasoning architecture of inquiry, character, principle,
 and consequence. Part II is in progress and has admitted Confucius, the Stoic
 Tradition (Epictetus and Marcus Aurelius), Iris Murdoch, Martha Nussbaum, and
 the Buddhist Ethical Tradition. Further faculty and a Closing Integration follow.
+
+The [College of Wisdom](./colleges/college-of-wisdom.md) is the seventh founding
+college; its founding faculty is complete — Montaigne, Shakespeare, Tolstoy,
+Dostoevsky, Rumi, Tagore, Angelou, and Baldwin — and its
+[Closing Integration](./colleges/college-of-wisdom-closing-integration.md)
+establishes that understanding a human being requires both knowledge and wisdom.
 
 ## Educational integration
 
@@ -249,3 +271,4 @@ constant.
 | Version | Date | Description |
 |---|---|---|
 | 1.0 | 2026-08-05 | Canonical Curriculum adopted as provided by the product owner; Curriculum/Constitution separation established. |
+| 1.1 | 2026-08-10 | College of Wisdom established as the seventh founding college with eight founding faculty and its Closing Integration. |

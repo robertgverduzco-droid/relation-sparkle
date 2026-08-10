@@ -65,6 +65,14 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Stuart Hall | College of Culture & Humanity | [stuart-hall.md](./stuart-hall.md) |
 | Kwame Anthony Appiah | College of Culture & Humanity | [kwame-anthony-appiah.md](./kwame-anthony-appiah.md) |
 | bell hooks | College of Culture & Humanity | [bell-hooks.md](./bell-hooks.md) |
+| Michel de Montaigne | College of Wisdom | [michel-de-montaigne.md](./michel-de-montaigne.md) |
+| William Shakespeare | College of Wisdom | [william-shakespeare.md](./william-shakespeare.md) |
+| Leo Tolstoy | College of Wisdom | [leo-tolstoy.md](./leo-tolstoy.md) |
+| Fyodor Dostoevsky | College of Wisdom | [fyodor-dostoevsky.md](./fyodor-dostoevsky.md) |
+| Rumi | College of Wisdom | [rumi.md](./rumi.md) |
+| Rabindranath Tagore | College of Wisdom | [rabindranath-tagore.md](./rabindranath-tagore.md) |
+| Maya Angelou | College of Wisdom | [maya-angelou.md](./maya-angelou.md) |
+| James Baldwin | College of Wisdom | [james-baldwin.md](./james-baldwin.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
 canonical. The College of Communication's founding faculty profiles are
@@ -74,3 +82,6 @@ Kegan (Part II).
 
 The College of Culture & Humanity's eight founding faculty profiles are
 complete and canonical.
+
+The College of Wisdom's eight founding faculty profiles are complete and
+canonical.
