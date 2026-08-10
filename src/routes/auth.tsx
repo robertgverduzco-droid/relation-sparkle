@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Relationship Intelligence" }, { name: "robots", content: "noindex" }] }),
   component: AuthPage,
 });
+
 
 function AuthPage() {
   const { mode: initialMode, verify } = Route.useSearch();
