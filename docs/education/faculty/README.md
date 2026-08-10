@@ -57,6 +57,14 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Iris Murdoch | College of Philosophy & Ethics | [iris-murdoch.md](./iris-murdoch.md) |
 | Martha Nussbaum | College of Philosophy & Ethics | [martha-nussbaum.md](./martha-nussbaum.md) |
 | Buddhist Ethical Tradition | College of Philosophy & Ethics | [buddhist-ethical-tradition.md](./buddhist-ethical-tradition.md) |
+| Franz Boas | College of Culture & Humanity | [franz-boas.md](./franz-boas.md) |
+| Margaret Mead | College of Culture & Humanity | [margaret-mead.md](./margaret-mead.md) |
+| Clifford Geertz | College of Culture & Humanity | [clifford-geertz.md](./clifford-geertz.md) |
+| Edward T. Hall | College of Culture & Humanity | [edward-t-hall.md](./edward-t-hall.md) |
+| Geert Hofstede | College of Culture & Humanity | [geert-hofstede.md](./geert-hofstede.md) |
+| Stuart Hall | College of Culture & Humanity | [stuart-hall.md](./stuart-hall.md) |
+| Kwame Anthony Appiah | College of Culture & Humanity | [kwame-anthony-appiah.md](./kwame-anthony-appiah.md) |
+| bell hooks | College of Culture & Humanity | [bell-hooks.md](./bell-hooks.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
 canonical. The College of Communication's founding faculty profiles are
@@ -64,4 +72,5 @@ complete and canonical. The College of Human Development's founding faculty is
 complete and canonical: Piaget, Vygotsky, Dweck (Part I), Bronfenbrenner, and
 Kegan (Part II).
 
-
+The College of Culture & Humanity's eight founding faculty profiles are
+complete and canonical.
