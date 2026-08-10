@@ -25,7 +25,20 @@
 - Post-meeting reflections and partner perception are strictly private to the
   author (RLS enforces `author_id = auth.uid()`).
 - Reports and safety flags visible only to moderators.
-- Account deletion cascades user rows via FKs.
+- **Cross-member private intelligence**: `pair_reasoning` /
+  `pair_reasoning_history` hold Athena's internal reasoning derived partly from
+  the other member's Living Profile. `authenticated` holds column-level SELECT
+  only on member-facing columns (id, user_low, user_high, status, confidence,
+  presentation_a/b, presented_to_*_at, timestamps). `reasoning`, `alignments`,
+  `complementary`, `frictions`, `hard_conflicts` are unreadable by members at
+  the database layer; history is service-role only. Server-side matchmaking
+  uses the service-role client and is unaffected.
+- **Account deletion** (`src/lib/account.server.ts`) purges the member
+  everywhere: profile photos in storage, pseudonymous `athena_outcome_signals`
+  rows (recomputed `pair_token` per counterpart), a residual sweep across all
+  member-linked tables, then the auth user. Counterpart members keep their own
+  rows; `reports.resolved_by` is `ON DELETE SET NULL`.
+
 
 ## Secrets
 - Only publishable/anon keys ship to the browser (VITE_* only).

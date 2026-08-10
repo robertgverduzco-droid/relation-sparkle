@@ -28,9 +28,6 @@ type Intro = {
   confidence: number;
   response: string;
   presented_at: string | null;
-  alignments: string[];
-  complementary: string[];
-  frictions: string[];
 };
 
 function IntroductionDetailPage() {
@@ -133,30 +130,6 @@ function IntroductionDetailPage() {
         </section>
       )}
 
-      <div className="mt-6 space-y-4 px-6">
-        <ReasoningCard
-          title="Where you seem to meet"
-          subtitle="Values, rhythms, and outlooks that appear to line up."
-          items={intro.alignments}
-          empty="Athena didn't want to overstate agreement here."
-          tone="align"
-        />
-        <ReasoningCard
-          title="Where you appear to balance each other"
-          subtitle="Different strengths that could steady, expand, or ground one another."
-          items={intro.complementary}
-          empty="Nothing conspicuous yet — she'll keep watching."
-          tone="complement"
-        />
-        <ReasoningCard
-          title="Where care will matter"
-          subtitle="Honest friction points to be aware of, not reasons to walk away."
-          items={intro.frictions}
-          empty="No significant friction visible from what she knows so far."
-          tone="friction"
-        />
-      </div>
-
       <section className="mx-6 mt-6 rounded-3xl border border-dashed border-border bg-background/40 p-5">
         <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
           How to read this
@@ -199,46 +172,6 @@ function IntroductionDetailPage() {
       )}
 
       <MobileTabBar current="introductions" />
-    </div>
-  );
-}
-
-function ReasoningCard({
-  title,
-  subtitle,
-  items,
-  empty,
-  tone,
-}: {
-  title: string;
-  subtitle: string;
-  items: string[];
-  empty: string;
-  tone: "align" | "complement" | "friction";
-}) {
-  const border =
-    tone === "align"
-      ? "border-primary/30"
-      : tone === "complement"
-        ? "border-border/70"
-        : "border-destructive/30";
-  return (
-    <div className={`rounded-3xl border ${border} bg-card p-5`}>
-      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-        {title}
-      </p>
-      <p className="mt-1 text-[12px] text-ink-soft">{subtitle}</p>
-      {items.length === 0 ? (
-        <p className="mt-3 text-[14px] italic text-muted-foreground">{empty}</p>
-      ) : (
-        <ul className="mt-3 space-y-2">
-          {items.map((s, i) => (
-            <li key={i} className="text-[15px] leading-relaxed text-foreground/90">
-              — {s}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

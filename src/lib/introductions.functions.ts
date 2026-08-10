@@ -17,11 +17,19 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
+    // PRIVACY BOUNDARY: only approved member-facing fields are selected here.
+    // Athena's internal cross-member reasoning (`reasoning`, `alignments`,
+    // `complementary`, `frictions`, `hard_conflicts`) is derived partly from
+    // the other member's private Living Profile and must never reach a
+    // client. It is additionally unreadable at the database layer — the
+    // `authenticated` role holds column-level SELECT on the approved columns
+    // only. Server-side matchmaking (service role) is unaffected.
     const { data: pairs } = await supabase
       .from("pair_reasoning")
       .select(
-        "id, user_low, user_high, status, confidence, presentation_a, presentation_b, presented_to_a_at, presented_to_b_at, last_reasoned_at, alignments, complementary, frictions",
+        "id, user_low, user_high, status, confidence, presentation_a, presentation_b, presented_to_a_at, presented_to_b_at, last_reasoned_at",
       )
+
       .or(
         `and(user_low.eq.${userId},presented_to_a_at.not.is.null),and(user_high.eq.${userId},presented_to_b_at.not.is.null)`,
       )
@@ -67,10 +75,8 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         confidence: Number(p.confidence ?? 0),
         response: respMap.get(p.id as string) ?? "pending",
         presented_at: (isLow ? p.presented_to_a_at : p.presented_to_b_at) as string | null,
-        alignments: (p.alignments ?? []) as string[],
-        complementary: (p.complementary ?? []) as string[],
-        frictions: (p.frictions ?? []) as string[],
       };
+
     });
 
     return { introductions: shape };
