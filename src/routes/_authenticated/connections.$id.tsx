@@ -84,9 +84,7 @@ function ConnectionDetail() {
 
   useEffect(() => { void load(); }, [load]);
 
-  useEffect(() => {
-    scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, thinking]);
+
 
   async function savePerception() {
     setPercSaving(true);
