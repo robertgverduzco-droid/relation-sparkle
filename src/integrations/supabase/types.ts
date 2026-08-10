@@ -219,7 +219,6 @@ export type Database = {
           created_at: string
           hidden_by: Json
           id: string
-          introduction_id: string
           last_message_at: string | null
           updated_at: string
           user_a: string
@@ -229,7 +228,6 @@ export type Database = {
           created_at?: string
           hidden_by?: Json
           id?: string
-          introduction_id: string
           last_message_at?: string | null
           updated_at?: string
           user_a: string
@@ -239,21 +237,12 @@ export type Database = {
           created_at?: string
           hidden_by?: Json
           id?: string
-          introduction_id?: string
           last_message_at?: string | null
           updated_at?: string
           user_a?: string
           user_b?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_introduction_id_fkey"
-            columns: ["introduction_id"]
-            isOneToOne: true
-            referencedRelation: "introductions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       facet_history: {
         Row: {
@@ -307,42 +296,6 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           messages?: Json
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      interview_shares: {
-        Row: {
-          created_at: string
-          expires_at: string | null
-          expiry_notified_at: string | null
-          id: string
-          revoked_at: string | null
-          revoked_by: string | null
-          token: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          expires_at?: string | null
-          expiry_notified_at?: string | null
-          id?: string
-          revoked_at?: string | null
-          revoked_by?: string | null
-          token?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          expires_at?: string | null
-          expiry_notified_at?: string | null
-          id?: string
-          revoked_at?: string | null
-          revoked_by?: string | null
-          token?: string
           updated_at?: string
           user_id?: string
         }
@@ -423,86 +376,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      introductions: {
-        Row: {
-          ai_opening: string | null
-          created_at: string
-          id: string
-          match_id: string
-          user_a: string
-          user_b: string
-        }
-        Insert: {
-          ai_opening?: string | null
-          created_at?: string
-          id?: string
-          match_id: string
-          user_a: string
-          user_b: string
-        }
-        Update: {
-          ai_opening?: string | null
-          created_at?: string
-          id?: string
-          match_id?: string
-          user_a?: string
-          user_b?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "introductions_match_id_fkey"
-            columns: ["match_id"]
-            isOneToOne: true
-            referencedRelation: "matches"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      matches: {
-        Row: {
-          ai_context: string | null
-          ai_why: Json
-          compatibility_score: number | null
-          created_at: string
-          decided_by_a_at: string | null
-          decided_by_b_at: string | null
-          expires_at: string | null
-          id: string
-          status: Database["public"]["Enums"]["match_status"]
-          updated_at: string
-          user_a: string
-          user_b: string
-        }
-        Insert: {
-          ai_context?: string | null
-          ai_why?: Json
-          compatibility_score?: number | null
-          created_at?: string
-          decided_by_a_at?: string | null
-          decided_by_b_at?: string | null
-          expires_at?: string | null
-          id?: string
-          status?: Database["public"]["Enums"]["match_status"]
-          updated_at?: string
-          user_a: string
-          user_b: string
-        }
-        Update: {
-          ai_context?: string | null
-          ai_why?: Json
-          compatibility_score?: number | null
-          created_at?: string
-          decided_by_a_at?: string | null
-          decided_by_b_at?: string | null
-          expires_at?: string | null
-          id?: string
-          status?: Database["public"]["Enums"]["match_status"]
-          updated_at?: string
-          user_a?: string
-          user_b?: string
-        }
-        Relationships: []
       }
       meeting_proposals: {
         Row: {
@@ -1024,50 +897,6 @@ export type Database = {
             columns: ["connection_id"]
             isOneToOne: false
             referencedRelation: "connections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reflections: {
-        Row: {
-          ai_summary: string | null
-          connection_rating: number | null
-          conversation_id: string | null
-          created_at: string
-          id: string
-          met_in_person: boolean | null
-          notes: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          ai_summary?: string | null
-          connection_rating?: number | null
-          conversation_id?: string | null
-          created_at?: string
-          id?: string
-          met_in_person?: boolean | null
-          notes?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          ai_summary?: string | null
-          connection_rating?: number | null
-          conversation_id?: string | null
-          created_at?: string
-          id?: string
-          met_in_person?: boolean | null
-          notes?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reflections_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
