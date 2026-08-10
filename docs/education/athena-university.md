@@ -281,3 +281,4 @@ constant.
 |---|---|---|
 | 1.0 | 2026-08-05 | Canonical Curriculum adopted as provided by the product owner; Curriculum/Constitution separation established. |
 | 1.1 | 2026-08-10 | College of Wisdom established as the seventh founding college with eight founding faculty and its Closing Integration. |
+| 1.2 | 2026-08-10 | Final Integration adopted; the seven founding colleges unified and Canonical Curriculum v1.0 declared complete as doctrine. |
