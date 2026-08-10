@@ -186,6 +186,22 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Iris Murdoch | College of Philosophy & Ethics | [faculty/iris-murdoch.md](./faculty/iris-murdoch.md) |
 | Martha Nussbaum | College of Philosophy & Ethics | [faculty/martha-nussbaum.md](./faculty/martha-nussbaum.md) |
 | Buddhist Ethical Tradition | College of Philosophy & Ethics | [faculty/buddhist-ethical-tradition.md](./faculty/buddhist-ethical-tradition.md) |
+| Franz Boas | College of Culture & Humanity | [faculty/franz-boas.md](./faculty/franz-boas.md) |
+| Margaret Mead | College of Culture & Humanity | [faculty/margaret-mead.md](./faculty/margaret-mead.md) |
+| Clifford Geertz | College of Culture & Humanity | [faculty/clifford-geertz.md](./faculty/clifford-geertz.md) |
+| Edward T. Hall | College of Culture & Humanity | [faculty/edward-t-hall.md](./faculty/edward-t-hall.md) |
+| Geert Hofstede | College of Culture & Humanity | [faculty/geert-hofstede.md](./faculty/geert-hofstede.md) |
+| Stuart Hall | College of Culture & Humanity | [faculty/stuart-hall.md](./faculty/stuart-hall.md) |
+| Kwame Anthony Appiah | College of Culture & Humanity | [faculty/kwame-anthony-appiah.md](./faculty/kwame-anthony-appiah.md) |
+| bell hooks | College of Culture & Humanity | [faculty/bell-hooks.md](./faculty/bell-hooks.md) |
+| Michel de Montaigne | College of Wisdom | [faculty/michel-de-montaigne.md](./faculty/michel-de-montaigne.md) |
+| William Shakespeare | College of Wisdom | [faculty/william-shakespeare.md](./faculty/william-shakespeare.md) |
+| Leo Tolstoy | College of Wisdom | [faculty/leo-tolstoy.md](./faculty/leo-tolstoy.md) |
+| Fyodor Dostoevsky | College of Wisdom | [faculty/fyodor-dostoevsky.md](./faculty/fyodor-dostoevsky.md) |
+| Rumi | College of Wisdom | [faculty/rumi.md](./faculty/rumi.md) |
+| Rabindranath Tagore | College of Wisdom | [faculty/rabindranath-tagore.md](./faculty/rabindranath-tagore.md) |
+| Maya Angelou | College of Wisdom | [faculty/maya-angelou.md](./faculty/maya-angelou.md) |
+| James Baldwin | College of Wisdom | [faculty/james-baldwin.md](./faculty/james-baldwin.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
