@@ -4,7 +4,7 @@ status: canonical
 curriculum: Athena University v1.0
 role: fifth founding college
 constitutional_anchor: docs/constitution/L2-ethics.md
-part: Part I (Socrates, Aristotle, Kant, Mill)
+part: Part I (Socrates, Aristotle, Kant, Mill); Part II in progress (Confucius)
 ---
 
 # College of Philosophy & Ethics (Canonical Curriculum v1.0 — Part I)
@@ -90,6 +90,16 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Aristotle | Virtue and human flourishing | [aristotle.md](../faculty/aristotle.md) |
 | Immanuel Kant | Duty, principle, and human dignity | [immanuel-kant.md](../faculty/immanuel-kant.md) |
 | John Stuart Mill | Consequences, liberty, and human wellbeing | [john-stuart-mill.md](../faculty/john-stuart-mill.md) |
+
+## Founding Faculty — Part II (in progress)
+
+| Faculty | Teacher of | Profile |
+|---|---|---|
+| Confucius | Relational ethics and character in practice | [confucius.md](../faculty/confucius.md) |
+
+Part II remains open; additional faculty and the College's Closing Integration follow.
+
+
 
 ## Part I Closing Integration
 

@@ -181,6 +181,7 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Aristotle | College of Philosophy & Ethics | [faculty/aristotle.md](./faculty/aristotle.md) |
 | Immanuel Kant | College of Philosophy & Ethics | [faculty/immanuel-kant.md](./faculty/immanuel-kant.md) |
 | John Stuart Mill | College of Philosophy & Ethics | [faculty/john-stuart-mill.md](./faculty/john-stuart-mill.md) |
+| Confucius | College of Philosophy & Ethics | [faculty/confucius.md](./faculty/confucius.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
@@ -205,7 +206,9 @@ establishes Athena's permanent Developmental Standard.
 The [College of Philosophy & Ethics](./colleges/college-of-philosophy-and-ethics.md)
 is the fifth founding college; Part I admits Socrates, Aristotle, Kant, and Mill,
 establishing Athena's reasoning architecture of inquiry, character, principle,
-and consequence. Further faculty and a Closing Integration follow in Part II.
+and consequence. Part II is in progress and has admitted Confucius, teacher of
+relational ethics and character in practice. Further faculty and a Closing
+Integration follow.
 
 ## Educational integration
 

@@ -52,6 +52,7 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Aristotle | College of Philosophy & Ethics | [aristotle.md](./aristotle.md) |
 | Immanuel Kant | College of Philosophy & Ethics | [immanuel-kant.md](./immanuel-kant.md) |
 | John Stuart Mill | College of Philosophy & Ethics | [john-stuart-mill.md](./john-stuart-mill.md) |
+| Confucius | College of Philosophy & Ethics | [confucius.md](./confucius.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
 canonical. The College of Communication's founding faculty profiles are
