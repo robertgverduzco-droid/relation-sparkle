@@ -24,24 +24,95 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  // Verification state: set when a session exists but the address is not
+  // confirmed, or when the gate sent us here with ?verify=1.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   const isSignup = mode === "signup";
+  const awaitingVerification = pendingEmail !== null;
+
+  // Expired / invalid verification links come back with an error in the hash.
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    const params = new URLSearchParams(hash);
+    const desc = params.get("error_description") ?? params.get("error");
+    if (desc) {
+      setLinkError(desc.replace(/\+/g, " "));
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
+  // Resolve the current session once: verified members never sit on this
+  // screen, and unverified members land in the verification state instead of
+  // bouncing between /auth and the protected tree.
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!alive) return;
+      const u = data.user;
+      if (!u) return;
+      if (u.email_confirmed_at || u.phone_confirmed_at) {
+        if (verify) navigate({ to: "/home" });
+        return;
+      }
+      setPendingEmail(u.email ?? null);
+    });
+    return () => { alive = false; };
+  }, [verify, navigate]);
+
+  async function resend(address: string | null) {
+    if (!address) { toast.error("Enter your email and sign in to resend."); return; }
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: address,
+      options: { emailRedirectTo: window.location.origin + "/home" },
+    });
+    if (error) toast.error(error.message);
+    else toast.success("Verification email sent.");
+  }
+
+  async function recheckVerification() {
+    setBusy(true);
+    try {
+      const { data } = await supabase.auth.refreshSession();
+      const u = data.user ?? (await supabase.auth.getUser()).data.user;
+      if (u?.email_confirmed_at || u?.phone_confirmed_at) {
+        toast.success("Verified. Welcome in.");
+        navigate({ to: "/home" });
+      } else {
+        toast.error("Not confirmed yet. Open the link in your email, then try again.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       if (isSignup) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: window.location.origin + "/home" },
         });
         if (error) throw error;
-        toast.success("Welcome. Check your email to confirm your account.");
-        navigate({ to: "/home" });
+        const u = data.user;
+        if (u && !u.email_confirmed_at) {
+          setPendingEmail(email);
+          toast.success("Welcome. Check your email to confirm your account.");
+        } else {
+          navigate({ to: "/home" });
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (data.user && !data.user.email_confirmed_at && !data.user.phone_confirmed_at) {
+          setPendingEmail(data.user.email ?? email);
+          return;
+        }
         navigate({ to: "/home" });
       }
     } catch (err: unknown) {
@@ -63,26 +134,63 @@ function AuthPage() {
     }
   }
 
-  return (
-    <div className="screen-shell safe-top safe-bottom px-6 pt-10 pb-10">
-      <Link to="/" className="text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
-      {verify && (
-        <div className="mt-6 rounded-2xl border border-border/70 bg-card p-4 text-sm text-foreground">
-          Please confirm your email address to continue. Check your inbox for the verification link. If you don't see it, sign in below to have a new one sent.
+  if (awaitingVerification) {
+    return (
+      <div className="screen-shell safe-top safe-bottom px-6 pt-10 pb-10">
+        <Link to="/" className="text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
+        <div className="mt-10 fade-in-slow">
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">One step left</p>
+          <h1 className="mt-3 font-display text-[2.5rem] leading-[1.05] text-foreground">
+            Confirm your <em className="italic text-primary">email</em>.
+          </h1>
+          <p className="mt-3 text-sm text-ink-soft">
+            We sent a verification link to <span className="text-foreground">{pendingEmail}</span>.
+            Open it, then come back here to continue.
+          </p>
+          {linkError && (
+            <p className="mt-4 rounded-2xl border border-destructive/40 bg-card p-4 text-[13px] text-foreground">
+              That link didn't work ({linkError}). Send yourself a fresh one below.
+            </p>
+          )}
+        </div>
+        <div className="mt-8 space-y-3">
           <button
-            onClick={async () => {
-              const { data } = await supabase.auth.getUser();
-              const em = data.user?.email;
-              if (!em) return;
-              await supabase.auth.resend({ type: "signup", email: em });
-              toast.success("Verification email sent.");
-            }}
-            className="mt-3 block w-full rounded-full border border-border px-4 py-2 text-center text-xs"
+            onClick={recheckVerification}
+            disabled={busy}
+            className="w-full rounded-full bg-primary px-6 py-4 text-[15px] font-medium text-primary-foreground disabled:opacity-60"
+          >
+            {busy ? "Checking…" : "I've confirmed — continue"}
+          </button>
+          <button
+            onClick={() => resend(pendingEmail)}
+            className="w-full rounded-full border border-border px-6 py-3.5 text-sm text-foreground"
           >
             Resend verification email
           </button>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              setPendingEmail(null);
+              navigate({ to: "/auth" });
+            }}
+            className="w-full py-2 text-center text-sm text-muted-foreground"
+          >
+            Use a different email
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen-shell safe-top safe-bottom px-6 pt-10 pb-10">
+      <Link to="/" className="text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
+      {linkError && (
+        <div className="mt-6 rounded-2xl border border-destructive/40 bg-card p-4 text-sm text-foreground">
+          That verification link didn't work ({linkError}). Sign in below and we'll send a new one.
         </div>
       )}
+
 
       <div className="mt-10 fade-in-slow">
         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
