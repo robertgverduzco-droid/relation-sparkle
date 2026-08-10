@@ -53,6 +53,10 @@ qualifies. Additions follow the Evolution Engine and constitutional review.
 | Immanuel Kant | College of Philosophy & Ethics | [immanuel-kant.md](./immanuel-kant.md) |
 | John Stuart Mill | College of Philosophy & Ethics | [john-stuart-mill.md](./john-stuart-mill.md) |
 | Confucius | College of Philosophy & Ethics | [confucius.md](./confucius.md) |
+| The Stoic Tradition (Epictetus & Marcus Aurelius) | College of Philosophy & Ethics | [stoic-tradition.md](./stoic-tradition.md) |
+| Iris Murdoch | College of Philosophy & Ethics | [iris-murdoch.md](./iris-murdoch.md) |
+| Martha Nussbaum | College of Philosophy & Ethics | [martha-nussbaum.md](./martha-nussbaum.md) |
+| Buddhist Ethical Tradition | College of Philosophy & Ethics | [buddhist-ethical-tradition.md](./buddhist-ethical-tradition.md) |
 
 The College of Relationships' nine founding faculty profiles are complete and
 canonical. The College of Communication's founding faculty profiles are

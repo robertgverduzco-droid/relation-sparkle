@@ -182,6 +182,10 @@ elevate individual authority. Profiles live in `./faculty/`.
 | Immanuel Kant | College of Philosophy & Ethics | [faculty/immanuel-kant.md](./faculty/immanuel-kant.md) |
 | John Stuart Mill | College of Philosophy & Ethics | [faculty/john-stuart-mill.md](./faculty/john-stuart-mill.md) |
 | Confucius | College of Philosophy & Ethics | [faculty/confucius.md](./faculty/confucius.md) |
+| The Stoic Tradition (Epictetus & Marcus Aurelius) | College of Philosophy & Ethics | [faculty/stoic-tradition.md](./faculty/stoic-tradition.md) |
+| Iris Murdoch | College of Philosophy & Ethics | [faculty/iris-murdoch.md](./faculty/iris-murdoch.md) |
+| Martha Nussbaum | College of Philosophy & Ethics | [faculty/martha-nussbaum.md](./faculty/martha-nussbaum.md) |
+| Buddhist Ethical Tradition | College of Philosophy & Ethics | [faculty/buddhist-ethical-tradition.md](./faculty/buddhist-ethical-tradition.md) |
 
 The College of Human Nature's founding faculty is complete; its
 [Closing Integration](./colleges/college-of-human-nature-closing-integration.md)
