@@ -1,10 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  askAthenaReflection,
-  distillReflection,
   getConnection,
   proposeMeeting,
   updateMeetingProposal,
@@ -37,8 +35,6 @@ function ConnectionDetail() {
   const get = useServerFn(getConnection);
   const propose = useServerFn(proposeMeeting);
   const updateProp = useServerFn(updateMeetingProposal);
-  const askReflect = useServerFn(askAthenaReflection);
-  const distill = useServerFn(distillReflection);
   const submitPerception = useServerFn(submitPartnerPerception);
   const getPerception = useServerFn(getMyPartnerPerception);
   const report = useServerFn(reportUser);
@@ -52,10 +48,6 @@ function ConnectionDetail() {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
 
   const [perc, setPerc] = useState<{
     warmth: number | null;
@@ -72,7 +64,6 @@ function ConnectionDetail() {
     try {
       const res = await get({ data: { connection_id: id } });
       setData(res);
-      if (res.reflection?.transcript?.length) setMessages(res.reflection.transcript);
       if (res.connection.status === "met" && !res.reflection?.summary) setTab("reflect");
       const p = await getPerception({ data: { connection_id: id } });
       if (p.perception) {
@@ -156,36 +147,6 @@ function ConnectionDetail() {
     }
   }
 
-  async function sendReflect() {
-    const text = input.trim();
-    if (!text || thinking) return;
-    const next: Msg[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
-    setInput("");
-    setThinking(true);
-    try {
-      const res = await askReflect({ data: { connection_id: id, messages: next } });
-      setMessages([...next, { role: "assistant", content: res.reply }]);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Athena is quiet right now.");
-    } finally {
-      setThinking(false);
-    }
-  }
-
-  async function saveReflection() {
-    setBusy(true);
-    try {
-      const res = await distill({ data: { connection_id: id } });
-      toast.success("Athena noted this quietly.");
-      await load();
-      void res;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't save the reflection yet.");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   if (!data) {
     return (
