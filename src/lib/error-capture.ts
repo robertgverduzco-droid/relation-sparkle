@@ -15,6 +15,30 @@ function record(error: unknown) {
 const CAUSE_DEPTH_LIMIT = 5;
 const DESCRIPTION_LENGTH_LIMIT = 8_000;
 
+// Error text routinely carries member material: a rejected insert echoes the
+// row, a failed AI call echoes the prompt. Nothing here may reach a log line
+// un-scrubbed. Kept local (not imported from security.server) because this
+// module loads at server entry, before the Supabase graph.
+const SCRUB_PATTERNS: Array<[RegExp, string]> = [
+  // Bearer tokens, JWTs, and Supabase key formats.
+  [/\b(?:eyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,})\b/g, "[token]"],
+  [/\bsb_(?:publishable|secret)_[A-Za-z0-9_-]+/g, "[key]"],
+  [/\b[Bb]earer\s+[\w.-]{12,}/g, "Bearer [token]"],
+  // Contact identifiers.
+  [/[\w.+-]+@[\w-]+\.[\w.]+/g, "[email]"],
+  // Quoted or JSON-embedded free text long enough to be member content.
+  [/("(?:body|content|message|transcript|reasoning|understanding|reflection|answer|details|notes|bio|summary|prompt|statement)"\s*:\s*")([^"]{24,})(")/gi,
+    (_m: string, a: string, b: string, c: string) => `${a}[content:${b.length}]${c}`] as never,
+];
+
+export function scrubErrorText(text: string): string {
+  let out = text;
+  for (const [pattern, replacement] of SCRUB_PATTERNS) {
+    out = out.replace(pattern, replacement as never);
+  }
+  return out;
+}
+
 export function describeError(error: unknown): string {
   const parts: string[] = [];
   let current: unknown = error;
@@ -28,8 +52,9 @@ export function describeError(error: unknown): string {
     parts.push(`${label}${current.stack ?? `${current.name}: ${current.message}`}${status}`);
     current = current.cause;
   }
-  return parts.join("\n").slice(0, DESCRIPTION_LENGTH_LIMIT);
+  return scrubErrorText(parts.join("\n")).slice(0, DESCRIPTION_LENGTH_LIMIT);
 }
+
 
 function describeStatus(error: Error): string {
   const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };

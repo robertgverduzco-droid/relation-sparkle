@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { DeviceSafetyPanel } from "@/components/device-safety-panel";
+import { ConsentPanel } from "@/components/consent-panel";
+
 import { setAccountPaused } from "@/lib/account.functions";
 import { amIModerator } from "@/lib/moderation.functions";
 import { toast } from "sonner";
@@ -229,6 +231,13 @@ function ProfilePage() {
           </p>
         )}
         <Link
+          to="/understanding"
+          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
+        >
+          What Athena understands about you
+        </Link>
+        <Link
+
           to="/privacy"
           className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
         >
@@ -264,8 +273,13 @@ function ProfilePage() {
       </div>
 
       <section className="mt-6 px-6">
+        <ConsentPanel mode="settings" />
+      </section>
+
+      <section className="mt-6 px-6">
         <DeviceSafetyPanel />
       </section>
+
 
 
       <MobileTabBar current="profile" />

@@ -114,6 +114,71 @@ export function summarizeLivingProfile(facets: FacetRow[]): string {
   return lines.length > 0 ? lines.join("\n") : "You have only faint impressions so far.";
 }
 
+// ---------------------------------------------------------------------------
+// Per-request AI context budget
+// ---------------------------------------------------------------------------
+//
+// Doctrine: docs/security/AI-PRIVACY-BOUNDARY.md — minimisation is not only a
+// cost control. Every additional sentence of Class 4 understanding sent to a
+// model is additional exposure, so each request carries an explicit ceiling
+// and drops the least-load-bearing material first: oldest conversation turns,
+// then the tail of the memory block. Doctrine and the security boundary are
+// never trimmed.
+
+/** Characters. Roughly 12-14k tokens for the whole request. */
+export const CONTEXT_BUDGET_CHARS = 52_000;
+/** Hard ceiling on member-memory material specifically. */
+export const MEMORY_BUDGET_CHARS = 9_000;
+/** Conversation turns retained in full before older turns are dropped. */
+export const MAX_HISTORY_TURNS = 40;
+
+export type BudgetedContext<M extends { role: string; content: string }> = {
+  system: string;
+  messages: M[];
+  /** True when anything was dropped — surfaced in telemetry, never to members. */
+  trimmed: boolean;
+};
+
+export function clampMemoryBlock(block: string, limit = MEMORY_BUDGET_CHARS): string {
+  if (block.length <= limit) return block;
+  return `${block.slice(0, limit)}\n[…older understanding withheld from this request]`;
+}
+
+export function applyContextBudget<M extends { role: string; content: string }>(
+  parts: { fixed: string[]; memory: string },
+  messages: M[],
+  budget = CONTEXT_BUDGET_CHARS,
+): BudgetedContext<M> {
+  let trimmed = false;
+  let memory = clampMemoryBlock(parts.memory);
+  if (memory.length !== parts.memory.length) trimmed = true;
+
+  let kept = messages;
+  if (kept.length > MAX_HISTORY_TURNS) {
+    kept = kept.slice(-MAX_HISTORY_TURNS) as M[];
+    trimmed = true;
+  }
+
+  const fixedLen = parts.fixed.join("\n\n").length;
+  const size = () => fixedLen + memory.length + kept.reduce((n, m) => n + m.content.length, 0);
+
+  // Drop oldest turns first; the present moment matters most and the Living
+  // Profile already carries what endures from earlier ones.
+  while (size() > budget && kept.length > 4) {
+    kept = kept.slice(1) as M[];
+    trimmed = true;
+  }
+  // Only then start cutting memory.
+  while (size() > budget && memory.length > 1_500) {
+    memory = `${memory.slice(0, Math.floor(memory.length * 0.75))}\n[…truncated for this request]`;
+    trimmed = true;
+  }
+
+  return { system: [...parts.fixed, memory].join("\n\n"), messages: kept, trimmed };
+}
+
+
+
 
 export function summarizeTopicMap(topics: TopicRow[]): {
   recent: string;

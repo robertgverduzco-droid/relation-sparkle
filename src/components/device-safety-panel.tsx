@@ -14,6 +14,7 @@ import {
   signOutEverywhere,
 } from "@/lib/session-safety.functions";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { generateMyExport } from "@/lib/export.functions";
 import {
   isAppLockEnabled,
   enableAppLock,
@@ -27,7 +28,8 @@ type Overview = {
   email_confirmed: boolean;
 };
 
-type Pending = "sign_out_everywhere" | "account_deletion" | null;
+type Pending = "sign_out_everywhere" | "account_deletion" | "data_export" | null;
+
 
 export function DeviceSafetyPanel() {
   const navigate = useNavigate();
@@ -35,6 +37,8 @@ export function DeviceSafetyPanel() {
   const verifyFn = useServerFn(verifyStepUp);
   const signOutAllFn = useServerFn(signOutEverywhere);
   const deleteFn = useServerFn(deleteMyAccount);
+  const exportFn = useServerFn(generateMyExport);
+
 
   const [overview, setOverview] = useState<Overview | null>(null);
   const [pending, setPending] = useState<Pending>(null);
@@ -65,7 +69,22 @@ export function DeviceSafetyPanel() {
         navigate({ to: "/", replace: true });
         return;
       }
+      if (pending === "data_export") {
+        const result = (await exportFn({})) as { filename: string; json: string };
+        // Handed straight to the member; the file never rests on a server.
+        const url = URL.createObjectURL(
+          new Blob([result.json], { type: "application/json" }),
+        );
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("Your copy has been downloaded.");
+        return;
+      }
       await deleteFn({ data: { confirm: "delete my account" } });
+
       await supabase.auth.signOut();
       toast("Your account has been deleted.");
       navigate({ to: "/", replace: true });
@@ -140,6 +159,13 @@ export function DeviceSafetyPanel() {
           Sign out everywhere
         </button>
         <button
+          onClick={() => setPending("data_export")}
+          className="w-full rounded-full border border-border px-5 py-3 text-sm text-foreground"
+        >
+          Download a copy of my information
+        </button>
+
+        <button
           onClick={() => setPending("account_deletion")}
           className="w-full rounded-full border border-destructive/60 px-5 py-3 text-sm text-destructive"
         >
@@ -172,7 +198,10 @@ export function DeviceSafetyPanel() {
           <p className="text-[13px] text-ink-soft">
             {pending === "account_deletion"
               ? "This erases everything Athena has come to understand about you. Confirm with your password."
-              : "Confirm with your password to end every other session."}
+              : pending === "data_export"
+                ? "Your copy includes your own words and what Athena understands about you — never anyone else's. Confirm with your password."
+                : "Confirm with your password to end every other session."}
+
           </p>
           <input
             autoFocus

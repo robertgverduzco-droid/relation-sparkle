@@ -116,3 +116,45 @@ notification system, or product feature is production-ready until:
 4. any third party it introduces appears in the table above.
 
 Permanent deletion is a system-wide invariant, not a feature.
+
+## Restore protection — deleted members never come back (P0)
+
+A restore is the one operation that can undo a permanent deletion. It is
+therefore treated as an operation that must be *reconciled* before the data
+returns to service, not simply completed.
+
+**At deletion.** `purgeMemberAndDeleteAuthUser()` writes a tombstone
+(`purge_tombstones`) immediately before the auth user is deleted. The row
+holds a keyed HMAC of the member id — never the id itself — so the table can
+prove "this subject exercised deletion" without becoming a register of who
+left. Writing the tombstone first means a crash mid-sequence leaves the system
+over-protective rather than under-protective.
+
+**At restore.** The runbook calls
+`POST /api/public/restore-reconcile` with the operational shared secret:
+
+1. `?mode=dry` first — reports what a replay would remove, per table, with no
+   writes. A restore does not return to service until this has been reviewed.
+2. Then without `mode` — every member id present in the restored data is
+   hashed and compared against the tombstones; matches are re-purged across
+   every member-keyed table, their photos are removed from storage, and their
+   auth user is deleted again.
+3. The run is recorded in `restore_reconciliations` (counts and duration only)
+   and in the administrative audit log.
+
+`replayDeletions()` is safe to run at any time; on an unrestored database it
+finds nothing and reports `clean: true`.
+
+**Key rotation caveat.** Tombstone hashes are keyed by `ATHENA_LEARNING_SALT`
+(falling back to the service-role key). Rotating that value invalidates every
+existing tombstone. Rotation must therefore be preceded by a re-hash migration,
+or the tombstone table must be treated as expired and the affected window
+covered by backup expiry instead.
+
+**Rehearsal.** A restore rehearsal is complete only when a dry run has been
+executed against a restored copy and its report reviewed. Record each
+rehearsal date in this document.
+
+| Rehearsal date | Mode | Tombstones checked | Subjects re-purged | Reviewed by |
+| --- | --- | --- | --- | --- |
+| _not yet performed_ | — | — | — | — |

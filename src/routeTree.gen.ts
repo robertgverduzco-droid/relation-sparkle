@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -17,6 +18,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
+import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -28,6 +30,7 @@ import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
+import { Route as ApiPublicRestoreReconcileRouteImport } from './routes/api/public/restore-reconcile'
 import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/ops-heartbeat'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
@@ -37,6 +40,11 @@ import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authen
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -73,6 +81,12 @@ const ApiSttRoute = ApiSttRouteImport.update({
   path: '/api/stt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedUnderstandingRoute =
+  AuthenticatedUnderstandingRouteImport.update({
+    id: '/understanding',
+    path: '/understanding',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -132,6 +146,12 @@ const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
   path: '/athena',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicRestoreReconcileRoute =
+  ApiPublicRestoreReconcileRouteImport.update({
+    id: '/api/public/restore-reconcile',
+    path: '/api/public/restore-reconcile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicOpsHeartbeatRoute = ApiPublicOpsHeartbeatRouteImport.update({
   id: '/api/public/ops-heartbeat',
   path: '/api/public/ops-heartbeat',
@@ -166,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -178,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
@@ -185,12 +207,14 @@ export interface FileRoutesByFullPath {
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
+  '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -203,6 +227,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
@@ -210,6 +235,7 @@ export interface FileRoutesByTo {
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
+  '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -218,6 +244,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -230,6 +257,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
@@ -237,6 +265,7 @@ export interface FileRoutesById {
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
+  '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -245,6 +274,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/community-guidelines'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/athena'
     | '/connections'
@@ -257,6 +287,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/understanding'
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
@@ -264,12 +295,14 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/profile/review'
     | '/api/public/ops-heartbeat'
+    | '/api/public/restore-reconcile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/community-guidelines'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/athena'
     | '/connections'
@@ -282,6 +315,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/understanding'
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
@@ -289,6 +323,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/profile/review'
     | '/api/public/ops-heartbeat'
+    | '/api/public/restore-reconcile'
   id:
     | '__root__'
     | '/'
@@ -296,6 +331,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/community-guidelines'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/_authenticated/athena'
     | '/_authenticated/connections'
@@ -308,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/understanding'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/connections/$id'
@@ -315,6 +352,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
     | '/api/public/ops-heartbeat'
+    | '/api/public/restore-reconcile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -323,10 +361,12 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiPublicOpsHeartbeatRoute: typeof ApiPublicOpsHeartbeatRoute
+  ApiPublicRestoreReconcileRoute: typeof ApiPublicRestoreReconcileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -336,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -386,6 +433,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/stt'
       preLoaderRoute: typeof ApiSttRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/understanding': {
+      id: '/_authenticated/understanding'
+      path: '/understanding'
+      fullPath: '/understanding'
+      preLoaderRoute: typeof AuthenticatedUnderstandingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
@@ -463,6 +517,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/athena'
       preLoaderRoute: typeof AuthenticatedAthenaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/restore-reconcile': {
+      id: '/api/public/restore-reconcile'
+      path: '/api/public/restore-reconcile'
+      fullPath: '/api/public/restore-reconcile'
+      preLoaderRoute: typeof ApiPublicRestoreReconcileRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/ops-heartbeat': {
       id: '/api/public/ops-heartbeat'
@@ -566,6 +627,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
+  AuthenticatedUnderstandingRoute: typeof AuthenticatedUnderstandingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -580,6 +642,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
+  AuthenticatedUnderstandingRoute: AuthenticatedUnderstandingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -591,11 +654,23 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiPublicOpsHeartbeatRoute: ApiPublicOpsHeartbeatRoute,
+  ApiPublicRestoreReconcileRoute: ApiPublicRestoreReconcileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

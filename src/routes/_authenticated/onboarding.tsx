@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ConsentPanel } from "@/components/consent-panel";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -20,6 +21,8 @@ function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("welcome");
   const [saving, setSaving] = useState(false);
+  // Required agreements must be accepted before we gather anything about them.
+  const [consentOk, setConsentOk] = useState(false);
 
   const [identity, setIdentity] = useState({
     display_name: "",
@@ -140,8 +143,15 @@ function Onboarding() {
               </>
             }
             body="We only need what's necessary to create your account. Everything else — who you are, how you love, what matters to you — you and Athena will discover together, in your own time."
-          />
+          >
+            {/* Versioned agreements are recorded here, individually, before
+                anything about this person is gathered. */}
+            <div className="mt-6">
+              <ConsentPanel mode="gate" onSatisfied={() => setConsentOk(true)} />
+            </div>
+          </Section>
         )}
+
         {step === "identity" && (
           <Section
             eyebrow="Step 1 · You"
@@ -251,7 +261,7 @@ function Onboarding() {
         {step !== "complete" && (
           <button
             onClick={() => persistStage(next)}
-            disabled={saving}
+            disabled={saving || (step === "welcome" && !consentOk)}
             className="ml-auto rounded-full bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition active:scale-[0.98] disabled:opacity-60"
           >
             {saving

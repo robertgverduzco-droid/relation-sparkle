@@ -1,0 +1,126 @@
+// Living Profile review + F-13 Change / Correction / Removal — server logic.
+//
+// Doctrine:
+//   F-13 (docs/security/DECISION-REGISTER.md): three states, not one.
+//     Change     — was true, no longer is. History is preserved AS history;
+//                  the new understanding becomes authoritative for reasoning.
+//     Correction — Athena was wrong. The incorrect understanding is
+//                  superseded and the fact of the correction is retained so
+//                  future reasoning is more careful in that area.
+//     Remove     — the member wants it gone. The understanding AND its
+//                  inference trail (facet history, revision statements) are
+//                  destroyed.
+//   F-14: stated and inferred material stay distinguishable.
+//
+// Privacy: this surface returns Athena's *understanding* only. It never
+// returns her private reasoning chain, evidence attributed to other members,
+// pair reasoning, or any system-internal material.
+import type { FacetKey } from "./facets";
+import { FACET_LABELS } from "./facets";
+
+export type RevisionKind = "change" | "correction" | "removal";
+
+export type FacetView = {
+  key: string;
+  label: string;
+  understanding: string;
+  /** Qualitative only — numbers are never shown to members (L4). */
+  held: "held lightly" | "reasonably understood" | "well-understood";
+  /** F-14: did the member say it, or did Athena infer it? */
+  basis: "stated" | "inferred";
+  last_updated: string | null;
+  revised: boolean;
+};
+
+type FacetRecord = {
+  facet_key: string;
+  understanding: string | null;
+  confidence: number | null;
+  evidence: unknown;
+  refined_at: string | null;
+};
+
+export function toFacetView(row: FacetRecord, revisedKeys: Set<string>): FacetView {
+  const c = row.confidence ?? 0;
+  const evidence = Array.isArray(row.evidence) ? row.evidence : [];
+  return {
+    key: row.facet_key,
+    label: FACET_LABELS[row.facet_key as FacetKey] ?? row.facet_key,
+    understanding: (row.understanding ?? "").trim(),
+    held: c >= 0.7 ? "well-understood" : c >= 0.45 ? "reasonably understood" : "held lightly",
+    basis: evidence.length > 0 ? "stated" : "inferred",
+    last_updated: row.refined_at,
+    revised: revisedKeys.has(row.facet_key),
+  };
+}
+
+/** Applied to a member's own words before they are stored on a revision. */
+export function trimStatement(input: string | undefined | null): string | null {
+  const s = (input ?? "").trim();
+  if (!s) return null;
+  return s.slice(0, 1200);
+}
+
+/**
+ * How each revision kind rewrites the facet row. Returned as a plain patch so
+ * the thin wrapper can apply it with the member's own RLS-scoped client.
+ */
+export function revisionPatch(
+  kind: RevisionKind,
+  statement: string | null,
+): {
+  understanding: string | null;
+  reasoning: string;
+  confidence: number;
+  evidence: unknown[];
+  needs_clarification: boolean;
+  clarification_note: string | null;
+  refined_at: string;
+} {
+  const now = new Date().toISOString();
+  if (kind === "change") {
+    return {
+      // The member's own account of the change is authoritative and is stated,
+      // not inferred, material.
+      understanding: statement,
+      reasoning:
+        "The member told me directly that this has changed. Earlier understanding is kept as history, not as present truth.",
+      confidence: statement ? 0.6 : 0.2,
+      evidence: statement ? [statement] : [],
+      needs_clarification: false,
+      clarification_note: null,
+      refined_at: now,
+    };
+  }
+  if (kind === "correction") {
+    return {
+      understanding: statement,
+      reasoning:
+        "I had misunderstood this. The member corrected me; the correction is authoritative for what it corrects, and I should be slower to infer in this area.",
+      confidence: statement ? 0.5 : 0.15,
+      evidence: statement ? [statement] : [],
+      needs_clarification: false,
+      clarification_note: null,
+      refined_at: now,
+    };
+  }
+  // Removal: nothing is retained in the facet row itself.
+  return {
+    understanding: null,
+    reasoning: "",
+    confidence: 0,
+    evidence: [],
+    needs_clarification: false,
+    clarification_note: null,
+    refined_at: now,
+  };
+}
+
+/** Member-facing acknowledgement in Athena's voice. */
+export function revisionAcknowledgement(kind: RevisionKind, label: string): string {
+  if (kind === "change")
+    return `Thank you for telling me. I'll treat what I understood about ${label.toLowerCase()} as where you were, not where you are.`;
+  if (kind === "correction")
+    return `I appreciate the correction — I had that wrong. I'll hold ${label.toLowerCase()} more carefully from here.`;
+  return `Done. What I understood about ${label.toLowerCase()} is gone, along with how I arrived at it.`;
+}

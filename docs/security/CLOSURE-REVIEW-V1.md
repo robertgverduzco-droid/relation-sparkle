@@ -253,3 +253,86 @@ proof: nothing here is tested automatically, monitoring has never produced a
 single measurement, no restore has ever been attempted, and consent has never
 been recorded. A system that holds this material should be able to demonstrate
 its guarantees, not only argue them. That is the work between here and beta.
+
+---
+
+# Closure Remediation — P0 + Current-Architecture P1
+
+Completed after the closure review above. Each item states what now exists in
+the running system, not what is intended.
+
+## P0
+
+**1. Password reset and recovery.** `src/lib/recovery.server.ts` +
+`recovery.functions.ts` + the `/reset-password` route. Requests are
+enumeration-safe (identical response whether or not the address exists),
+rate-limited per hashed address and globally, and the redirect target is
+validated same-origin. Setting a new password signs out every other device.
+The sign-in screen links to it.
+
+**2. Consent recording.** `src/lib/policy-versions.ts` defines the catalogue:
+Terms, Privacy, Athena's understanding (required); sensitive attributes and
+outcome learning (optional, withdrawable). Marketing email and billing terms
+are defined as `pending_feature` and are never written — we do not simulate
+consent for features that do not exist. `ConsentPanel` gates onboarding before
+anything about the member is gathered, and exposes the optional permissions in
+Profile. Records are append-only, per agreement, per version, with source and
+timestamp; withdrawal of outcome learning takes effect immediately in the
+runtime.
+
+**3. Automated security regression suite.** `bun run test` —
+`src/lib/security.test.ts`, 19 assertions covering redaction, classification,
+error scrubbing, the export boundary, F-13 removal semantics, prompt-boundary
+fencing, and the context budget. Invariant table in `SECURITY-TESTING.md`.
+
+**4. Deleted-member restore protection.** Keyed tombstones written before the
+auth delete; `POST /api/public/restore-reconcile` (dry run, then execute)
+replays every recorded deletion across all member-keyed tables, storage, and
+auth. Runbook, key-rotation caveat, and the rehearsal log are in
+`RETENTION-AND-DELETION.md`.
+
+## P1 (current architecture)
+
+**5. Living Profile change / correction / removal (F-13, F-14).**
+`/understanding` shows what Athena understands in plain language, marked
+*you told me* or *I inferred* (F-14) and held qualitatively — never a score.
+Three distinct states: **Change** preserves the prior understanding as history
+and makes the member's account authoritative; **Correction** supersedes it,
+lowers confidence, and clears the inference trail that produced the error;
+**Removal** destroys the understanding and its trail, retaining only the bare
+fact that a removal occurred. Any revision marks the member's pair reasoning
+stale.
+
+**6. Member data export (F-11).** `src/lib/export.server.ts` builds from an
+explicit allowlist — a table added later is excluded until deliberately added —
+executed through the member's own RLS-scoped client. Gated by step-up
+reauthentication, limited to two per day, delivered straight to the device
+without resting on a server. Cross-member reasoning, another member's
+perception, safety and enforcement material, audit logs, founder dialogue, and
+messages are all in the forbidden set, asserted by the test suite. Counterpart
+names and contact-shaped tokens in the member's own reflections are masked.
+
+**7. Restore rehearsal.** The mechanism and dry-run gate exist; the rehearsal
+itself is an operational act and its log table in `RETENTION-AND-DELETION.md`
+is deliberately empty until performed.
+
+**8. Error capture redaction.** `describeError()` now passes everything through
+`scrubErrorText()`: JWTs, `sb_` keys, bearer tokens, email addresses, and
+member content embedded in serialized rows.
+
+**9. AI context budget.** `applyContextBudget()` enforces a per-request
+ceiling (52k chars total, 9k for member memory), dropping oldest turns first
+and then truncating memory, never doctrine or the security boundary. Applied
+on the conversation path.
+
+## Standing items
+
+- **Monitoring activation** — the heartbeat and reconciliation endpoints are
+  built and secret-gated; both remain inert until `OPS_HEARTBEAT_SECRET` is
+  configured, deferred at the founder's instruction.
+- **Legal gate** — Terms and Privacy remain marked `-draft` in the consent
+  catalogue. Bumping them to reviewed versions re-surfaces acceptance to every
+  member automatically.
+- **Deferred systems** — payments, push notifications, and marketing email
+  remain unbuilt; their consent categories stay `pending_feature`.
+- **Live prompt-injection probe** — behavioural, manual, unrecorded as yet.

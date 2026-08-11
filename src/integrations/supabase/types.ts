@@ -321,6 +321,36 @@ export type Database = {
         }
         Relationships: []
       }
+      data_export_requests: {
+        Row: {
+          allowlist_version: string
+          byte_size: number | null
+          created_at: string
+          id: string
+          section_counts: Json
+          status: string
+          user_id: string
+        }
+        Insert: {
+          allowlist_version: string
+          byte_size?: number | null
+          created_at?: string
+          id?: string
+          section_counts?: Json
+          status?: string
+          user_id: string
+        }
+        Update: {
+          allowlist_version?: string
+          byte_size?: number | null
+          created_at?: string
+          id?: string
+          section_counts?: Json
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       enforcement_actions: {
         Row: {
           action: string
@@ -1280,6 +1310,33 @@ export type Database = {
         }
         Relationships: []
       }
+      purge_tombstones: {
+        Row: {
+          created_at: string
+          deleted_at: string
+          id: string
+          last_replayed_at: string | null
+          reason: string
+          subject_hash: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string
+          id?: string
+          last_replayed_at?: string | null
+          reason?: string
+          subject_hash: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string
+          id?: string
+          last_replayed_at?: string | null
+          reason?: string
+          subject_hash?: string
+        }
+        Relationships: []
+      }
       reflection_submissions: {
         Row: {
           anything_else: string | null
@@ -1447,6 +1504,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      restore_reconciliations: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          id: string
+          notes: string | null
+          rows_removed: Json
+          subjects_repurged: number
+          tombstones_checked: number
+          trigger: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          notes?: string | null
+          rows_removed?: Json
+          subjects_repurged?: number
+          tombstones_checked?: number
+          trigger: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          notes?: string | null
+          rows_removed?: Json
+          subjects_repurged?: number
+          tombstones_checked?: number
+          trigger?: string
+        }
+        Relationships: []
       }
       safety_flags: {
         Row: {
@@ -1638,6 +1728,39 @@ export type Database = {
           refined_at?: string
           understanding?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      understanding_revisions: {
+        Row: {
+          created_at: string
+          facet_key: string
+          id: string
+          member_statement: string | null
+          previous_confidence: number | null
+          previous_understanding: string | null
+          revision_kind: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          facet_key: string
+          id?: string
+          member_statement?: string | null
+          previous_confidence?: number | null
+          previous_understanding?: string | null
+          revision_kind: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          facet_key?: string
+          id?: string
+          member_statement?: string | null
+          previous_confidence?: number | null
+          previous_understanding?: string | null
+          revision_kind?: string
           user_id?: string
         }
         Relationships: []

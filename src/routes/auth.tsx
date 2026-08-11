@@ -245,6 +245,15 @@ function AuthPage() {
         </button>
       </form>
 
+      {!isSignup && (
+        <p className="mt-4 text-center text-sm">
+          <Link to="/reset-password" className="text-ink-soft underline-offset-4 hover:underline">
+            Forgot your password?
+          </Link>
+        </p>
+      )}
+
+
       <p className="mt-6 text-center text-sm text-ink-soft">
         {isSignup ? "Already have an account?" : "New here?"}{" "}
         <button
