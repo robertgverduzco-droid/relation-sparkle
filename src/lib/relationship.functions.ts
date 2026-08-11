@@ -77,7 +77,7 @@ export const chooseEndingPath = createServerFn({ method: "POST" })
     {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { evaluateReadiness } = await import("./readiness.server");
-      await evaluateReadiness(supabaseAdmin, userId, "ending_choice");
+      await evaluateReadiness(supabaseAdmin, userId, "ending_path_chosen");
     }
     return { ok: true, acknowledgement: ENDING_ACKNOWLEDGEMENTS[data.choice] };
   });
