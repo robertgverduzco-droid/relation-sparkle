@@ -9,6 +9,8 @@ import {
   reflectInput,
   reflectSchema,
   athenaSystemPrompt,
+  applyContextBudget,
+
   summarizeLivingProfile,
   summarizeTopicMap,
   CONFIDENCE_EPS,
