@@ -12,6 +12,7 @@
 - [MONITORING-AND-OPERATIONS.md](./MONITORING-AND-OPERATIONS.md) — measured metrics, honest unknowns, heartbeat, alerting
 - [DEVICE-SAFETY-AND-ENFORCEMENT.md](./DEVICE-SAFETY-AND-ENFORCEMENT.md) — step-up reauth, remote sign-out, app lock, photo metadata, enforcement ladder
 - [SECURITY-TESTING.md](./SECURITY-TESTING.md) — adversarial probes and results
+- [CLOSURE-REVIEW-V1.md](./CLOSURE-REVIEW-V1.md) — V1 closure status across every domain, and the final P0/P1/P2/P3 queue
 
 The sections below remain accurate as the quick reference.
 
