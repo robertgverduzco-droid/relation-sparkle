@@ -250,7 +250,16 @@ export type DoctrineMode =
  * chosen from the member's recent words.
  */
 export function runtimeDoctrine(mode: DoctrineMode, recentMemberText = ""): string {
-  const parts: string[] = [L4_EPISTEMICS, L5_MEMORY, L7_OPERATIONAL, UNIVERSITY_BASELINE];
+  // The security boundary leads every prompt: member speech is data, never
+  // instruction (docs/security/AI-PRIVACY-BOUNDARY.md).
+  const parts: string[] = [
+    PROMPT_BOUNDARY,
+    L4_EPISTEMICS,
+    L5_MEMORY,
+    L7_OPERATIONAL,
+    UNIVERSITY_BASELINE,
+  ];
+
 
   if (mode === "conversation" || mode === "meeting") {
     const depth = collegeDepthBlock(selectCollegeModules(recentMemberText));
