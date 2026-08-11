@@ -28,6 +28,7 @@ import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
+import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/ops-heartbeat'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
 import { Route as AuthenticatedIntroductionsIdRouteImport } from './routes/_authenticated/introductions.$id'
@@ -131,6 +132,11 @@ const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
   path: '/athena',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicOpsHeartbeatRoute = ApiPublicOpsHeartbeatRouteImport.update({
+  id: '/api/public/ops-heartbeat',
+  path: '/api/public/ops-heartbeat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedProfileReviewRoute =
   AuthenticatedProfileReviewRouteImport.update({
     id: '/review',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
+  '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
+  '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/_authenticated/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
+  '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
+    | '/api/public/ops-heartbeat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
+    | '/api/public/ops-heartbeat'
   id:
     | '__root__'
     | '/'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/introductions/$id'
     | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
+    | '/api/public/ops-heartbeat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiPublicOpsHeartbeatRoute: typeof ApiPublicOpsHeartbeatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -451,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAthenaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/ops-heartbeat': {
+      id: '/api/public/ops-heartbeat'
+      path: '/api/public/ops-heartbeat'
+      fullPath: '/api/public/ops-heartbeat'
+      preLoaderRoute: typeof ApiPublicOpsHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/profile/review': {
       id: '/_authenticated/profile/review'
       path: '/review'
@@ -574,17 +594,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
+  ApiPublicOpsHeartbeatRoute: ApiPublicOpsHeartbeatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
