@@ -336,3 +336,36 @@ on the conversation path.
 - **Deferred systems** — payments, push notifications, and marketing email
   remain unbuilt; their consent categories stay `pending_feature`.
 - **Live prompt-injection probe** — behavioural, manual, unrecorded as yet.
+
+---
+
+# Engineering Remediation Completion — Privacy & Security V1 P0
+
+Status date: 2026-08-11. The Privacy & Security V1 P0 engineering remediation is
+**COMPLETE**. All P0 items listed in §17 and implemented in §18 are in the
+running system and verified by build, typecheck, and the automated security
+regression suite (`src/lib/security.test.ts`).
+
+## Operational verification items — PRESERVED AS PENDING
+
+The following systems are implemented in code but are **not operationally
+verified** and are therefore not represented as launch-ready:
+
+1. **Monitoring remains IMPLEMENTED — NOT OPERATIONALLY VERIFIED** until
+   `OPS_HEARTBEAT_SECRET` and `OPS_ALERT_WEBHOOK_URL` are securely configured
+   and a real heartbeat is successfully run.
+
+2. **Backup/restore protection remains IMPLEMENTED — RESTORE REHEARSAL PENDING**
+   until the controlled restore rehearsal is performed and actual RPO/RTO and
+   deletion-reconciliation results are recorded.
+
+3. **All outstanding legal/counsel dependencies and pre-beta requirements remain
+   outstanding.** Engineering completion does not constitute legal review,
+   counsel approval, or launch readiness. §16 Legal dependencies and the
+   P1/P2/P3 queues remain recorded and deferred.
+
+## Next authorized work
+
+Member Experience Architecture and Visual Language & Aesthetics are **not**
+approved to begin. The next work stream is gated by explicit founder approval.
+
