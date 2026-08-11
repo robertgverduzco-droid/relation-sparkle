@@ -123,7 +123,23 @@ export async function openConnectionIfMutual(
     })
     .select("id")
     .maybeSingle();
-  return (opened?.id as string) ?? null;
+
+  const connectionId = (opened?.id as string) ?? null;
+  if (connectionId) {
+    const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+    for (const uid of [pair.user_low as string, pair.user_high as string]) {
+      await notify(supabase, {
+        userId: uid,
+        category: "introductions",
+        eventType: "introduction_mutual",
+        title: NOTIFICATION_COPY.introduction_mutual.title,
+        body: NOTIFICATION_COPY.introduction_mutual.body,
+        actionPath: `/connections/${connectionId}`,
+        dedupeKey: `introduction_mutual:${connectionId}`,
+      });
+    }
+  }
+  return connectionId;
 }
 
 
@@ -414,6 +430,18 @@ export async function markReflectionRequired(
     transcript: [],
     reflection_required: true,
     required_since: new Date().toISOString(),
+  });
+
+  const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+  await notify(supabase, {
+    userId: args.userId,
+    category: "reflection",
+    eventType: "reflection_available",
+    title: NOTIFICATION_COPY.reflection_available.title,
+    body: NOTIFICATION_COPY.reflection_available.body,
+    actionPath: `/connections/${args.connectionId}`,
+    // One notification per connection, ever: no repeated pressure.
+    dedupeKey: `reflection_available:${args.connectionId}:${args.userId}`,
   });
 }
 

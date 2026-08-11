@@ -118,6 +118,41 @@ export const sendMessage = createServerFn({ method: "POST" })
       .from("conversations")
       .update({ last_message_at: new Date().toISOString() })
       .eq("id", data.conversation_id);
+
+    // Notify the recipient (preferences, pause, block and account state are
+    // enforced server-side inside notify()).
+    {
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("user_a, user_b")
+        .eq("id", data.conversation_id)
+        .maybeSingle();
+      if (conv) {
+        const otherId = (conv.user_a as string) === userId ? (conv.user_b as string) : (conv.user_a as string);
+        const { data: blocked } = await supabase
+          .from("blocks")
+          .select("id")
+          .or(
+            `and(blocker_id.eq.${otherId},blocked_id.eq.${userId}),and(blocker_id.eq.${userId},blocked_id.eq.${otherId})`,
+          )
+          .limit(1);
+        if ((blocked ?? []).length === 0) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+          await notify(supabaseAdmin, {
+            userId: otherId,
+            category: "messages",
+            eventType: "message_new",
+            title: NOTIFICATION_COPY.message_new.title,
+            // No message content in the preview.
+            body: NOTIFICATION_COPY.message_new.body,
+            actionPath: `/messages/${data.conversation_id}`,
+            // Collapses to one unread-conversation notification at a time.
+            dedupeKey: `message_new:${data.conversation_id}:unread`,
+          });
+        }
+      }
+    }
     return { ok: true };
   });
 
