@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { DeviceSafetyPanel } from "@/components/device-safety-panel";
+import { ConsentPanel } from "@/components/consent-panel";
+
 import { setAccountPaused } from "@/lib/account.functions";
 import { amIModerator } from "@/lib/moderation.functions";
 import { toast } from "sonner";
