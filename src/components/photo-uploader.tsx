@@ -49,6 +49,10 @@ export function PhotoUploader() {
       toast.error("You can share up to six photos.");
       return;
     }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error("Please choose a JPEG, PNG, WebP, or HEIC photo.");
+      return;
+    }
     if (file.size > 8 * 1024 * 1024) {
       toast.error("That image is over 8MB.");
       return;
@@ -58,11 +62,14 @@ export function PhotoUploader() {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
       if (!uid) throw new Error("Not signed in");
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `${uid}/${Date.now()}.${ext}`;
+      // Privacy: a phone photo carries GPS coordinates, capture time, and
+      // device identifiers in EXIF. Re-encoding through a canvas discards all
+      // of it before the bytes ever leave the device.
+      const clean = await stripMetadata(file);
+      const path = `${uid}/${Date.now()}.jpg`;
       const { error: upErr } = await supabase.storage
         .from("profile-photos")
-        .upload(path, file, { contentType: file.type });
+        .upload(path, clean, { contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const nextPos = (photos[photos.length - 1]?.position ?? -1) + 1;
       const { error: rowErr } = await supabase.from("user_photos").insert({
