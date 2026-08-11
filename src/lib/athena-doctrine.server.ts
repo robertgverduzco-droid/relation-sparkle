@@ -1,4 +1,6 @@
 // Server-only runtime doctrine layer.
+import { PROMPT_BOUNDARY } from "./security.server";
+
 //
 // Wave 2 (Constitution-to-Runtime + Athena University integration).
 //
