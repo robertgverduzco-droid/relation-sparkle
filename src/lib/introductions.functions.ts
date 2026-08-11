@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { generalizeArea } from "./geography";
 import { ageFromDob, runMatchmakingForUser } from "./introductions.server";
 
 export const considerIntroductions = createServerFn({ method: "POST" })
@@ -55,7 +56,7 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         .from("pair_reasoning")
         .select("id, presentation_a, presentation_b")
         .in("id", pairIds),
-      supabaseAdmin.from("profiles").select("id, display_name, city, birth_date").in("id", otherIds),
+      supabaseAdmin.from("profiles").select("id, display_name, city, region, birth_date").in("id", otherIds),
       supabase
         .from("introduction_responses")
         .select("pair_id, response")
@@ -70,11 +71,13 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         b: (s.presentation_b as string | null) ?? null,
       });
 
-    const profMap = new Map<string, { display_name: string | null; city: string | null; birth_date: string | null }>();
+    // F-06: before mutual connection the counterpart is placed only by a
+    // generalised area. The exact city never leaves the server here.
+    const profMap = new Map<string, { display_name: string | null; area: string | null; birth_date: string | null }>();
     for (const p of profs ?? []) {
       profMap.set(p.id as string, {
         display_name: (p.display_name as string | null) ?? null,
-        city: (p.city as string | null) ?? null,
+        area: generalizeArea(p.city as string | null, p.region as string | null),
         birth_date: (p.birth_date as string | null) ?? null,
       });
     }
@@ -90,7 +93,7 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         id: p.id as string,
         other_id: otherId,
         other_name: prof?.display_name ?? "Someone",
-        other_city: prof?.city ?? null,
+        other_area: prof?.area ?? null,
         other_age: ageFromDob(prof?.birth_date ?? null),
         presentation: isLow
           ? (sideMap.get(p.id as string)?.a ?? null)
