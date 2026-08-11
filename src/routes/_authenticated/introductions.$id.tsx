@@ -22,7 +22,7 @@ type Intro = {
   id: string;
   other_id: string;
   other_name: string;
-  other_city: string | null;
+  other_area: string | null;
   other_age: number | null;
   presentation: string | null;
   confidence: number;
@@ -114,8 +114,8 @@ function IntroductionDetailPage() {
             <span className="ml-2 text-lg text-ink-soft">{intro.other_age}</span>
           )}
         </h1>
-        {intro.other_city && (
-          <p className="mt-1 text-sm text-ink-soft">{intro.other_city}</p>
+        {intro.other_area && (
+          <p className="mt-1 text-sm text-ink-soft">{intro.other_area}</p>
         )}
       </header>
 
