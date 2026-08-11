@@ -105,13 +105,13 @@ export function screenFounderRequest(question: string): Screening {
 export type FounderAggregates = {
   outcome_signals: { available: false } | {
     available: true;
-    sample: number;
+    cohort: number;
     valence: Record<string, number>;
     contradictory_share: string;
   };
   self_evaluation: { available: false } | {
     available: true;
-    sample: number;
+    cohort: number;
     mean_self_confidence: string;
     recurring_intents: string[];
   };
@@ -120,9 +120,17 @@ export type FounderAggregates = {
 const band = (n: number): string =>
   n < 0.2 ? "low" : n < 0.45 ? "modest" : n < 0.7 ? "moderate" : n < 0.9 ? "strong" : "very strong";
 
+/** Coarse cohort size. Exact counts are a differencing primitive; bands are not. */
+const cohortBand = (n: number): number => Math.floor(n / 10) * 10;
+
 /**
- * System-level aggregates only. Nothing member-keyed is selected, nothing is
- * sliceable, and anything below MIN_SAMPLE is withheld rather than rounded.
+ * System-level aggregates only. Nothing member-keyed is returned, nothing is
+ * sliceable, and the threshold counts DISTINCT contributors — not rows. Row
+ * counts are the wrong unit: twenty outcome signals can come from a single
+ * pair, and twenty self-evaluations from a single member's week, which would
+ * turn an "aggregate" into a portrait of one person. Cohort sizes themselves
+ * are returned banded so repeated calls cannot be differenced against each
+ * other to isolate the arrival of a single new contributor.
  */
 export async function founderAggregates(): Promise<FounderAggregates> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -130,17 +138,18 @@ export async function founderAggregates(): Promise<FounderAggregates> {
   const [signals, evals] = await Promise.all([
     supabaseAdmin
       .from("athena_outcome_signals")
-      .select("valence, is_contradictory")
+      .select("pair_token, valence, is_contradictory")
       .limit(5000),
     supabaseAdmin
       .from("athena_self_evaluations")
-      .select("self_confidence, next_conversation_intents")
+      .select("user_id, self_confidence, next_conversation_intents")
       .limit(5000),
   ]);
 
   const sigRows = signals.data ?? [];
+  const sigCohort = new Set(sigRows.map((r) => r.pair_token as string)).size;
   const outcome: FounderAggregates["outcome_signals"] =
-    sigRows.length < MIN_SAMPLE
+    sigCohort < MIN_SAMPLE
       ? { available: false }
       : (() => {
           const valence: Record<string, number> = {};
@@ -149,33 +158,43 @@ export async function founderAggregates(): Promise<FounderAggregates> {
             valence[r.valence] = (valence[r.valence] ?? 0) + 1;
             if (r.is_contradictory) contradictory += 1;
           }
+          // Shares, never raw counts per category.
+          const total = sigRows.length;
+          const shares: Record<string, number> = {};
+          for (const [k, n] of Object.entries(valence)) shares[k] = Math.round((n / total) * 100);
           return {
             available: true as const,
-            sample: sigRows.length,
-            valence,
-            contradictory_share: band(contradictory / sigRows.length),
+            cohort: cohortBand(sigCohort),
+            valence: shares,
+            contradictory_share: band(contradictory / total),
           };
         })();
 
   const evalRows = evals.data ?? [];
+  const evalCohort = new Set(evalRows.map((r) => r.user_id as string)).size;
   const selfEval: FounderAggregates["self_evaluation"] =
-    evalRows.length < MIN_SAMPLE
+    evalCohort < MIN_SAMPLE
       ? { available: false }
       : (() => {
           const mean =
             evalRows.reduce((a, r) => a + Number(r.self_confidence ?? 0), 0) / evalRows.length;
-          const counts = new Map<string, number>();
+          // An intent only counts as "recurring" when it recurs across members,
+          // not across one member's repeated conversations.
+          const byIntent = new Map<string, Set<string>>();
           for (const r of evalRows)
-            for (const intent of (r.next_conversation_intents ?? []) as string[])
-              counts.set(intent, (counts.get(intent) ?? 0) + 1);
-          const recurring = [...counts.entries()]
-            .filter(([, n]) => n >= MIN_SAMPLE / 4)
-            .sort((a, b) => b[1] - a[1])
+            for (const intent of (r.next_conversation_intents ?? []) as string[]) {
+              const set = byIntent.get(intent) ?? new Set<string>();
+              set.add(r.user_id as string);
+              byIntent.set(intent, set);
+            }
+          const recurring = [...byIntent.entries()]
+            .filter(([, members]) => members.size >= MIN_SAMPLE / 2)
+            .sort((a, b) => b[1].size - a[1].size)
             .slice(0, 8)
             .map(([k]) => k);
           return {
             available: true as const,
-            sample: evalRows.length,
+            cohort: cohortBand(evalCohort),
             mean_self_confidence: band(mean),
             recurring_intents: recurring,
           };

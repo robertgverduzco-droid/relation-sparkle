@@ -23,7 +23,8 @@ export const getEndingChoice = createServerFn({ method: "GET" })
         .maybeSingle();
       if (conn) {
         const otherId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
-        const { data: prof } = await supabase
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: prof } = await supabaseAdmin
           .from("profiles")
           .select("display_name")
           .eq("id", otherId)
