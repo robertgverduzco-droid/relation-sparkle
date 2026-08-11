@@ -182,6 +182,44 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_identifiers: {
+        Row: {
+          action_id: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          identifier_hash: string
+          identifier_kind: string
+          reason_category: string
+        }
+        Insert: {
+          action_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          identifier_hash: string
+          identifier_kind: string
+          reason_category: string
+        }
+        Update: {
+          action_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          identifier_hash?: string
+          identifier_kind?: string
+          reason_category?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banned_identifiers_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "enforcement_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -282,6 +320,121 @@ export type Database = {
           user_b?: string
         }
         Relationships: []
+      }
+      enforcement_actions: {
+        Row: {
+          action: string
+          appeal_status: string
+          behavior_note: string
+          conduct_category: string
+          created_at: string
+          evidence_basis: string
+          id: string
+          immediate_path: boolean
+          initiated_by: string | null
+          initiated_by_system: string | null
+          level: number
+          prior_action_count: number
+          report_id: string | null
+          restriction_until: string | null
+          review_status: string
+          severity: Database["public"]["Enums"]["safety_severity"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          appeal_status?: string
+          behavior_note: string
+          conduct_category: string
+          created_at?: string
+          evidence_basis: string
+          id?: string
+          immediate_path?: boolean
+          initiated_by?: string | null
+          initiated_by_system?: string | null
+          level: number
+          prior_action_count?: number
+          report_id?: string | null
+          restriction_until?: string | null
+          review_status?: string
+          severity: Database["public"]["Enums"]["safety_severity"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          appeal_status?: string
+          behavior_note?: string
+          conduct_category?: string
+          created_at?: string
+          evidence_basis?: string
+          id?: string
+          immediate_path?: boolean
+          initiated_by?: string | null
+          initiated_by_system?: string | null
+          level?: number
+          prior_action_count?: number
+          report_id?: string | null
+          restriction_until?: string | null
+          review_status?: string
+          severity?: Database["public"]["Enums"]["safety_severity"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enforcement_appeals: {
+        Row: {
+          action_id: string
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          statement: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action_id: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          statement: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action_id?: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          statement?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_appeals_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "enforcement_actions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       facet_history: {
         Row: {
@@ -746,6 +899,69 @@ export type Database = {
           read_at?: string | null
           title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      ops_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          created_at: string
+          dedupe_key: string
+          external_delivery: string
+          id: string
+          level: string
+          metric_key: string
+          resolved_at: string | null
+          summary: string
+          threshold: number | null
+          value: number | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          created_at?: string
+          dedupe_key: string
+          external_delivery?: string
+          id?: string
+          level: string
+          metric_key: string
+          resolved_at?: string | null
+          summary: string
+          threshold?: number | null
+          value?: number | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          created_at?: string
+          dedupe_key?: string
+          external_delivery?: string
+          id?: string
+          level?: string
+          metric_key?: string
+          resolved_at?: string | null
+          summary?: string
+          threshold?: number | null
+          value?: number | null
+        }
+        Relationships: []
+      }
+      ops_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          metrics: Json
+          worst_level: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metrics?: Json
+          worst_level?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metrics?: Json
+          worst_level?: string
         }
         Relationships: []
       }
@@ -1291,6 +1507,33 @@ export type Database = {
           note?: string | null
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      step_up_grants: {
+        Row: {
+          consumed_at: string | null
+          expires_at: string
+          granted_at: string
+          id: string
+          purpose: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          expires_at: string
+          granted_at?: string
+          id?: string
+          purpose: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          expires_at?: string
+          granted_at?: string
+          id?: string
+          purpose?: string
+          user_id?: string
         }
         Relationships: []
       }
