@@ -316,6 +316,33 @@ export type Database = {
         }
         Relationships: []
       }
+      founder_dialogue_messages: {
+        Row: {
+          blocked: boolean
+          content: string
+          created_at: string
+          founder_id: string
+          id: string
+          role: string
+        }
+        Insert: {
+          blocked?: boolean
+          content: string
+          created_at?: string
+          founder_id: string
+          id?: string
+          role: string
+        }
+        Update: {
+          blocked?: boolean
+          content?: string
+          created_at?: string
+          founder_id?: string
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
       interview_sessions: {
         Row: {
           completed_at: string | null
