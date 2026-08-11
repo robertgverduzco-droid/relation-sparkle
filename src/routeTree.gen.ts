@@ -29,6 +29,7 @@ import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
+import { Route as ApiPublicRestoreReconcileRouteImport } from './routes/api/public/restore-reconcile'
 import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/ops-heartbeat'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
@@ -138,6 +139,12 @@ const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
   path: '/athena',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicRestoreReconcileRoute =
+  ApiPublicRestoreReconcileRouteImport.update({
+    id: '/api/public/restore-reconcile',
+    path: '/api/public/restore-reconcile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicOpsHeartbeatRoute = ApiPublicOpsHeartbeatRouteImport.update({
   id: '/api/public/ops-heartbeat',
   path: '/api/public/ops-heartbeat',
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
+  '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
+  '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -246,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
+  '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/profile/review'
     | '/api/public/ops-heartbeat'
+    | '/api/public/restore-reconcile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/profile/review'
     | '/api/public/ops-heartbeat'
+    | '/api/public/restore-reconcile'
   id:
     | '__root__'
     | '/'
@@ -327,6 +339,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
     | '/api/public/ops-heartbeat'
+    | '/api/public/restore-reconcile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -340,6 +353,7 @@ export interface RootRouteChildren {
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiPublicOpsHeartbeatRoute: typeof ApiPublicOpsHeartbeatRoute
+  ApiPublicRestoreReconcileRoute: typeof ApiPublicRestoreReconcileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -484,6 +498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAthenaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/restore-reconcile': {
+      id: '/api/public/restore-reconcile'
+      path: '/api/public/restore-reconcile'
+      fullPath: '/api/public/restore-reconcile'
+      preLoaderRoute: typeof ApiPublicRestoreReconcileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ops-heartbeat': {
       id: '/api/public/ops-heartbeat'
       path: '/api/public/ops-heartbeat'
@@ -616,6 +637,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiPublicOpsHeartbeatRoute: ApiPublicOpsHeartbeatRoute,
+  ApiPublicRestoreReconcileRoute: ApiPublicRestoreReconcileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
