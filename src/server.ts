@@ -44,18 +44,70 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+// Transport & browser-side hardening (docs/security/ARCHITECTURE-V1.md).
+// Applied to every response leaving the app. The CSP allows the app's own
+// bundles, Supabase, and the AI gateway only; framing is denied outright so a
+// member's private material cannot be clickjacked out of the PWA.
+function applySecurityHeaders(response: Response, request: Request): Response {
+  const url = new URL(request.url);
+  const supabase = process.env.SUPABASE_URL ?? "https://*.supabase.co";
+  const headers = new Headers(response.headers);
+
+  headers.set(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      "img-src 'self' data: blob: https:",
+      "media-src 'self' blob: data:",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      // Vite injects inline module bootstrap; eval is dev-only.
+      `script-src 'self' 'unsafe-inline'${url.hostname === "localhost" ? " 'unsafe-eval'" : ""}`,
+      `connect-src 'self' ${supabase} https://*.supabase.co wss://*.supabase.co https://ai.gateway.lovable.dev`,
+      "worker-src 'self' blob:",
+      "upgrade-insecure-requests",
+    ].join("; "),
+  );
+  headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  headers.set("Cross-Origin-Resource-Policy", "same-origin");
+  headers.set(
+    "Permissions-Policy",
+    "geolocation=(self), microphone=(self), camera=(), payment=(), usb=(), interest-cohort=()",
+  );
+  // Nothing this app serves is safe to cache in a shared proxy.
+  if (!headers.has("Cache-Control")) headers.set("Cache-Control", "private, no-store");
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response), request);
     } catch (error) {
       console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return applySecurityHeaders(
+        new Response(renderErrorPage(), {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+        request,
+      );
     }
   },
 };
+
