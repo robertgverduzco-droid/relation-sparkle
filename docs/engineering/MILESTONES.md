@@ -140,3 +140,36 @@ entry; record future waves below it.
 - Re-evaluation triggers: foundational conversation complete, living-profile update, pause change, ending path chosen, reflection submitted.
 - Member surfaces: readiness card on Today, `/notifications` list and preferences.
 - Deletion purge extended to the three new tables.
+
+---
+
+## Privacy & Security V1 — P0 Engineering Remediation Complete
+
+Date: 2026-08-11
+Status: Engineering remediation complete; operational verification pending.
+
+The P0 engineering work required by `docs/security/CLOSURE-REVIEW-V1.md` is
+implemented, typechecked, built, and covered by the automated security regression
+suite (`src/lib/security.test.ts`).
+
+### Verified P0 closures
+- Password reset / recovery (`src/lib/recovery.server.ts`, `/reset-password`).
+- Consent recording (`src/lib/policy-versions.ts`, `ConsentPanel`, `consent.functions.ts`).
+- Automated security regression suite (`src/lib/security.test.ts`).
+- Deleted-member restore protection (`src/lib/restore-guard.server.ts`, `/api/public/restore-reconcile`).
+
+### Verified P1 closures (current architecture)
+- Living Profile change / correction / removal (`/understanding`, `understanding.functions.ts`).
+- Member data export (`src/lib/export.server.ts`, `device-safety-panel.tsx`).
+- Error capture redaction (`src/lib/error-capture.ts`).
+- AI context budget (`applyContextBudget` in `src/lib/athena.server.ts`).
+
+### Operational verification items preserved as pending
+- **Monitoring** — implemented in code (`ops-heartbeat.ts`, `monitoring.server.ts`) but not operationally verified until `OPS_HEARTBEAT_SECRET` and `OPS_ALERT_WEBHOOK_URL` are configured and a real heartbeat runs.
+- **Restore rehearsal** — mechanism and dry-run gate exist; actual rehearsal pending to record real RPO/RTO and deletion-reconciliation results.
+- **Legal/counsel dependencies** — unchanged; engineering completion does not constitute legal or launch readiness.
+
+### Next authorized work
+Member Experience Architecture and Visual Language & Aesthetics are **not**
+approved to begin until explicitly authorized.
+
