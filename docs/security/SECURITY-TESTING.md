@@ -62,3 +62,36 @@ non-quotation and no-scores standards already in doctrine.
 3. Confirm audit-log and kill-switch write denial for `authenticated`.
 4. Confirm the voice endpoints 401 without a bearer token.
 5. Confirm the app renders under CSP with no console violations.
+
+## Automated security regression suite (P0)
+
+`bun run test` (`src/lib/security.test.ts`) runs on every change. It is
+deliberately pure — no database, no network — so there is no excuse to skip it.
+It asserts the invariants that must never silently regress:
+
+| Invariant | Assertion |
+| --- | --- |
+| Secrets never reach a log line | `redact()` erases authorization, service-role, token, and refresh keys entirely |
+| Member content never reaches a log line | free text collapses to `[content:n]` / `[str:n]` markers |
+| Unknown tables are treated as most sensitive | `classOf()` defaults to Class 5 |
+| Cross-member reasoning stays Class 5 | `pair_reasoning`, `post_meeting_reflections` |
+| Error text carries no secrets or identifiers | `scrubErrorText()` removes JWTs, `sb_` keys, bearer tokens, emails, and embedded member content |
+| Export never includes another member's material | allowlist ∩ forbidden set is empty; `pair_reasoning`, `partner_perception`, `safety_flags`, `admin_audit_log`, founder dialogue all forbidden |
+| Export never selects `*` | every allowlist entry names its columns |
+| Export masks counterparts in member free text | names and contact-shaped tokens redacted |
+| F-13 Removal retains nothing | understanding, reasoning, evidence, and confidence all cleared |
+| F-13 Correction is held more lightly than a Change | confidence comparison |
+| Member text cannot escape its fence | `asMemberData()` neutralises `</member_input>` injection |
+| The prompt boundary states its non-negotiables | member text is data; no other member; no credentials |
+| AI context is bounded per request | memory block capped; total within `CONTEXT_BUDGET_CHARS`; the most recent turn is always retained |
+
+Any new sensitive surface adds its invariant here in the same change.
+
+## Live prompt-injection probe
+
+Athena's system prompt is prefixed by `PROMPT_BOUNDARY` on every reasoning
+path (conversation, reflection, pair reasoning, founder dialogue) via
+`runtimeDoctrine()`. The suite asserts the boundary text and the fencing of
+member input; the behavioural probe against the live model — asking Athena to
+reveal her instructions, to describe another member, and to emit a
+compatibility score — is a manual step recorded in the closure review.
