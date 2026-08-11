@@ -24,6 +24,7 @@ import { Route as AuthenticatedModerationRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticated/founder'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
@@ -108,6 +109,11 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFounderRoute = AuthenticatedFounderRouteImport.update({
+  id: '/founder',
+  path: '/founder',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedConversationsRoute =
   AuthenticatedConversationsRouteImport.update({
     id: '/conversations',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
+  '/founder': typeof AuthenticatedFounderRoute
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
+  '/founder': typeof AuthenticatedFounderRoute
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
+  '/_authenticated/founder': typeof AuthenticatedFounderRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/athena'
     | '/connections'
     | '/conversations'
+    | '/founder'
     | '/home'
     | '/introductions'
     | '/messages'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/athena'
     | '/connections'
     | '/conversations'
+    | '/founder'
     | '/home'
     | '/introductions'
     | '/messages'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/_authenticated/athena'
     | '/_authenticated/connections'
     | '/_authenticated/conversations'
+    | '/_authenticated/founder'
     | '/_authenticated/home'
     | '/_authenticated/introductions'
     | '/_authenticated/messages'
@@ -411,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/founder': {
+      id: '/_authenticated/founder'
+      path: '/founder'
+      fullPath: '/founder'
+      preLoaderRoute: typeof AuthenticatedFounderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversations': {
       id: '/_authenticated/conversations'
       path: '/conversations'
@@ -519,6 +538,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
+  AuthenticatedFounderRoute: typeof AuthenticatedFounderRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRouteWithChildren
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
@@ -532,6 +552,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
+  AuthenticatedFounderRoute: AuthenticatedFounderRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRouteWithChildren,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
