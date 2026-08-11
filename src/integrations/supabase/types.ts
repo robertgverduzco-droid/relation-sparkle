@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_role: string
+          created_at: string
+          data_class: number
+          id: string
+          metadata: Json
+          purpose: string | null
+          resource: string | null
+          subject_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          data_class?: number
+          id?: string
+          metadata?: Json
+          purpose?: string | null
+          resource?: string | null
+          subject_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          data_class?: number
+          id?: string
+          metadata?: Json
+          purpose?: string | null
+          resource?: string | null
+          subject_id?: string | null
+        }
+        Relationships: []
+      }
       athena_outcome_signals: {
         Row: {
           created_at: string
@@ -429,6 +468,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      member_consents: {
+        Row: {
+          consent_key: string
+          created_at: string
+          granted: boolean
+          id: string
+          source: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          consent_key: string
+          created_at?: string
+          granted?: boolean
+          id?: string
+          source?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          consent_key?: string
+          created_at?: string
+          granted?: boolean
+          id?: string
+          source?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
       }
       member_readiness: {
         Row: {
@@ -1173,6 +1242,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_kill_switches: {
+        Row: {
+          enabled: boolean
+          key: string
+          note: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+          note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       topic_map: {
         Row: {
