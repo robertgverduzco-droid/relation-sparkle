@@ -50,6 +50,7 @@ export async function listReports(
   userId: string,
 ): Promise<{ reports: ModerationReport[] }> {
   await assertModerator(supabase, userId);
+  const { auditAdminAccess } = await import("./security.server");
   const { data: reports } = await supabase
     .from("reports")
     .select(
@@ -57,6 +58,15 @@ export async function listReports(
     )
     .order("created_at", { ascending: false })
     .limit(200);
+  await auditAdminAccess({
+    actorId: userId,
+    actorRole: "moderator",
+    action: "moderation.reports.list",
+    resource: "reports",
+    purpose: "Safety review queue",
+    metadata: { count: reports?.length ?? 0 },
+  });
+
 
   const ids = new Set<string>();
   for (const r of reports ?? []) {
