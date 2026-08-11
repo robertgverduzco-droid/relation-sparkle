@@ -229,6 +229,13 @@ function ProfilePage() {
           </p>
         )}
         <Link
+          to="/understanding"
+          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
+        >
+          What Athena understands about you
+        </Link>
+        <Link
+
           to="/privacy"
           className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
         >
