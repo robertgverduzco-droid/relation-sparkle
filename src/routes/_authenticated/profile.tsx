@@ -93,20 +93,9 @@ function ProfilePage() {
     }
   }
 
-  async function removeAccount() {
-    const answer = prompt('This permanently deletes your account and everything Athena has come to understand about you. To confirm, type: delete my account');
-    if (answer !== "delete my account") return;
-    setBusy(true);
-    try {
-      await deleteFn({ data: { confirm: "delete my account" } });
-      await supabase.auth.signOut();
-      toast("Your account has been deleted.");
-      navigate({ to: "/" });
-    } catch {
-      toast.error("Couldn't delete the account.");
-      setBusy(false);
-    }
-  }
+  // Account deletion now lives in <DeviceSafetyPanel />, where it is gated by
+  // step-up reauthentication (F-12). A typed phrase is not enough.
+
 
   const values = Array.isArray(intel?.core_values)
     ? (intel!.core_values as string[])
