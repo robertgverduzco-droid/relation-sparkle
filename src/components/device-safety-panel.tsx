@@ -198,7 +198,10 @@ export function DeviceSafetyPanel() {
           <p className="text-[13px] text-ink-soft">
             {pending === "account_deletion"
               ? "This erases everything Athena has come to understand about you. Confirm with your password."
-              : "Confirm with your password to end every other session."}
+              : pending === "data_export"
+                ? "Your copy includes your own words and what Athena understands about you — never anyone else's. Confirm with your password."
+                : "Confirm with your password to end every other session."}
+
           </p>
           <input
             autoFocus
