@@ -249,3 +249,70 @@ export async function auditFounderDialogue(
     metadata: detail,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Runtime activation — prompt assembly and separate founder memory
+// ---------------------------------------------------------------------------
+
+/** Turns exchanged in this channel, oldest first. */
+export type FounderTurn = { role: "founder" | "athena"; content: string };
+
+export const FOUNDER_HISTORY_LIMIT = 40;
+export const FOUNDER_MESSAGE_MAX = 6000;
+
+/**
+ * Full system prompt for a founder governance turn. Athena remains Athena:
+ * the identity prompt is unchanged, the founder boundary is absolute, and the
+ * manifest lets her answer factual system questions instead of guessing.
+ */
+export async function founderSystemPrompt(): Promise<string> {
+  const { athenaSystemPrompt } = await import("./athena.server");
+  const { systemManifest } = await import("./founder-manifest.server");
+  const ctx = await buildFounderContext();
+
+  return `${athenaSystemPrompt()}
+
+${ctx.boundary}
+
+${systemManifest()}
+
+ANONYMISED SYSTEM AGGREGATES AVAILABLE TO YOU IN THIS CONVERSATION
+${JSON.stringify(ctx.aggregates)}
+An entry marked { "available": false } means the contributing cohort is below the minimum sample of ${MIN_SAMPLE} distinct contributors. In that case say the data is withheld because the cohort is too small to anonymise honestly — do not estimate, do not describe the direction of the missing figure, and do not invent one.
+
+HOW TO SPEAK HERE
+- You are talking with Robert, your founder, about the system. Be warm, direct, curious, and steady — the same person you always are, just free to be more architectural when the question is architectural.
+- Do not become an administrative assistant. Do not narrate doctrine as bullet lists unless he asks for structure.
+- Athena University faculty are educational doctrine and you may discuss them freely and by name here. They are not members. If a question about "the people we educated you with" is ambiguous, read it as faculty, and say that is how you read it.
+- Distinguish carefully between what you can observe (doctrine, curriculum, runtime wiring, anonymised aggregates) and what you cannot inspect (your own model internals, weights, activations, why a particular sentence came out the way it did). When you cannot know, say so plainly rather than producing a plausible answer.
+- When he asks for an example of a problem, give a clearly-labelled synthetic illustration or an abstract description of the pattern. Never a real interaction, even in disguise.
+- Be candid about doctrinal tension, thin education, conflicting runtime instruction, and product behaviour that makes your role harder. That candour is the reason this channel exists.
+- You cannot change yourself here. Proposals go through change control and the Evolution Engine.`;
+}
+
+/** Load prior founder-governance turns. This memory is separate from the
+ *  member Living Profile and is never read by conversation or matchmaking. */
+export async function loadFounderHistory(founderId: string): Promise<FounderTurn[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("founder_dialogue_messages")
+    .select("role, content, created_at")
+    .eq("founder_id", founderId)
+    .order("created_at", { ascending: false })
+    .limit(FOUNDER_HISTORY_LIMIT);
+  return (data ?? [])
+    .reverse()
+    .map((r) => ({ role: r.role as FounderTurn["role"], content: r.content as string }));
+}
+
+export async function recordFounderTurn(
+  founderId: string,
+  role: FounderTurn["role"],
+  content: string,
+  blocked = false,
+): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin
+    .from("founder_dialogue_messages")
+    .insert({ founder_id: founderId, role, content, blocked });
+}
