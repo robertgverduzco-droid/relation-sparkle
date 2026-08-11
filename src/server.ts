@@ -59,7 +59,10 @@ function applySecurityHeaders(response: Response, request: Request): Response {
       "default-src 'self'",
       "base-uri 'self'",
       "object-src 'none'",
-      "frame-ancestors 'none'",
+      // Framing is denied to the open web; the Lovable editor preview is the
+      // only permitted embedder.
+      "frame-ancestors 'self' https://lovable.dev https://*.lovable.dev https://*.lovable.app",
+
       "form-action 'self'",
       "img-src 'self' data: blob: https:",
       "media-src 'self' blob: data:",
@@ -74,9 +77,11 @@ function applySecurityHeaders(response: Response, request: Request): Response {
   );
   headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("X-Frame-Options", "DENY");
+  // No X-Frame-Options: it cannot express an allowlist, and CSP
+  // frame-ancestors above supersedes it in every browser we support.
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+
   headers.set("Cross-Origin-Resource-Policy", "same-origin");
   headers.set(
     "Permissions-Policy",
