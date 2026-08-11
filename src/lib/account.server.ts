@@ -47,7 +47,9 @@ const MEMBER_KEYED_TABLES: Array<[table: string, columns: string[]]> = [
   ["blocks", ["blocker_id", "blocked_id"]],
   ["reports", ["reporter_id", "reported_id"]],
   ["safety_flags", ["user_id"]],
+  ["member_consents", ["user_id"]],
 ];
+
 
 type Admin = Awaited<
   typeof import("@/integrations/supabase/client.server")
