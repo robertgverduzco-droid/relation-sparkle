@@ -271,8 +271,13 @@ function ProfilePage() {
       </div>
 
       <section className="mt-6 px-6">
+        <ConsentPanel mode="settings" />
+      </section>
+
+      <section className="mt-6 px-6">
         <DeviceSafetyPanel />
       </section>
+
 
 
       <MobileTabBar current="profile" />
