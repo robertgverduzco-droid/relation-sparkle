@@ -28,6 +28,13 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   )
   .handler(async ({ context }) => {
     const { userId } = context;
+    // F-12: a signed-in device alone can never destroy an account. The member
+    // must have re-proved their password within the last few minutes.
+    const { consumeStepUp } = await import("./step-up.server");
+    const granted = await consumeStepUp(userId, "account_deletion");
+    if (!granted) {
+      throw new Error("Please confirm your password before deleting your account.");
+    }
     const { purgeMemberAndDeleteAuthUser } = await import("./account.server");
     const result = await purgeMemberAndDeleteAuthUser(userId);
     return result;
