@@ -188,6 +188,20 @@ export async function runMatchmakingForUser(
     ]);
 
   if (!selfProfile) return { ok: false, reason: "no_profile" };
+
+  // READINESS GATE (server-side, authoritative). Athena may only consider
+  // introductions for a member in state C with no active hold. This subsumes
+  // pause, safety, foundational understanding, relationship holds, and the
+  // outstanding-reflection condition; those checks remain below as defence in
+  // depth.
+  {
+    const { introductionGate } = await import("./readiness.server");
+    const gate = await introductionGate(supabase, userId, "manual_request");
+    if (!gate.allowed) {
+      return { ok: true, considered: 0, reason: `readiness_${gate.state}:${gate.reason}` };
+    }
+  }
+
   if ((selfProfile as { is_paused: boolean | null }).is_paused) return { ok: true, reason: "paused" };
   if (!selfIntel?.last_interview_at) return { ok: true, considered: 0, reason: "foundation_incomplete" };
 
@@ -285,6 +299,17 @@ export async function runMatchmakingForUser(
       if (t.choice === "resume" || restingOver) continue;
       eligibleIds.delete(t.user_id as string);
     }
+    // Readiness gate for the other side: only members Athena has evaluated as
+    // ready are considered. Anyone unevaluated or in state A/B waits.
+    const { data: readyRows } = await supabase
+      .from("member_readiness")
+      .select("user_id, state")
+      .in("user_id", Array.from(eligibleIds));
+    const readySet = new Set(
+      (readyRows ?? []).filter((r) => r.state === "C").map((r) => r.user_id as string),
+    );
+    for (const id of Array.from(eligibleIds)) if (!readySet.has(id)) eligibleIds.delete(id);
+
     if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
   }
 
@@ -362,7 +387,17 @@ export async function runMatchmakingForUser(
       a: { name: (selfProfile.display_name as string) ?? "them", facets: selfFacetRows },
       b: { name: (c.other.display_name as string) ?? "them", facets: c.otherFacets },
     });
-    const wantsIntroduction = object.status === "introduced";
+    let wantsIntroduction = object.status === "introduced";
+    if (wantsIntroduction) {
+      // Final authoritative check for BOTH members at the moment of
+      // presentation — readiness may have changed while Athena was reasoning.
+      const { introductionGate } = await import("./readiness.server");
+      const [gateSelf, gateOther] = await Promise.all([
+        introductionGate(supabase, userId, "manual_request"),
+        introductionGate(supabase, c.other.id, "manual_request"),
+      ]);
+      if (!gateSelf.allowed || !gateOther.allowed) wantsIntroduction = false;
+    }
     const nowIso = new Date().toISOString();
     const selfIsLow = userId === low;
     const presentedForLow = selfIsLow ? object.presentation_for_a : object.presentation_for_b;
@@ -420,6 +455,19 @@ export async function runMatchmakingForUser(
         ],
         { onConflict: "pair_id,user_id" },
       );
+
+      const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+      for (const uid of [low, high]) {
+        await notify(supabase, {
+          userId: uid,
+          category: "introductions",
+          eventType: "introduction_new",
+          title: NOTIFICATION_COPY.introduction_new.title,
+          body: NOTIFICATION_COPY.introduction_new.body,
+          actionPath: "/introductions",
+          dedupeKey: `introduction_new:${upserted.id}`,
+        });
+      }
     }
   }
 
