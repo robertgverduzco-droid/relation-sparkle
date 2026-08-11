@@ -132,3 +132,4 @@ This curriculum educates; it does not amend doctrine. `docs/constitution/L2-ethi
 | Version | Date | Description |
 |---|---|---|
 | 1.0 (Part I) | 2026-08-06 | College established as the fifth founding college; Socrates, Aristotle, Kant, and Mill admitted; Part I Closing Integration adopted. |
+| 1.0 | 2026-08-11 | Part II closed with Confucius, the Stoic Tradition, Murdoch, Nussbaum, and the Buddhist Ethical Tradition; dedicated college-level Closing Integration adopted; College complete with nine founding faculty. |
