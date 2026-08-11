@@ -133,6 +133,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <PWAInstallPrompt />
+      <AppLock />
+
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
