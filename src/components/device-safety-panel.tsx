@@ -69,7 +69,22 @@ export function DeviceSafetyPanel() {
         navigate({ to: "/", replace: true });
         return;
       }
+      if (pending === "data_export") {
+        const result = (await exportFn({})) as { filename: string; json: string };
+        // Handed straight to the member; the file never rests on a server.
+        const url = URL.createObjectURL(
+          new Blob([result.json], { type: "application/json" }),
+        );
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("Your copy has been downloaded.");
+        return;
+      }
       await deleteFn({ data: { confirm: "delete my account" } });
+
       await supabase.auth.signOut();
       toast("Your account has been deleted.");
       navigate({ to: "/", replace: true });
