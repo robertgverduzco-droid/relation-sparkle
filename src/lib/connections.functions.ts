@@ -569,11 +569,12 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { obsoleteNotifications } = await import("./notifications.server");
       const { evaluateReadiness } = await import("./readiness.server");
-      await obsoleteNotifications(supabaseAdmin, {
+      await obsoleteNotifications(
+        supabaseAdmin,
         userId,
-        eventType: "reflection_available",
-        dedupeKey: `reflection_available:${data.connection_id}:${userId}`,
-      });
+        ["reflection_available"],
+        `/connections/${data.connection_id}`,
+      );
       await evaluateReadiness(supabaseAdmin, userId, "reflection_submitted");
     }
 
