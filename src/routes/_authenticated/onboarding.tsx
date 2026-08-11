@@ -140,8 +140,15 @@ function Onboarding() {
               </>
             }
             body="We only need what's necessary to create your account. Everything else — who you are, how you love, what matters to you — you and Athena will discover together, in your own time."
-          />
+          >
+            {/* Versioned agreements are recorded here, individually, before
+                anything about this person is gathered. */}
+            <div className="mt-6">
+              <ConsentPanel mode="gate" onSatisfied={() => setConsentOk(true)} />
+            </div>
+          </Section>
         )}
+
         {step === "identity" && (
           <Section
             eyebrow="Step 1 · You"
