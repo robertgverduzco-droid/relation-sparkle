@@ -27,7 +27,7 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
     const { data: pairs } = await supabase
       .from("pair_reasoning")
       .select(
-        "id, user_low, user_high, status, confidence, presentation_a, presentation_b, presented_to_a_at, presented_to_b_at, last_reasoned_at",
+        "id, user_low, user_high, status, confidence, presented_to_a_at, presented_to_b_at, last_reasoned_at",
       )
 
       .or(
@@ -41,14 +41,34 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
     const otherIds = pairs.map((p) =>
       (p.user_low as string) === userId ? (p.user_high as string) : (p.user_low as string),
     );
-    const [{ data: profs }, { data: responses }] = await Promise.all([
-      supabase.from("profiles").select("id, display_name, city, birth_date").in("id", otherIds),
+    const pairIds = pairs.map((p) => p.id as string);
+
+    // Presentations are per-side: `presentation_a` is written FOR user_low and
+    // is the other member's material from user_high's point of view. Members
+    // hold no column grant on either side (a row grant cannot distinguish
+    // sides), so the correct side is selected here, server-side, after
+    // membership is already proven by the RLS-scoped read above. Counterpart
+    // display fields come the same way: `profiles` is owner-scoped by RLS.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: sides }, { data: profs }, { data: responses }] = await Promise.all([
+      supabaseAdmin
+        .from("pair_reasoning")
+        .select("id, presentation_a, presentation_b")
+        .in("id", pairIds),
+      supabaseAdmin.from("profiles").select("id, display_name, city, birth_date").in("id", otherIds),
       supabase
         .from("introduction_responses")
         .select("pair_id, response")
         .eq("user_id", userId)
-        .in("pair_id", pairs.map((p) => p.id as string)),
+        .in("pair_id", pairIds),
     ]);
+
+    const sideMap = new Map<string, { a: string | null; b: string | null }>();
+    for (const s of sides ?? [])
+      sideMap.set(s.id as string, {
+        a: (s.presentation_a as string | null) ?? null,
+        b: (s.presentation_b as string | null) ?? null,
+      });
 
     const profMap = new Map<string, { display_name: string | null; city: string | null; birth_date: string | null }>();
     for (const p of profs ?? []) {
@@ -60,6 +80,7 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
     }
     const respMap = new Map<string, string>();
     for (const r of responses ?? []) respMap.set(r.pair_id as string, r.response as string);
+
 
     const shape = pairs.map((p) => {
       const isLow = p.user_low === userId;
