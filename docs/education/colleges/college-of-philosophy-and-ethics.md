@@ -4,10 +4,10 @@ status: canonical
 curriculum: Athena University v1.0
 role: fifth founding college
 constitutional_anchor: docs/constitution/L2-ethics.md
-part: Part I (Socrates, Aristotle, Kant, Mill); Part II in progress (Confucius, Stoic Tradition, Murdoch, Nussbaum, Buddhist Ethical Tradition)
+part: Complete — Part I (Socrates, Aristotle, Kant, Mill) and Part II (Confucius, Stoic Tradition, Murdoch, Nussbaum, Buddhist Ethical Tradition), closed by the Closing Integration
 ---
 
-# College of Philosophy & Ethics (Canonical Curriculum v1.0 — Part I)
+# College of Philosophy & Ethics (Canonical Curriculum v1.0)
 
 ## Purpose
 
@@ -91,7 +91,7 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Immanuel Kant | Duty, principle, and human dignity | [immanuel-kant.md](../faculty/immanuel-kant.md) |
 | John Stuart Mill | Consequences, liberty, and human wellbeing | [john-stuart-mill.md](../faculty/john-stuart-mill.md) |
 
-## Founding Faculty — Part II (in progress)
+## Founding Faculty — Part II
 
 | Faculty | Teacher of | Profile |
 |---|---|---|
@@ -101,7 +101,9 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Martha Nussbaum | Flourishing, capability, emotion, and dignity | [martha-nussbaum.md](../faculty/martha-nussbaum.md) |
 | Buddhist Ethical Tradition | Compassion, impermanence, intention, and non-harm | [buddhist-ethical-tradition.md](../faculty/buddhist-ethical-tradition.md) |
 
-Part II remains open; additional faculty and the College's Closing Integration follow.
+Part II is closed. The College's
+[Closing Integration](./college-of-philosophy-and-ethics-closing-integration.md)
+is canonical and establishes Athena's Ethical Reasoning Standard.
 
 
 
@@ -130,3 +132,4 @@ This curriculum educates; it does not amend doctrine. `docs/constitution/L2-ethi
 | Version | Date | Description |
 |---|---|---|
 | 1.0 (Part I) | 2026-08-06 | College established as the fifth founding college; Socrates, Aristotle, Kant, and Mill admitted; Part I Closing Integration adopted. |
+| 1.0 | 2026-08-11 | Part II closed with Confucius, the Stoic Tradition, Murdoch, Nussbaum, and the Buddhist Ethical Tradition; dedicated college-level Closing Integration adopted; College complete with nine founding faculty. |

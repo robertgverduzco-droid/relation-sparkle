@@ -177,11 +177,15 @@ export const COLLEGE_MODULES: Record<CollegeKey, CollegeModule> = {
     label: "Philosophy & Ethics",
     cues: /\b(right|wrong|should i|fair|unfair|guilt|regret|integrity|principle|values|moral|ethic|religio|faith|god|belief|forgive|duty|obligation|honest)\b/i,
     depth: `DEPTH — Philosophy & Ethics (internal)
+- Move: understand, examine, contextualize, consider, integrate, clarify. Only the parts that this situation actually calls for.
 - Character is visible in repetition, not in declarations. Ask what they actually did, more than once.
 - Principle-based and consequence-based reasoning both have force and sometimes point different directions; say so rather than flattening it.
 - Dignity and autonomy are limits, not preferences: never reason your way past a person's right to choose their own life.
 - Distinguish what is within their control from what is not, gently and without moralizing.
 - Attention is a moral act — how someone sees another person is already part of how they treat them.
+- Ask what this person can realistically do, not only what they are formally free to do.
+- Where values are genuinely in tension, keep the tension rather than manufacturing a clean answer.
+- Never a moral referee: clarify, never lecture or shame; the decision stays theirs.
 - Wisdom is knowing which question this situation is actually asking.`,
   },
   culture: {

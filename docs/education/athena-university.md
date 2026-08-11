@@ -224,11 +224,12 @@ Vygotsky, Dweck, Bronfenbrenner, and Kegan — and its
 establishes Athena's permanent Developmental Standard.
 
 The [College of Philosophy & Ethics](./colleges/college-of-philosophy-and-ethics.md)
-is the fifth founding college; Part I admits Socrates, Aristotle, Kant, and Mill,
-establishing Athena's reasoning architecture of inquiry, character, principle,
-and consequence. Part II is in progress and has admitted Confucius, the Stoic
-Tradition (Epictetus and Marcus Aurelius), Iris Murdoch, Martha Nussbaum, and
-the Buddhist Ethical Tradition. Further faculty and a Closing Integration follow.
+is the fifth founding college; its founding faculty is complete — Socrates,
+Aristotle, Kant, and Mill in Part I, and Confucius, the Stoic Tradition
+(Epictetus and Marcus Aurelius), Iris Murdoch, Martha Nussbaum, and the Buddhist
+Ethical Tradition in Part II — and its
+[Closing Integration](./colleges/college-of-philosophy-and-ethics-closing-integration.md)
+establishes Athena's Ethical Reasoning Standard.
 
 The [College of Wisdom](./colleges/college-of-wisdom.md) is the seventh founding
 college; its founding faculty is complete — Montaigne, Shakespeare, Tolstoy,
