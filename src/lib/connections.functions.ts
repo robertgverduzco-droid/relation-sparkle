@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, generateObject, type ModelMessage } from "ai";
 import { z } from "zod";
+import { generalizeArea } from "./geography";
 import {
   idInput,
   proposeInput,
@@ -91,7 +92,7 @@ export const getConnection = createServerFn({ method: "POST" })
       await Promise.all([
         supabaseAdmin
           .from("profiles")
-          .select("display_name, city, birth_date")
+          .select("display_name, city, region, birth_date")
           .eq("id", otherId)
           .maybeSingle(),
         supabase
@@ -125,7 +126,9 @@ export const getConnection = createServerFn({ method: "POST" })
         opened_at: conn.opened_at as string,
         other_id: otherId,
         other_name: (prof?.display_name as string | null) ?? "Someone",
-        other_city: (prof?.city as string | null) ?? null,
+        // F-06: connection alone does not authorise finer geography than the
+        // surface needs; members share specifics deliberately when they plan.
+        other_area: generalizeArea(prof?.city as string | null, prof?.region as string | null),
       },
       athena_reflection: myPresentation,
       proposals: (proposals ?? []).map((p) => ({
