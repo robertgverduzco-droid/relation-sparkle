@@ -1,8 +1,12 @@
 # Founder Dialogue Mode — Privacy Architecture v1.0
 
-Status: **boundaries binding now; member-facing surface not yet built.** The
-enforcement layer lives in `src/lib/founder-dialogue.server.ts`. No route,
-component, or navigation entry exists yet — by design.
+Status: **live.** The enforcement layer lives in
+`src/lib/founder-dialogue.server.ts`, the server functions in
+`src/lib/founder.functions.ts`, and the founder-only surface at
+`/founder` (`src/routes/_authenticated/founder.tsx`). The route is
+unlinked from all member navigation and returns "This page isn't available"
+to anyone without the `founder` role; the server functions deny
+non-founders independently of the UI.
 
 ## Purpose
 
