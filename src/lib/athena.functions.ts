@@ -384,6 +384,9 @@ ${transcript}`,
     // has just completed, reconsider introductions for this user in the
     // background. Cooldown inside runMatchmakingForUser prevents thrash.
     if (upserts.length > 0) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { evaluateReadiness } = await import("./readiness.server");
+      await evaluateReadiness(supabaseAdmin, userId, "living_profile_update").catch(() => {});
       const { runMatchmakingForUser } = await import("./introductions.server");
       void runMatchmakingForUser(userId).catch(() => { /* silent */ });
     }
@@ -437,6 +440,14 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
           { user_id: userId, last_interview_at: now },
           { onConflict: "user_id" },
         );
+    }
+
+    // Readiness is re-evaluated first so the gate reflects the completed
+    // foundational conversation before matchmaking asks the question.
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { evaluateReadiness } = await import("./readiness.server");
+      await evaluateReadiness(supabaseAdmin, userId, "foundational_conversation_complete");
     }
 
     const { runMatchmakingForUser } = await import("./introductions.server");
