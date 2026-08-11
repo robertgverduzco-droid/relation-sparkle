@@ -377,7 +377,12 @@ function AthenaPage() {
           const fd = new FormData();
           const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
           fd.append("file", blob, `voice.${ext}`);
-          const res = await fetch("/api/stt", { method: "POST", body: fd });
+          const res = await fetch("/api/stt", {
+            method: "POST",
+            body: fd,
+            headers: await authHeader(),
+          });
+
           if (!res.ok) {
             toast("I couldn't hear that clearly. Please try again.");
             return;
