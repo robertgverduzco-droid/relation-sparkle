@@ -135,7 +135,7 @@ export async function auditAdminAccess(entry: AuditEntry): Promise<void> {
       subject_id: entry.subjectId ?? null,
       resource: entry.resource ?? null,
       purpose: entry.purpose ?? null,
-      metadata: (redact(entry.metadata ?? {}) as Record<string, unknown>) ?? {},
+      metadata: JSON.parse(JSON.stringify(redact(entry.metadata ?? {}))),
     });
   } catch {
     // Never surface audit failures to the member path.
