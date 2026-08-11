@@ -21,8 +21,11 @@ export const listConversations = createServerFn({ method: "GET" })
     const ids = (convs ?? []).map((c) =>
       (c.user_a === userId ? c.user_b : c.user_a) as string,
     );
+    // `profiles` is owner-scoped by RLS; counterpart display names are read
+    // server-side with a narrow projection, after participation is proven.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: profs } = ids.length
-      ? await supabase.from("profiles").select("id, display_name").in("id", ids)
+      ? await supabaseAdmin.from("profiles").select("id, display_name").in("id", ids)
       : { data: [] as { id: string; display_name: string | null }[] };
     const nameOf = new Map<string, string>();
     for (const p of profs ?? []) nameOf.set(p.id, p.display_name ?? "Someone");
@@ -69,8 +72,9 @@ export const getConversation = createServerFn({ method: "POST" })
     if (!conv) throw new Error("Not found");
     if (conv.user_a !== userId && conv.user_b !== userId) throw new Error("Not yours");
     const otherId = (conv.user_a === userId ? conv.user_b : conv.user_a) as string;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: prof }, { data: msgs }] = await Promise.all([
-      supabase.from("profiles").select("display_name").eq("id", otherId).maybeSingle(),
+      supabaseAdmin.from("profiles").select("display_name").eq("id", otherId).maybeSingle(),
       supabase
         .from("messages")
         .select("id, sender_id, kind, body, created_at, read_at")
