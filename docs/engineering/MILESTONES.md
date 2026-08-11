@@ -130,3 +130,13 @@ Audit. Not a rollback point in itself; Wave 3 builds on Waves 1 and 2.
 ### Rollback guidance
 Restore the chat to the message that introduced this entry. Do not edit this
 entry; record future waves below it.
+
+## Wave 4 — Readiness Gate + Notification Architecture
+
+- `member_readiness`, `notifications`, `notification_preferences` tables (RLS, GRANTs).
+- `src/lib/readiness.server.ts` — A/B/C evaluation and the authoritative `introductionGate`.
+- `src/lib/notifications.server.ts` — `notify()` with essential/non-essential rules, preferences, pause and dedupe.
+- Gate enforced in `runMatchmakingForUser` for both members, at pool selection and at presentation.
+- Re-evaluation triggers: foundational conversation complete, living-profile update, pause change, ending path chosen, reflection submitted.
+- Member surfaces: readiness card on Today, `/notifications` list and preferences.
+- Deletion purge extended to the three new tables.
