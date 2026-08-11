@@ -115,7 +115,8 @@ export async function evaluateReadiness(
       .from("reports")
       .select("id")
       .eq("reported_id", userId)
-      .in("status", ["actioned", "banned"])
+      .in("severity", ["high", "critical"])
+      .eq("status", "open")
       .limit(1);
     if ((bans ?? []).length > 0) {
       return persist({ state: "A", reason_code: "safety_hold", reason_text: COPY.A_safety, hold_kind: "safety", hold_until: null });
