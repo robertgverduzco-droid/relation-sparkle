@@ -19,6 +19,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
@@ -80,6 +81,12 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedModerationRoute = AuthenticatedModerationRouteImport.update({
   id: '/moderation',
   path: '/moderation',
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/moderation': typeof AuthenticatedModerationRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/api/stt': typeof ApiSttRoute
@@ -177,6 +185,7 @@ export interface FileRoutesByTo {
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/moderation': typeof AuthenticatedModerationRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/api/stt': typeof ApiSttRoute
@@ -201,6 +210,7 @@ export interface FileRoutesById {
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/api/stt': typeof ApiSttRoute
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/introductions'
     | '/messages'
     | '/moderation'
+    | '/notifications'
     | '/onboarding'
     | '/profile'
     | '/api/stt'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/introductions'
     | '/messages'
     | '/moderation'
+    | '/notifications'
     | '/onboarding'
     | '/profile'
     | '/api/stt'
@@ -270,6 +282,7 @@ export interface FileRouteTypes {
     | '/_authenticated/introductions'
     | '/_authenticated/messages'
     | '/_authenticated/moderation'
+    | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/api/stt'
@@ -361,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/moderation': {
@@ -503,6 +523,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRouteWithChildren
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
 }
@@ -515,6 +536,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRouteWithChildren,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
 }
@@ -535,13 +557,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

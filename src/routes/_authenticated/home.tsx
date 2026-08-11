@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { EndingChoiceCard } from "@/components/ending-choice-card";
+import { ReadinessCard } from "@/components/readiness-card";
+import { Bell } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -64,7 +66,12 @@ function Home() {
   return (
     <div className="screen-shell safe-top pb-24">
       <header className="px-6 pt-8">
-        <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Today</p>
+        <div className="flex items-start justify-between">
+          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Today</p>
+          <Link to="/notifications" aria-label="Notifications" className="text-muted-foreground">
+            <Bell className="h-5 w-5" strokeWidth={1.5} />
+          </Link>
+        </div>
         <h1 className="mt-2 font-display text-[2.25rem] leading-tight text-foreground">
           Welcome back
           {firstName ? (
@@ -83,6 +90,7 @@ function Home() {
 
       <section className="mt-8 space-y-4 px-6">
         <EndingChoiceCard />
+        <ReadinessCard />
         <Card
           title={hasStartedAthena ? "Continue your conversation with Athena" : "Meet Athena"}
           body={
@@ -92,10 +100,6 @@ function Home() {
           }
           actionLabel={hasStartedAthena ? "Continue" : "Begin"}
           actionTo="/athena"
-        />
-        <Card
-          title="No introductions yet"
-          body="Introductions arrive when they are worth arriving. Athena is quietly listening for a fit."
         />
         <Card
           title="Your Living Profile"
