@@ -1,0 +1,1 @@
+REVOKE SELECT (presentation_a, presentation_b) ON public.pair_reasoning FROM authenticated;
