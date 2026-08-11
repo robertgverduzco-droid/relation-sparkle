@@ -22,7 +22,7 @@ are published and unified by the Final Integration.
 | 2 | College of Relationships | (faculty profiles + closing) | [closing](./colleges/college-of-relationships-closing-integration.md) |
 | 3 | College of Communication | [college-of-communication.md](./colleges/college-of-communication.md) | [closing](./colleges/college-of-communication-closing-integration.md) |
 | 4 | College of Human Development | [college-of-human-development.md](./colleges/college-of-human-development.md) | [closing](./colleges/college-of-human-development-closing-integration.md) |
-| 5 | College of Philosophy & Ethics | [college-of-philosophy-and-ethics.md](./colleges/college-of-philosophy-and-ethics.md) (Parts I and II) | Integrated into [Final Integration](./final-integration.md) |
+| 5 | College of Philosophy & Ethics | [college-of-philosophy-and-ethics.md](./colleges/college-of-philosophy-and-ethics.md) (Parts I and II) | [closing](./colleges/college-of-philosophy-and-ethics-closing-integration.md) |
 | 6 | College of Culture & Humanity | [college-of-culture-and-humanity.md](./colleges/college-of-culture-and-humanity.md) | [closing](./colleges/college-of-culture-and-humanity-closing-integration.md) |
 | 7 | College of Wisdom | [college-of-wisdom.md](./colleges/college-of-wisdom.md) | [closing](./colleges/college-of-wisdom-closing-integration.md) |
 
