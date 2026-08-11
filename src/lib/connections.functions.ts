@@ -41,7 +41,10 @@ export const listMyConnections = createServerFn({ method: "GET" })
     const otherIds = conns.map((c) =>
       (c.user_low === userId ? c.user_high : c.user_low) as string,
     );
-    const { data: profs } = await supabase
+    // `profiles` is owner-scoped by RLS; counterpart display fields are read
+    // server-side with a narrow projection after membership is proven above.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: profs } = await supabaseAdmin
       .from("profiles")
       .select("id, display_name")
       .in("id", otherIds);
