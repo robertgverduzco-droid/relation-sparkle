@@ -261,7 +261,7 @@ function Onboarding() {
         {step !== "complete" && (
           <button
             onClick={() => persistStage(next)}
-            disabled={saving}
+            disabled={saving || (step === "welcome" && !consentOk)}
             className="ml-auto rounded-full bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition active:scale-[0.98] disabled:opacity-60"
           >
             {saving
