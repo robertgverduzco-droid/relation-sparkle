@@ -13,6 +13,7 @@ Companion documents:
 - `RETENTION-AND-DELETION.md` — lifetimes, export, deletion proof.
 - `INCIDENT-RESPONSE.md` — kill switches, severity, notification duties.
 - `SECURITY-TESTING.md` — adversarial checks and their results.
+- `FOUNDER-DIALOGUE.md` — founder governance channel and its privacy boundary.
 
 ## 1. Principles
 
