@@ -106,6 +106,12 @@ export const sendMessage = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => sendInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { assertFeatureEnabled, rateLimit } = await import("./security.server");
+    await assertFeatureEnabled("messaging");
+    if (!rateLimit(`msg:${userId}`, 60, 60_000)) {
+      throw new Error("You're sending messages very quickly. Take a breath and try again shortly.");
+    }
+
     const { error } = await supabase.from("messages").insert({
       conversation_id: data.conversation_id,
       sender_id: userId,
