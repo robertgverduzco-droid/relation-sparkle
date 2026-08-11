@@ -2,6 +2,37 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+];
+
+/**
+ * Re-encode an image through a canvas so no EXIF/XMP metadata (GPS location,
+ * capture timestamp, device serial) survives the upload. Orientation is
+ * normalised by the decoder, so the visible image is unchanged.
+ */
+async function stripMetadata(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const maxEdge = 2000;
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Couldn't process that image on this device.");
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/jpeg", 0.9),
+  );
+  if (!blob) throw new Error("Couldn't process that image on this device.");
+  return blob;
+}
+
 type Photo = {
   id: string;
   path: string;
