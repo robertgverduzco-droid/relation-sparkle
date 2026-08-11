@@ -92,7 +92,9 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         other_name: prof?.display_name ?? "Someone",
         other_city: prof?.city ?? null,
         other_age: ageFromDob(prof?.birth_date ?? null),
-        presentation: isLow ? (p.presentation_a as string | null) : (p.presentation_b as string | null),
+        presentation: isLow
+          ? (sideMap.get(p.id as string)?.a ?? null)
+          : (sideMap.get(p.id as string)?.b ?? null),
         confidence: Number(p.confidence ?? 0),
         response: respMap.get(p.id as string) ?? "pending",
         presented_at: (isLow ? p.presented_to_a_at : p.presented_to_b_at) as string | null,
