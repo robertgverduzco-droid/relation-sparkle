@@ -82,9 +82,14 @@ export const getConnection = createServerFn({ method: "POST" })
 
     const otherId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
 
+    // Membership is proven above (RLS-scoped read of the connection). The
+    // counterpart profile and this member's own side of the pair presentation
+    // are then read server-side: `profiles` is owner-scoped, and members hold
+    // no column grant on either presentation side.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: prof }, { data: proposals }, { data: reflection }, { data: pair }] =
       await Promise.all([
-        supabase
+        supabaseAdmin
           .from("profiles")
           .select("display_name, city, birth_date")
           .eq("id", otherId)
@@ -102,7 +107,7 @@ export const getConnection = createServerFn({ method: "POST" })
           .eq("connection_id", conn.id)
           .eq("user_id", userId)
           .maybeSingle(),
-        supabase
+        supabaseAdmin
           .from("pair_reasoning")
           .select("presentation_a, presentation_b, user_low")
           .eq("id", conn.pair_id as string)
