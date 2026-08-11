@@ -157,6 +157,26 @@ export async function purgeMemberAndDeleteAuthUser(userId: string): Promise<{
     }
   }
 
+  // --- 5. Audit trail --------------------------------------------------------
+  // The audit log must survive deletion (it is the accountability record for
+  // privileged action), but it must stop pointing at a deleted member. Subject
+  // references are severed; the action history remains.
+  await admin
+    .from("admin_audit_log")
+    .update({ subject_id: null })
+    .eq("subject_id", userId);
+  const { auditAdminAccess } = await import("./security.server");
+  await auditAdminAccess({
+    action: "account.purge.completed",
+    resource: "profiles",
+    purpose: "Member-initiated or enforcement deletion",
+    metadata: {
+      photos_removed: photosRemoved,
+      outcome_signals_removed: outcomeRemoved,
+      residual_tables: Object.keys(residual).length,
+    },
+  });
+
 
   return {
     ok: true,
