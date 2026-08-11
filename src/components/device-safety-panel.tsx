@@ -159,6 +159,13 @@ export function DeviceSafetyPanel() {
           Sign out everywhere
         </button>
         <button
+          onClick={() => setPending("data_export")}
+          className="w-full rounded-full border border-border px-5 py-3 text-sm text-foreground"
+        >
+          Download a copy of my information
+        </button>
+
+        <button
           onClick={() => setPending("account_deletion")}
           className="w-full rounded-full border border-destructive/60 px-5 py-3 text-sm text-destructive"
         >
