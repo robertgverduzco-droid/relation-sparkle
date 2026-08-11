@@ -6,7 +6,8 @@
 - [DATA-INVENTORY.md](./DATA-INVENTORY.md) — every table, its sensitivity class, who may read it
 - [ACCESS-CONTROL.md](./ACCESS-CONTROL.md) — roles, RLS model, administrative access, audit log, consent
 - [AI-PRIVACY-BOUNDARY.md](./AI-PRIVACY-BOUNDARY.md) — what reaches a model provider; prompt-injection defence
-- [RETENTION-AND-DELETION.md](./RETENTION-AND-DELETION.md) — lifetimes, export, deletion proof
+- [RETENTION-AND-DELETION.md](./RETENTION-AND-DELETION.md) — Permanent Member Deletion Principle, backups, third parties, deletion proof
+- [FOUNDER-DIALOGUE.md](./FOUNDER-DIALOGUE.md) — founder governance channel; founder holds no member private data
 - [INCIDENT-RESPONSE.md](./INCIDENT-RESPONSE.md) — kill switches, severity, notification duty
 - [SECURITY-TESTING.md](./SECURITY-TESTING.md) — adversarial probes and results
 

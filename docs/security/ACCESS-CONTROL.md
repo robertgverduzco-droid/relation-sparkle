@@ -8,6 +8,7 @@
 | `authenticated` | signed-in member | only rows RLS scopes to `auth.uid()` |
 | `moderator` | `user_roles` | safety reports and enforcement actions only |
 | `admin` | `user_roles` | moderation plus the audit log and Athena self-evaluations |
+| `founder` | `user_roles` | **no member data at all**; unlocks only the Founder Dialogue governance interface (see FOUNDER-DIALOGUE.md) |
 | `service_role` | server-only key | full access; used exclusively inside server handlers |
 
 Roles are never stored on `profiles`. Checks go through the
