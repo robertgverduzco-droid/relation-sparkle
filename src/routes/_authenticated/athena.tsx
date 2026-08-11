@@ -36,15 +36,23 @@ function buildIntro(firstName: string | null): string[] {
   ];
 }
 
+/** Bearer token for the voice endpoints, which authenticate every request. */
+async function authHeader(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function playLine(text: string, signal: AbortSignal): Promise<void> {
   try {
     const res = await fetch("/api/tts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(await authHeader()) },
       body: JSON.stringify({ text }),
       signal,
     });
     if (!res.ok) return;
+
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);

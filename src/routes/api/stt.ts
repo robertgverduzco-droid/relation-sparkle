@@ -4,6 +4,17 @@ export const Route = createFileRoute("/api/stt")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Voice is Class 3 member content: authenticate before it leaves us.
+        const { verifyApiCaller } = await import("@/lib/api-auth.server");
+        const caller = await verifyApiCaller(request);
+        if (!caller) return new Response("Unauthorized", { status: 401 });
+
+        const { rateLimit, assertFeatureEnabled } = await import("@/lib/security.server");
+        await assertFeatureEnabled("athena_conversation");
+        if (!rateLimit(`stt:${caller.userId}`, 40, 60_000)) {
+          return new Response("Too many requests", { status: 429 });
+        }
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
@@ -11,6 +22,7 @@ export const Route = createFileRoute("/api/stt")({
         if (!contentType.includes("multipart/form-data")) {
           return new Response("Expected multipart/form-data", { status: 400 });
         }
+
 
         const inbound = await request.formData();
         const file = inbound.get("file");
