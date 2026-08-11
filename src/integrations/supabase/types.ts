@@ -430,6 +430,45 @@ export type Database = {
           },
         ]
       }
+      member_readiness: {
+        Row: {
+          created_at: string
+          hold_kind: string | null
+          hold_until: string | null
+          last_evaluated_at: string
+          last_trigger: string | null
+          reason_code: string | null
+          reason_text: string | null
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hold_kind?: string | null
+          hold_until?: string | null
+          last_evaluated_at?: string
+          last_trigger?: string | null
+          reason_code?: string | null
+          reason_text?: string | null
+          state?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hold_kind?: string | null
+          hold_until?: string | null
+          last_evaluated_at?: string
+          last_trigger?: string | null
+          reason_code?: string | null
+          reason_text?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       member_transitions: {
         Row: {
           choice: string | null
@@ -523,6 +562,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          athena: boolean
+          created_at: string
+          email_enabled: boolean
+          introductions: boolean
+          messages: boolean
+          product_updates: boolean
+          reflection: boolean
+          relationship: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          athena?: boolean
+          created_at?: string
+          email_enabled?: boolean
+          introductions?: boolean
+          messages?: boolean
+          product_updates?: boolean
+          reflection?: boolean
+          relationship?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          athena?: boolean
+          created_at?: string
+          email_enabled?: boolean
+          introductions?: boolean
+          messages?: boolean
+          product_updates?: boolean
+          reflection?: boolean
+          relationship?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_path: string | null
+          body: string | null
+          category: string
+          channel: string
+          created_at: string
+          dedupe_key: string
+          delivery_status: string
+          event_type: string
+          expires_at: string | null
+          id: string
+          obsolete_at: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_path?: string | null
+          body?: string | null
+          category: string
+          channel?: string
+          created_at?: string
+          dedupe_key: string
+          delivery_status?: string
+          event_type: string
+          expires_at?: string | null
+          id?: string
+          obsolete_at?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_path?: string | null
+          body?: string | null
+          category?: string
+          channel?: string
+          created_at?: string
+          dedupe_key?: string
+          delivery_status?: string
+          event_type?: string
+          expires_at?: string | null
+          id?: string
+          obsolete_at?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       pair_reasoning: {
         Row: {
