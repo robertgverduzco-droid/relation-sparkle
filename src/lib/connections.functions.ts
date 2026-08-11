@@ -563,6 +563,20 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     );
     if (error) throw new Error(error.message);
 
+    // The reflection is complete — that pending notification no longer applies,
+    // and readiness may have changed.
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { obsoleteNotifications } = await import("./notifications.server");
+      const { evaluateReadiness } = await import("./readiness.server");
+      await obsoleteNotifications(supabaseAdmin, {
+        userId,
+        eventType: "reflection_available",
+        dedupeKey: `reflection_available:${data.connection_id}:${userId}`,
+      });
+      await evaluateReadiness(supabaseAdmin, userId, "reflection_submitted");
+    }
+
     // Athena's acknowledgement — personal, tone-matched, never directive.
     const { data: otherProf } = await supabase
       .from("profiles")
