@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -37,6 +38,11 @@ import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authen
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/community-guidelines'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/athena'
     | '/connections'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/community-guidelines'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/athena'
     | '/connections'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/community-guidelines'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/_authenticated/athena'
     | '/_authenticated/connections'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -336,6 +349,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -591,6 +611,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,

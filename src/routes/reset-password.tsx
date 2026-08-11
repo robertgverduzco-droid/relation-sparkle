@@ -92,7 +92,7 @@ function ResetPasswordPage() {
       if (error) throw error;
       // Anyone holding an old session on another device loses it now.
       await supabase.auth.signOut({ scope: "others" }).catch(() => undefined);
-      await completePasswordRecovery({ data: {} }).catch(() => undefined);
+      await completePasswordRecovery().catch(() => undefined);
       toast.success("Password updated. You're signed in on this device only.");
       navigate({ to: "/home" });
     } catch (err) {
