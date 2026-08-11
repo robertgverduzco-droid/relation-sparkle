@@ -194,7 +194,7 @@ export async function applyEnforcement(input: EnforcementInput): Promise<{
     if (decision.action === "introduction_suspension" || decision.level >= 2) {
       await admin.from("profiles").update({ is_paused: true }).eq("id", input.userId);
     }
-    await notify({
+    await notify(admin, {
       userId: input.userId,
       category: "relationship",
       eventType: "enforcement.action",
@@ -211,7 +211,7 @@ export async function applyEnforcement(input: EnforcementInput): Promise<{
   const { auditAdminAccess } = await import("./security.server");
   await auditAdminAccess({
     actorId: input.actorId ?? undefined,
-    actorRole: input.actorId ? "moderator" : "system",
+    actorRole: input.actorId ? "moderator" : "service",
     action: `enforcement.${decision.action}`,
     resource: "enforcement_actions",
     subjectId: decision.action === "removal" ? null : input.userId,
