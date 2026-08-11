@@ -260,14 +260,12 @@ function ProfilePage() {
         >
           Sign out
         </button>
-        <button
-          onClick={removeAccount}
-          disabled={busy}
-          className="w-full rounded-full border border-destructive/60 px-6 py-3 text-sm text-destructive disabled:opacity-60"
-        >
-          Delete my account
-        </button>
       </div>
+
+      <section className="mt-6 px-6">
+        <DeviceSafetyPanel />
+      </section>
+
 
       <MobileTabBar current="profile" />
     </div>
