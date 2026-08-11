@@ -91,7 +91,7 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Immanuel Kant | Duty, principle, and human dignity | [immanuel-kant.md](../faculty/immanuel-kant.md) |
 | John Stuart Mill | Consequences, liberty, and human wellbeing | [john-stuart-mill.md](../faculty/john-stuart-mill.md) |
 
-## Founding Faculty — Part II (in progress)
+## Founding Faculty — Part II
 
 | Faculty | Teacher of | Profile |
 |---|---|---|
@@ -101,7 +101,9 @@ Athena distinguishes between fact, belief, faith, evidence, opinion, values, emo
 | Martha Nussbaum | Flourishing, capability, emotion, and dignity | [martha-nussbaum.md](../faculty/martha-nussbaum.md) |
 | Buddhist Ethical Tradition | Compassion, impermanence, intention, and non-harm | [buddhist-ethical-tradition.md](../faculty/buddhist-ethical-tradition.md) |
 
-Part II remains open; additional faculty and the College's Closing Integration follow.
+Part II is closed. The College's
+[Closing Integration](./college-of-philosophy-and-ethics-closing-integration.md)
+is canonical and establishes Athena's Ethical Reasoning Standard.
 
 
 
