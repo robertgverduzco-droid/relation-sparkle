@@ -134,8 +134,16 @@ export async function purgeMemberAndDeleteAuthUser(userId: string): Promise<{
   }
 
   // --- 3. Delete the auth user (drives the FK cascade transactionally) ------
+  // The tombstone is written *before* the delete so that a crash between the
+  // two leaves us over-protective (a tombstone with no deletion is harmless)
+  // rather than under-protective (a deletion no restore would ever replay).
+  {
+    const { writePurgeTombstone } = await import("./restore-guard.server");
+    await writePurgeTombstone(userId, "member_request");
+  }
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) throw new Error(error.message);
+
 
   // --- 4. Residual sweep ----------------------------------------------------
   // Any row that somehow escaped the cascade (e.g. a future table added
