@@ -14,6 +14,7 @@ import {
   signOutEverywhere,
 } from "@/lib/session-safety.functions";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { generateMyExport } from "@/lib/export.functions";
 import {
   isAppLockEnabled,
   enableAppLock,
@@ -27,7 +28,8 @@ type Overview = {
   email_confirmed: boolean;
 };
 
-type Pending = "sign_out_everywhere" | "account_deletion" | null;
+type Pending = "sign_out_everywhere" | "account_deletion" | "data_export" | null;
+
 
 export function DeviceSafetyPanel() {
   const navigate = useNavigate();
