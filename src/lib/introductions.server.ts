@@ -176,8 +176,11 @@ export async function runMatchmakingForUser(
   userId: string,
   opts?: { force?: boolean },
 ): Promise<{ ok: boolean; considered?: number; introduced?: number; reason?: string; active?: number }> {
+  const { featureEnabled } = await import("./security.server");
+  if (!(await featureEnabled("matchmaking"))) return { ok: false, reason: "paused_by_operator" };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const supabase = supabaseAdmin as SupabaseClient;
+
 
   const [{ data: selfProfile }, { data: selfPrefs }, { data: selfFacets }, { data: selfIntel }] =
     await Promise.all([

@@ -1,5 +1,20 @@
 # Security Documentation
 
+**Privacy & Security Architecture v1.0 is the governing standard.** Start here:
+
+- [ARCHITECTURE-V1.md](./ARCHITECTURE-V1.md) — principles, trust boundaries, encryption, browser hardening, accepted risks
+- [DATA-INVENTORY.md](./DATA-INVENTORY.md) — every table, its sensitivity class, who may read it
+- [ACCESS-CONTROL.md](./ACCESS-CONTROL.md) — roles, RLS model, administrative access, audit log, consent
+- [AI-PRIVACY-BOUNDARY.md](./AI-PRIVACY-BOUNDARY.md) — what reaches a model provider; prompt-injection defence
+- [RETENTION-AND-DELETION.md](./RETENTION-AND-DELETION.md) — lifetimes, export, deletion proof
+- [INCIDENT-RESPONSE.md](./INCIDENT-RESPONSE.md) — kill switches, severity, notification duty
+- [SECURITY-TESTING.md](./SECURITY-TESTING.md) — adversarial probes and results
+
+The sections below remain accurate as the quick reference.
+
+## Access control model
+
+
 ## Access control model
 - Auth: Supabase email/password + Google OAuth. Email verification required
   (enforced in `src/routes/_authenticated/route.tsx`).

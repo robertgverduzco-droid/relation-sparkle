@@ -50,7 +50,10 @@ export async function notify(
   input: NotifyInput,
 ): Promise<{ created: boolean; reason?: string }> {
   try {
+    const { featureEnabled } = await import("./security.server");
+    if (!(await featureEnabled("notifications"))) return { created: false, reason: "paused" };
     const essential = ESSENTIAL.includes(input.category);
+
 
     // Deleted account: no profile row, nothing is ever delivered.
     const { data: profile } = await supabase

@@ -6,12 +6,24 @@ export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { verifyApiCaller } = await import("@/lib/api-auth.server");
+        const caller = await verifyApiCaller(request);
+        if (!caller) return new Response("Unauthorized", { status: 401 });
+
+        const { rateLimit, assertFeatureEnabled } = await import("@/lib/security.server");
+        await assertFeatureEnabled("athena_conversation");
+        if (!rateLimit(`tts:${caller.userId}`, 120, 60_000)) {
+          return new Response("Too many requests", { status: 429 });
+        }
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         const body = (await request.json().catch(() => ({}))) as Body;
         const text = (body.text ?? "").toString().trim();
         if (!text) return new Response("Missing text", { status: 400 });
+        if (text.length > 4000) return new Response("Text too long", { status: 413 });
         const voice = body.voice ?? "shimmer";
+
 
         const upstream = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
           method: "POST",

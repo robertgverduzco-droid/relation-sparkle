@@ -36,15 +36,23 @@ function buildIntro(firstName: string | null): string[] {
   ];
 }
 
+/** Bearer token for the voice endpoints, which authenticate every request. */
+async function authHeader(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function playLine(text: string, signal: AbortSignal): Promise<void> {
   try {
     const res = await fetch("/api/tts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(await authHeader()) },
       body: JSON.stringify({ text }),
       signal,
     });
     if (!res.ok) return;
+
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
@@ -369,7 +377,12 @@ function AthenaPage() {
           const fd = new FormData();
           const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
           fd.append("file", blob, `voice.${ext}`);
-          const res = await fetch("/api/stt", { method: "POST", body: fd });
+          const res = await fetch("/api/stt", {
+            method: "POST",
+            body: fd,
+            headers: await authHeader(),
+          });
+
           if (!res.ok) {
             toast("I couldn't hear that clearly. Please try again.");
             return;

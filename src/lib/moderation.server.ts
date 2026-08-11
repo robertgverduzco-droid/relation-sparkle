@@ -50,6 +50,7 @@ export async function listReports(
   userId: string,
 ): Promise<{ reports: ModerationReport[] }> {
   await assertModerator(supabase, userId);
+  const { auditAdminAccess } = await import("./security.server");
   const { data: reports } = await supabase
     .from("reports")
     .select(
@@ -57,6 +58,15 @@ export async function listReports(
     )
     .order("created_at", { ascending: false })
     .limit(200);
+  await auditAdminAccess({
+    actorId: userId,
+    actorRole: "moderator",
+    action: "moderation.reports.list",
+    resource: "reports",
+    purpose: "Safety review queue",
+    metadata: { count: reports?.length ?? 0 },
+  });
+
 
   const ids = new Set<string>();
   for (const r of reports ?? []) {
@@ -108,6 +118,16 @@ export async function resolveReportForModerator(
   if (rErr || !report) throw new Error(rErr?.message ?? "Report not found");
 
   const reportedId = report.reported_id as string;
+  const { auditAdminAccess } = await import("./security.server");
+  await auditAdminAccess({
+    actorId: userId,
+    actorRole: "moderator",
+    action: `moderation.report.${data.action}`,
+    subjectId: reportedId,
+    resource: "reports",
+    purpose: "Safety enforcement decision",
+    metadata: { report_id: data.report_id },
+  });
   if (data.action === "suspend") {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("profiles").update({ is_paused: true }).eq("id", reportedId);
@@ -116,4 +136,5 @@ export async function resolveReportForModerator(
     await purgeMemberAndDeleteAuthUser(reportedId);
   }
   return { ok: true };
+
 }
