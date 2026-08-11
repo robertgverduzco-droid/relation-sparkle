@@ -118,6 +118,16 @@ export async function resolveReportForModerator(
   if (rErr || !report) throw new Error(rErr?.message ?? "Report not found");
 
   const reportedId = report.reported_id as string;
+  const { auditAdminAccess } = await import("./security.server");
+  await auditAdminAccess({
+    actorId: userId,
+    actorRole: "moderator",
+    action: `moderation.report.${data.action}`,
+    subjectId: reportedId,
+    resource: "reports",
+    purpose: "Safety enforcement decision",
+    metadata: { report_id: data.report_id },
+  });
   if (data.action === "suspend") {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("profiles").update({ is_paused: true }).eq("id", reportedId);
@@ -126,4 +136,5 @@ export async function resolveReportForModerator(
     await purgeMemberAndDeleteAuthUser(reportedId);
   }
   return { ok: true };
+
 }
