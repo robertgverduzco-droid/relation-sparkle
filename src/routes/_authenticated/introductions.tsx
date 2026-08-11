@@ -23,7 +23,7 @@ type Intro = {
   id: string;
   other_id: string;
   other_name: string;
-  other_city: string | null;
+  other_area: string | null;
   other_age: number | null;
   presentation: string | null;
   confidence: number;
@@ -125,8 +125,8 @@ function IntroductionsPage() {
                   {confidenceLabel(it.confidence)}
                 </span>
               </div>
-              {it.other_city && (
-                <p className="mt-0.5 text-sm text-ink-soft">{it.other_city}</p>
+              {it.other_area && (
+                <p className="mt-0.5 text-sm text-ink-soft">{it.other_area}</p>
               )}
               {it.presentation && (
                 <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/90">
