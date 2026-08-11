@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { PhotoUploader } from "@/components/photo-uploader";
-import { setAccountPaused, deleteMyAccount } from "@/lib/account.functions";
+import { DeviceSafetyPanel } from "@/components/device-safety-panel";
+import { setAccountPaused } from "@/lib/account.functions";
 import { amIModerator } from "@/lib/moderation.functions";
 import { toast } from "sonner";
 
@@ -43,7 +44,7 @@ type IntelligenceRow = {
 function ProfilePage() {
   const navigate = useNavigate();
   const pauseFn = useServerFn(setAccountPaused);
-  const deleteFn = useServerFn(deleteMyAccount);
+  
   const modCheck = useServerFn(amIModerator);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
@@ -93,20 +94,9 @@ function ProfilePage() {
     }
   }
 
-  async function removeAccount() {
-    const answer = prompt('This permanently deletes your account and everything Athena has come to understand about you. To confirm, type: delete my account');
-    if (answer !== "delete my account") return;
-    setBusy(true);
-    try {
-      await deleteFn({ data: { confirm: "delete my account" } });
-      await supabase.auth.signOut();
-      toast("Your account has been deleted.");
-      navigate({ to: "/" });
-    } catch {
-      toast.error("Couldn't delete the account.");
-      setBusy(false);
-    }
-  }
+  // Account deletion now lives in <DeviceSafetyPanel />, where it is gated by
+  // step-up reauthentication (F-12). A typed phrase is not enough.
+
 
   const values = Array.isArray(intel?.core_values)
     ? (intel!.core_values as string[])
@@ -271,14 +261,12 @@ function ProfilePage() {
         >
           Sign out
         </button>
-        <button
-          onClick={removeAccount}
-          disabled={busy}
-          className="w-full rounded-full border border-destructive/60 px-6 py-3 text-sm text-destructive disabled:opacity-60"
-        >
-          Delete my account
-        </button>
       </div>
+
+      <section className="mt-6 px-6">
+        <DeviceSafetyPanel />
+      </section>
+
 
       <MobileTabBar current="profile" />
     </div>

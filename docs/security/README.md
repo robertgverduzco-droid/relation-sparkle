@@ -9,6 +9,8 @@
 - [RETENTION-AND-DELETION.md](./RETENTION-AND-DELETION.md) — Permanent Member Deletion Principle, backups, third parties, deletion proof
 - [FOUNDER-DIALOGUE.md](./FOUNDER-DIALOGUE.md) — founder governance channel; founder holds no member private data
 - [INCIDENT-RESPONSE.md](./INCIDENT-RESPONSE.md) — kill switches, severity, notification duty
+- [MONITORING-AND-OPERATIONS.md](./MONITORING-AND-OPERATIONS.md) — measured metrics, honest unknowns, heartbeat, alerting
+- [DEVICE-SAFETY-AND-ENFORCEMENT.md](./DEVICE-SAFETY-AND-ENFORCEMENT.md) — step-up reauth, remote sign-out, app lock, photo metadata, enforcement ladder
 - [SECURITY-TESTING.md](./SECURITY-TESTING.md) — adversarial probes and results
 
 The sections below remain accurate as the quick reference.

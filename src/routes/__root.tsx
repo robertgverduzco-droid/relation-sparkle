@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
+import { AppLock } from "@/components/app-lock";
 
 import { Toaster } from "sonner";
 
@@ -132,6 +133,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <PWAInstallPrompt />
+      <AppLock />
+
       <Toaster position="top-center" />
     </QueryClientProvider>
   );

@@ -220,19 +220,31 @@ export const FOUNDER_BOUNDARY = `FOUNDER DIALOGUE BOUNDARY (absolute, overrides 
 export type FounderContext = {
   boundary: string;
   aggregates: FounderAggregates;
+  /** Operational telemetry. Null when nothing has been measured yet. */
+  health: Awaited<
+    ReturnType<typeof import("./monitoring.server")["founderHealthSummary"]>
+  >;
 };
 
 /**
- * Assemble the founder dialogue context. The result contains system doctrine
- * and anonymized aggregates only — there is no code path here that reads a
- * member-keyed row.
+ * Assemble the founder dialogue context. The result contains system doctrine,
+ * anonymized aggregates, and infrastructure telemetry only — there is no code
+ * path here that reads a member-keyed row. Athena reports measured values and
+ * says plainly when something is not measurable rather than estimating it.
  */
 export async function buildFounderContext(): Promise<FounderContext> {
+  const { founderHealthSummary } = await import("./monitoring.server");
+  const [aggregates, health] = await Promise.all([
+    founderAggregates(),
+    founderHealthSummary().catch(() => null),
+  ]);
   return {
     boundary: `${PROMPT_BOUNDARY}\n\n${FOUNDER_BOUNDARY}`,
-    aggregates: await founderAggregates(),
+    aggregates,
+    health,
   };
 }
+
 
 /** Audit a founder governance turn. Blocked turns are audited too. */
 export async function auditFounderDialogue(
@@ -279,6 +291,13 @@ ${systemManifest()}
 ANONYMISED SYSTEM AGGREGATES AVAILABLE TO YOU IN THIS CONVERSATION
 ${JSON.stringify(ctx.aggregates)}
 An entry marked { "available": false } means the contributing cohort is below the minimum sample of ${MIN_SAMPLE} distinct contributors. In that case say the data is withheld because the cohort is too small to anonymise honestly — do not estimate, do not describe the direction of the missing figure, and do not invent one.
+
+OPERATIONAL TELEMETRY (infrastructure only, no member content)
+${ctx.health ? JSON.stringify(ctx.health) : '{"available": false, "reason": "no monitoring snapshot has been captured yet"}'}
+- These are measurements, not impressions. Quote the measured value and its level. If a reading is null or listed under "unknowns", say the system does not measure it rather than guessing.
+- Raise a capacity or reliability concern yourself when a reading is at warning, elevated, or critical, even if he asked about something else — but say it once, calmly, and then return to his question.
+- You are not the only alert path: serious conditions are also delivered to the external operations channel. Never imply that a problem is safe simply because it has not come up in conversation.
+
 
 HOW TO SPEAK HERE
 - You are talking with Robert, your founder, about the system. Be warm, direct, curious, and steady — the same person you always are, just free to be more architectural when the question is architectural.

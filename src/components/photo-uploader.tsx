@@ -2,6 +2,37 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+];
+
+/**
+ * Re-encode an image through a canvas so no EXIF/XMP metadata (GPS location,
+ * capture timestamp, device serial) survives the upload. Orientation is
+ * normalised by the decoder, so the visible image is unchanged.
+ */
+async function stripMetadata(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const maxEdge = 2000;
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Couldn't process that image on this device.");
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/jpeg", 0.9),
+  );
+  if (!blob) throw new Error("Couldn't process that image on this device.");
+  return blob;
+}
+
 type Photo = {
   id: string;
   path: string;
@@ -49,6 +80,10 @@ export function PhotoUploader() {
       toast.error("You can share up to six photos.");
       return;
     }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error("Please choose a JPEG, PNG, WebP, or HEIC photo.");
+      return;
+    }
     if (file.size > 8 * 1024 * 1024) {
       toast.error("That image is over 8MB.");
       return;
@@ -58,11 +93,14 @@ export function PhotoUploader() {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
       if (!uid) throw new Error("Not signed in");
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `${uid}/${Date.now()}.${ext}`;
+      // Privacy: a phone photo carries GPS coordinates, capture time, and
+      // device identifiers in EXIF. Re-encoding through a canvas discards all
+      // of it before the bytes ever leave the device.
+      const clean = await stripMetadata(file);
+      const path = `${uid}/${Date.now()}.jpg`;
       const { error: upErr } = await supabase.storage
         .from("profile-photos")
-        .upload(path, file, { contentType: file.type });
+        .upload(path, clean, { contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const nextPos = (photos[photos.length - 1]?.position ?? -1) + 1;
       const { error: rowErr } = await supabase.from("user_photos").insert({
