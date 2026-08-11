@@ -44,7 +44,7 @@ type IntelligenceRow = {
 function ProfilePage() {
   const navigate = useNavigate();
   const pauseFn = useServerFn(setAccountPaused);
-  const deleteFn = useServerFn(deleteMyAccount);
+  
   const modCheck = useServerFn(amIModerator);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
