@@ -37,6 +37,8 @@ export function DeviceSafetyPanel() {
   const verifyFn = useServerFn(verifyStepUp);
   const signOutAllFn = useServerFn(signOutEverywhere);
   const deleteFn = useServerFn(deleteMyAccount);
+  const exportFn = useServerFn(generateMyExport);
+
 
   const [overview, setOverview] = useState<Overview | null>(null);
   const [pending, setPending] = useState<Pending>(null);
