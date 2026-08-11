@@ -13,6 +13,11 @@ export const setAccountPaused = createServerFn({ method: "POST" })
       .update({ is_paused: data.paused })
       .eq("id", userId);
     if (error) throw new Error(error.message);
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { evaluateReadiness } = await import("./readiness.server");
+      await evaluateReadiness(supabaseAdmin, userId, "pause_change");
+    }
     return { ok: true, paused: data.paused };
   });
 
