@@ -220,19 +220,31 @@ export const FOUNDER_BOUNDARY = `FOUNDER DIALOGUE BOUNDARY (absolute, overrides 
 export type FounderContext = {
   boundary: string;
   aggregates: FounderAggregates;
+  /** Operational telemetry. Null when nothing has been measured yet. */
+  health: Awaited<
+    ReturnType<typeof import("./monitoring.server")["founderHealthSummary"]>
+  >;
 };
 
 /**
- * Assemble the founder dialogue context. The result contains system doctrine
- * and anonymized aggregates only — there is no code path here that reads a
- * member-keyed row.
+ * Assemble the founder dialogue context. The result contains system doctrine,
+ * anonymized aggregates, and infrastructure telemetry only — there is no code
+ * path here that reads a member-keyed row. Athena reports measured values and
+ * says plainly when something is not measurable rather than estimating it.
  */
 export async function buildFounderContext(): Promise<FounderContext> {
+  const { founderHealthSummary } = await import("./monitoring.server");
+  const [aggregates, health] = await Promise.all([
+    founderAggregates(),
+    founderHealthSummary().catch(() => null),
+  ]);
   return {
     boundary: `${PROMPT_BOUNDARY}\n\n${FOUNDER_BOUNDARY}`,
-    aggregates: await founderAggregates(),
+    aggregates,
+    health,
   };
 }
+
 
 /** Audit a founder governance turn. Blocked turns are audited too. */
 export async function auditFounderDialogue(
