@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ConsentPanel } from "@/components/consent-panel";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -20,6 +21,8 @@ function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("welcome");
   const [saving, setSaving] = useState(false);
+  // Required agreements must be accepted before we gather anything about them.
+  const [consentOk, setConsentOk] = useState(false);
 
   const [identity, setIdentity] = useState({
     display_name: "",
