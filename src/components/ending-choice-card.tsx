@@ -10,6 +10,8 @@ type Pending = {
   intro: string;
   paths: Array<{ key: "rest" | "resume" | "talk"; label: string; detail: string }>;
   rest_days: number;
+  rest_elapsed?: boolean;
+  rest_elapsed_invitation?: string;
 };
 
 /**
@@ -59,6 +61,15 @@ export function EndingChoiceCard() {
         {pending.other_name ? `About ${pending.other_name}` : "About what just ended"}
       </h3>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">{pending.intro}</p>
+
+      {pending.rest_elapsed && pending.choice === "rest" && !ack ? (
+        <p
+          role="status"
+          className="mt-4 rounded-2xl border border-border bg-muted/40 p-4 text-sm leading-relaxed text-ink-soft"
+        >
+          {pending.rest_elapsed_invitation}
+        </p>
+      ) : null}
 
       {ack ? (
         <p className="mt-4 rounded-2xl bg-muted/50 p-4 text-sm leading-relaxed text-ink-soft">

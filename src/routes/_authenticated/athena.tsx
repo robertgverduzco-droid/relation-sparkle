@@ -712,7 +712,8 @@ function Bubble({ role, content }: { role: "user" | "assistant"; content: string
 function TypingBubble() {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1.5 px-1 py-2">
+      <div className="flex items-center gap-1.5 px-1 py-2" role="status" aria-live="polite">
+        <span className="sr-only">Athena is thinking</span>
         <Dot delay="0ms" />
         <Dot delay="150ms" />
         <Dot delay="300ms" />
