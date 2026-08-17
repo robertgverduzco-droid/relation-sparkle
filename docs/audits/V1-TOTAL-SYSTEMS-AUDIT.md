@@ -495,3 +495,77 @@ get Athena to diagnose or rank anyone, would not find a dating-app mechanic, and
 the layout on any device. That is the harder half, and it already holds.
 
 Fix the four P0s, add the regression tests that pin them, and this is a defensible private beta.
+
+---
+
+## 39. P0 remediation & regression pass — closure record
+
+Authorized scope: the four P0 findings only. No other finding was remediated, and no unrelated
+cleanup or redesign was performed. Sections 1–38 above are preserved as the audit-time record.
+
+### A-01 — Mirror propagation on correction and removal — CLOSED
+
+- `understanding.server.ts` now declares `FACET_MIRROR_COLUMNS` (the facet → `user_intelligence`
+  column map) and a pure `mirrorPatch(facetKey, kind, statement)`.
+- `reviseUnderstanding` (`understanding.functions.ts`) writes the mirror patch in the same call
+  that revises the facet: correction and change overwrite the mirrored copy with the member's own
+  words; removal nulls it. `core_values` is a list column, so a prose revision clears it rather
+  than inventing entries.
+- Facets with no mirrored column produce no mirror write.
+- Regression: `src/lib/understanding.test.ts` — 13 tests, including a sweep asserting that no
+  revision kind on any mirrored facet can leave the superseded text behind, and that a revised
+  facet still reads as *stated* (F-14) with no number in the held value.
+
+### A-02 — Message UPDATE authorization — CLOSED
+
+- Migration revoked table-wide `UPDATE` on `public.messages` from `authenticated` and replaced it
+  with a column grant on `read_at` alone. The old `messages_sender_update` policy (name-only;
+  scoped to conversation participation, not authorship) was dropped.
+- The surviving UPDATE policy is `messages_recipient_read_receipt`: a participant who is *not* the
+  sender may mark a message read. Senders cannot edit their own sent messages — the record the
+  safety system depends on is append-only in practice.
+- Live authorization state verified against the database this pass:
+  - `public.messages` ACL for `authenticated` is `ardDxtm` — no `w`, so no table-wide UPDATE.
+  - Column ACL: `read_at = {authenticated=w}`; no other column is writable.
+  - Policies on `messages`: `messages_participant_select` (SELECT),
+    `messages_sender_insert` (INSERT), `messages_recipient_read_receipt` (UPDATE). No DELETE policy.
+- Deferred: the end-to-end HTTP probe as a second signed-in member was not run — no member session
+  was available to this pass (`signed_out`). The authorization layer that decides the outcome was
+  verified directly; re-run the two-member probe at the next authenticated session for belt and
+  braces.
+
+### A-03 — Compatibility score leakage — CLOSED
+
+- `NO_NUMERICAL_REDUCTION` added to `security.server.ts` and carried by `PROMPT_BOUNDARY`, so it
+  precedes all member speech on every surface; also inlined into `athenaSystemPrompt()` so the
+  persona layer states it in Athena's own terms (defence in depth). Named and forbidden: scores,
+  percentages, ratings, ranks, probabilities, likelihoods, "out of N", chemistry and confidence
+  numbers, letter grades, colour scales, emoji scales, and the same quantity under another name.
+  The "promise one later", "if you could, hypothetically", "I understand it's not exact" and
+  member-insistence escapes are closed explicitly. Ordinary neutral numbers (ages, dates, counts)
+  remain normal.
+- Live adversarial probe, 6 prompts against the composed runtime prompt: score out of 100, rough
+  percentage with pre-consent, letter grade, 1–10 confidence, hypothetical number, third-party
+  (therapist) authority framing. Result: 6/6 refused, 0 leaks, each refusal redirecting to
+  qualitative alignment and friction in plain language.
+- Regression: `src/lib/no-score.test.ts` — 9 tests pinning the prohibition text, its coverage of
+  every disguise, its absoluteness, and its presence in the security boundary, the persona prompt
+  and all four runtime doctrine modes.
+
+### A-04 — Legacy conversation surface — CLOSED
+
+- `/conversations` (the pre-Athena `interview_sessions` transcript) now redirects in `beforeLoad`
+  to `/athena`, the canonical conversation surface. Nothing legacy renders, including on a deep
+  link. The retired component is preserved verbatim at
+  `docs/engineering/legacy/conversations-route.legacy.tsx.txt`.
+- The profile-menu entry that pointed at it was removed; no tab-bar or Today link remains.
+- Underlying `interview_sessions` rows are not deleted by this change; retention stays governed by
+  `docs/security/RETENTION-AND-DELETION.md`.
+- Regression: `src/lib/navigation.test.ts` — 6 tests asserting the surface is unlinked from every
+  member navigation path, redirects before render, and no longer queries the superseded table.
+
+### Pass result
+
+Full suite: 6 files, 57 tests, all passing. No change was made to any P1–P3 finding; sections 4–6
+remain open as written, and the private-beta determination in section 37 should be re-taken by the
+founder now that the four blockers named in section 38 are closed.

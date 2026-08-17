@@ -116,6 +116,54 @@ export function revisionPatch(
   };
 }
 
+// ---------------------------------------------------------------------------
+// F-13 propagation to the denormalised Living Profile mirror (`user_intelligence`)
+//
+// The facet table is the source of truth. `user_intelligence` is a convenience
+// mirror rendered on /profile. A correction or removal that stops at the facet
+// table leaves the superseded understanding visible on another surface, which
+// breaks F-13. Every facet that has a mirror column must therefore be written
+// in the same operation. This adds no new retention: it only clears or
+// overwrites a copy that already exists.
+// ---------------------------------------------------------------------------
+
+/** Facet key -> the `user_intelligence` column that mirrors it. */
+export const FACET_MIRROR_COLUMNS: Record<string, string> = {
+  core_values: "core_values",
+  life_direction: "life_direction",
+  self_understanding: "self_understanding",
+  emotional_regulation: "emotional_patterns",
+  communication_style: "communication_style",
+  attachment_tendencies: "attachment_style",
+  conflict_style: "conflict_style",
+  lifestyle: "daily_lifestyle",
+  partnership_vision: "partnership_vision",
+  readiness: "readiness_summary",
+};
+
+/**
+ * The patch that keeps the mirror honest for a revision.
+ *
+ * Removal   -> the mirrored copy is cleared (destroyed with the facet).
+ * Change    -> the member's own words become the mirrored value.
+ * Correction-> the member's own words supersede the wrong value.
+ *
+ * `core_values` is a list, not prose, so a prose revision clears the stale
+ * list rather than inventing entries; the authoritative wording lives on the
+ * facet and is shown on /understanding.
+ */
+export function mirrorPatch(
+  facetKey: string,
+  kind: RevisionKind,
+  statement: string | null,
+): Record<string, string | string[] | null> | null {
+  const column = FACET_MIRROR_COLUMNS[facetKey];
+  if (!column) return null;
+  if (column === "core_values") return { core_values: [] };
+  if (kind === "removal") return { [column]: null };
+  return { [column]: statement };
+}
+
 /** Member-facing acknowledgement in Athena's voice. */
 export function revisionAcknowledgement(kind: RevisionKind, label: string): string {
   if (kind === "change")

@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { FACET_KEYS, FACET_LABELS, type FacetKey } from "./facets";
 import { TOPIC_KEYS, TOPIC_LABELS, TOPIC_NEIGHBORS, type TopicKey } from "./topics";
+import { NO_NUMERICAL_REDUCTION } from "./security.server";
 
 export { FACET_KEYS, FACET_LABELS, TOPIC_KEYS, TOPIC_LABELS, TOPIC_NEIGHBORS };
 export type { FacetKey, TopicKey };
@@ -261,6 +262,10 @@ Athena never judges people.
 She never ranks someone's worth.
 
 She never assumes one lifestyle is superior to another.
+
+${NO_NUMERICAL_REDUCTION}
+
+
 
 She understands people.
 
