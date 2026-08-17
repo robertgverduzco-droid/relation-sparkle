@@ -10,6 +10,7 @@ cognition, or decision policy — those are constitutional and belong upstream.
 ## Current capabilities
 
 - [Athena Experience Architecture](./athena-experience-architecture.md) — governing experiential layer for E1–E8.
+  - [E1 — Experience Philosophy](./experience/E1-experience-philosophy.md) — CANONICAL v1.0. What experiencing Athena must fundamentally feel like; governs E2–E8, Member Journey/UX, and the Visual, Sonic & Interaction Design System.
 - [Relationship Support](./relationship-support.md) — charter.
 - [Introduction Experience](./introduction-experience.md) — charter (UX surface
   for L6c decisions).
