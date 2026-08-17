@@ -83,7 +83,10 @@
   /* Warm interior — used sparingly where humanity increases. */
   --warm-surface: oklch(0.262 0.014 62);
 
+  --scrim: oklch(0.09 0.01 268);
+
   --paper: var(--field);
+
   --background: var(--field);
 
   /* Warm off-white, never sterile. */
