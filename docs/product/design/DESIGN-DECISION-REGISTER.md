@@ -1,11 +1,14 @@
 # Athena Design Decision Register
 
-## v1.4 — updated 2026-08-17
+## v1.7 — updated 2026-08-17
 
 Companion to
-[the Design Foundation](./DESIGN-FOUNDATION-V1.md). It records unresolved
-aesthetic choices across D1–D6 so the design system cannot drift as Athena
-evolves.
+[the Design Foundation](./DESIGN-FOUNDATION-V1.md) and
+[Final Design Integration V1.0](./FINAL-DESIGN-INTEGRATION-V1.md). It records
+unresolved aesthetic choices across D1–D6 so the design system cannot drift as
+Athena evolves. Final Design Integration consolidates the implementation
+obligations these open decisions generate; this register remains authoritative
+for the decisions themselves and for recorded runtime divergences.
 
 This register governs **design** decisions only. Experience decisions (X-01–X-38,
 F-01–F-38) live in
