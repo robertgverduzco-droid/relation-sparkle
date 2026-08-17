@@ -59,7 +59,7 @@ export const partnerPerceptionInput = z.object({
 
 
 import { runtimeDoctrine } from "./athena-doctrine.server";
-import { PROMPT_BOUNDARY } from "./security.server";
+import { PROMPT_BOUNDARY, asMemberData } from "./security.server";
 
 export function reflectSystemPrompt(otherName: string, recentMemberText = ""): string {
   return `${PROMPT_BOUNDARY}
@@ -400,7 +400,7 @@ Absolute constraints:
 - No questions, no lists, no headings. Plain prose.
 
 WHAT THEY SHARED:
-${lines}`;
+${asMemberData(lines)}`;
 }
 
 /**
