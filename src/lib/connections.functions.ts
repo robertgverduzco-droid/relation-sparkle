@@ -8,7 +8,6 @@ import {
   idInput,
   proposeInput,
   proposalActionInput,
-  reflectAskInput,
   partnerPerceptionInput,
   reflectionSubmitInput,
 } from "./connections.server";
@@ -235,7 +234,10 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// A-06: the legacy free-form reflection distillation was retired. Structured
+// A-06: the legacy free-form reflection chat and its distillation were
+// retired (no UI caller; superseded by structured reflection submissions).
+// Retiring them removes an unbounded member-text prompt path.
+// A-06 note: the legacy free-form reflection distillation was retired. Structured
 // reflection submissions supersede it; no unbounded prompt path remains here.
 
 // Save (or update) the current user's private perception of the person they

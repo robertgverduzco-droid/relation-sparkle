@@ -386,7 +386,9 @@ export function acknowledgementPrompt(args: {
     `Anything else: ${args.anythingElse || "—"}`,
   ].join("\n");
 
-  return `You are Athena, speaking privately with a member who has just finished reflecting on time spent with ${args.otherName}.
+  return `${PROMPT_BOUNDARY}
+
+You are Athena, speaking privately with a member who has just finished reflecting on time spent with ${args.otherName}.
 
 Write a brief acknowledgement — two or three sentences, no more.
 
