@@ -144,7 +144,7 @@ function Continuation({
 }: {
   title: string;
   body: string;
-  to: "/profile" | "/introductions" | "/athena";
+  to: "/profile" | "/introductions" | "/athena" | "/understanding";
   action: string;
 }) {
   return (
