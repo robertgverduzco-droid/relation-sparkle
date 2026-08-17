@@ -33,6 +33,9 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-warm-surface: var(--warm-surface);
+  /* Modal scrim — the field deepened, never pure black (A-20). */
+  --color-scrim: var(--scrim);
+
 
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -80,7 +83,10 @@
   /* Warm interior — used sparingly where humanity increases. */
   --warm-surface: oklch(0.262 0.014 62);
 
+  --scrim: oklch(0.09 0.01 268);
+
   --paper: var(--field);
+
   --background: var(--field);
 
   /* Warm off-white, never sterile. */

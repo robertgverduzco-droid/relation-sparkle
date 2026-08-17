@@ -158,3 +158,11 @@ rehearsal date in this document.
 | Rehearsal date | Mode | Tombstones checked | Subjects re-purged | Reviewed by |
 | --- | --- | --- | --- | --- |
 | _not yet performed_ | — | — | — | — |
+
+## Explicit sweep coverage (A-23)
+
+`understanding_revisions`, `data_export_requests` and `pair_reasoning_history`
+are removed today by FK cascade from `auth.users`. They are now also named in
+`MEMBER_KEYED_TABLES` in `account.server.ts`, so the post-deletion residual
+sweep verifies them and a future migration that drops `ON DELETE CASCADE`
+cannot silently leave member-attributable rows behind.

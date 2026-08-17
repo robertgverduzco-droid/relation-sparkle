@@ -12,7 +12,7 @@ const tabs: {
   { key: "home", to: "/home", label: "Today", Icon: Home },
   { key: "athena", to: "/athena", label: "Athena", Icon: MessageSquare },
   { key: "introductions", to: "/introductions", label: "Meet", Icon: Compass },
-  { key: "messages", to: "/messages", label: "Chats", Icon: Mail },
+  { key: "messages", to: "/messages", label: "Messages", Icon: Mail },
   { key: "profile", to: "/profile", label: "You", Icon: User },
 ];
 

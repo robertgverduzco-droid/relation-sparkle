@@ -61,3 +61,20 @@ identifying a deleted person.
 `member_consents` records each agreement separately (terms, privacy, AI
 processing, location, notifications) with its version, source and timestamp.
 Consent is append-only; a withdrawal is a new row with `granted = false`.
+
+## Table grants (A-16, P2 remediation)
+
+Grants now match this document rather than relying on RLS alone. The
+`authenticated` role holds **no** privilege on operations- and admin-only
+tables: `ops_alerts`, `ops_snapshots`, `banned_identifiers`,
+`purge_tombstones`, `restore_reconciliations`, `step_up_grants`,
+`athena_self_evaluations`, `founder_dialogue_messages`. All are reached
+exclusively through the service-role client inside server functions.
+
+`athena_outcome_signals` keeps `SELECT` for `authenticated` because the
+admin review surface reads it through the member's own client; RLS restricts
+that read to admins, and every write is service-role only.
+
+`purge_tombstones`, `banned_identifiers`, `step_up_grants` and
+`restore_reconciliations` have RLS enabled with no policies. That is the
+intended deny-by-default posture for service-role-only tables, not a gap.

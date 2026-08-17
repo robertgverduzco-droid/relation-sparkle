@@ -119,6 +119,14 @@ function Home() {
             to="/profile"
             action="Open"
           />
+          {/* A-21: the understanding surface is reachable in one step, not two. */}
+          <Continuation
+            title="What Athena understands"
+            body="Her working picture of you, in her own words — and how it changed."
+            to="/understanding"
+            action="Read"
+          />
+
         </section>
       </div>
 
@@ -136,7 +144,7 @@ function Continuation({
 }: {
   title: string;
   body: string;
-  to: "/profile" | "/introductions" | "/athena";
+  to: "/profile" | "/introductions" | "/athena" | "/understanding";
   action: string;
 }) {
   return (

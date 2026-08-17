@@ -48,7 +48,13 @@ const MEMBER_KEYED_TABLES: Array<[table: string, columns: string[]]> = [
   ["reports", ["reporter_id", "reported_id"]],
   ["safety_flags", ["user_id"]],
   ["member_consents", ["user_id"]],
+  // A-23 — reached today only by FK cascade. Listed explicitly so a future
+  // migration that drops ON DELETE CASCADE cannot silently strand them.
+  ["understanding_revisions", ["user_id"]],
+  ["data_export_requests", ["user_id"]],
+  ["pair_reasoning_history", ["user_low", "user_high"]],
 ];
+
 
 
 type Admin = Awaited<
