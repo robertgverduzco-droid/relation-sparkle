@@ -11,6 +11,7 @@
 - [INCIDENT-RESPONSE.md](./INCIDENT-RESPONSE.md) — kill switches, severity, notification duty
 - [MONITORING-AND-OPERATIONS.md](./MONITORING-AND-OPERATIONS.md) — measured metrics, honest unknowns, heartbeat, alerting
 - [DEVICE-SAFETY-AND-ENFORCEMENT.md](./DEVICE-SAFETY-AND-ENFORCEMENT.md) — step-up reauth, remote sign-out, app lock, photo metadata, enforcement ladder
+- [NATIVE-READINESS-BIOMETRICS.md](./NATIVE-READINESS-BIOMETRICS.md) — binding V1 requirement for Face ID / Touch ID unlock in the future native client (no biometric data ever stored)
 - [SECURITY-TESTING.md](./SECURITY-TESTING.md) — adversarial probes and results
 - [CLOSURE-REVIEW-V1.md](./CLOSURE-REVIEW-V1.md) — V1 closure status across every domain, and the final P0/P1/P2/P3 queue
 

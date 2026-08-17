@@ -24,6 +24,13 @@ never leaves the device. It re-locks on backgrounding after a two-minute
 grace. It is a privacy screen for a shared or borrowed phone — not an
 authentication factor, and deliberately independent of the session.
 
+**Biometric unlock (native, deferred).** Face ID / Touch ID is a binding V1
+native-readiness requirement recorded in
+[NATIVE-READINESS-BIOMETRICS.md](./NATIVE-READINESS-BIOMETRICS.md). It is a
+local convenience layer only: no biometric data is ever received or stored, it
+never bypasses server auth, RLS, or founder/moderator boundaries, and the PIN
+app lock above remains its fallback. Not implemented in the web/PWA build.
+
 Surface: **Profile → Devices & safety** (`src/components/device-safety-panel.tsx`).
 
 ## Photo metadata
