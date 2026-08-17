@@ -53,7 +53,11 @@ export function EndingChoiceCard() {
   };
 
   return (
-    <article className="rounded-3xl border border-primary/30 bg-card p-6 shadow-sm">
+    <article
+      data-testid="ending-choice"
+      data-choice={pending.choice ?? "none"}
+      className="rounded-3xl border border-primary/30 bg-card p-6 shadow-sm"
+    >
       <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
         From Athena
       </p>
@@ -83,6 +87,7 @@ export function EndingChoiceCard() {
           return (
             <button
               key={p.key}
+              data-testid={`ending-path-${p.key}`}
               onClick={() => void onChoose(p.key)}
               disabled={busy}
               className={`w-full rounded-2xl border p-4 text-left transition disabled:opacity-60 ${

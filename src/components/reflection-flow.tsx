@@ -223,7 +223,7 @@ export function ReflectionFlow({
   // Nothing meaningful has happened yet — Athena waits.
   if (!available && !reflectAgain) {
     return (
-      <div className="rounded-3xl border border-border/70 bg-card/70 p-6">
+      <div className="rounded-3xl border border-border/70 bg-card/70 p-6" data-testid="reflection-flow" data-state="not-yet">
         <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Athena</p>
         <p className="mt-3 text-[15px] leading-relaxed text-foreground">{NOT_YET}</p>
         {safetyLink}
@@ -233,7 +233,7 @@ export function ReflectionFlow({
 
   if (done && !reflectAgain) {
     return (
-      <div className="rounded-3xl border border-border/70 bg-card/70 p-6">
+      <div className="rounded-3xl border border-border/70 bg-card/70 p-6" data-testid="reflection-flow" data-state="complete">
         <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Athena</p>
         <p className="mt-3 text-[15px] leading-relaxed text-foreground">
           {acknowledgement ?? CLOSINGS[done]}
@@ -266,7 +266,7 @@ export function ReflectionFlow({
   }
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card/70 p-5">
+    <div className="rounded-3xl border border-border/70 bg-card/70 p-5" data-testid="reflection-flow" data-state="open">
       <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
         Reflecting with Athena
       </p>
@@ -288,6 +288,7 @@ export function ReflectionFlow({
               <button
                 key={f}
                 type="button"
+                data-testid="reflection-feeling"
                 onClick={() => toggleFeeling(f)}
                 className={`rounded-full border px-4 py-1.5 text-sm transition ${
                   feelings.includes(f)
@@ -341,6 +342,7 @@ export function ReflectionFlow({
               <button
                 key={o.v}
                 type="button"
+                data-testid={`reflection-decision-${o.v}`}
                 disabled={busy}
                 onClick={() => {
                   setDecision(o.v);
@@ -372,6 +374,7 @@ export function ReflectionFlow({
             />
             <button
               type="button"
+              data-testid="reflection-submit"
               disabled={busy}
               onClick={() => void send("no")}
               className="w-full rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-40"
