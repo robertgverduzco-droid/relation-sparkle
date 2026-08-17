@@ -70,7 +70,8 @@
   --secondary-foreground: var(--ink);
 
   --muted: oklch(0.92 0.012 70);
-  --muted-foreground: oklch(0.5 0.02 50);
+  /* Accessibility gate (X-14): meets WCAG AA on paper at small sizes. */
+  --muted-foreground: oklch(0.45 0.02 50);
 
   --accent: oklch(0.9 0.03 60);
   --accent-foreground: var(--ink);
@@ -164,4 +165,18 @@
 @keyframes ri-fade {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* F-16 — reduced motion is a beta gate.
+ * Ambient/continuous motion stops; state changes stay legible because no
+ * essential meaning is carried by movement alone. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

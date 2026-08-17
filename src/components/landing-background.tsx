@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 type Particle = {
   x: number;
@@ -18,6 +19,7 @@ type Ripple = { x: number; y: number; t: number };
 export function LandingBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -71,6 +73,7 @@ export function LandingBackground() {
     window.addEventListener("resize", resize);
 
     const playChime = () => {
+      if (reducedMotion) return;
       try {
         if (!audioCtxRef.current) {
           const Ctx =
@@ -258,7 +261,29 @@ export function LandingBackground() {
       raf = requestAnimationFrame(draw);
     };
 
-    raf = requestAnimationFrame(draw);
+    const drawStatic = () => {
+      ctx.clearRect(0, 0, width, height);
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
+        ctx.fill();
+      }
+    };
+
+    if (reducedMotion) {
+      // F-16: ambient motion stops entirely. The field is still drawn once so
+      // the same image and meaning remain — it simply holds still and silent.
+      drawStatic();
+      window.addEventListener("resize", drawStatic);
+    } else {
+      raf = requestAnimationFrame(draw);
+    }
+
 
     const resumeAudio = () => {
       try {
@@ -280,9 +305,10 @@ export function LandingBackground() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", drawStatic);
       window.removeEventListener("pointerdown", resumeAudio);
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div aria-hidden className="absolute inset-0 overflow-hidden">

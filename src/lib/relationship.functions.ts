@@ -8,9 +8,14 @@ export const getEndingChoice = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { getOpenTransition, ENDING_INTRO_COPY, ENDING_PATHS, REST_HOLD_DAYS } = await import(
-      "./relationship.server"
-    );
+    const {
+      getOpenTransition,
+      ENDING_INTRO_COPY,
+      ENDING_PATHS,
+      REST_HOLD_DAYS,
+      restPeriodElapsed,
+      REST_ELAPSED_INVITATION,
+    } = await import("./relationship.server");
     const t = await getOpenTransition(supabase, userId);
     if (!t) return { pending: null };
 
@@ -42,6 +47,9 @@ export const getEndingChoice = createServerFn({ method: "GET" })
         intro: ENDING_INTRO_COPY,
         paths: ENDING_PATHS,
         rest_days: REST_HOLD_DAYS,
+        // X-01 / F-30: a lapsed pause is an invitation, never an automatic return.
+        rest_elapsed: restPeriodElapsed(t),
+        rest_elapsed_invitation: REST_ELAPSED_INVITATION,
       },
     };
   });

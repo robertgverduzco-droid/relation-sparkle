@@ -46,6 +46,9 @@ const COPY = {
     "There's something on your account I need to resolve before I bring anyone to you.",
   A_hold_rest:
     "You asked for some time, so I'm not looking for anyone right now. I'll check back in a while.",
+  A_rest_elapsed:
+    "The time you asked for has passed. I'm still not looking for anyone — that stays true until you tell me you'd like to begin again.",
+
   A_hold_choice:
     "Something ended recently, and you haven't told me what you'd like next. Whenever you're ready, we can decide together.",
   A_focus:
@@ -133,7 +136,10 @@ export async function evaluateReadiness(
           ? COPY.A_focus
           : reason === "resting"
             ? COPY.A_hold_rest
-            : COPY.A_hold_choice;
+            : reason === "rest_elapsed_awaiting_choice"
+              ? COPY.A_rest_elapsed
+              : COPY.A_hold_choice;
+
       return persist({
         state: "A",
         reason_code: reason,

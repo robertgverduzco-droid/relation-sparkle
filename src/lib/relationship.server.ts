@@ -135,7 +135,7 @@ export async function hasActiveFocus(supabase: Client, userId: string): Promise<
 export async function matchmakingHold(
   supabase: Client,
   userId: string,
-): Promise<{ held: boolean; reason?: string }> {
+): Promise<{ held: boolean; reason?: string; holdUntil?: string | null }> {
   if (await hasActiveFocus(supabase, userId)) {
     return { held: true, reason: "relationship_focus" };
   }
@@ -143,14 +143,32 @@ export async function matchmakingHold(
   if (!t) return { held: false };
   if (t.choice === "resume") return { held: false };
   if (t.choice === "rest") {
-    if (t.hold_until && new Date(t.hold_until).getTime() > Date.now()) {
-      return { held: true, reason: "resting" };
-    }
-    return { held: false };
+    // X-01 / F-30: the end of a chosen pause NEVER returns a member to
+    // matchmaking on its own. Athena may say the time has passed and invite
+    // them to resume; only a deliberate choice releases the hold.
+    return {
+      held: true,
+      reason: restPeriodElapsed(t) ? "rest_elapsed_awaiting_choice" : "resting",
+      holdUntil: t.hold_until,
+    };
   }
   // No choice yet, or "talk with me first" — Athena waits for the member.
   return { held: true, reason: t.choice === "talk" ? "talking_first" : "awaiting_choice" };
 }
+
+/** True once a chosen rest period has passed. Never releases the hold by itself. */
+export function restPeriodElapsed(t: {
+  choice: string | null;
+  hold_until: string | null;
+}): boolean {
+  if (t.choice !== "rest" || !t.hold_until) return false;
+  return new Date(t.hold_until).getTime() <= Date.now();
+}
+
+/** Invitation shown when a rest period has elapsed. No urgency, no pressure. */
+export const REST_ELAPSED_INVITATION =
+  "The time you asked for has passed. Nothing has changed on my side — I'm not looking for anyone unless you tell me to. If and when you'd like to begin again, you can say so here. There's no hurry, and staying as you are is a complete answer.";
+
 
 /** Read-time gentle check-in: infrequent, thoughtful, never an interruption. */
 export function focusCheckInDue(row: {

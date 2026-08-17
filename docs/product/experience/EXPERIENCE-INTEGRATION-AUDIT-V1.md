@@ -1308,3 +1308,97 @@ Sequence, not schedule. Nothing below is authorized by this audit.
 
 *End of audit. No remediation performed. No decision closed. No canonical
 document amended.*
+
+---
+
+# ADDENDUM — P0 CLOSURE PASS (2026-08-17)
+
+Scope: the four P0 findings only. No aesthetic or design-system work performed.
+
+## P0-1 — Rest/Pause silent expiry — CLOSED (fixed)
+
+`matchmakingHold()` no longer releases a member when a chosen rest period
+lapses. A rest transition holds indefinitely; the reason changes from
+`resting` to `rest_elapsed_awaiting_choice` once `hold_until` passes. Only a
+deliberate `resume` choice clears the hold. Readiness copy gained
+`A_rest_elapsed`, and the ending-choice card shows a non-urgent invitation
+(`REST_ELAPSED_INVITATION`) once the period has passed. Privacy, readiness
+state machine, and reversibility rules unchanged.
+
+Regression coverage: `src/lib/relationship.test.ts` (7 tests), including an
+explicit test that an elapsed rest period still holds, and a copy test that
+rejects urgency/engagement language.
+
+## P0-2 — Reduced motion (F-16) — CLOSED (fixed)
+
+- `src/hooks/use-reduced-motion.ts` — live media-query hook.
+- `src/styles.css` — global `prefers-reduced-motion: reduce` block neutralising
+  animation and transition durations.
+- Landing connection field draws a single static frame, registers no rAF loop,
+  and suppresses the chime under reduced motion; the same image and meaning
+  remain.
+- Athena's thinking state now carries a `role="status"` live-region label
+  ("Athena is thinking") so the state no longer depends on motion alone.
+
+Runtime verification (Playwright, `reduced_motion="reduce"`): consecutive canvas
+frames identical under reduced motion; different under normal preference.
+Regression coverage: `src/lib/reduced-motion.test.ts`.
+
+## P0-3 — Accessibility verification — VERIFIED, two true failures repaired
+
+Method: axe-core 4.9 executed against every public route at 390x844, plus
+scripted keyboard, focus, label, and tap-target inspection.
+
+Verified failures, repaired:
+- **`meta-viewport` (critical)** — `maximum-scale=1` blocked pinch zoom and text
+  scaling. Removed from `__root.tsx`.
+- **`color-contrast` (serious)** — `--muted-foreground` at small sizes on paper.
+  Darkened to `oklch(0.45 0.02 50)`; re-scan clean. (Token adjustment for the
+  accessibility gate only; not a palette redesign.)
+- **`landmark-one-main` (moderate)** — added a single `<main>` in `__root.tsx`.
+
+Verified pass: form labelling (email/password associated, `required` set),
+visible focus indicators on all tabbable controls, keyboard reachability of the
+auth flow, non-color-only signalling (no colour-only states found), reduced
+motion after implementation, text/voice alternatives present in the Athena
+composer.
+
+Verified failure, NOT repaired (P1, belongs to UX/visual work): three standalone
+text links below the 44px target height ("← Back", "Forgot your password?",
+"Begin your profile").
+
+Unable to verify: every authenticated surface (see P0-4), error identification
+inside authenticated forms, screen-reader narration end to end.
+
+## P0-4 — Authenticated runtime verification — NOT COMPLETED (external dependency)
+
+`LOVABLE_BROWSER_AUTH_STATUS=signed_out`: no managed session is available to the
+test environment. A test account was created at runtime and the flow was
+verified as far as the gate allows:
+
+- Sign-up succeeds (runtime verified).
+- Email-verification gate blocks the account and holds it on `/auth?verify=1`
+  (runtime verified).
+- `/home` redirects an unverified session back to `/auth` (runtime verified).
+
+Confirming the mailbox is not possible from here, and confirming it by writing
+to the auth schema, or by disabling email confirmation project-wide, are both
+prohibited. Therefore Today/home, Athena conversation, foundational-conversation
+state, Living Profile, correction/removal, Rest/Pause UI, introductions,
+connection/messaging, reflection, Relationship Focus, account/privacy controls,
+Devices & Safety, export, and deletion safeguards remain **code-traced only**.
+
+Unblocking requires either (a) the founder signing in to the Lovable preview so
+a session is injected, or (b) an explicitly approved confirmed test account.
+
+## P0-5 — F-37 sealed former-partner boundary — CODE-TRACED (unchanged)
+
+Runtime verification requires two authenticated members and a completed ending;
+not feasible under the current session constraint. Status remains as audited:
+holds by code trace.
+
+## P0-6 — Counterpart photography — PRESERVED AS FINDING
+
+Introductions contain no counterpart photography. Progressive revelation
+(X-33 / F-33) is therefore not implemented as an intentional sequence. Nothing
+was added in this pass; this belongs to the Member Journey / UX + Visual work.
