@@ -16,7 +16,7 @@ records Athena voice/text usage for future billing.
 
 | Document | Purpose |
 | --- | --- |
-| [**V1 Membership Architecture**](v1-membership-architecture.md) | **GOVERNING** — commercial journey, three membership levels, tierability, non-tierable rights |
+| [**V1 Membership Architecture**](v1-membership-architecture.md) | **GOVERNING** (v1.1) — commercial journey, three approved membership levels (M-01…M-05 recorded), tierability, non-tierable rights |
 | [Membership Tiers & Entitlements](membership-tiers.md) | Superseded scaffold, retained for history |
 | [Pricing & Packaging](pricing-and-packaging.md) | Prices, billing intervals, trial rules, bundles, and promotions |
 | [Subscriptions & Billing Lifecycle](subscription-lifecycle.md) | Sign-up, upgrade, downgrade, cancellation, pause, dunning, and refunds |

@@ -1,10 +1,11 @@
 # Athena V1 — Membership & Commercial Architecture
 
-**Status:** GOVERNING ARCHITECTURE (v1.0). Product-definition pass only.
+**Status:** GOVERNING ARCHITECTURE (v1.1). Product-definition pass only.
 **Billing:** NOT ACTIVATED. `BILLING_ACTIVE = false`, `MEMBERSHIP_REQUIRED = false`.
 **Binding force:** The principles, protections and rules in §1–§3, §7, §9–§13 and §15–§16 are
-binding. The capability *allocation* in §6 is a **recommendation requiring Founder approval**
-and is explicitly non-binding until approved.
+binding. The capability allocation in §6 is **APPROVED and binding** as of Founder decisions
+M-01 through M-05 (see §17). Prices remain unset and billing remains inactive.
+
 
 This document supersedes the scaffold content of `membership-tiers.md` and the tier portions of
 `pricing-and-packaging.md`. It sits below the Constitution (docs/constitution/) and below the
@@ -144,7 +145,7 @@ Classifications: **CORE** (every paid tier) · **TIERABLE** · **COMPLETE** · *
 | C-02 | Basic information & preferences | CORE | Precedes payment in the journey |
 | C-03 | Foundational conversation | CORE (pre-payment) | Is the pre-payment experience of Athena |
 | C-04 | Continuing conversation | CORE | Without it there is no Athena; scope may vary, presence may not |
-| C-05 | Voice | TIERABLE (scope only) | Text parity is a RIGHT; voice *breadth* may vary. Never a quality difference |
+| C-05 | Voice | CORE (M-04) | Not a tiered capability. Full canonical voice at every paid level; no allowance, no forced text. Provider-neutral, membership-neutral technical/rate protections only |
 | C-06 | Living Profile | CORE | Understanding is the product |
 | C-07 | Understanding + revision history | CORE | Explainability is constitutional |
 | C-08 | Correction / removal | RIGHT | Control over one's own representation is never purchased |
@@ -158,7 +159,7 @@ Classifications: **CORE** (every paid tier) · **TIERABLE** · **COMPLETE** · *
 | C-16 | Messaging | CORE | A connection without contact is incoherent |
 | C-17 | Reflections | CORE | Feeds understanding; tiering it would degrade her learning |
 | C-18 | Relationship Focus Mode | CORE | Canonical; no member should be priced out of focusing |
-| C-19 | Athena's support during a relationship | CORE (presence) / TIERABLE (depth) | Recommend CORE for V1 |
+| C-19 | Athena's support during a relationship | CORE (M-05) | Full canonical relationship support at every paid level; depth is never priced |
 | C-20 | Endings — three paths | CORE | Dignity at an ending is not a product |
 | C-21 | Return / recalibration | CORE | Continuity of understanding |
 | C-22 | Rest / Pause | RIGHT | A member may always stop being matched |
@@ -177,57 +178,61 @@ Classifications: **CORE** (every paid tier) · **TIERABLE** · **COMPLETE** · *
 | C-35 | Founder Dialogue | Non-commercial | Role ≠ entitlement |
 | F-01…F-04 | Concierge / recommendations / travel / future | FUTURE | Directional only; not sellable today |
 
-Note: no capability is classified as **exclusively COMPLETE** in V1 other than by *scope*
-(C-05, C-11/C-13, C-19). This is the honest result of the inventory — the V1 product is a single
-integrated experience, and fragmenting it further would violate §3.5. The recommendation in §6
-reflects that rather than forcing three feature columns.
+Note: following M-03/M-04/M-05, the **only** V1 differentiation between paid levels is
+concurrent introduction capacity (C-11/C-13) and, for Private, priority/early access to eligible
+future capabilities. No additional restriction may be manufactured to increase differentiation.
 
 ---
 
-## 6. Recommended allocation — REQUIRES FOUNDER APPROVAL (non-binding)
+## 6. Approved allocation — FOUNDER-APPROVED (M-01 … M-05, binding)
+
+Names approved (M-02): **Athena Essential**, **Athena Complete**, **Athena Private**.
 
 ### 6.1 Athena Essential
 
-A legitimate Athena experience, differentiated by **pace and breadth**, not by capability loss.
+A legitimate Athena experience, differentiated by **concurrent introduction capacity only**.
 
 - Full continuing conversation with Athena — same intelligence, same care, same honesty.
 - Living Profile, Understanding, revision history, correction and removal.
 - Compatibility reasoning at full quality, and her full explanation of every introduction.
-- Introductions at a **lower concurrent capacity** (recommendation: **1 open introduction**).
-- Connections, messaging, reflections, Relationship Focus Mode, endings, return.
-- Text conversation always; voice **at a defined monthly scope** (recommendation: a generous
-  monthly voice allowance, after which text continues with no change in Athena's quality or tone,
-  and the limit is stated plainly in advance — never discovered mid-sentence).
+- Introductions at **1 concurrent active introduction** (M-03). Capacity only — matchmaking
+  quality, reasoning quality, explainability, readiness standards and member treatment are
+  identical to every other level.
+- Full canonical voice experience — no allowance, no metering, no forced fallback to text (M-04).
+- Full canonical relationship support: connections, messaging, reflections, Relationship Focus
+  Mode, endings, return and recalibration (M-05).
 - Every RIGHT in §7, without exception.
 
 ### 6.2 Athena Complete
 
 The full canonical V1 experience. **The product is organized around this level.**
 
-- Everything in Essential.
-- Introductions at full canonical capacity (**up to 3 concurrent**, cadence governed only by
-  Athena's confidence — never by billing).
-- Unmetered voice within fair-use operational limits.
-- Athena's full relationship support: check-ins, Relationship Focus depth, recalibration after
-  endings.
+- Everything in Essential, identical in every respect except capacity.
+- Introductions at the canonical maximum of **3 concurrent active introductions** (M-03),
+  cadence governed only by Athena's confidence — never by billing.
 
 ### 6.3 Athena Private
 
-The complete experience plus premium benefits.
+Everything in Complete, plus the governing Private differentiation.
 
-- Everything in Complete, with no scope limits of any kind.
-- **Governing Private benefit: priority / early access to eligible new Athena premium
-  capabilities as they are introduced.**
-- Directional (not currently available, must never be presented as present functionality):
-  personalized restaurant ideas, activity ideas, date and experience ideas, travel ideas,
-  curated relationship experiences, planning assistance, and other future capabilities.
-- **Early-access rule:** Private does not entitle members to *every* future Athena capability in
-  perpetuity. The Founder determines, per capability, whether it is (a) eligible for Private
-  early access, (b) a Complete-level capability, (c) a separate offering, or (d) universal.
-  Private's guarantee is *priority consideration and early access to eligible capabilities*,
-  and that is the only promise the product may make.
+- Introductions at the canonical maximum of 3 concurrent (identical to Complete).
+- Voice, relationship support, reasoning and explainability identical to Complete.
+- **Governing Private differentiation: priority / early access to eligible new premium Athena
+  capabilities designated by Founder decision.**
+- Directional only — FUTURE, not currently available, and never to be represented as present
+  functionality: restaurant, activity, date/experience, travel, curated-experience, planning and
+  concierge capabilities.
+- **Early-access rule (Founder authority preserved):** Private does not entitle members to every
+  future capability. The Founder determines, per capability, whether it is (a) eligible for
+  Private early access, (b) a Complete-level capability, (c) a separate offering, or (d)
+  universal. Private's only promise is priority consideration and early access to eligible
+  capabilities.
+- **Launch condition:** if Private lacks sufficient implemented premium differentiation at V1
+  launch, the architecture permits Private to remain unavailable / "coming later" while Essential
+  and Complete are sold. Benefits must never be fabricated to justify its existence.
 
 Private must not become the tier where dignity, privacy, safety or intelligence live.
+
 
 ---
 
@@ -347,23 +352,36 @@ remains cadence-only until levels are approved.
 
 ---
 
-## 17. Unresolved Founder decisions
+## 17. Founder decision register
+
+### 17.1 Recorded decisions (binding)
+
+| ID | Decision | Recorded |
+| --- | --- | --- |
+| M-01 | §6 allocation **approved** as amended by M-03…M-05 | 2026-08-17 |
+| M-02 | Names approved for V1: **Athena Essential**, **Athena Complete**, **Athena Private** | 2026-08-17 |
+| M-03 | Capacity: Essential = 1 concurrent active introduction; Complete and Private = canonical maximum of 3. Capacity distinction only — no change to matchmaking quality, reasoning quality, explainability, readiness standards or member treatment | 2026-08-17 |
+| M-04 | Voice is **not** a tiered capability. Full canonical voice experience at every paid level; no monthly allowance, no forced text fallback. Provider-neutral, membership-neutral technical/rate protections may remain | 2026-08-17 |
+| M-05 | Relationship support is **CORE**. Full canonical architecture — intelligence, relationship reasoning, reflections, Relationship Focus Mode, endings, return/recalibration — preserved at every paid level | 2026-08-17 |
+
+Governing constraints recorded with these decisions: Private's differentiation is priority/early
+access to eligible future premium capabilities designated by Founder decision (those capabilities
+remain FUTURE and must never be represented as available); Founder authority over eligibility is
+preserved; no additional V1 restriction may be manufactured for the sake of differentiation; and
+Private may launch as unavailable/"coming later" rather than carry fabricated benefits.
+
+### 17.2 Unresolved decisions
 
 | ID | Decision | Blocking |
 | --- | --- | --- |
-| M-01 | Approve or amend the §6 capability allocation | Implementation |
-| M-02 | Final membership names (Essential / Complete / Private are working names) | Copy, store products |
-| M-03 | Essential introduction capacity (recommended: 1 concurrent) | M-01 |
-| M-04 | Essential voice scope and whether voice is tiered at all | M-01 |
-| M-05 | Whether relationship-support depth (C-19) is tiered or CORE (recommended: CORE) | M-01 |
 | M-06 | Prices for each level, Monthly and Annual | Billing activation |
 | M-07 | Annual economic benefit, if any | M-06 |
 | M-08 | Trial structure (currently: none) | Commercial |
-| M-09 | Which future capabilities qualify for Private early access | Per capability |
+| M-09 | Which future capabilities qualify for Private early access, and whether Private is offered at V1 launch | Per capability |
 | M-10 | Whether `MEMBERSHIP_REQUIRED` ever becomes true, and at what point in the journey | Commercial |
 | M-11 | Store/provider selection and App Store product identifiers | Billing activation |
 | M-12 | Grandfathering policy for early members at price changes | M-06 |
-| M-13 | Whether a level change mid-period is immediate or at renewal | M-01 |
+| M-13 | Whether a level change mid-period is immediate or at renewal | Unblocked by M-01; open |
 
 ---
 
@@ -384,3 +402,15 @@ Per the permanent change-control standard, this pass was reviewed against existi
 | Existing runtime `MEMBERSHIP_PLANS` | Cadence-only; unchanged this pass. Level axis noted in §15 as an activation-time migration. |
 
 No canonical behaviour was overridden. No runtime member-facing behaviour was changed.
+
+### 18.1 Conflict review — M-01…M-05 recording pass (2026-08-17)
+
+| Area | Finding |
+| --- | --- |
+| §5 matrix C-05 (Voice) | Reclassified TIERABLE → **CORE** per M-04. Strengthens §7/§8; no canon conflict. |
+| §5 matrix C-19 (Relationship support) | Depth reclassified → **CORE** per M-05. Matches E8 canon. |
+| §6 allocation | Recommendation → **approved and binding**; Essential's voice allowance and support-depth scope removed. |
+| C-11 / C-13 capacity | Unchanged canonical cap of 3; Essential set to 1 as a capacity distinction only. |
+| Runtime membership UI / `MEMBERSHIP_PLANS` | **Unchanged** by instruction. No prices set, `BILLING_ACTIVE = false`. |
+
+No canonical behaviour was overridden and no runtime behaviour changed in this pass.
