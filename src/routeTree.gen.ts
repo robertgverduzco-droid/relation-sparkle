@@ -24,6 +24,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
+import { Route as AuthenticatedMembershipRouteImport } from './routes/_authenticated/membership'
 import { Route as AuthenticatedIntroductionsRouteImport } from './routes/_authenticated/introductions'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticated/founder'
@@ -113,6 +114,11 @@ const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMembershipRoute = AuthenticatedMembershipRouteImport.update({
+  id: '/membership',
+  path: '/membership',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedIntroductionsRoute =
   AuthenticatedIntroductionsRouteImport.update({
     id: '/introductions',
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/founder': typeof AuthenticatedFounderRoute
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
+  '/membership': typeof AuthenticatedMembershipRoute
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/moderation': typeof AuthenticatedModerationRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/founder': typeof AuthenticatedFounderRoute
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
+  '/membership': typeof AuthenticatedMembershipRoute
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/moderation': typeof AuthenticatedModerationRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/_authenticated/founder': typeof AuthenticatedFounderRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
+  '/_authenticated/membership': typeof AuthenticatedMembershipRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
     | '/founder'
     | '/home'
     | '/introductions'
+    | '/membership'
     | '/messages'
     | '/moderation'
     | '/notifications'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/founder'
     | '/home'
     | '/introductions'
+    | '/membership'
     | '/messages'
     | '/moderation'
     | '/notifications'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/_authenticated/founder'
     | '/_authenticated/home'
     | '/_authenticated/introductions'
+    | '/_authenticated/membership'
     | '/_authenticated/messages'
     | '/_authenticated/moderation'
     | '/_authenticated/notifications'
@@ -474,6 +486,13 @@ declare module '@tanstack/react-router' {
       path: '/messages'
       fullPath: '/messages'
       preLoaderRoute: typeof AuthenticatedMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/membership': {
+      id: '/_authenticated/membership'
+      path: '/membership'
+      fullPath: '/membership'
+      preLoaderRoute: typeof AuthenticatedMembershipRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/introductions': {
@@ -622,6 +641,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFounderRoute: typeof AuthenticatedFounderRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRouteWithChildren
+  AuthenticatedMembershipRoute: typeof AuthenticatedMembershipRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -637,6 +657,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFounderRoute: AuthenticatedFounderRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRouteWithChildren,
+  AuthenticatedMembershipRoute: AuthenticatedMembershipRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,

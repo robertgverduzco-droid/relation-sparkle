@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askAthena, reflectAthena, completeFoundationalConversation } from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
+import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 
@@ -74,6 +75,7 @@ function AthenaPage() {
   const reflect = useServerFn(reflectAthena);
   const complete = useServerFn(completeFoundationalConversation);
   const logUsageFn = useServerFn(logUsage);
+  const readMembership = useServerFn(getMyMembership);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -264,7 +266,10 @@ function AthenaPage() {
       try { await complete({}); } catch { /* non-fatal */ }
       foundationCompleteRef.current = true;
       toast("Athena has what she needs for now. She'll begin reflecting.");
-      navigate({ to: "/home" });
+      // 4. Membership is offered only after the foundation exists — never before.
+      let entitled = false;
+      try { entitled = (await readMembership()).entitled; } catch { /* non-fatal */ }
+      navigate({ to: entitled ? "/home" : "/membership" });
     } finally {
       setCompleting(false);
     }
