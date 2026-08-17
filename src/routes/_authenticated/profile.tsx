@@ -55,11 +55,14 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  // Convenience only — /founder and every founder server fn re-verify the
+  // `founder` role server-side from the bearer token on each request.
+  const [isFounder, setIsFounder] = useState(false);
 
 
   useEffect(() => {
     (async () => {
-      const [{ data: p }, { data: i }, mod] = await Promise.all([
+      const [{ data: p }, { data: i }, mod, founder] = await Promise.all([
         supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
         supabase
           .from("user_intelligence")
@@ -68,13 +71,15 @@ function ProfilePage() {
           )
           .maybeSingle(),
         modCheck({}).catch(() => ({ moderator: false })),
+        founderCheck({}).catch(() => ({ isFounder: false })),
       ]);
       setProfile(p as ProfileRow | null);
       setIntel(i as IntelligenceRow | null);
       setIsModerator(Boolean(mod?.moderator));
+      setIsFounder(Boolean(founder?.isFounder));
       setLoading(false);
     })();
-  }, [modCheck]);
+  }, [modCheck, founderCheck]);
 
 
   async function signOut() {
