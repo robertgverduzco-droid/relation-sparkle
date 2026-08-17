@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { listMyIntroductions } from "@/lib/introductions.functions";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { EndingChoiceCard } from "@/components/ending-choice-card";
 import { ReadinessCard } from "@/components/readiness-card";
@@ -28,6 +30,7 @@ type ProfileRow = {
  *  Not a feed, not a dashboard, no metrics, no streaks. */
 function Home() {
   const navigate = useNavigate();
+  const listIntroductions = useServerFn(listMyIntroductions);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [hasStartedAthena, setHasStartedAthena] = useState<boolean>(false);
   const [hasIntroduction, setHasIntroduction] = useState<boolean>(false);
@@ -35,22 +38,19 @@ function Home() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: p }, { data: s }, { count }] = await Promise.all([
+      const [{ data: p }, { data: s }, intros] = await Promise.all([
         supabase
           .from("profiles")
           .select("display_name, onboarding_stage, onboarding_completed_at")
           .maybeSingle(),
         supabase.from("interview_sessions").select("messages").maybeSingle(),
-        supabase
-          .from("introductions")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "active"),
+        listIntroductions().catch(() => ({ introductions: [] as unknown[] })),
       ]);
       setProfile(p as ProfileRow | null);
       const msgs = Array.isArray(s?.messages) ? (s!.messages as unknown[]) : [];
       const started = msgs.length > 0;
       setHasStartedAthena(started);
-      setHasIntroduction((count ?? 0) > 0);
+      setHasIntroduction((intros?.introductions?.length ?? 0) > 0);
       if (p && !p.onboarding_completed_at) {
         navigate({ to: "/onboarding" });
         return;
@@ -62,7 +62,7 @@ function Home() {
       }
       setLoading(false);
     })();
-  }, [navigate]);
+  }, [navigate, listIntroductions]);
 
   if (loading)
     return (
