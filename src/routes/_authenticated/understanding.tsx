@@ -92,7 +92,7 @@ function UnderstandingScreen() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-lg px-5 pb-28 pt-8">
+    <section className="mx-auto w-full max-w-lg px-5 pb-28 pt-8" data-testid="understanding-screen">
       <Link to="/profile" className="text-[13px] text-muted-foreground">
         ← Profile
       </Link>
@@ -118,7 +118,12 @@ function UnderstandingScreen() {
 
       <div className="mt-6 space-y-3">
         {facets?.map((f) => (
-          <article key={f.key} className="rounded-2xl border border-border/70 bg-card p-5">
+          <article
+            key={f.key}
+            data-testid="understanding-facet"
+            data-facet={f.key}
+            className="rounded-2xl border border-border/70 bg-card p-5"
+          >
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="text-[15px] text-foreground">{f.label}</h2>
               <span className="shrink-0 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -137,6 +142,7 @@ function UnderstandingScreen() {
                   {(Object.keys(KIND_COPY) as Kind[]).map((k) => (
                     <button
                       key={k}
+                      data-testid={`understanding-revision-kind-${k}`}
                       onClick={() => setKind(k)}
                       className={`rounded-full border px-4 py-2 text-[13px] ${
                         kind === k
@@ -151,6 +157,7 @@ function UnderstandingScreen() {
                 <p className="text-[13px] leading-relaxed text-ink-soft">{KIND_COPY[kind].help}</p>
                 {kind !== "removal" && (
                   <textarea
+                    data-testid="understanding-revision-statement"
                     value={statement}
                     onChange={(e) => setStatement(e.target.value)}
                     rows={4}
@@ -171,6 +178,7 @@ function UnderstandingScreen() {
                     Cancel
                   </button>
                   <button
+                    data-testid="understanding-revision-submit"
                     disabled={busy}
                     onClick={() => submit(f.key)}
                     className={`flex-1 rounded-full px-5 py-3 text-sm font-medium disabled:opacity-50 ${
@@ -185,6 +193,7 @@ function UnderstandingScreen() {
               </div>
             ) : (
               <button
+                data-testid="understanding-revise-open"
                 onClick={() => {
                   setOpenKey(f.key);
                   setKind("change");
