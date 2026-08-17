@@ -114,5 +114,6 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.2 | 2026-08-17 | D2 — Typography & Composition v1.0 canonized. D-18–D-22 added; D-17 annotated with D2's governing container direction. Broad cardification and sub-44px links preserved as implementation gaps. No runtime change. |
 | 1.1 | 2026-08-17 | D1 — Visual Identity v1.0 canonized. D-15–D-17 added as open design questions; D1 review observations recorded. No runtime change. |
 | 1.0 | 2026-08-17 | Register established alongside Design Foundation v1.0. D-01 and D-07 recorded as binding founder design decisions; D-02–D-14 recorded as open. No runtime, UI, CSS, token, typography, color, asset, animation, sound, voice or photography change made. |
