@@ -23,12 +23,14 @@ describe("reduced motion support", () => {
     expect(hook).toContain("addEventListener");
   });
 
-  it("the landing connection field stops animating and stays silent", () => {
-    const field = read("src/components/landing-background.tsx");
+  it("the connection field stops animating and stays silent", () => {
+    const field = read("src/components/connection-field.tsx");
     expect(field).toContain("useReducedMotion");
-    // No continuous animation loop under reduced motion, and no chime.
+    // No continuous animation loop under reduced motion, and no audio at all.
     expect(field).toMatch(/if \(reducedMotion\) \{[\s\S]*drawStatic\(\)/);
-    expect(field).toMatch(/playChime = \(\) => \{\s*\n\s*if \(reducedMotion\) return;/);
+    expect(field).not.toContain("AudioContext");
+    // Battery: ambient motion pauses when the page is hidden.
+    expect(field).toContain("visibilitychange");
   });
 
   it("Athena's thinking state carries a text label, not only motion", () => {
