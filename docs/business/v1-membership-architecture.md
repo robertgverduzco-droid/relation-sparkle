@@ -1,10 +1,11 @@
 # Athena V1 — Membership & Commercial Architecture
 
-**Status:** GOVERNING ARCHITECTURE (v1.0). Product-definition pass only.
+**Status:** GOVERNING ARCHITECTURE (v1.1). Product-definition pass only.
 **Billing:** NOT ACTIVATED. `BILLING_ACTIVE = false`, `MEMBERSHIP_REQUIRED = false`.
 **Binding force:** The principles, protections and rules in §1–§3, §7, §9–§13 and §15–§16 are
-binding. The capability *allocation* in §6 is a **recommendation requiring Founder approval**
-and is explicitly non-binding until approved.
+binding. The capability allocation in §6 is **APPROVED and binding** as of Founder decisions
+M-01 through M-05 (see §17). Prices remain unset and billing remains inactive.
+
 
 This document supersedes the scaffold content of `membership-tiers.md` and the tier portions of
 `pricing-and-packaging.md`. It sits below the Constitution (docs/constitution/) and below the
