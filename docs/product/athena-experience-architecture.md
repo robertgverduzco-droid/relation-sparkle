@@ -212,6 +212,8 @@ It governs:
 
 Every later experience layer must remain coherent with E1.
 
+Canonical doctrine: [E1 — Experience Philosophy](./experience/E1-experience-philosophy.md) (v1.0, canonized 2026-08-17).
+
 ---
 
 ## E2 — Emotional Journey
