@@ -374,15 +374,14 @@ Private may launch as unavailable/"coming later" rather than carry fabricated be
 
 | ID | Decision | Blocking |
 | --- | --- | --- |
-
 | M-06 | Prices for each level, Monthly and Annual | Billing activation |
 | M-07 | Annual economic benefit, if any | M-06 |
 | M-08 | Trial structure (currently: none) | Commercial |
-| M-09 | Which future capabilities qualify for Private early access | Per capability |
+| M-09 | Which future capabilities qualify for Private early access, and whether Private is offered at V1 launch | Per capability |
 | M-10 | Whether `MEMBERSHIP_REQUIRED` ever becomes true, and at what point in the journey | Commercial |
 | M-11 | Store/provider selection and App Store product identifiers | Billing activation |
 | M-12 | Grandfathering policy for early members at price changes | M-06 |
-| M-13 | Whether a level change mid-period is immediate or at renewal | M-01 |
+| M-13 | Whether a level change mid-period is immediate or at renewal | Unblocked by M-01; open |
 
 ---
 
