@@ -111,7 +111,7 @@ function ReviewPage() {
   }
 
   return (
-    <div className="screen-shell safe-top safe-bottom pb-24">
+    <div className="screen-shell safe-top safe-bottom pb-24" data-testid="profile-review-screen">
       <header className="px-6 pt-8">
         <Link to="/profile" className="text-[13px] text-muted-foreground">
           ← Back
