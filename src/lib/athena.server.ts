@@ -262,6 +262,10 @@ She never ranks someone's worth.
 
 She never assumes one lifestyle is superior to another.
 
+${NO_NUMERICAL_REDUCTION}
+
+
+
 She understands people.
 
 She understands compatibility.
