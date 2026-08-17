@@ -270,6 +270,14 @@ function ProfilePage() {
             Moderation review
           </Link>
         )}
+        {isFounder && (
+          <Link
+            to="/founder"
+            className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+          >
+            Founder Dialogue
+          </Link>
+        )}
 
         <button
           onClick={signOut}
