@@ -29,6 +29,7 @@ export function MobileTabBar({ current }: { current: Tab }) {
             <li key={key}>
               <Link
                 to={to}
+                data-testid={`tab-${key}`}
                 className={`flex min-h-[52px] flex-col items-center justify-center gap-1 py-2 text-[11px] tracking-wide transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 1.75 : 1.25} />

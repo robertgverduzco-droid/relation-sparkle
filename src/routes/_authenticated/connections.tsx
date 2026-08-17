@@ -38,7 +38,7 @@ function ConnectionsPage() {
   }, [list]);
 
   return (
-    <div className="screen-shell safe-top pb-24 px-6 pt-8">
+    <div className="screen-shell safe-top pb-24 px-6 pt-8" data-testid="connections-screen">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Connections</p>
       <h1 className="mt-2 font-display text-[2.25rem] leading-tight text-foreground">
         The people you both said <em className="italic text-primary">yes</em> to.
@@ -62,6 +62,7 @@ function ConnectionsPage() {
           conns.map((c) => (
             <Link
               key={c.id}
+              data-testid="connection-card"
               to="/connections/$id"
               params={{ id: c.id }}
               className="block rounded-3xl border border-border bg-card px-5 py-4 transition hover:border-primary/60"
