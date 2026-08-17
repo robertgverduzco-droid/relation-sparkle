@@ -110,6 +110,16 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
       }
     }
 
+    // F-13 propagation: the denormalised Living Profile mirror on /profile must
+    // never keep showing an understanding the member corrected or removed.
+    const mirror = mirrorPatch(data.facet_key, data.kind, statement);
+    if (mirror) {
+      const { error: mirrorError } = await supabase
+        .from("user_intelligence")
+        .upsert({ user_id: userId, ...mirror } as never, { onConflict: "user_id" });
+      if (mirrorError) throw new Error(mirrorError.message);
+    }
+
     // Any pair reasoning built on the old understanding is now stale.
     await supabase
       .from("pair_reasoning")
