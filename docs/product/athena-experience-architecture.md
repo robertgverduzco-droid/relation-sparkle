@@ -576,7 +576,9 @@ E2 — Emotional Journey: CANONICAL v1.0 (docs/product/experience/E2-emotional-j
 
 E3 — Athena's Presence: CANONICAL v1.0 (docs/product/experience/E3-athena-presence.md)
 
-E4–E8 individual doctrine: NOT YET CANONICAL
+E4 — Voice & Sonic Identity: CANONICAL v1.0 (docs/product/experience/E4-voice-and-sonic-identity.md)
+
+E5–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -599,3 +601,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.2 | 2026-08-17 | E2 — Emotional Journey canonized and linked; E3–E8 remain pending. |
 | 1.3 | 2026-08-17 | Experience Architecture Decision & Implementation Register established (X-01 founder decision; X-02–X-04 downstream requirements). |
 | 1.4 | 2026-08-17 | E3 — Athena's Presence canonized and linked; E4–E8 remain pending. |
+| 1.5 | 2026-08-17 | E4 — Voice & Sonic Identity canonized and linked; E5–E8 remain pending. |
