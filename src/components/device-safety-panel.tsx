@@ -120,7 +120,7 @@ export function DeviceSafetyPanel() {
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-5">
+    <div className="rounded-2xl border border-border/70 bg-card p-5" data-testid="privacy-controls">
       <p className="text-[12px] uppercase tracking-[0.22em] text-muted-foreground">
         Devices & safety
       </p>
@@ -153,12 +153,14 @@ export function DeviceSafetyPanel() {
           {lockOn ? "Turn off app lock on this device" : "Lock this device with a PIN"}
         </button>
         <button
+          data-testid="privacy-sign-out-everywhere"
           onClick={() => setPending("sign_out_everywhere")}
           className="w-full rounded-full border border-border px-5 py-3 text-sm text-foreground"
         >
           Sign out everywhere
         </button>
         <button
+          data-testid="privacy-export"
           onClick={() => setPending("data_export")}
           className="w-full rounded-full border border-border px-5 py-3 text-sm text-foreground"
         >
@@ -166,6 +168,7 @@ export function DeviceSafetyPanel() {
         </button>
 
         <button
+          data-testid="privacy-delete-account"
           onClick={() => setPending("account_deletion")}
           className="w-full rounded-full border border-destructive/60 px-5 py-3 text-sm text-destructive"
         >
@@ -194,7 +197,7 @@ export function DeviceSafetyPanel() {
       )}
 
       {pending && (
-        <form onSubmit={confirm} className="mt-4 space-y-2">
+        <form onSubmit={confirm} data-testid="step-up-form" data-intent={pending} className="mt-4 space-y-2">
           <p className="text-[13px] text-ink-soft">
             {pending === "account_deletion"
               ? "This erases everything Athena has come to understand about you. Confirm with your password."
@@ -205,6 +208,7 @@ export function DeviceSafetyPanel() {
           </p>
           <input
             autoFocus
+            data-testid="step-up-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -225,6 +229,7 @@ export function DeviceSafetyPanel() {
             </button>
             <button
               type="submit"
+              data-testid="step-up-confirm"
               disabled={busy || !password}
               className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
