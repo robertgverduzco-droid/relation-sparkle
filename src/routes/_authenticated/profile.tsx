@@ -9,6 +9,7 @@ import { ConsentPanel } from "@/components/consent-panel";
 
 import { setAccountPaused } from "@/lib/account.functions";
 import { amIModerator } from "@/lib/moderation.functions";
+import { getFounderStatus } from "@/lib/founder.functions";
 import { toast } from "sonner";
 
 
