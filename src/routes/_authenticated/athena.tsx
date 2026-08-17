@@ -589,7 +589,7 @@ function VoiceSettingsSheet({
   onChoose: (m: VoiceMode) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-scrim/40 backdrop-blur-sm" onClick={onClose}>
       <div
         className="w-full max-w-md rounded-t-3xl bg-background border-t border-border/60 p-6 pb-8 fade-in-slow"
         onClick={(e) => e.stopPropagation()}
@@ -635,7 +635,7 @@ function ClosingSheet({
   onFinish: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-scrim/50 backdrop-blur-sm">
       <div
         className="w-full max-w-md rounded-t-3xl bg-background border-t border-border/60 p-6 pb-8 fade-in-slow"
         onClick={(e) => e.stopPropagation()}
