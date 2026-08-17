@@ -145,7 +145,7 @@ Classifications: **CORE** (every paid tier) · **TIERABLE** · **COMPLETE** · *
 | C-02 | Basic information & preferences | CORE | Precedes payment in the journey |
 | C-03 | Foundational conversation | CORE (pre-payment) | Is the pre-payment experience of Athena |
 | C-04 | Continuing conversation | CORE | Without it there is no Athena; scope may vary, presence may not |
-| C-05 | Voice | TIERABLE (scope only) | Text parity is a RIGHT; voice *breadth* may vary. Never a quality difference |
+| C-05 | Voice | CORE (M-04) | Not a tiered capability. Full canonical voice at every paid level; no allowance, no forced text. Provider-neutral, membership-neutral technical/rate protections only |
 | C-06 | Living Profile | CORE | Understanding is the product |
 | C-07 | Understanding + revision history | CORE | Explainability is constitutional |
 | C-08 | Correction / removal | RIGHT | Control over one's own representation is never purchased |
