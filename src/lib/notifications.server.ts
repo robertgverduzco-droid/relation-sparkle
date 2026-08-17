@@ -66,6 +66,18 @@ export async function notify(
     // Paused account: only essential account/safety notifications continue.
     if (profile.is_paused && !essential) return { created: false, reason: "paused" };
 
+    // A-18 — relationship-state guard. A member in Relationship Focus Mode or
+    // in a chosen Rest is not being matched, so an introductions notification
+    // would be both untrue and an intrusion. The hold rule has one source
+    // (relationship.server.heldMemberIds); this reuses it rather than
+    // re-deriving state.
+    if (input.category === "introductions") {
+      const { heldMemberIds } = await import("./relationship.server");
+      const held = await heldMemberIds(supabase as never);
+      if (held.has(input.userId)) return { created: false, reason: "relationship_hold" };
+    }
+
+
     if (!essential) {
       const col = PREF_COLUMN[input.category];
       if (col) {
