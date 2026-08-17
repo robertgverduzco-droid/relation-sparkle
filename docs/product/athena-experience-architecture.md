@@ -344,6 +344,10 @@ Mist Gray — `#D8D6D1`
 
 The palette remains subject to dedicated visual-development work.
 
+Canonical doctrine: [E5 — Visual World](./experience/E5-visual-world.md) (v1.0, canonized 2026-08-17). Palette values above are directional, not production tokens.
+
+Visual-gap findings from E5 review: see Decision Register X-10–X-15.
+
 E5 governs:
 
 - color;
@@ -582,7 +586,9 @@ E3 — Athena's Presence: CANONICAL v1.0 (docs/product/experience/E3-athena-pres
 
 E4 — Voice & Sonic Identity: CANONICAL v1.0 (docs/product/experience/E4-voice-and-sonic-identity.md)
 
-E5–E8 individual doctrine: NOT YET CANONICAL
+E5 — Visual World: CANONICAL v1.0 (docs/product/experience/E5-visual-world.md)
+
+E6–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -606,3 +612,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.3 | 2026-08-17 | Experience Architecture Decision & Implementation Register established (X-01 founder decision; X-02–X-04 downstream requirements). |
 | 1.4 | 2026-08-17 | E3 — Athena's Presence canonized and linked; E4–E8 remain pending. |
 | 1.5 | 2026-08-17 | E4 — Voice & Sonic Identity canonized and linked; E5–E8 remain pending. |
+| 1.6 | 2026-08-17 | E5 — Visual World canonized and linked; E6–E8 remain pending. Visual-gap findings recorded as X-10–X-15. |
