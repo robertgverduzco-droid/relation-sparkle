@@ -68,7 +68,7 @@ describe("no numerical reduction — prompt wiring", () => {
   });
 
   it("reaches every runtime doctrine mode", () => {
-    for (const mode of ["conversation", "reflection", "matching"] as const) {
+    for (const mode of ["conversation", "reflection", "pair", "meeting"] as const) {
       expect(runtimeDoctrine(mode)).toContain("NUMERICAL REDUCTION PROHIBITION");
     }
   });
