@@ -49,6 +49,7 @@ function ProfilePage() {
   const pauseFn = useServerFn(setAccountPaused);
   
   const modCheck = useServerFn(amIModerator);
+  const founderCheck = useServerFn(getFounderStatus);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
   const [loading, setLoading] = useState(true);
