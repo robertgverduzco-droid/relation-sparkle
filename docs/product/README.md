@@ -16,7 +16,8 @@ cognition, or decision policy — those are constitutional and belong upstream.
   - [E4 — Voice & Sonic Identity](./experience/E4-voice-and-sonic-identity.md) — CANONICAL v1.0. Voice character, pacing, silence, conversational rhythm, sonic signature, sound restraint, accessibility and member control; no voice/provider/frequency selected.
   - [E5 — Visual World](./experience/E5-visual-world.md) — CANONICAL v1.0. Color, typography, light, depth, imagery, composition, connection-field design, premium restraint; no scoring or catalog aesthetics. Palette directional only.
   - [E6 — Motion, Curiosity & Revelation](./experience/E6-motion-curiosity-revelation.md) — CANONICAL v1.0. Temporal architecture: motion meaning, listening/processing/speaking/waiting states, progressive revelation, ceremony, reduced motion, honest system state.
-  - [Experience Decision & Implementation Register](./experience/DECISION-REGISTER.md) — binding founder decisions (X-01 pause expiry; F-04–F-09 voice/sonic; F-10–F-15 visual) and downstream requirements (X-02–X-09; X-10–X-15 visual; X-16–X-21 motion).
+  - [E7 — Member Interaction & Conversation Experience](./experience/E7-member-interaction-and-conversation.md) — CANONICAL v1.0. How members act within the Athena world: arrival before administration, conversation before questionnaire, voice/text parity, interruption, waiting, Living Profile authority, navigation, notifications, account controls, errors, payment separation, accessibility.
+  - [Experience Decision & Implementation Register](./experience/DECISION-REGISTER.md) — binding founder decisions (X-01 pause expiry; F-04–F-09 voice/sonic; F-10–F-15 visual; F-16–F-21 motion) and downstream requirements (X-02–X-09; X-10–X-15 visual; X-16–X-21 motion; X-22–X-30 interaction).
 - [Relationship Support](./relationship-support.md) — charter.
 - [Introduction Experience](./introduction-experience.md) — charter (UX surface
   for L6c decisions).
