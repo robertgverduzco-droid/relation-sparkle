@@ -178,57 +178,61 @@ Classifications: **CORE** (every paid tier) · **TIERABLE** · **COMPLETE** · *
 | C-35 | Founder Dialogue | Non-commercial | Role ≠ entitlement |
 | F-01…F-04 | Concierge / recommendations / travel / future | FUTURE | Directional only; not sellable today |
 
-Note: no capability is classified as **exclusively COMPLETE** in V1 other than by *scope*
-(C-05, C-11/C-13, C-19). This is the honest result of the inventory — the V1 product is a single
-integrated experience, and fragmenting it further would violate §3.5. The recommendation in §6
-reflects that rather than forcing three feature columns.
+Note: following M-03/M-04/M-05, the **only** V1 differentiation between paid levels is
+concurrent introduction capacity (C-11/C-13) and, for Private, priority/early access to eligible
+future capabilities. No additional restriction may be manufactured to increase differentiation.
 
 ---
 
-## 6. Recommended allocation — REQUIRES FOUNDER APPROVAL (non-binding)
+## 6. Approved allocation — FOUNDER-APPROVED (M-01 … M-05, binding)
+
+Names approved (M-02): **Athena Essential**, **Athena Complete**, **Athena Private**.
 
 ### 6.1 Athena Essential
 
-A legitimate Athena experience, differentiated by **pace and breadth**, not by capability loss.
+A legitimate Athena experience, differentiated by **concurrent introduction capacity only**.
 
 - Full continuing conversation with Athena — same intelligence, same care, same honesty.
 - Living Profile, Understanding, revision history, correction and removal.
 - Compatibility reasoning at full quality, and her full explanation of every introduction.
-- Introductions at a **lower concurrent capacity** (recommendation: **1 open introduction**).
-- Connections, messaging, reflections, Relationship Focus Mode, endings, return.
-- Text conversation always; voice **at a defined monthly scope** (recommendation: a generous
-  monthly voice allowance, after which text continues with no change in Athena's quality or tone,
-  and the limit is stated plainly in advance — never discovered mid-sentence).
+- Introductions at **1 concurrent active introduction** (M-03). Capacity only — matchmaking
+  quality, reasoning quality, explainability, readiness standards and member treatment are
+  identical to every other level.
+- Full canonical voice experience — no allowance, no metering, no forced fallback to text (M-04).
+- Full canonical relationship support: connections, messaging, reflections, Relationship Focus
+  Mode, endings, return and recalibration (M-05).
 - Every RIGHT in §7, without exception.
 
 ### 6.2 Athena Complete
 
 The full canonical V1 experience. **The product is organized around this level.**
 
-- Everything in Essential.
-- Introductions at full canonical capacity (**up to 3 concurrent**, cadence governed only by
-  Athena's confidence — never by billing).
-- Unmetered voice within fair-use operational limits.
-- Athena's full relationship support: check-ins, Relationship Focus depth, recalibration after
-  endings.
+- Everything in Essential, identical in every respect except capacity.
+- Introductions at the canonical maximum of **3 concurrent active introductions** (M-03),
+  cadence governed only by Athena's confidence — never by billing.
 
 ### 6.3 Athena Private
 
-The complete experience plus premium benefits.
+Everything in Complete, plus the governing Private differentiation.
 
-- Everything in Complete, with no scope limits of any kind.
-- **Governing Private benefit: priority / early access to eligible new Athena premium
-  capabilities as they are introduced.**
-- Directional (not currently available, must never be presented as present functionality):
-  personalized restaurant ideas, activity ideas, date and experience ideas, travel ideas,
-  curated relationship experiences, planning assistance, and other future capabilities.
-- **Early-access rule:** Private does not entitle members to *every* future Athena capability in
-  perpetuity. The Founder determines, per capability, whether it is (a) eligible for Private
-  early access, (b) a Complete-level capability, (c) a separate offering, or (d) universal.
-  Private's guarantee is *priority consideration and early access to eligible capabilities*,
-  and that is the only promise the product may make.
+- Introductions at the canonical maximum of 3 concurrent (identical to Complete).
+- Voice, relationship support, reasoning and explainability identical to Complete.
+- **Governing Private differentiation: priority / early access to eligible new premium Athena
+  capabilities designated by Founder decision.**
+- Directional only — FUTURE, not currently available, and never to be represented as present
+  functionality: restaurant, activity, date/experience, travel, curated-experience, planning and
+  concierge capabilities.
+- **Early-access rule (Founder authority preserved):** Private does not entitle members to every
+  future capability. The Founder determines, per capability, whether it is (a) eligible for
+  Private early access, (b) a Complete-level capability, (c) a separate offering, or (d)
+  universal. Private's only promise is priority consideration and early access to eligible
+  capabilities.
+- **Launch condition:** if Private lacks sufficient implemented premium differentiation at V1
+  launch, the architecture permits Private to remain unavailable / "coming later" while Essential
+  and Complete are sold. Benefits must never be fabricated to justify its existence.
 
 Private must not become the tier where dignity, privacy, safety or intelligence live.
+
 
 ---
 
