@@ -388,6 +388,8 @@ Governing question: How does Athena reveal rather than simply display?
 
 E6 governs movement, transitions, progressive revelation, anticipation, and meaningful visual change.
 
+Canonical doctrine: [E6 — Motion, Curiosity & Revelation](./experience/E6-motion-curiosity-revelation.md) (v1.0, canonized 2026-08-17). Motion findings from E6 review: see Decision Register X-16–X-21; X-05 reconciled and scoped by E6 §7.
+
 Movement must carry purpose.
 
 Animation should not exist merely because animation is technically possible.
@@ -590,7 +592,7 @@ E5 — Visual World: CANONICAL v1.0 (docs/product/experience/E5-visual-world.md)
 
 E6 — Motion, Curiosity & Revelation: CANONICAL v1.0 (docs/product/experience/E6-motion-curiosity-revelation.md)
 
-E6–E8 individual doctrine: NOT YET CANONICAL
+E7–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 

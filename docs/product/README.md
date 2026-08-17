@@ -14,7 +14,9 @@ cognition, or decision policy — those are constitutional and belong upstream.
   - [E2 — Emotional Journey](./experience/E2-emotional-journey.md) — CANONICAL v1.0. How the member's emotional experience evolves across the lifecycle; Athena recedes as human connection grows.
   - [E3 — Athena's Presence](./experience/E3-athena-presence.md) — CANONICAL v1.0. How Athena occupies the experience: intelligence as character, no human avatar, presence through attention, continuity, restraint, voice, motion and silence; presence recedes as human connection grows.
   - [E4 — Voice & Sonic Identity](./experience/E4-voice-and-sonic-identity.md) — CANONICAL v1.0. Voice character, pacing, silence, conversational rhythm, sonic signature, sound restraint, accessibility and member control; no voice/provider/frequency selected.
-  - [Experience Decision & Implementation Register](./experience/DECISION-REGISTER.md) — binding founder decisions (X-01 pause expiry) and downstream requirements (X-02 notification quiet standard, X-03 Waiting as designed state, X-04 restrained ceremony, X-05 thinking-state motion, X-06–X-09 sonic/voice requirements).
+  - [E5 — Visual World](./experience/E5-visual-world.md) — CANONICAL v1.0. Color, typography, light, depth, imagery, composition, connection-field design, premium restraint; no scoring or catalog aesthetics. Palette directional only.
+  - [E6 — Motion, Curiosity & Revelation](./experience/E6-motion-curiosity-revelation.md) — CANONICAL v1.0. Temporal architecture: motion meaning, listening/processing/speaking/waiting states, progressive revelation, ceremony, reduced motion, honest system state.
+  - [Experience Decision & Implementation Register](./experience/DECISION-REGISTER.md) — binding founder decisions (X-01 pause expiry; F-04–F-09 voice/sonic; F-10–F-15 visual) and downstream requirements (X-02–X-09; X-10–X-15 visual; X-16–X-21 motion).
 - [Relationship Support](./relationship-support.md) — charter.
 - [Introduction Experience](./introduction-experience.md) — charter (UX surface
   for L6c decisions).
