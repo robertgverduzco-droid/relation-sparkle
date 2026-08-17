@@ -105,6 +105,11 @@ Reconcile during the D6 photography specification.
 | D-38 | D5 | Sonic signature implementation: notes, intervals, tuning, timbre realization, duration, audio format, and synchronization with D4 presence (attention → organization → settling). | Open — depends on D-06, D-30 |
 | D-39 | D5 | Event sound treatments: arrival, Athena readiness, introduction, mutual curiosity, Focus Mode, ending, successful departure, error, safety and notification — which exist at all, and their restraint bounds. | Open — D5 §§21–22; no dating-app match sound, no reward loop |
 | D-40 | D5 | Barge-in technology: how natural interruption is detected and how Athena yields, including failure and false-trigger behavior. | Open — E4 barge-in decision preserved |
+| D-41 | D6 | Photo requirements: minimum count, exact categories, primary-photo technical/face-visibility requirements, aspect ratios, and moderation technology. | Open — D6 §§5–7; D-07 five-photo ceiling binding |
+| D-42 | D6 | Group-photo policy and treatment of photographs containing children or non-members. | Open — D6 §8; Privacy & Security and Trust & Safety controlling |
+| D-43 | D6 | Authenticity policy: outdated photos, deceptive editing, filter/modification threshold, and synthetic/AI-generated member imagery. | Open — D6 §9; V1 strongly favors actual photographs |
+| D-44 | D6 | Progressive-revelation choreography: exact introduction sequence, transition treatment for the primary photograph, and Athena's recession as the person appears. | Open — F-33, F-31, D-09 controlling; no counterpart photography exists in runtime |
+| D-45 | D6 | Photography accessibility and visual privacy: alt-text implementation, screen-reader context, keyboard/touch controls, caption policy, photo-order controls, and screenshot/visual-privacy treatment. | Open — D6 §§16, 18; no speculative descriptions of physical attributes |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 
 ---
@@ -135,7 +140,14 @@ Reconcile during the D6 photography specification.
 7. **Generic motion states (D4 review).** `animate-pulse` serves the recording
    state, the thinking indicator and skeletons; a 1200ms global route entrance
    applies broadly. Recorded under D-30/D-32 as implementation evidence only.
-8. **Voice & sonic divergence (D5 review).** The landing chime is synthesized
+8. **Photography divergence (D6 review).** `src/components/photo-uploader.tsx`
+   allows six photographs against D-07's five; no counterpart photography or
+   progressive-revelation sequence exists in introductions (F-33 unimplemented);
+   photo thumbnails render empty `alt=""` with no accessible alternative
+   strategy; members can set a primary photo but cannot reorder photographs
+   despite a stored `position`. Recorded under D-07/D-09/D-41/D-44/D-45; not
+   repaired.
+9. **Voice & sonic divergence (D5 review).** The landing chime is synthesized
    on arrival with no mute, no persisted preference and no member control
    (`src/components/landing-background.tsx`), in tension with D5 §15 and F-04.
    The TTS route (`src/routes/api/tts.ts`) defaults to a stock `shimmer` voice
@@ -143,7 +155,7 @@ Reconcile during the D6 photography specification.
    designed sonic signature exists, long responses receive no voice-specific
    segmentation, and no playback-speed/caption/auto-play preference surface
    exists. Recorded under D-06/D-12/D-35/D-37/D-38; not repaired.
-9. **Progressive revelation still absent.** Introductions contain no counterpart
+10. **Progressive revelation still absent.** Introductions contain no counterpart
    photography, so no revelation sequence exists to evaluate. Preserved as
    D-09/X-33; explicitly not implemented in this pass.
 
@@ -153,6 +165,7 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.6 | 2026-08-17 | D6 — Photography & Human Presentation v1.0 canonized; D1–D6 complete. D-41–D-45 added; D-07, D-09 and D-11 annotated with D6's governing direction. Six-photo runtime allowance, absent counterpart photography/progressive revelation, empty alt text and missing reorder control recorded as implementation divergences. D-07, F-31, F-33, F-37 and EXIF/GPS stripping preserved; no attractiveness ranking or engagement optimization created. No runtime change. |
 | 1.5 | 2026-08-17 | D5 — Voice & Sonic Identity v1.0 canonized. D-35–D-40 added; D-06, D-12 and D-13 annotated with D5's governing direction. Provisional `shimmer` voice and uncontrolled landing chime recorded as runtime implementation evidence only. Voice/text equivalence (F-04) and voice-privacy boundaries preserved; no acoustic profiling authority created. No runtime change. |
 | 1.4 | 2026-08-17 | D4 — Athena Presence & Motion v1.0 canonized. D-30–D-34 added; D-02, D-03, D-11, D-13 and D-16 annotated with D4's governing direction. Merging connection pairs, connection abundance, generic pulse states and the 1200ms route entrance recorded as runtime evidence. Reduced-motion baseline preserved. No runtime change. |
 | 1.3 | 2026-08-17 | D3 — Color, Light & Material v1.0 canonized. D-23–D-29 added; D-05 and D-10 annotated with D3's governing direction. Hardcoded color drift recorded as downstream work. Accessibility contrast baseline preserved. No runtime change. |
