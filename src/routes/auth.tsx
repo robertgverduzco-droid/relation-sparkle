@@ -137,7 +137,7 @@ function AuthPage() {
   if (awaitingVerification) {
     return (
       <div className="screen-shell safe-top safe-bottom px-6 pt-10 pb-10">
-        <Link to="/" className="text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
+        <Link to="/" className="tap-target text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
         <div className="mt-10 fade-in-slow">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">One step left</p>
           <h1 className="mt-3 font-display text-[2.5rem] leading-[1.05] text-foreground">
@@ -184,7 +184,7 @@ function AuthPage() {
 
   return (
     <div className="screen-shell safe-top safe-bottom px-6 pt-10 pb-10">
-      <Link to="/" className="text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
+      <Link to="/" className="tap-target text-xs uppercase tracking-[0.25em] text-muted-foreground">← Back</Link>
       {linkError && (
         <div className="mt-6 rounded-2xl border border-destructive/40 bg-card p-4 text-sm text-foreground">
           That verification link didn't work ({linkError}). Sign in below and we'll send a new one.
