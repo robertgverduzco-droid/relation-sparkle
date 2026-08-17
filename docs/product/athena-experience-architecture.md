@@ -574,7 +574,9 @@ E1 — Experience Philosophy: CANONICAL v1.0 (docs/product/experience/E1-experie
 
 E2 — Emotional Journey: CANONICAL v1.0 (docs/product/experience/E2-emotional-journey.md)
 
-E3–E8 individual doctrine: NOT YET CANONICAL
+E3 — Athena's Presence: CANONICAL v1.0 (docs/product/experience/E3-athena-presence.md)
+
+E4–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -596,3 +598,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.1 | 2026-08-17 | E1 — Experience Philosophy canonized and linked; E2–E8 remain pending. |
 | 1.2 | 2026-08-17 | E2 — Emotional Journey canonized and linked; E3–E8 remain pending. |
 | 1.3 | 2026-08-17 | Experience Architecture Decision & Implementation Register established (X-01 founder decision; X-02–X-04 downstream requirements). |
+| 1.4 | 2026-08-17 | E3 — Athena's Presence canonized and linked; E4–E8 remain pending. |
