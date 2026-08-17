@@ -9,6 +9,7 @@ import { ConsentPanel } from "@/components/consent-panel";
 
 import { setAccountPaused } from "@/lib/account.functions";
 import { amIModerator } from "@/lib/moderation.functions";
+import { getFounderStatus } from "@/lib/founder.functions";
 import { toast } from "sonner";
 
 
@@ -48,16 +49,20 @@ function ProfilePage() {
   const pauseFn = useServerFn(setAccountPaused);
   
   const modCheck = useServerFn(amIModerator);
+  const founderCheck = useServerFn(getFounderStatus);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [intel, setIntel] = useState<IntelligenceRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  // Convenience only — /founder and every founder server fn re-verify the
+  // `founder` role server-side from the bearer token on each request.
+  const [isFounder, setIsFounder] = useState(false);
 
 
   useEffect(() => {
     (async () => {
-      const [{ data: p }, { data: i }, mod] = await Promise.all([
+      const [{ data: p }, { data: i }, mod, founder] = await Promise.all([
         supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
         supabase
           .from("user_intelligence")
@@ -66,13 +71,15 @@ function ProfilePage() {
           )
           .maybeSingle(),
         modCheck({}).catch(() => ({ moderator: false })),
+        founderCheck({}).catch(() => ({ isFounder: false })),
       ]);
       setProfile(p as ProfileRow | null);
       setIntel(i as IntelligenceRow | null);
       setIsModerator(Boolean(mod?.moderator));
+      setIsFounder(Boolean(founder?.isFounder));
       setLoading(false);
     })();
-  }, [modCheck]);
+  }, [modCheck, founderCheck]);
 
 
   async function signOut() {
@@ -261,6 +268,14 @@ function ProfilePage() {
             className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
           >
             Moderation review
+          </Link>
+        )}
+        {isFounder && (
+          <Link
+            to="/founder"
+            className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+          >
+            Founder Dialogue
           </Link>
         )}
 
