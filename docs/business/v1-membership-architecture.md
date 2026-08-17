@@ -159,7 +159,7 @@ Classifications: **CORE** (every paid tier) · **TIERABLE** · **COMPLETE** · *
 | C-16 | Messaging | CORE | A connection without contact is incoherent |
 | C-17 | Reflections | CORE | Feeds understanding; tiering it would degrade her learning |
 | C-18 | Relationship Focus Mode | CORE | Canonical; no member should be priced out of focusing |
-| C-19 | Athena's support during a relationship | CORE (presence) / TIERABLE (depth) | Recommend CORE for V1 |
+| C-19 | Athena's support during a relationship | CORE (M-05) | Full canonical relationship support at every paid level; depth is never priced |
 | C-20 | Endings — three paths | CORE | Dignity at an ending is not a product |
 | C-21 | Return / recalibration | CORE | Continuity of understanding |
 | C-22 | Rest / Pause | RIGHT | A member may always stop being matched |
