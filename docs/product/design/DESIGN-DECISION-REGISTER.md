@@ -1,6 +1,6 @@
 # Athena Design Decision Register
 
-## v1.3 — updated 2026-08-17
+## v1.4 — updated 2026-08-17
 
 Companion to
 [the Design Foundation](./DESIGN-FOUNDATION-V1.md). It records unresolved
@@ -68,7 +68,7 @@ Reconcile during the D6 photography specification.
 
 | ID | Domain | Question | Status |
 |---|---|---|---|
-| D-02 | D1 | What exactly is Athena's abstract presence — form, behavior, and its responses to listening, processing, speaking, recognition, transition, connection? Is there a mark? | Open — depends on X-05, F-17 |
+| D-02 | D1/D4 | What exactly is Athena's abstract presence — form, behavior, and its responses to listening, processing, speaking, recognition, transition, connection? Is there a mark? | Open — D4 sets governing behavior principles (no orb by default, presence before symbol); form still unselected. Depends on X-05, F-17 |
 | D-03 | D1 | Connection-field geometry, density, movement, color, connection frequency and choreography; how to keep it a metaphor rather than a matchmaking diagram. | Open — depends on X-19, F-19 |
 | D-04 | D2 | Exact type families, the serif/sans pairing question, scale, weights, line length and the reading-comfort standard for extended conversation. | Open |
 | D-05 | D3 | Exact palette and tokens for the arrival and interior environments; gold usage rules; organic secondaries; connection/relational color. | Open — structural direction set by D3; depends on F-11, F-12, X-11, X-12 |
@@ -76,11 +76,11 @@ Reconcile during the D6 photography specification.
 | D-08 | D6 | The five-photo structure: minimum count, whether categories are required or suggested, and how the uploader guides intentional selection. | Open |
 | D-09 | D6 | Progressive revelation sequence — what precedes photography, and how staged revelation avoids becoming a game. | Open — F-33 controlling; do not implement from the Foundation alone |
 | D-10 | D3/D4 | Material vocabulary: depth, shadow, translucency, texture, and the arrival→interior transition treatment. | Open — D3 §14–§15 sets governing direction; values unresolved |
-| D-11 | D4 | Animation timing, easing, ceremony restraint and the complete reduced-motion equivalents for each meaningful state. | Open — F-16 baseline implemented |
+| D-11 | D4 | Animation timing, easing, ceremony restraint and the complete reduced-motion equivalents for each meaningful state. | Open — D4 sets the three-level motion hierarchy; values unresolved. F-16 baseline implemented and protected |
 | D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | Open — F-04, F-05 |
-| D-13 | D4/D6 | Haptics and microinteraction vocabulary, if any. | Open — F-21 (optional) |
+| D-13 | D4/D6 | Haptics and microinteraction vocabulary, if any. | Open — D4 §8 permits functional/safety use only, never reward conditioning. F-21 (optional) |
 | D-15 | D1 | Does Athena have a mark at all, and if so what is it? No mark is selected by D1; owl / helmet / goddess / A-monogram / brain / heart / infinity / neural-network defaults are excluded unless genuinely transformed. | Open — depends on D-02 |
-| D-16 | D1/D3 | Connection-field connection frequency: what rate reads as rarity rather than abundance, and how the field stays an honest metaphor rather than implied matchmaking activity. | Open — extends D-03; runtime currently reads as abundance |
+| D-16 | D1/D3/D4 | Connection-field connection frequency: what rate reads as rarity rather than abundance, and how the field stays an honest metaphor rather than implied matchmaking activity. | Open — extends D-03; runtime currently reads as abundance |
 | D-17 | D1/D2 | Container policy: which objects genuinely deserve a card, and what replaces cardified surfaces (spacing, typography, material separation) elsewhere. | Open — governing direction set by D2 §9; component rules still open; runtime is broadly cardified |
 | D-18 | D2 | Exact type scale and responsive behavior: step sizes, fluid vs. breakpoint scaling, display sizing on narrow screens. | Open |
 | D-19 | D2 | Exact line-height, measure and letter-spacing scales for body, conversation and display. | Open |
@@ -94,6 +94,11 @@ Reconcile during the D6 photography specification.
 | D-27 | D3 | Token architecture and material values: environment/surface/text/border/Athena/relational/organic/significance/safety/destructive/focus families, plus opacity, shadow, blur, gradient and radius values. | Open — includes reconciling hardcoded runtime color drift |
 | D-28 | D3 | Global appearance preference: is a user-selectable light/dark setting appropriate alongside environmental choreography, and how does system appearance interact with it? | Open — D3 §18 forbids conflating the two |
 | D-29 | D3 | Final dark→warm transition behavior: where it occurs, how it is choreographed, and its reduced-motion equivalent. | Open — F-16 controlling |
+| D-30 | D4 | Athena's functional-state behaviors: exact listening, processing, speaking, quiet and recognition treatments, and how each stays distinguishable from network, offline, service, transcription and voice failure. | Open — F-18 controlling; runtime currently uses generic pulse |
+| D-31 | D4 | Connection-event choreography: what a connection looks like when it must preserve two distinguishable individuals rather than merging them; also mutual-curiosity, Focus Mode, ending, return and successful-departure transitions. | Open — runtime currently merges paired points into one, contradicting D4 §3 |
+| D-32 | D4 | Routine transition timing: whether the current 1200ms global route entrance adds coherence or sluggishness, and the final page-transition and microinteraction vocabulary. | Open — D4 §8 requires quick, restrained routine transitions |
+| D-33 | D4 | Motion performance budget and animation technology: frame targets, CPU/GPU/battery/thermal limits for ambient behavior, and the implementation approach. | Open |
+| D-34 | D4 | Introduction and human-handoff choreography: how Athena frames, the human emerges, and Athena recedes — plus the photograph-appearance motion. | Open — depends on D-09; F-31, F-33 controlling |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 
 ---
@@ -117,7 +122,14 @@ Reconcile during the D6 photography specification.
    the token system. The runtime light/dark pair is structured as a
    conventional theme rather than as choreographed environmental states.
    Recorded as downstream implementation work under D-27/D-28; not repaired.
-6. **Progressive revelation still absent.** Introductions contain no counterpart
+6. **Merging connection pairs (D4 review).** The landing field merges two
+   paired points into a single object, contradicting D4 §3 "connection
+   preserves two". Pairing also recurs often enough to read as abundance
+   rather than rarity. Recorded under D-31/D-16; not repaired.
+7. **Generic motion states (D4 review).** `animate-pulse` serves the recording
+   state, the thinking indicator and skeletons; a 1200ms global route entrance
+   applies broadly. Recorded under D-30/D-32 as implementation evidence only.
+8. **Progressive revelation still absent.** Introductions contain no counterpart
    photography, so no revelation sequence exists to evaluate. Preserved as
    D-09/X-33; explicitly not implemented in this pass.
 
@@ -127,6 +139,7 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.4 | 2026-08-17 | D4 — Athena Presence & Motion v1.0 canonized. D-30–D-34 added; D-02, D-03, D-11, D-13 and D-16 annotated with D4's governing direction. Merging connection pairs, connection abundance, generic pulse states and the 1200ms route entrance recorded as runtime evidence. Reduced-motion baseline preserved. No runtime change. |
 | 1.3 | 2026-08-17 | D3 — Color, Light & Material v1.0 canonized. D-23–D-29 added; D-05 and D-10 annotated with D3's governing direction. Hardcoded color drift recorded as downstream work. Accessibility contrast baseline preserved. No runtime change. |
 | 1.2 | 2026-08-17 | D2 — Typography & Composition v1.0 canonized. D-18–D-22 added; D-17 annotated with D2's governing container direction. Broad cardification and sub-44px links preserved as implementation gaps. No runtime change. |
 | 1.1 | 2026-08-17 | D1 — Visual Identity v1.0 canonized. D-15–D-17 added as open design questions; D1 review observations recorded. No runtime change. |
