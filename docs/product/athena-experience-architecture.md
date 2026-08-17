@@ -316,6 +316,10 @@ E4 includes:
 
 The objective is to create a sonic identity distinctive enough that a very short signature may eventually become recognizably Athena.
 
+Canonical doctrine: [E4 — Voice & Sonic Identity](./experience/E4-voice-and-sonic-identity.md) (v1.0, canonized 2026-08-17).
+
+Founder decisions from E4 review: see Decision Register X-06–X-09 and F-04–F-09.
+
 ---
 
 ## E5 — Visual World
