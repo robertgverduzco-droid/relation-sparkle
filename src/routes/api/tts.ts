@@ -22,7 +22,8 @@ export const Route = createFileRoute("/api/tts")({
         const text = (body.text ?? "").toString().trim();
         if (!text) return new Response("Missing text", { status: 400 });
         if (text.length > 4000) return new Response("Text too long", { status: 413 });
-        const voice = body.voice ?? "shimmer";
+        // D5 canonical voice: warm feminine intelligence, subtly synthetic purity.
+        const voice = body.voice ?? "marin";
 
 
         const upstream = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/api/tts")({
             voice,
             response_format: "mp3",
             instructions:
-              "Speak with quiet confidence, warmth, and patience. Gentle pacing, thoughtful, unhurried. Never dramatic.",
+              "Warm feminine intelligence with a subtly synthetic purity. Mature and composed, in a lower-middle register. Elegant, exceptionally articulate, gentle and emotionally perceptive, quietly confident, faintly futuristic. Measured conversational pace with restrained natural pauses. Never bright, never performative, never dramatic, never salesy.",
           }),
         });
 
