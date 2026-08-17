@@ -95,7 +95,7 @@ function MembershipPage() {
         <p className="type-body mt-4 text-ink-soft">{MEMBERSHIP_COPY.lede}</p>
       </header>
 
-      <main className="mt-10 px-6">
+      <section className="mt-10 px-6">
         <h2 className="sr-only">Membership options</h2>
         <div className="space-y-1">
           {MEMBERSHIP_PLANS.map((plan) => {
@@ -166,7 +166,7 @@ function MembershipPage() {
             </button>
           </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

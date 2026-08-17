@@ -1439,6 +1439,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_counters: {
+        Row: {
+          bucket_key: string
+          count: number
+          created_at: string
+          id: string
+          reset_at: string
+          updated_at: string
+        }
+        Insert: {
+          bucket_key: string
+          count?: number
+          created_at?: string
+          id?: string
+          reset_at: string
+          updated_at?: string
+        }
+        Update: {
+          bucket_key?: string
+          count?: number
+          created_at?: string
+          id?: string
+          reset_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reflection_submissions: {
         Row: {
           anything_else: string | null
@@ -2106,6 +2133,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_rate_limit: {
+        Args: { _key: string; _limit: number; _window_ms: number }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

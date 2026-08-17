@@ -200,7 +200,7 @@ function AuthPage() {
           {isSignup ? <>Let's build your <em className="italic text-primary">intelligence</em>.</> : <>Sign in to <em className="italic text-primary">continue</em>.</>}
         </h1>
         <p className="mt-3 text-sm text-ink-soft">
-          {isSignup ? "This is where a slower, more intentional way of meeting people begins." : "Your matches, conversations, and reflections are waiting."}
+          {isSignup ? "This is where a slower, more intentional way of meeting people begins." : "Your introductions, conversations, and reflections are here when you are."}
         </p>
       </div>
 
@@ -247,7 +247,7 @@ function AuthPage() {
 
       {!isSignup && (
         <p className="mt-4 text-center text-sm">
-          <Link to="/reset-password" className="text-ink-soft underline-offset-4 hover:underline">
+          <Link to="/reset-password" className="inline-flex min-h-11 items-center justify-center px-3 text-ink-soft underline-offset-4 hover:underline">
             Forgot your password?
           </Link>
         </p>
@@ -258,7 +258,7 @@ function AuthPage() {
         {isSignup ? "Already have an account?" : "New here?"}{" "}
         <button
           onClick={() => setMode(isSignup ? "signin" : "signup")}
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center justify-center px-2 font-medium text-primary underline-offset-4 hover:underline"
         >
           {isSignup ? "Sign in" : "Begin your profile"}
         </button>

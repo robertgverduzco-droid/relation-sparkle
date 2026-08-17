@@ -1,7 +1,7 @@
 // Thin wrapper. All helpers, schemas, and prompts live in ./connections.server.ts.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { generateText, generateObject, type ModelMessage } from "ai";
+import { generateText, type ModelMessage } from "ai";
 import { z } from "zod";
 import { generalizeArea } from "./geography";
 import {
@@ -9,8 +9,6 @@ import {
   proposeInput,
   proposalActionInput,
   reflectAskInput,
-  reflectDistillInput,
-  reflectionSchema,
   partnerPerceptionInput,
   reflectionSubmitInput,
 } from "./connections.server";
@@ -237,117 +235,8 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// LEGACY (retained, no UI caller). Free-form reflection chat, superseded by the
-// structured five-question ReflectionFlow. Kept for data continuity; do not
-// wire into new surfaces.
-export const askAthenaReflection = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => reflectAskInput.parse(v))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    const { data: conn } = await supabase
-      .from("connections")
-      .select("id, user_low, user_high")
-      .eq("id", data.connection_id)
-      .maybeSingle();
-    if (!conn) throw new Error("Not found");
-    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
-    const otherId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", otherId)
-      .maybeSingle();
-    const otherName = (prof?.display_name as string | null) ?? "them";
-
-    const { createLovableGateway } = await import("./ai-gateway.server");
-    const { reflectSystemPrompt } = await import("./connections.server");
-    const gateway = createLovableGateway();
-    const messages: ModelMessage[] = [
-      {
-        role: "system",
-        content: reflectSystemPrompt(
-          otherName,
-          data.messages
-            .filter((m) => m.role === "user")
-            .slice(-6)
-            .map((m) => m.content)
-            .join("\n"),
-        ),
-      },
-
-      ...data.messages.filter((m) => m.role !== "system"),
-    ];
-    const { text } = await generateText({
-      model: gateway("openai/gpt-5.5"),
-      messages,
-      providerOptions: { lovable: { reasoningEffort: "none" } },
-    });
-
-    const nextTranscript = [
-      ...data.messages.filter((m) => m.role !== "system"),
-      { role: "assistant" as const, content: text.trim() },
-    ];
-    await supabase.from("post_meeting_reflections").upsert(
-      {
-        connection_id: data.connection_id,
-        user_id: userId,
-        transcript: nextTranscript,
-      },
-      { onConflict: "connection_id,user_id" },
-    );
-
-    return { reply: text.trim() };
-  });
-
-// LEGACY (retained, no UI caller). Distilled the free-form reflection chat.
-// Superseded by structured reflection submissions.
-export const distillReflection = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => reflectDistillInput.parse(v))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: existing } = await supabase
-      .from("post_meeting_reflections")
-      .select("transcript")
-      .eq("connection_id", data.connection_id)
-      .eq("user_id", userId)
-      .maybeSingle();
-    const transcript = (existing?.transcript ?? []) as Array<{ role: string; content: string }>;
-    if (transcript.length < 2) throw new Error("Not enough conversation to reflect on yet.");
-
-    const { createLovableGateway } = await import("./ai-gateway.server");
-    const gateway = createLovableGateway();
-    const asText = transcript
-      .map((m) => `${m.role === "user" ? "THEY" : "ATHENA"}: ${m.content}`)
-      .join("\n\n");
-    const { object } = await generateObject({
-      model: gateway("openai/gpt-5.5"),
-      schema: reflectionSchema,
-      providerOptions: { lovable: { reasoningEffort: "none" } },
-      prompt: `You are Athena. Distill this private post-meeting reflection into a compact honest summary. Prefer null / "unsure" over guessing. Understanding updates should be short natural-language notes about how this reflection nudges what you understand about THEM (self) or about the person they met (other). If nothing is clearly supported, return an empty array.\n\nCONVERSATION:\n\n${asText}`,
-    });
-
-    await supabase
-      .from("post_meeting_reflections")
-      .update({
-        summary: object.summary,
-        sentiment: object.sentiment,
-        would_meet_again: object.would_meet_again,
-        refined_at: new Date().toISOString(),
-      })
-      .eq("connection_id", data.connection_id)
-      .eq("user_id", userId);
-
-    // Post-meeting reflection is high-signal — refresh any pair reasoning
-    // the DB triggers have marked stale for this user.
-    const { refreshStalePairsForUser } = await import("./introductions.server");
-    void refreshStalePairsForUser(userId).catch(() => {});
-
-    return { ok: true, summary: object.summary, sentiment: object.sentiment };
-  });
-
+// A-06: the legacy free-form reflection distillation was retired. Structured
+// reflection submissions supersede it; no unbounded prompt path remains here.
 
 // Save (or update) the current user's private perception of the person they
 // met. Never surfaced to the subject.

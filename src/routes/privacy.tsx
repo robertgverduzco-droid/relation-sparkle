@@ -39,7 +39,7 @@ function PrivacyPage() {
         </p>
       </header>
 
-      <main className="mt-8 space-y-6 px-6 text-[15px] leading-relaxed text-foreground/90">
+      <section className="mt-8 space-y-6 px-6 text-[15px] leading-relaxed text-foreground/90">
         <Section title="What we collect">
           Your name and email, the essentials you provide when creating your
           account, everything you share in conversation with Athena, your Living
@@ -83,7 +83,7 @@ function PrivacyPage() {
           Questions about privacy or safety can be sent from within the app. We
           aim to reply within a few business days.
         </Section>
-      </main>
+      </section>
 
       <div className="mt-10 flex flex-col gap-2 px-6">
         <Link

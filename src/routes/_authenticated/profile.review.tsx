@@ -128,7 +128,7 @@ function ReviewPage() {
         </p>
       </header>
 
-      <main className="mt-6 space-y-5 px-6">
+      <section className="mt-6 space-y-5 px-6">
         <FieldGroup
           label="What you care about"
           hint="Short lowercase phrases, separated by commas."
@@ -171,7 +171,7 @@ function ReviewPage() {
           value={draft.readiness_summary}
           onChange={(v) => setDraft((d) => ({ ...d, readiness_summary: v }))}
         />
-      </main>
+      </section>
 
       <footer className="mt-8 space-y-3 px-6">
         <button

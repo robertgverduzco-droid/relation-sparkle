@@ -92,7 +92,7 @@ function UnderstandingScreen() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-lg px-5 pb-28 pt-8">
+    <section className="mx-auto w-full max-w-lg px-5 pb-28 pt-8">
       <Link to="/profile" className="text-[13px] text-muted-foreground">
         ← Profile
       </Link>
@@ -198,6 +198,6 @@ function UnderstandingScreen() {
           </article>
         ))}
       </div>
-    </main>
+    </section>
   );
 }

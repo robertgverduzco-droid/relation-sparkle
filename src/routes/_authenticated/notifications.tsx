@@ -91,7 +91,7 @@ function NotificationsScreen() {
   return (
     <div className="screen-shell safe-top pb-24">
       <header className="flex items-center gap-3 px-6 pt-8">
-        <Link to="/home" aria-label="Back" className="text-muted-foreground">
+        <Link to="/home" aria-label="Back" className="-ml-2 inline-flex h-11 w-11 items-center justify-center text-muted-foreground">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-display text-2xl text-foreground">Notifications</h1>

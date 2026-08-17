@@ -11,7 +11,7 @@
 // short-lived, single-use grant row that the destructive server function
 // consumes. Grants are service-role only — the browser never sees or forges one.
 import { createClient } from "@supabase/supabase-js";
-import { rateLimit, safeLog } from "./security.server";
+import { durableRateLimit, safeLog } from "./security.server";
 
 export type StepUpPurpose =
   | "account_deletion"
@@ -37,7 +37,7 @@ export async function grantStepUp(
   password: string,
   purpose: StepUpPurpose,
 ): Promise<{ ok: boolean; reason?: "rate_limited" | "invalid" | "unsupported" }> {
-  if (!rateLimit(`stepup:${userId}`, ATTEMPT_LIMIT, ATTEMPT_WINDOW_MS)) {
+  if (!(await durableRateLimit(`stepup:${userId}`, ATTEMPT_LIMIT, ATTEMPT_WINDOW_MS))) {
     safeLog("stepup.rate_limited", { purpose });
     return { ok: false, reason: "rate_limited" };
   }

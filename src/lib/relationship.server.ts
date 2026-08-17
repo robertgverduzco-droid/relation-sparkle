@@ -156,6 +156,36 @@ export async function matchmakingHold(
   return { held: true, reason: t.choice === "talk" ? "talking_first" : "awaiting_choice" };
 }
 
+/**
+ * Batch form of {@link matchmakingHold} for candidate-pool filtering.
+ * A-05: the pool filter and the per-member check must never drift apart, so
+ * both express the same doctrine — focus, unresolved transitions, and elapsed
+ * rest all hold a member out until they deliberately resume.
+ */
+export async function heldMemberIds(supabase: Client): Promise<Set<string>> {
+  const held = new Set<string>();
+  const [{ data: focused }, { data: transitions }] = await Promise.all([
+    supabase
+      .from("relationship_focus")
+      .select("user_low, user_high")
+      .is("ended_at", null)
+      .not("started_at", "is", null),
+    supabase
+      .from("member_transitions")
+      .select("user_id, choice, hold_until")
+      .is("resolved_at", null),
+  ]);
+  for (const f of focused ?? []) {
+    held.add(f.user_low as string);
+    held.add(f.user_high as string);
+  }
+  for (const t of transitions ?? []) {
+    if (t.choice === "resume") continue;
+    held.add(t.user_id as string);
+  }
+  return held;
+}
+
 /** True once a chosen rest period has passed. Never releases the hold by itself. */
 export function restPeriodElapsed(t: {
   choice: string | null;

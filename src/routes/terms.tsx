@@ -41,7 +41,7 @@ function TermsPage() {
         </p>
       </header>
 
-      <main className="mt-8 space-y-6 px-6 text-[15px] leading-relaxed text-foreground/90">
+      <section className="mt-8 space-y-6 px-6 text-[15px] leading-relaxed text-foreground/90">
         <Section title="Who can use this">
           You must be 18 years or older, legally able to enter into a
           relationship agreement in your jurisdiction, and using the service
@@ -113,7 +113,7 @@ function TermsPage() {
         <Section title="Contact">
           Questions about these terms can be sent from within the app.
         </Section>
-      </main>
+      </section>
 
       <div className="mt-10 flex flex-col gap-2 px-6">
         <Link

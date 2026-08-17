@@ -98,7 +98,8 @@ export const recordConsent = createServerFn({ method: "POST" })
     // already reads them, so a withdrawal takes effect immediately.
     const learning = data.decisions.find((d) => d.key === "outcome_learning");
     if (learning) {
-      await context.supabase
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
         .from("profiles")
         .update({ learning_opt_out: !learning.granted })
         .eq("id", context.userId);

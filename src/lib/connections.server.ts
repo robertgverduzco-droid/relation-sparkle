@@ -59,9 +59,12 @@ export const partnerPerceptionInput = z.object({
 
 
 import { runtimeDoctrine } from "./athena-doctrine.server";
+import { PROMPT_BOUNDARY } from "./security.server";
 
 export function reflectSystemPrompt(otherName: string, recentMemberText = ""): string {
-  return `You are Athena.
+  return `${PROMPT_BOUNDARY}
+
+You are Athena.
 
 You are speaking privately with someone who has just met ${otherName} in person. They agreed to meet after you introduced them. This conversation is completely private — ${otherName} will never see any of it.
 

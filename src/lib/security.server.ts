@@ -236,3 +236,30 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
   bucket.count += 1;
   return true;
 }
+
+/**
+ * Durable, cross-instance limiter for high-risk actions (password re-verification,
+ * destructive account operations). A-09: the in-memory limiter above is a speed
+ * bump per worker; this one is authoritative because the counter lives in the
+ * database. Fails closed on limit, open on infrastructure error so a database
+ * hiccup can never lock a member out of their own account.
+ */
+export async function durableRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<boolean> {
+  if (!rateLimit(key, limit, windowMs)) return false;
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("consume_rate_limit", {
+      _key: key,
+      _limit: limit,
+      _window_ms: windowMs,
+    });
+    if (error) return true;
+    return data !== false;
+  } catch {
+    return true;
+  }
+}

@@ -286,22 +286,9 @@ export async function runMatchmakingForUser(
   // Never introduce someone who is in Relationship Focus, resting after an
   // ending, or still choosing their path.
   {
-    const [{ data: focused }, { data: holding }] = await Promise.all([
-      supabase.from("relationship_focus").select("user_low, user_high").is("ended_at", null).not("started_at", "is", null),
-      supabase.from("member_transitions").select("user_id, choice, hold_until").is("resolved_at", null),
-    ]);
-    for (const f of focused ?? []) {
-      eligibleIds.delete(f.user_low as string);
-      eligibleIds.delete(f.user_high as string);
-    }
-    for (const t of holding ?? []) {
-      const restingOver =
-        t.choice === "rest" &&
-        t.hold_until &&
-        new Date(t.hold_until as string).getTime() <= Date.now();
-      if (t.choice === "resume" || restingOver) continue;
-      eligibleIds.delete(t.user_id as string);
-    }
+    const { heldMemberIds } = await import("./relationship.server");
+    for (const id of await heldMemberIds(supabase)) eligibleIds.delete(id);
+
     // Readiness gate for the other side: only members Athena has evaluated as
     // ready are considered. Anyone unevaluated or in state A/B waits.
     const { data: readyRows } = await supabase
