@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { askAthena, reflectAthena, completeFoundationalConversation } from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
+import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 
