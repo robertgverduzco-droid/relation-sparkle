@@ -1,6 +1,6 @@
 # Athena Design Decision Register
 
-## v1.0 — established 2026-08-17
+## v1.3 — updated 2026-08-17
 
 Companion to
 [the Design Foundation](./DESIGN-FOUNDATION-V1.md). It records unresolved
@@ -71,11 +71,11 @@ Reconcile during the D6 photography specification.
 | D-02 | D1 | What exactly is Athena's abstract presence — form, behavior, and its responses to listening, processing, speaking, recognition, transition, connection? Is there a mark? | Open — depends on X-05, F-17 |
 | D-03 | D1 | Connection-field geometry, density, movement, color, connection frequency and choreography; how to keep it a metaphor rather than a matchmaking diagram. | Open — depends on X-19, F-19 |
 | D-04 | D2 | Exact type families, the serif/sans pairing question, scale, weights, line length and the reading-comfort standard for extended conversation. | Open |
-| D-05 | D3 | Exact palette and tokens for the arrival and interior environments; gold usage rules; organic secondaries; connection/relational color. | Open — depends on F-11, F-12, X-11, X-12 |
+| D-05 | D3 | Exact palette and tokens for the arrival and interior environments; gold usage rules; organic secondaries; connection/relational color. | Open — structural direction set by D3; depends on F-11, F-12, X-11, X-12 |
 | D-06 | D5 | Sonic signature: existence, length, notes, intervals, instrumentation, timbre, tuning; whether the current landing chime is retired or replaced. | Open — depends on X-07, F-05 |
 | D-08 | D6 | The five-photo structure: minimum count, whether categories are required or suggested, and how the uploader guides intentional selection. | Open |
 | D-09 | D6 | Progressive revelation sequence — what precedes photography, and how staged revelation avoids becoming a game. | Open — F-33 controlling; do not implement from the Foundation alone |
-| D-10 | D3/D4 | Material vocabulary: depth, shadow, translucency, texture, and the arrival→interior transition treatment. | Open |
+| D-10 | D3/D4 | Material vocabulary: depth, shadow, translucency, texture, and the arrival→interior transition treatment. | Open — D3 §14–§15 sets governing direction; values unresolved |
 | D-11 | D4 | Animation timing, easing, ceremony restraint and the complete reduced-motion equivalents for each meaningful state. | Open — F-16 baseline implemented |
 | D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | Open — F-04, F-05 |
 | D-13 | D4/D6 | Haptics and microinteraction vocabulary, if any. | Open — F-21 (optional) |
@@ -87,6 +87,13 @@ Reconcile during the D6 photography specification.
 | D-20 | D2 | Exact spacing scale and the responsive grid (mobile/tablet/desktop), plus container radius. | Open |
 | D-21 | D2 | Conversation layout: correspondence composition, whether bubbles exist at all, and how member/Athena distinction is expressed. | Open — D2 §6 rejects bubble dependence |
 | D-22 | D2 | Introduction layout composition under single-person dominance and progressive revelation. | Open — depends on D-09, F-31, F-33 |
+| D-23 | D3 | Exact dark anchor: which near-black family (midnight, charcoal, ink, deep mineral, restrained blue-black/violet-black) and how dimensional depth is produced. | Open |
+| D-24 | D3 | Exact warm anchor: which luminous ivory/stone family reads illuminated rather than cream, and survives long-conversation comfort. | Open |
+| D-25 | D3 | Accent survival testing: does antique gold survive? does sage survive? does lavender/plum survive? plus Athena-presence color and connection-event color. | Open — Athena/connection color depends on D4 (D-02) |
+| D-26 | D3 | Exact semantic palette: success, warning, error, safety, destructive, disabled, focus, selected — with non-color-only signals. | Open |
+| D-27 | D3 | Token architecture and material values: environment/surface/text/border/Athena/relational/organic/significance/safety/destructive/focus families, plus opacity, shadow, blur, gradient and radius values. | Open — includes reconciling hardcoded runtime color drift |
+| D-28 | D3 | Global appearance preference: is a user-selectable light/dark setting appropriate alongside environmental choreography, and how does system appearance interact with it? | Open — D3 §18 forbids conflating the two |
+| D-29 | D3 | Final dark→warm transition behavior: where it occurs, how it is choreographed, and its reduced-motion equivalent. | Open — F-16 controlling |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 
 ---
@@ -104,7 +111,13 @@ Reconcile during the D6 photography specification.
    broadly cardified; arrival and interior do not yet share a material/accent
    language; iconography is generic with no restraint policy. Recorded as
    inputs to D2–D6, not repaired.
-5. **Progressive revelation still absent.** Introductions contain no counterpart
+5. **Hardcoded color drift (D3 review).** `src/components/landing-background.tsx`
+   hardcodes a literal light-blue-to-white sky gradient, and
+   `src/routes/__root.tsx` hardcodes a `theme-color` value; both sit outside
+   the token system. The runtime light/dark pair is structured as a
+   conventional theme rather than as choreographed environmental states.
+   Recorded as downstream implementation work under D-27/D-28; not repaired.
+6. **Progressive revelation still absent.** Introductions contain no counterpart
    photography, so no revelation sequence exists to evaluate. Preserved as
    D-09/X-33; explicitly not implemented in this pass.
 
@@ -114,6 +127,7 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.3 | 2026-08-17 | D3 — Color, Light & Material v1.0 canonized. D-23–D-29 added; D-05 and D-10 annotated with D3's governing direction. Hardcoded color drift recorded as downstream work. Accessibility contrast baseline preserved. No runtime change. |
 | 1.2 | 2026-08-17 | D2 — Typography & Composition v1.0 canonized. D-18–D-22 added; D-17 annotated with D2's governing container direction. Broad cardification and sub-44px links preserved as implementation gaps. No runtime change. |
 | 1.1 | 2026-08-17 | D1 — Visual Identity v1.0 canonized. D-15–D-17 added as open design questions; D1 review observations recorded. No runtime change. |
 | 1.0 | 2026-08-17 | Register established alongside Design Foundation v1.0. D-01 and D-07 recorded as binding founder design decisions; D-02–D-14 recorded as open. No runtime, UI, CSS, token, typography, color, asset, animation, sound, voice or photography change made. |
