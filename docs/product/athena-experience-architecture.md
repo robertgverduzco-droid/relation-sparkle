@@ -580,6 +580,8 @@ Member Journey / UX Specification: NOT YET DEVELOPED
 
 Visual, Sonic & Interaction Design System: NOT YET DEVELOPED
 
+Decision & Implementation Register: ESTABLISHED (docs/product/experience/DECISION-REGISTER.md)
+
 Runtime implementation of the completed Experience Architecture: NOT YET AUTHORIZED
 
 This architecture establishes the structure within which that work will now proceed.
@@ -593,3 +595,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.0 | 2026-08-17 | Foundational architecture established. |
 | 1.1 | 2026-08-17 | E1 — Experience Philosophy canonized and linked; E2–E8 remain pending. |
 | 1.2 | 2026-08-17 | E2 — Emotional Journey canonized and linked; E3–E8 remain pending. |
+| 1.3 | 2026-08-17 | Experience Architecture Decision & Implementation Register established (X-01 founder decision; X-02–X-04 downstream requirements). |
