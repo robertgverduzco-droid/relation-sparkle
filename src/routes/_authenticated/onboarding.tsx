@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ConsentPanel } from "@/components/consent-panel";
+import { saveOnboardingStep } from "@/lib/onboarding.functions";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -70,49 +71,39 @@ function Onboarding() {
   async function persistStage(next: Step) {
     setSaving(true);
     try {
-      const uid = (await supabase.auth.getUser()).data.user!.id;
-      if (step === "identity") {
-        if (!identity.display_name.trim()) {
-          toast.error("Athena will need a name to call you by.");
-          setSaving(false);
-          return;
-        }
-        await supabase
-          .from("profiles")
-          .update({
-            display_name: identity.display_name.trim() || null,
-            birth_date: identity.birth_date || null,
-            gender: identity.gender || null,
-            pronouns: identity.pronouns || null,
-            city: identity.city || null,
-            onboarding_stage: next,
-          })
-          .eq("id", uid);
-      } else if (step === "preferences") {
-        await supabase.from("user_preferences").upsert({
-          user_id: uid,
-          seeking_genders: prefs.seeking_genders
-            .split(",")
-            .map((g) => g.trim())
-            .filter(Boolean),
-          age_min: prefs.age_min ? Number(prefs.age_min) : null,
-          age_max: prefs.age_max ? Number(prefs.age_max) : null,
-          relationship_intent: prefs.relationship_intent || null,
-        });
-        await supabase
-          .from("profiles")
-          .update({
-            onboarding_stage: next,
-            onboarding_completed_at:
-              next === "complete" ? new Date().toISOString() : null,
-          })
-          .eq("id", uid);
-      } else if (step === "welcome") {
-        await supabase
-          .from("profiles")
-          .update({ onboarding_stage: next })
-          .eq("id", uid);
+      // A-08: onboarding progress is written server-side after validation.
+      if (step === "identity" && !identity.display_name.trim()) {
+        toast.error("Athena will need a name to call you by.");
+        setSaving(false);
+        return;
       }
+      await saveOnboardingStep({
+        data: {
+          step,
+          identity:
+            step === "identity"
+              ? {
+                  display_name: identity.display_name.trim(),
+                  birth_date: identity.birth_date || undefined,
+                  gender: identity.gender || undefined,
+                  pronouns: identity.pronouns || undefined,
+                  city: identity.city || undefined,
+                }
+              : undefined,
+          preferences:
+            step === "preferences"
+              ? {
+                  seeking_genders: prefs.seeking_genders
+                    .split(",")
+                    .map((g) => g.trim())
+                    .filter(Boolean),
+                  age_min: prefs.age_min ? Number(prefs.age_min) : null,
+                  age_max: prefs.age_max ? Number(prefs.age_max) : null,
+                  relationship_intent: prefs.relationship_intent || undefined,
+                }
+              : undefined,
+        },
+      });
       setStep(next);
       if (next === "complete") {
         toast.success("Athena is ready to meet you.");

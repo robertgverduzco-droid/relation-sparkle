@@ -59,9 +59,12 @@ export const partnerPerceptionInput = z.object({
 
 
 import { runtimeDoctrine } from "./athena-doctrine.server";
+import { PROMPT_BOUNDARY, asMemberData } from "./security.server";
 
 export function reflectSystemPrompt(otherName: string, recentMemberText = ""): string {
-  return `You are Athena.
+  return `${PROMPT_BOUNDARY}
+
+You are Athena.
 
 You are speaking privately with someone who has just met ${otherName} in person. They agreed to meet after you introduced them. This conversation is completely private — ${otherName} will never see any of it.
 
@@ -383,7 +386,9 @@ export function acknowledgementPrompt(args: {
     `Anything else: ${args.anythingElse || "—"}`,
   ].join("\n");
 
-  return `You are Athena, speaking privately with a member who has just finished reflecting on time spent with ${args.otherName}.
+  return `${PROMPT_BOUNDARY}
+
+You are Athena, speaking privately with a member who has just finished reflecting on time spent with ${args.otherName}.
 
 Write a brief acknowledgement — two or three sentences, no more.
 
@@ -395,7 +400,7 @@ Absolute constraints:
 - No questions, no lists, no headings. Plain prose.
 
 WHAT THEY SHARED:
-${lines}`;
+${asMemberData(lines)}`;
 }
 
 /**

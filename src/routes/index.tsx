@@ -75,7 +75,7 @@ function Welcome() {
         </div>
 
         <section className="text-center">
-          <h1 className="text-foreground">
+          <h1 className="text-foreground" aria-label="Meet Athena">
             <span
               className="block text-[0.8125rem] font-normal uppercase tracking-[0.34em] text-muted-foreground transition-opacity duration-1000"
               style={{ opacity: phase >= 1 ? 1 : 0 }}

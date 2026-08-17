@@ -79,24 +79,24 @@ function FounderDialogueScreen() {
 
   if (state === "checking") {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-background px-6">
+      <section className="flex min-h-dvh items-center justify-center bg-background px-6">
         <p className="text-sm text-muted-foreground">Checking…</p>
-      </main>
+      </section>
     );
   }
 
   if (state === "denied") {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-background px-6">
+      <section className="flex min-h-dvh items-center justify-center bg-background px-6">
         <p className="text-center text-sm text-muted-foreground">
           This page isn’t available.
         </p>
-      </main>
+      </section>
     );
   }
 
   return (
-    <main className="flex min-h-dvh flex-col bg-background">
+    <section className="flex min-h-dvh flex-col bg-background">
       <header className="border-b border-border/60 px-5 py-4">
         <h1 className="text-base font-medium text-foreground">Founder Dialogue</h1>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -145,6 +145,6 @@ function FounderDialogueScreen() {
           </button>
         </div>
       </form>
-    </main>
+    </section>
   );
 }

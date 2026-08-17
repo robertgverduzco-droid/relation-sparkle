@@ -7,8 +7,10 @@ export const setAccountPaused = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => z.object({ paused: z.boolean() }).parse(v))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { error } = await supabase
+    const { userId } = context;
+    // A-08: account state is not browser-writable; the verified server writes it.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { error } = await admin
       .from("profiles")
       .update({ is_paused: data.paused })
       .eq("id", userId);

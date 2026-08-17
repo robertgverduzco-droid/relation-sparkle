@@ -204,7 +204,7 @@ function ProfilePage() {
           <div className="mt-8 px-6">
             <Link
               to="/profile/review"
-              className="block w-full rounded-full border border-border px-6 py-3 text-center text-[15px] text-foreground"
+              className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[15px] text-foreground"
             >
               Correct anything that isn't you
             </Link>
@@ -236,13 +236,13 @@ function ProfilePage() {
         )}
         <Link
           to="/understanding"
-          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-foreground"
         >
           What Athena understands about you
         </Link>
         <Link
           to="/membership"
-          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
         >
           Membership
         </Link>
@@ -250,26 +250,26 @@ function ProfilePage() {
 
 
           to="/privacy"
-          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
         >
           Privacy
         </Link>
         <Link
           to="/terms"
-          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
         >
           Terms of Service
         </Link>
         <Link
           to="/community-guidelines"
-          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
         >
           Community Guidelines
         </Link>
         {isModerator && (
           <Link
             to="/moderation"
-            className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-foreground"
+            className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-foreground"
           >
             Moderation review
           </Link>
@@ -277,7 +277,7 @@ function ProfilePage() {
         {isFounder && (
           <Link
             to="/founder"
-            className="block w-full rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"
+            className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
           >
             Founder Dialogue
           </Link>

@@ -47,6 +47,8 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => reviseInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // A-07: facets and their inference trail are written only by the server.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const statement = trimStatement(data.statement);
     if (data.kind !== "removal" && !statement) {
       throw new Error("Tell me in your own words what's true now, so I can hold it properly.");
@@ -80,12 +82,12 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
 
     if (data.kind === "removal") {
       // Destroy the understanding and its inference trail (F-13 Removal).
-      await supabase
+      await supabaseAdmin
         .from("facet_history")
         .delete()
         .eq("user_id", userId)
         .eq("facet_key", data.facet_key);
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("understanding_facets")
         .delete()
         .eq("user_id", userId)
@@ -93,7 +95,7 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
     } else {
       const patch = revisionPatch(data.kind, statement);
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("understanding_facets")
         .upsert(
           { user_id: userId, facet_key: data.facet_key, ...patch } as never,
@@ -103,7 +105,7 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
       if (data.kind === "correction") {
         // A correction invalidates the historical inference trail that led to
         // the wrong understanding; the fact of the correction is kept instead.
-        await supabase
+        await supabaseAdmin
           .from("facet_history")
           .delete()
           .eq("user_id", userId)

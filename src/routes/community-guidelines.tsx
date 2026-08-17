@@ -40,7 +40,7 @@ function GuidelinesPage() {
         </p>
       </header>
 
-      <main className="mt-8 space-y-6 px-6 text-[15px] leading-relaxed text-foreground/90">
+      <section className="mt-8 space-y-6 px-6 text-[15px] leading-relaxed text-foreground/90">
         <Section title="Be who you actually are">
           Use your real name and current photos. Speak honestly with Athena — it
           is the only way she can understand you well enough to introduce you
@@ -105,7 +105,7 @@ function GuidelinesPage() {
           err toward protecting the community over preserving any single
           account.
         </Section>
-      </main>
+      </section>
 
       <div className="mt-10 flex flex-col gap-2 px-6">
         <Link

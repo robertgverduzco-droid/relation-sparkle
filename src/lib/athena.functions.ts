@@ -221,6 +221,7 @@ ${transcript}`,
       ? await supabase
           .from("understanding_facets")
           .select("facet_key, understanding, reasoning, evidence, confidence")
+          .eq("user_id", userId)
           .in("facet_key", facetKeys)
       : { data: [] as FacetRow[] };
 
@@ -301,11 +302,19 @@ ${transcript}`,
       });
     }
 
-    if (historyInserts.length > 0) {
-      await supabase.from("facet_history").insert(historyInserts);
-    }
-    if (upserts.length > 0) {
-      await supabase.from("understanding_facets").upsert(upserts, { onConflict: "user_id,facet_key" });
+    // A-07: Athena's private understanding is not member-writable. Members can
+    // read their facets; only this server-side distillation writes them, always
+    // scoped to the authenticated member.
+    if (historyInserts.length > 0 || upserts.length > 0) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      if (historyInserts.length > 0) {
+        await supabaseAdmin.from("facet_history").insert(historyInserts);
+      }
+      if (upserts.length > 0) {
+        await supabaseAdmin
+          .from("understanding_facets")
+          .upsert(upserts, { onConflict: "user_id,facet_key" });
+      }
     }
 
     const topicKeys = object.topics.map((t) => t.key);

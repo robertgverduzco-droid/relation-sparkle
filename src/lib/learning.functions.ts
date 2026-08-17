@@ -13,7 +13,8 @@ export const setLearningOptOut = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => optOutInput.parse(v))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("profiles")
       .update({ learning_opt_out: data.opt_out })
       .eq("id", context.userId);

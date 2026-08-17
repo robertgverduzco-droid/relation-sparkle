@@ -569,3 +569,30 @@ cleanup or redesign was performed. Sections 1–38 above are preserved as the au
 Full suite: 6 files, 57 tests, all passing. No change was made to any P1–P3 finding; sections 4–6
 remain open as written, and the private-beta determination in section 37 should be re-taken by the
 founder now that the four blockers named in section 38 are closed.
+
+---
+
+## P1 REMEDIATION WAVE — CLOSED
+
+All eleven P1 findings are remediated. No P2/P3 work was undertaken.
+
+| ID | Finding | Resolution |
+| --- | --- | --- |
+| A-05 | Duplicate matchmaking-hold logic | `heldMemberIds()` in `relationship.server.ts` is now the single batch expression of the hold doctrine; `introductions.server.ts` calls it. Elapsed rest no longer releases a hold anywhere. |
+| A-06 | AI call sites without the security boundary | `reflectSystemPrompt` and `acknowledgementPrompt` (`connections.server.ts`) and `selfEvaluationPrompt` now open with `PROMPT_BOUNDARY`; member text is wrapped in `asMemberData()`. The legacy free-form reflection chat and its distillation (no UI caller) were retired, removing an unbounded prompt path. |
+| A-07 | `understanding_facets` client-writable | Member DML revoked on `understanding_facets` and `facet_history` (read-only to members). All writes run server-side, scoped to the authenticated member. |
+| A-08 | `profiles` fully client-writable | Table-level UPDATE revoked; column-scoped UPDATE granted for identity fields only. `onboarding_stage`, `onboarding_completed_at`, `is_paused`, and `learning_opt_out` move to verified server functions, with a server-side stage machine (`onboarding.server.ts`) that only advances one step and never regresses. |
+| A-09 | Per-instance rate limiting | `durableRateLimit()` backed by `rate_limit_counters` + `consume_rate_limit()` (service-role only); step-up password verification now uses it. |
+| A-10 | Ops endpoints unconfigured | `OPS_HEARTBEAT_SECRET` provisioned; `/api/public/ops-heartbeat` and `/api/public/restore-reconcile` are live. |
+| A-11 | Duplicate `<main>` landmarks | `__root.tsx` owns the only `<main>`; all route files use `<section>`. Guarded by test. |
+| A-12 | Sub-44px tap targets | Auth text controls, back controls, and profile links now carry a ≥44px hit area. |
+| A-13 | Dating vocabulary on sign-in | "matches" replaced with "introductions". |
+| A-14 | Landing `h1` announced "MeetAthena" | `aria-label="Meet Athena"` on the heading; verified in the browser. |
+| A-15 | Missing doctrine test coverage | `src/lib/doctrine-guards.test.ts` fails the build if a boundary, a server-only write path, the onboarding gate, or the single-landmark rule regresses. 74 tests pass. |
+
+**Verification:** typecheck clean; 74/74 tests pass; database ACLs confirmed
+(`understanding_facets`/`facet_history` read-only to members, `profiles` UPDATE
+column-scoped, `rate_limit_counters` service-role only); public routes render
+with a single landmark, corrected heading, and no console errors. Authenticated
+surfaces could not be re-walked in this pass — no preview session was available
+to the automated browser.

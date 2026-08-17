@@ -14,6 +14,7 @@
 //
 // This module is server-only (`.server.ts`) and is never bundled to the client.
 import { z } from "zod";
+import { PROMPT_BOUNDARY, asMemberData } from "./security.server";
 
 // Version stamps — recorded on every row so behavioral drift stays attributable
 // and any version's records can be ignored/rolled back wholesale.
@@ -209,7 +210,9 @@ export function calibrateConfidence(
 // ---------------------------------------------------------------------------
 
 export function selfEvaluationPrompt(): string {
-  return `You are Athena, reflecting privately on your own performance in a conversation that has just ended.
+  return `${PROMPT_BOUNDARY}
+
+You are Athena, reflecting privately on your own performance in a conversation that has just ended.
 
 This reflection is about YOU, not about the person you spoke with. It is private, internal, and will never be shown to them.
 
@@ -295,7 +298,7 @@ export async function runSelfEvaluation(
       model: gateway(model),
       schema: selfEvaluationSchema,
       system: selfEvaluationPrompt(),
-      prompt: `COMPRESSED TRANSCRIPT (${visibleTurns} turns, ${gate.turnCount} of them theirs):\n\n${transcript}`,
+      prompt: `COMPRESSED TRANSCRIPT (${visibleTurns} turns, ${gate.turnCount} of them theirs):\n\n${asMemberData(transcript)}`,
       providerOptions: { lovable: { reasoningEffort: "none" } },
     });
 
