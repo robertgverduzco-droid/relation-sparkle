@@ -235,6 +235,82 @@ The E6 audit findings that no fake progress indicators, engagement loops, artifi
 
 ---
 
+## Part VI — Founder decisions from E7 review
+
+### F-22 — Arrival before administration — **APPROVED (2026-08-17)**
+
+*Source:* E7 §6, §9; X-22.
+
+**Decision.** Arrival should establish Athena and the emotional character of the product before substantial administrative burden, while still completing all required authentication, consent, and eligibility steps clearly and securely. This does not reduce security or consent requirements; it reorders their presentation so that Athena’s presence precedes unnecessary bureaucracy.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-23 — Onboarding as orientation into Athena’s world — **APPROVED (2026-08-17)**
+
+*Source:* E7 §4, §5, §11, §23; X-23.
+
+**Decision.** Onboarding must feel like orientation into Athena’s world, not a conventional dating-app intake or questionnaire. Necessary identity, consent, and preference steps remain required, but their framing, copy, and sequencing must read as setup for a conversation with Athena rather than a form to complete.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-24 — Post-foundational-conversation and Waiting surface — **APPROVED (2026-08-17)**
+
+*Source:* E7 §25, §26, §27; X-03, X-24.
+
+**Decision.** The post-foundational-conversation and Waiting experience must be explicitly designed so the member understands what happens next, feels remembered, and does not need to perform engagement to remain eligible. Waiting is a legitimate product state, not an absence of progress. Extends X-03.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-25 — Voice and text interaction parity — **APPROVED (2026-08-17)**
+
+*Source:* E7 §15–§19, §58; X-06, X-09, X-25.
+
+**Decision.** Voice and text interaction should ultimately support true modality parity, including appropriate interruption/barge-in behavior, playback control, transcript/text visibility, and seamless switching where technically feasible. The text-only path must remain fully viable, and the voice path must remain honest about failure, transcription errors, and environmental conditions.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-26 — Navigation and Today surface — **APPROVED (2026-08-17)**
+
+*Source:* E7 §35–§38; X-26.
+
+**Decision.** Navigation and the Today surface must be designed around “what matters to me right now,” not feeds, dashboards, activity metrics, or engagement surfaces. Athena must remain reachable without becoming a dominating widget, and no surface may expose internal matchmaking architecture to the member as if it were content.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-27 — Account controls discoverability — **APPROVED (2026-08-17)**
+
+*Source:* E7 §46–§50; X-27.
+
+**Decision.** Important account controls — privacy, consent, understanding controls (Change / Correction / Removal), Rest/Pause, Devices & Safety, export, subscription when implemented, and deletion — must remain discoverable and must not be buried to protect retention. A member who wishes to leave, pause, inspect, or correct their data must be able to find the path without assistance.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-28 — Honest AI, network, and connectivity behavior — **APPROVED (2026-08-17)**
+
+*Source:* E7 §51–§53; X-18, X-28.
+
+**Decision.** AI failure, network failure, transcription failure, speech failure, and ordinary processing must ultimately be distinguishable and honest. The product must preserve unsent member work where technically feasible, prevent ambiguous or duplicate actions, and distinguish sending from sent. Atmospheric motion must never conceal a technical failure. Extends X-18.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-29 — Payment placement unresolved — **APPROVED (2026-08-17)**
+
+*Source:* E7 §43–§45; X-29.
+
+**Decision.** Payment placement remains unresolved until the later Member Journey / UX and Business Architecture integration. Commercial conversion must occur only after the member understands Athena’s value and must never exploit emotional disclosure or intimacy. No payment implementation may be introduced without this subsequent integration.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-30 — Rest/Pause reconciliation with X-01 — **APPROVED (2026-08-17)**
+
+*Source:* E7 §28, §29; X-01, X-30.
+
+**Decision.** Rest/Pause must reconcile with X-01. A member must not silently return to active matchmaking when a timed pause expires; resumption requires deliberate member action or explicit acknowledgement consistent with the existing founder decision. Entering and exiting a pause must be understandable and never punitive. Governance decision X-01 controls; UI design must not silently override it.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+---
+
 # Revision history
 
 | Version | Date | Description |
@@ -248,3 +324,4 @@ The E6 audit findings that no fake progress indicators, engagement loops, artifi
 | 1.6 | 2026-08-17 | X-16–X-21 recorded from E6 canonical review: reduced-motion support, Athena-native state language replacing generic pulses, distinct operational states, connection-field temporal specification, transition/ceremony choreography, haptics and microinteractions. X-05 reconciled and scoped by E6 §7. No runtime or motion changes made. |
 | 1.7 | 2026-08-17 | E6 approved. Founder decisions F-16 through F-21 recorded and linked to X-16–X-21. E6 findings of no fake progress, engagement loops, or conventional dating-app motion preserved as baseline. No runtime, animation, CSS, loader, particle, haptic, or UI changes made. |
 | 1.8 | 2026-08-17 | X-22–X-30 recorded from E7 canonical review: arrival before administration, questionnaire framing, post-conversation/Waiting state, conversational controls and mode parity, navigation and Today surface, account-control discoverability, honest error/AI-failure/connectivity behavior, payment placement, Rest/Pause reconciliation. No runtime or UI changes made. |
+| 1.9 | 2026-08-17 | E7 approved. Founder decisions F-22 through F-30 recorded and linked to X-22–X-30. No runtime, UI, or interaction changes made. |
