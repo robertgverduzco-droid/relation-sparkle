@@ -74,7 +74,7 @@ function Home() {
   const firstName = profile?.display_name?.split(" ")[0] ?? null;
 
   return (
-    <div className="screen-shell safe-top pb-28 fade-in-quick">
+    <div className="screen-shell safe-top pb-28 fade-in-quick" data-testid="today-screen">
       <header className="px-6 pt-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
           <p className="type-section">Today</p>
