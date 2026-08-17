@@ -609,7 +609,7 @@ Next phase: Experience Integration Audit — NOT YET BEGUN and not to begin auto
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
-Visual, Sonic & Interaction Design System: NOT YET DEVELOPED
+Visual, Sonic & Interaction Design System: FOUNDATION CANONICAL v1.0 (docs/product/design/DESIGN-FOUNDATION-V1.md) — subordinate to E1–E8; D1–D6 specifications not yet developed. Design Decision Register: ESTABLISHED (docs/product/design/DESIGN-DECISION-REGISTER.md)
 
 Decision & Implementation Register: ESTABLISHED (docs/product/experience/DECISION-REGISTER.md)
 
