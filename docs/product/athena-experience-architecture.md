@@ -346,7 +346,7 @@ The palette remains subject to dedicated visual-development work.
 
 Canonical doctrine: [E5 — Visual World](./experience/E5-visual-world.md) (v1.0, canonized 2026-08-17). Palette values above are directional, not production tokens.
 
-Visual-gap findings from E5 review: see Decision Register X-10–X-15.
+Visual-gap findings from E5 review: see Decision Register X-10–X-15. Founder decisions from E5 review: F-10–F-15 (Decision Register, Part IV).
 
 E5 governs:
 
@@ -387,6 +387,8 @@ Cliché romantic imagery and conventional dating-app visual language should not 
 Governing question: How does Athena reveal rather than simply display?
 
 E6 governs movement, transitions, progressive revelation, anticipation, and meaningful visual change.
+
+Canonical doctrine: [E6 — Motion, Curiosity & Revelation](./experience/E6-motion-curiosity-revelation.md) (v1.0, canonized 2026-08-17). Motion findings from E6 review: see Decision Register X-16–X-21; X-05 reconciled and scoped by E6 §7.
 
 Movement must carry purpose.
 
@@ -588,7 +590,9 @@ E4 — Voice & Sonic Identity: CANONICAL v1.0 (docs/product/experience/E4-voice-
 
 E5 — Visual World: CANONICAL v1.0 (docs/product/experience/E5-visual-world.md)
 
-E6–E8 individual doctrine: NOT YET CANONICAL
+E6 — Motion, Curiosity & Revelation: CANONICAL v1.0 (docs/product/experience/E6-motion-curiosity-revelation.md)
+
+E7–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -613,3 +617,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.4 | 2026-08-17 | E3 — Athena's Presence canonized and linked; E4–E8 remain pending. |
 | 1.5 | 2026-08-17 | E4 — Voice & Sonic Identity canonized and linked; E5–E8 remain pending. |
 | 1.6 | 2026-08-17 | E5 — Visual World canonized and linked; E6–E8 remain pending. Visual-gap findings recorded as X-10–X-15. |
+| 1.7 | 2026-08-17 | E5 approved; founder decisions F-10–F-15 recorded. E6 — Motion, Curiosity & Revelation canonized and linked; motion findings recorded as X-16–X-21. E7–E8 remain pending. |

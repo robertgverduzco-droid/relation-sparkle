@@ -57,6 +57,12 @@ is never read as abandonment (consistent with F-01/F-02).
 | X-13 | Review **progress/step indicators and any bar-like affordance** so no visual element ever ranks or scores a person. The onboarding progress bar measures a member's own flow and is permitted; no equivalent treatment may appear on introductions, profiles, or reasoning surfaces. | E5 §32, §33 | E7 / E8 and later UX Specification | Recorded — Not Yet Implemented |
 | X-14 | Establish **accessibility as a visual gate**: contrast verification across both environments, scalable type, motion alternatives (reduced-motion behavior for the connection field), visible focus states, and non-color-only signaling — validated before any visual system is accepted. | E5 §44, §48, §49 | Visual / Sonic / Interaction Design System | Recorded — Not Yet Implemented |
 | X-15 | Define **visual privacy treatments** for sensitive surfaces (app-switcher/screenshot obscuring where preventable, notification content, oversized sensitive labels, shared-screen states), governed by Privacy & Security doctrine rather than aesthetics. | E5 §46; Privacy & Security Architecture v1 | UX Specification / Security review | Recorded — Not Yet Implemented |
+| X-16 | Establish **reduced-motion support** across the experience: the landing connection field animates continuously with no `prefers-reduced-motion` path, and no motion-alternative standard exists. Reduced motion must yield an equivalent, not lesser, product. | E6 §50, §51; E5 §44 | Visual / Sonic / Interaction Design System | Recorded — Not Yet Implemented |
+| X-17 | Replace remaining **generic motion placeholders** with Athena-native state language: `animate-pulse` dot as the thinking indicator and the pulsing microphone/listening treatment in the Athena conversation surface. Must preserve honest latency and error reporting (see X-05). | E6 §7, §16, §18, §19 | E6 → Design System / UX Specification | Recorded — Not Yet Implemented |
+| X-18 | Define **distinct operational states** in motion and language: Athena processing, network unavailable, request failed, service unavailable. One generic animated state must not obscure different realities, and atmospheric motion must never hide technical failure. | E6 §53, §54 | UX Specification | Recorded — Not Yet Implemented |
+| X-19 | Specify **connection-field temporal behavior** as a production specification: independence before connection, proximity without destiny, recognition, non-fusing connection, performance/battery budgets, and reduced-motion equivalents. Current field is a provisional atmospheric implementation only. | E6 §9–§15, §52 | Visual / Sonic / Interaction Design System | Recorded — Not Yet Implemented |
+| X-20 | Define **transition and ceremony choreography** (spatial continuity, routine navigation speed, arrival, foundational-conversation completion, introduction, mutual connection, Relationship Focus Mode, successful departure) with motion tokens, timings and easing. Current runtime uses a single global fade and no state-aware transitions. | E6 §33–§42, §55 | E7 / E8 and Design System | Recorded — Not Yet Implemented |
+| X-21 | Define **haptics and microinteraction feedback** — sparse, meaningful, never reward conditioning — with explicit member controls and platform fallbacks. | E6 §48, §49 | Design System / UX Specification | Recorded — Not Yet Implemented |
 
 ---
 
@@ -112,6 +118,58 @@ is never read as abandonment (consistent with F-01/F-02).
 
 ---
 
+## Part IV — Founder decisions from E5 review
+
+### F-10 — Entry/internal split must resolve into one Athena visual world — **APPROVED (2026-08-17)**
+
+*Source:* E5 §38, §45, §50; X-10.
+
+**Decision.** The entry experience and internal product surfaces must ultimately be reconciled into one coherent Athena visual world. This does not require every surface to look identical: functional density and light/dark context may vary, provided the identity remains unmistakably Athena. Resolution belongs to the Visual / Sonic / Interaction Design System.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-11 — Current palette is implementation only; E5 palette is directional — **APPROVED (2026-08-17)**
+
+*Source:* E5 §7–§13; X-11.
+
+**Decision.** The existing palette is preserved only as current implementation and carries no canonical authority. The E5 palette (midnight navy, warm ivory, antique gold, organic secondary) is also directional. Final palette selection belongs to the later Visual / Sonic / Interaction Design System and its prototype process.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-12 — Hardcoded color resolved during design-system implementation — **APPROVED (2026-08-17)**
+
+*Source:* E5 §8, §44, §45; X-12.
+
+**Decision.** Residual hardcoded and non-semantic color is not repaired now. It must be resolved during the later design-system implementation so all visual behavior is governed consistently by the final token system.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-13 — Progress language may describe a member's own process only — **APPROVED (2026-08-17)**
+
+*Source:* E5 §32, §33; X-13.
+
+**Decision.** Progress indicators may describe a member's own process where useful. No ranking or progress visual language may migrate into member comparison, compatibility, introductions, or matchmaking reasoning.
+
+*Status:* Founder Decision — Binding · Partially Governed (onboarding indicator permitted; prohibition already holds in current UI).
+
+### F-14 — Accessibility verification is a beta gate — **APPROVED (2026-08-17)**
+
+*Source:* E5 §44, §48, §49; X-14.
+
+**Decision.** Accessibility verification is mandatory before the visual system may be accepted for beta. This includes contrast, scalable type, motion alternatives, focus visibility, and non-color-only signaling.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-15 — Visual privacy treatments resolved before beta — **APPROVED (2026-08-17)**
+
+*Source:* E5 §46; Privacy & Security Architecture v1; X-15.
+
+**Decision.** Visual privacy treatments must be resolved before beta and must inherit the existing Privacy & Security architecture rather than defining new privacy behavior.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+---
+
 # Revision history
 
 | Version | Date | Description |
@@ -121,3 +179,5 @@ is never read as abandonment (consistent with F-01/F-02).
 | 1.2 | 2026-08-17 | X-06–X-09 recorded from E4 canonical review: member sound controls, sonic signature prototyping, environmental/locked-screen voice privacy, voice interaction fidelity. |
 | 1.4 | 2026-08-17 | X-10–X-15 recorded from E5 canonical review: entry/internal visual split, palette/token reconciliation, hardcoded color removal, no scoring affordances, accessibility gate, visual privacy treatments. No runtime or visual changes made. |
 | 1.3 | 2026-08-17 | E4 approved. Founder decisions F-04 through F-09 recorded. X-06–X-09 scope refined and linked to F-04–F-09. No runtime or sound changes made. |
+| 1.5 | 2026-08-17 | E5 approved. Founder decisions F-10 through F-15 recorded (one Athena visual world; palette directional; hardcoded color deferred to design system; progress language limited to a member's own process; accessibility verification a beta gate; visual privacy resolved before beta). No runtime or visual changes made. |
+| 1.6 | 2026-08-17 | X-16–X-21 recorded from E6 canonical review: reduced-motion support, Athena-native state language replacing generic pulses, distinct operational states, connection-field temporal specification, transition/ceremony choreography, haptics and microinteractions. X-05 reconciled and scoped by E6 §7. No runtime or motion changes made. |
