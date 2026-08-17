@@ -33,7 +33,7 @@ function MessagesPage() {
   }, [list]);
 
   return (
-    <div className="screen-shell safe-top pb-28 px-6 pt-8">
+    <div className="screen-shell safe-top pb-28 px-6 pt-8" data-testid="messages-screen">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Messages</p>
       <h1 className="mt-2 font-display text-[2rem] leading-tight text-foreground">
         Your conversations
@@ -57,6 +57,7 @@ function MessagesPage() {
           {items.map((c) => (
             <li key={c.id}>
               <Link
+                data-testid="message-thread-link"
                 to="/messages/$id"
                 params={{ id: c.id }}
                 className="block rounded-2xl border border-border/70 bg-card p-4 transition hover:border-primary/60"

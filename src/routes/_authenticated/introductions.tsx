@@ -74,7 +74,7 @@ function IntroductionsPage() {
   }
 
   return (
-    <div className="screen-shell safe-top pb-28 px-6 pt-8">
+    <div className="screen-shell safe-top pb-28 px-6 pt-8" data-testid="introductions-screen">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Meet</p>
       <h1 className="mt-2 font-display text-[2.25rem] leading-tight text-foreground">
         When Athena has <em className="italic text-primary">someone</em> in mind.
@@ -90,6 +90,7 @@ function IntroductionsPage() {
 
       <div className="mt-6">
         <button
+          data-testid="introductions-reflect"
           onClick={reflectNow}
           disabled={busy}
           className="rounded-full border border-border px-4 py-2 text-[13px] text-foreground disabled:opacity-40"
@@ -112,6 +113,7 @@ function IntroductionsPage() {
           {items.map((it) => (
             <li
               key={it.id}
+              data-testid="introduction-card"
               className="rounded-3xl border border-border/70 bg-card p-5"
             >
               <div className="flex items-baseline justify-between">
@@ -134,6 +136,7 @@ function IntroductionsPage() {
                 </p>
               )}
               <Link
+                data-testid="introduction-reasoning-link"
                 to="/introductions/$id"
                 params={{ id: it.id }}
                 className="mt-3 inline-block text-[13px] text-primary underline underline-offset-2"
@@ -144,18 +147,21 @@ function IntroductionsPage() {
                 {it.response === "pending" || it.response === "deferred" ? (
                   <>
                     <button
+                      data-testid="introduction-accept"
                       onClick={() => react(it.id, "accepted")}
                       className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
                     >
                       Yes, I'm open
                     </button>
                     <button
+                      data-testid="introduction-defer"
                       onClick={() => react(it.id, "deferred")}
                       className="rounded-full border border-border px-4 py-2.5 text-sm text-foreground"
                     >
                       Not now
                     </button>
                     <button
+                      data-testid="introduction-decline"
                       onClick={() => react(it.id, "declined")}
                       className="rounded-full border border-border px-4 py-2.5 text-sm text-muted-foreground"
                     >

@@ -121,7 +121,7 @@ function ProfilePage() {
       intel.readiness_summary);
 
   return (
-    <div className="screen-shell safe-top pb-28">
+    <div className="screen-shell safe-top pb-28" data-testid="profile-screen">
       <header className="px-6 pt-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
           Your Living Profile
@@ -203,6 +203,7 @@ function ProfilePage() {
 
           <div className="mt-8 px-6">
             <Link
+              data-testid="profile-review-link"
               to="/profile/review"
               className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[15px] text-foreground"
             >
@@ -223,6 +224,8 @@ function ProfilePage() {
             transcript) is no longer linked. /athena is the canonical
             conversation surface. */}
         <button
+          data-testid="profile-pause-toggle"
+          data-paused={profile?.is_paused ? "true" : "false"}
           onClick={togglePause}
           disabled={busy || !profile}
           className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground disabled:opacity-60"
@@ -235,12 +238,14 @@ function ProfilePage() {
           </p>
         )}
         <Link
+          data-testid="profile-understanding-link"
           to="/understanding"
           className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-foreground"
         >
           What Athena understands about you
         </Link>
         <Link
+          data-testid="profile-membership-link"
           to="/membership"
           className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
         >
@@ -284,6 +289,7 @@ function ProfilePage() {
         )}
 
         <button
+          data-testid="profile-sign-out"
           onClick={signOut}
           className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground"
         >

@@ -438,7 +438,7 @@ function AthenaPage() {
           : "Say it — or type it";
 
   return (
-    <div className="screen-shell safe-top pb-24">
+    <div className="screen-shell safe-top pb-24" data-testid="athena-screen">
       <header className="px-6 pt-6 pb-3 border-b border-border/60">
         <div className="flex items-center justify-between">
           <button
@@ -458,7 +458,15 @@ function AthenaPage() {
         </div>
       </header>
 
-      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+      <div
+        ref={scrollerRef}
+        data-testid="athena-transcript"
+        data-hydrated={hydrated ? "true" : "false"}
+        data-conversation-state={
+          introducing ? "first-meeting" : askingPreference ? "choosing-mode" : busy ? "thinking" : "open"
+        }
+        className="flex-1 overflow-y-auto px-5 py-6 space-y-4"
+      >
         {!hydrated ? (
           <p className="text-center text-sm text-muted-foreground fade-in-slow">
             Athena is preparing to meet you…
@@ -508,6 +516,7 @@ function AthenaPage() {
         >
           <button
             type="button"
+            data-testid="athena-record"
             onClick={() => (recording ? stopRecording() : void startRecording())}
             disabled={busy || introducing || askingPreference || transcribing}
             title={recording ? "Stop and transcribe" : "Speak to Athena"}
@@ -522,6 +531,7 @@ function AthenaPage() {
           </button>
           <textarea
             ref={inputRef}
+            data-testid="athena-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -537,6 +547,7 @@ function AthenaPage() {
           />
           <button
             type="submit"
+            data-testid="athena-send"
             disabled={!input.trim() || inputDisabled}
             className="rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition disabled:opacity-40"
           >

@@ -402,11 +402,11 @@ is uncovered (A-15).
 | A-21 | P2 | Navigation | Living Profile two levels deep | /profile | RUNTIME | no |
 | A-22 | P2 | Intelligence | Faculty named on request | Athena | RUNTIME | no |
 | A-23 | P2 | Deletion | Cascade-only purges undocumented | account.server | CODE-TRACED | no |
-| A-24 | P3 | Deps | `jspdf` unused, `date-fns` unclear | package.json | CODE-TRACED | no |
+| A-24 | P3 | Deps | `jspdf` unused, `date-fns` unclear | package.json | CLOSED | yes |
 | A-25 | P3 | Deps | Beta `nitro` pin | package.json | CODE-TRACED | no |
 | A-26 | P3 | Design | Desktop is a centred mobile column | all | RUNTIME | no |
 | A-27 | P3 | Naming | messages vs conversations overlap | routes | CODE-TRACED | no |
-| A-28 | P3 | Tooling | No test hooks | src | CODE-TRACED | no |
+| A-28 | P3 | Tooling | No test hooks | src | CLOSED | yes |
 
 ## 33. Root-cause clusters
 
@@ -688,3 +688,54 @@ guarded by `security.test.ts`, `no-score.test.ts` and `doctrine-guards.test.ts`.
    non-production test account) before the member journey can be walked live.
 4. **Private-beta determination** — with P0, P1 and P2 all closed, the readiness
    call in section 37 is the founder's to re-take.
+
+
+## 39. P3 pre-beta remediation wave (A-24, A-28)
+
+Authorized scope: A-24 and the narrowly scoped A-28 implementation only.
+
+### A-24 — CLOSED
+
+`jspdf` removed (`bun remove jspdf`); no source reference remains. `date-fns` is
+**retained and required**: it is a peer dependency of `react-day-picker`
+(`date-fns@^4.1.0-0`). Future audits must not flag `date-fns` as unused —
+absence of a direct application import is expected.
+
+### A-28 — CLOSED
+
+Journey-spine `data-testid` hooks added across Today, the Athena conversation
+surface (with `data-conversation-state` for foundational/returning states),
+Living Profile, Correction/Removal, Understanding, Membership,
+Meet/introductions, Connections, Messages, Reflection, Relationship Focus,
+Rest/endings, and account/privacy controls including export, deletion and
+step-up confirmation. No blanket sweep, no hooks inside generic UI primitives,
+no member information or Athena-generated language in IDs, and no new
+authorization or privacy surface — hooks are inert attributes only.
+
+Contract enforced by `src/lib/journey-hooks.test.ts`. E2E scaffolding lives in
+`e2e/authenticated_journey.py` with the hook table in `e2e/README.md`; it exits
+non-zero when authenticated identities are unavailable so it can never be read
+as a pass.
+
+### Deferred P3 (unchanged)
+
+- **A-25** — defer until stable Nitro 3.0 or a Worker-runtime incident.
+- **A-26** — defer wide-screen composition until native-shell/form-factor work
+  or beta evidence.
+- **A-27** — defer route-file naming cleanup until a routing refactor.
+
+### Counts after this wave
+
+- Remaining P0: **0** · P1: **0** · P2: **0** · P3: **3** (A-25, A-26, A-27, all deferred by disposition)
+
+### Beta Readiness — still OPEN
+
+- **BR-01** Authenticated end-to-end V1 member walkthrough. Not closable by code inspection.
+- **BR-02** Two-member authorization / F-37 verification. Requires two authenticated identities.
+
+### Remaining non-audit V1 obligations (carried forward, not closed)
+
+D-44/F-33 counterpart photography and progressive revelation; D5 landing-chime,
+playback and caption divergences; monitoring operational verification;
+restore-purchase rehearsal; §16 legal dependencies; membership tier and pricing
+decisions; billing activation; native-readiness and native packaging.

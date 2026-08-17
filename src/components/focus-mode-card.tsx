@@ -66,7 +66,11 @@ export function FocusModeCard({
   };
 
   return (
-    <article className="rounded-3xl border border-primary/30 bg-card p-6 shadow-sm">
+    <article
+      data-testid="relationship-focus"
+      data-focus-state={state.active ? "active" : state.i_opted_in ? "waiting" : "invited"}
+      className="rounded-3xl border border-primary/30 bg-card p-6 shadow-sm"
+    >
       <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
         Relationship Focus
       </p>
@@ -85,6 +89,7 @@ export function FocusModeCard({
               </p>
               <div className="flex gap-3">
                 <button
+                  data-testid="relationship-focus-end-confirm"
                   onClick={() => void onEnd()}
                   disabled={busy}
                   className="rounded-full border border-border px-4 py-2 text-sm text-foreground disabled:opacity-60"
@@ -101,6 +106,7 @@ export function FocusModeCard({
             </div>
           ) : (
             <button
+              data-testid="relationship-focus-end"
               onClick={() => setConfirmEnd(true)}
               className="mt-4 text-xs text-muted-foreground underline-offset-4 hover:underline"
             >
@@ -120,6 +126,7 @@ export function FocusModeCard({
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-ink-soft">{state.invite}</p>
           <button
+            data-testid="relationship-focus-opt-in"
             onClick={() => void onOptIn()}
             disabled={busy}
             className="mt-4 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-60"

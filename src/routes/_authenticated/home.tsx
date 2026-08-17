@@ -74,7 +74,7 @@ function Home() {
   const firstName = profile?.display_name?.split(" ")[0] ?? null;
 
   return (
-    <div className="screen-shell safe-top pb-28 fade-in-quick">
+    <div className="screen-shell safe-top pb-28 fade-in-quick" data-testid="today-screen">
       <header className="px-6 pt-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
           <p className="type-section">Today</p>
@@ -112,12 +112,14 @@ function Home() {
             }
             to="/athena"
             action={hasStartedAthena ? "Continue" : "Begin"}
+            testId="today-link-athena"
           />
           <Continuation
             title="Your Living Profile"
             body="What Athena is coming to understand. Correct anything that doesn't sound like you."
             to="/profile"
             action="Open"
+            testId="today-link-living-profile"
           />
           {/* A-21: the understanding surface is reachable in one step, not two. */}
           <Continuation
@@ -125,6 +127,7 @@ function Home() {
             body="Her working picture of you, in her own words — and how it changed."
             to="/understanding"
             action="Read"
+            testId="today-link-understanding"
           />
 
         </section>
@@ -141,15 +144,19 @@ function Continuation({
   body,
   to,
   action,
+  testId,
 }: {
   title: string;
   body: string;
   to: "/profile" | "/introductions" | "/athena" | "/understanding";
   action: string;
+  /** A-28: stable semantic hook for the authenticated journey walkthrough. */
+  testId?: string;
 }) {
   return (
     <Link
       to={to}
+      data-testid={testId}
       className="hairline block py-5 transition-colors first:border-t-0 hover:bg-surface/40"
     >
       <h3 className="font-display text-[1.375rem] leading-snug text-foreground">{title}</h3>
@@ -158,3 +165,4 @@ function Continuation({
     </Link>
   );
 }
+

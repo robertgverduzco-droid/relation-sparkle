@@ -85,7 +85,7 @@ function MembershipPage() {
   }
 
   return (
-    <div className="screen-shell safe-top fade-in-quick pb-16">
+    <div className="screen-shell safe-top fade-in-quick pb-16" data-testid="membership-screen">
       <header className="px-6 pt-10">
         <AthenaPresence state="quiet" />
         <p className="type-section mt-6">{MEMBERSHIP_COPY.title}</p>
@@ -103,6 +103,8 @@ function MembershipPage() {
             return (
               <button
                 key={plan.key}
+                data-testid="membership-plan"
+                data-plan={plan.key}
                 type="button"
                 disabled={busy}
                 aria-pressed={active}
@@ -158,6 +160,7 @@ function MembershipPage() {
           <div>
             <button
               type="button"
+              data-testid="membership-restore"
               disabled={busy}
               onClick={() => void onRestore()}
               className="tap-target text-sm text-muted-foreground underline underline-offset-4 disabled:opacity-60"
