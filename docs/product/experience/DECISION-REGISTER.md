@@ -119,4 +119,5 @@ is never read as abandonment (consistent with F-01/F-02).
 | 1.0 | 2026-08-17 | Register established. X-01 founder decision recorded; X-02–X-04 recorded as downstream requirements from E2 review. |
 | 1.1 | 2026-08-17 | X-05 recorded: Athena thinking/processing state must be expressed through Athena's own visual and motion language rather than a generic spinner, pending E6/UX specification. |
 | 1.2 | 2026-08-17 | X-06–X-09 recorded from E4 canonical review: member sound controls, sonic signature prototyping, environmental/locked-screen voice privacy, voice interaction fidelity. |
+| 1.4 | 2026-08-17 | X-10–X-15 recorded from E5 canonical review: entry/internal visual split, palette/token reconciliation, hardcoded color removal, no scoring affordances, accessibility gate, visual privacy treatments. No runtime or visual changes made. |
 | 1.3 | 2026-08-17 | E4 approved. Founder decisions F-04 through F-09 recorded. X-06–X-09 scope refined and linked to F-04–F-09. No runtime or sound changes made. |
