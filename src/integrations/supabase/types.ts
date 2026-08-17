@@ -466,6 +466,51 @@ export type Database = {
           },
         ]
       }
+      entitlement_events: {
+        Row: {
+          actor: string
+          created_at: string
+          detail: Json
+          environment: string
+          event: string
+          from_status: string | null
+          id: string
+          plan_key: string | null
+          product_id: string | null
+          provider: string
+          to_status: string
+          user_id: string
+        }
+        Insert: {
+          actor: string
+          created_at?: string
+          detail?: Json
+          environment: string
+          event: string
+          from_status?: string | null
+          id?: string
+          plan_key?: string | null
+          product_id?: string | null
+          provider: string
+          to_status: string
+          user_id: string
+        }
+        Update: {
+          actor?: string
+          created_at?: string
+          detail?: Json
+          environment?: string
+          event?: string
+          from_status?: string | null
+          id?: string
+          plan_key?: string | null
+          product_id?: string | null
+          provider?: string
+          to_status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       facet_history: {
         Row: {
           confidence: number
@@ -791,6 +836,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      membership_entitlements: {
+        Row: {
+          billing_period: string | null
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          environment: string
+          grace_until: string | null
+          grant_reason: string | null
+          granted_by: string | null
+          last_verified_at: string | null
+          original_transaction_id: string | null
+          plan_key: string | null
+          product_id: string | null
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          environment?: string
+          grace_until?: string | null
+          grant_reason?: string | null
+          granted_by?: string | null
+          last_verified_at?: string | null
+          original_transaction_id?: string | null
+          plan_key?: string | null
+          product_id?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          environment?: string
+          grace_until?: string | null
+          grant_reason?: string | null
+          granted_by?: string | null
+          last_verified_at?: string | null
+          original_transaction_id?: string | null
+          plan_key?: string | null
+          product_id?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
