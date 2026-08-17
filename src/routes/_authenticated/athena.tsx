@@ -264,7 +264,10 @@ function AthenaPage() {
       try { await complete({}); } catch { /* non-fatal */ }
       foundationCompleteRef.current = true;
       toast("Athena has what she needs for now. She'll begin reflecting.");
-      navigate({ to: "/home" });
+      // 4. Membership is offered only after the foundation exists — never before.
+      let entitled = false;
+      try { entitled = (await readMembership()).entitled; } catch { /* non-fatal */ }
+      navigate({ to: entitled ? "/home" : "/membership" });
     } finally {
       setCompleting(false);
     }
