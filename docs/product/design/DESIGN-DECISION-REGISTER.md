@@ -72,13 +72,13 @@ Reconcile during the D6 photography specification.
 | D-03 | D1 | Connection-field geometry, density, movement, color, connection frequency and choreography; how to keep it a metaphor rather than a matchmaking diagram. | Open — depends on X-19, F-19 |
 | D-04 | D2 | Exact type families, the serif/sans pairing question, scale, weights, line length and the reading-comfort standard for extended conversation. | Open |
 | D-05 | D3 | Exact palette and tokens for the arrival and interior environments; gold usage rules; organic secondaries; connection/relational color. | Open — structural direction set by D3; depends on F-11, F-12, X-11, X-12 |
-| D-06 | D5 | Sonic signature: existence, length, notes, intervals, instrumentation, timbre, tuning; whether the current landing chime is retired or replaced. | Open — depends on X-07, F-05 |
+| D-06 | D5 | Sonic signature: existence, length, notes, intervals, instrumentation, timbre, tuning; whether the current landing chime is retired or replaced. | Open — D5 §19 governing: ~3 restrained tones, warm harmonic body, subtle synthetic air, 1–3s, non-jingle. Depends on X-07, F-05 |
 | D-08 | D6 | The five-photo structure: minimum count, whether categories are required or suggested, and how the uploader guides intentional selection. | Open |
 | D-09 | D6 | Progressive revelation sequence — what precedes photography, and how staged revelation avoids becoming a game. | Open — F-33 controlling; do not implement from the Foundation alone |
 | D-10 | D3/D4 | Material vocabulary: depth, shadow, translucency, texture, and the arrival→interior transition treatment. | Open — D3 §14–§15 sets governing direction; values unresolved |
 | D-11 | D4 | Animation timing, easing, ceremony restraint and the complete reduced-motion equivalents for each meaningful state. | Open — D4 sets the three-level motion hierarchy; values unresolved. F-16 baseline implemented and protected |
-| D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | Open — F-04, F-05 |
-| D-13 | D4/D6 | Haptics and microinteraction vocabulary, if any. | Open — D4 §8 permits functional/safety use only, never reward conditioning. F-21 (optional) |
+| D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | Open — D5 §§1–12 governing: lower-middle feminine register, subtly synthetic purity, contextual restrained modulation. Runtime still defaults to stock `shimmer`. F-04, F-05 |
+| D-13 | D4/D5/D6 | Haptics and microinteraction vocabulary, if any. | Open — D4 §8 and D5 §20 permit functional/safety use only, never reward conditioning. F-21 (optional) |
 | D-15 | D1 | Does Athena have a mark at all, and if so what is it? No mark is selected by D1; owl / helmet / goddess / A-monogram / brain / heart / infinity / neural-network defaults are excluded unless genuinely transformed. | Open — depends on D-02 |
 | D-16 | D1/D3/D4 | Connection-field connection frequency: what rate reads as rarity rather than abundance, and how the field stays an honest metaphor rather than implied matchmaking activity. | Open — extends D-03; runtime currently reads as abundance |
 | D-17 | D1/D2 | Container policy: which objects genuinely deserve a card, and what replaces cardified surfaces (spacing, typography, material separation) elsewhere. | Open — governing direction set by D2 §9; component rules still open; runtime is broadly cardified |
@@ -99,6 +99,12 @@ Reconcile during the D6 photography specification.
 | D-32 | D4 | Routine transition timing: whether the current 1200ms global route entrance adds coherence or sluggishness, and the final page-transition and microinteraction vocabulary. | Open — D4 §8 requires quick, restrained routine transitions |
 | D-33 | D4 | Motion performance budget and animation technology: frame targets, CPU/GPU/battery/thermal limits for ambient behavior, and the implementation approach. | Open |
 | D-34 | D4 | Introduction and human-handoff choreography: how Athena frames, the human emerges, and Athena recedes — plus the photograph-appearance motion. | Open — depends on D-09; F-31, F-33 controlling |
+| D-35 | D5 | Sound control surface: where voice on/off, stop, mute, auto-play, playback speed, volume and caption/transcript visibility live, how preferences persist, and the fate of the uncontrolled landing chime. | Open — F-04, X-06 controlling; runtime chime currently has no control |
+| D-36 | D5 | Production voice: provider, synthesis model, named voice, exact pitch, speech rate and modulation parameters, chosen through the D5 §25 audition set and blind comparison. | Open — D5 canonizes no provider or voice |
+| D-37 | D5 | Spoken composition: how long text responses are segmented for voice while preserving meaning, and how voice-length differs from text-length. | Open — D5 §17 |
+| D-38 | D5 | Sonic signature implementation: notes, intervals, tuning, timbre realization, duration, audio format, and synchronization with D4 presence (attention → organization → settling). | Open — depends on D-06, D-30 |
+| D-39 | D5 | Event sound treatments: arrival, Athena readiness, introduction, mutual curiosity, Focus Mode, ending, successful departure, error, safety and notification — which exist at all, and their restraint bounds. | Open — D5 §§21–22; no dating-app match sound, no reward loop |
+| D-40 | D5 | Barge-in technology: how natural interruption is detected and how Athena yields, including failure and false-trigger behavior. | Open — E4 barge-in decision preserved |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 
 ---
@@ -129,7 +135,15 @@ Reconcile during the D6 photography specification.
 7. **Generic motion states (D4 review).** `animate-pulse` serves the recording
    state, the thinking indicator and skeletons; a 1200ms global route entrance
    applies broadly. Recorded under D-30/D-32 as implementation evidence only.
-8. **Progressive revelation still absent.** Introductions contain no counterpart
+8. **Voice & sonic divergence (D5 review).** The landing chime is synthesized
+   on arrival with no mute, no persisted preference and no member control
+   (`src/components/landing-background.tsx`), in tension with D5 §15 and F-04.
+   The TTS route (`src/routes/api/tts.ts`) defaults to a stock `shimmer` voice
+   selected for availability rather than through the audition protocol. No
+   designed sonic signature exists, long responses receive no voice-specific
+   segmentation, and no playback-speed/caption/auto-play preference surface
+   exists. Recorded under D-06/D-12/D-35/D-37/D-38; not repaired.
+9. **Progressive revelation still absent.** Introductions contain no counterpart
    photography, so no revelation sequence exists to evaluate. Preserved as
    D-09/X-33; explicitly not implemented in this pass.
 
@@ -139,6 +153,7 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.5 | 2026-08-17 | D5 — Voice & Sonic Identity v1.0 canonized. D-35–D-40 added; D-06, D-12 and D-13 annotated with D5's governing direction. Provisional `shimmer` voice and uncontrolled landing chime recorded as runtime implementation evidence only. Voice/text equivalence (F-04) and voice-privacy boundaries preserved; no acoustic profiling authority created. No runtime change. |
 | 1.4 | 2026-08-17 | D4 — Athena Presence & Motion v1.0 canonized. D-30–D-34 added; D-02, D-03, D-11, D-13 and D-16 annotated with D4's governing direction. Merging connection pairs, connection abundance, generic pulse states and the 1200ms route entrance recorded as runtime evidence. Reduced-motion baseline preserved. No runtime change. |
 | 1.3 | 2026-08-17 | D3 — Color, Light & Material v1.0 canonized. D-23–D-29 added; D-05 and D-10 annotated with D3's governing direction. Hardcoded color drift recorded as downstream work. Accessibility contrast baseline preserved. No runtime change. |
 | 1.2 | 2026-08-17 | D2 — Typography & Composition v1.0 canonized. D-18–D-22 added; D-17 annotated with D2's governing container direction. Broad cardification and sub-44px links preserved as implementation gaps. No runtime change. |
