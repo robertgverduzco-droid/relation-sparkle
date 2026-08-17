@@ -4,18 +4,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Relationship Intelligence — cinematic editorial design system.
- * Warm paper, deep ink, aubergine accent. Portrait-mobile first.
- * All colors in oklch. Never hardcode color utilities in components.
+/* Athena — V1 Design Implementation.
+ * "The future arrived quietly." Deep field environment, warmth where humanity
+ * increases, rare plum-lavender accent, exceptionally rare champagne.
+ * All colour is semantic. Never hardcode colour utilities in components.
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
 
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -25,6 +27,13 @@
   --color-paper: var(--paper);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
+
+  /* Environment */
+  --color-field: var(--field);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-warm-surface: var(--warm-surface);
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -37,59 +46,88 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-plum: var(--plum);
-  --color-ember: var(--ember);
-  --color-destructive: var(--destructive);
+
+  /* Meaning */
+  --color-athena: var(--athena);
+  --color-relational: var(--relational);
+  --color-premium: var(--premium);
+  --color-plum: var(--athena);
+  --color-ember: var(--premium);
+
+  /* Functional */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --color-destructive: var(--error);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-disabled: var(--disabled);
+
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
 }
 
 :root {
-  --radius: 0.875rem;
+  /* Restrained radius — approachable, never bubbly. */
+  --radius: 0.625rem;
 
-  /* Warm paper background, deep ink foreground */
-  --paper: oklch(0.965 0.012 80);
-  --ink: oklch(0.18 0.015 40);
-  --ink-soft: oklch(0.34 0.02 40);
+  /* Deep field: near-black midnight charcoal, never pure black. */
+  --field: oklch(0.155 0.012 268);
+  --surface: oklch(0.213 0.009 275);
+  --surface-raised: oklch(0.252 0.009 280);
+  /* Warm interior — used sparingly where humanity increases. */
+  --warm-surface: oklch(0.262 0.014 62);
 
-  --background: var(--paper);
+  --paper: var(--field);
+  --background: var(--field);
+
+  /* Warm off-white, never sterile. */
+  --ink: oklch(0.949 0.013 85);
   --foreground: var(--ink);
+  --ink-soft: oklch(0.795 0.011 78);
 
-  --card: oklch(0.985 0.008 80);
+  --card: var(--surface);
   --card-foreground: var(--ink);
-  --popover: oklch(0.985 0.008 80);
+  --popover: var(--surface-raised);
   --popover-foreground: var(--ink);
 
-  /* Deep aubergine — primary accent */
-  --primary: oklch(0.31 0.08 330);
-  --primary-foreground: oklch(0.97 0.01 80);
+  /* Athena / relational accent — mature plum-lavender, never bright purple. */
+  --athena: oklch(0.665 0.055 322);
+  --relational: oklch(0.7 0.045 310);
+  /* Rare premium accent — muted champagne. */
+  --premium: oklch(0.735 0.062 85);
 
-  --secondary: oklch(0.93 0.015 70);
+  --primary: var(--athena);
+  --primary-foreground: oklch(0.16 0.012 268);
+
+  --secondary: var(--surface-raised);
   --secondary-foreground: var(--ink);
 
-  --muted: oklch(0.92 0.012 70);
-  /* Accessibility gate (X-14): meets WCAG AA on paper at small sizes. */
-  --muted-foreground: oklch(0.45 0.02 50);
+  --muted: var(--surface);
+  /* AA on the deep field at small sizes. */
+  --muted-foreground: oklch(0.715 0.01 72);
 
-  --accent: oklch(0.9 0.03 60);
+  --accent: var(--surface-raised);
   --accent-foreground: var(--ink);
 
-  --plum: oklch(0.31 0.08 330);
-  --ember: oklch(0.62 0.14 40);
+  /* Functional states stay semantically honest — never brand-coloured. */
+  --success: oklch(0.74 0.1 158);
+  --warning: oklch(0.79 0.1 82);
+  --error: oklch(0.68 0.14 26);
+  --info: oklch(0.75 0.07 235);
+  --destructive-foreground: oklch(0.16 0.012 268);
+  --disabled: oklch(0.45 0.008 275);
 
-  --destructive: oklch(0.5 0.18 25);
-  --destructive-foreground: oklch(0.98 0.005 80);
+  --border: oklch(1 0 0 / 0.09);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.7 0.06 322);
 
-  --border: oklch(0.87 0.015 70);
-  --input: oklch(0.87 0.015 70);
-  --ring: oklch(0.4 0.06 330);
-
-  /* Sidebar tokens (kept for shadcn compatibility) */
-  --sidebar: var(--paper);
+  --sidebar: var(--field);
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--primary);
+  --sidebar-primary: var(--athena);
   --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: var(--accent);
   --sidebar-accent-foreground: var(--accent-foreground);
@@ -97,44 +135,18 @@
   --sidebar-ring: var(--ring);
 }
 
+/* The environment has one state. An explicit .dark class inherits it so any
+ * shadcn primitive expecting the dark scope renders identically. */
 .dark {
-  --paper: oklch(0.14 0.012 40);
-  --ink: oklch(0.96 0.01 80);
-  --ink-soft: oklch(0.78 0.015 70);
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: oklch(0.19 0.015 40);
-  --card-foreground: var(--ink);
-  --popover: oklch(0.19 0.015 40);
-  --popover-foreground: var(--ink);
-  --primary: oklch(0.72 0.11 330);
-  --primary-foreground: oklch(0.14 0.012 40);
-  --secondary: oklch(0.24 0.02 40);
-  --secondary-foreground: var(--ink);
-  --muted: oklch(0.24 0.02 40);
-  --muted-foreground: oklch(0.68 0.015 60);
-  --accent: oklch(0.28 0.03 40);
-  --accent-foreground: var(--ink);
-  --plum: oklch(0.72 0.11 330);
-  --ember: oklch(0.72 0.14 50);
-  --destructive: oklch(0.62 0.18 25);
-  --destructive-foreground: var(--ink);
-  --border: oklch(1 0 0 / 0.08);
-  --input: oklch(1 0 0 / 0.12);
-  --ring: oklch(0.72 0.11 330);
-  --sidebar: var(--paper);
-  --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
+  color-scheme: dark;
 }
 
 @layer base {
+  html {
+    color-scheme: dark;
+  }
   html, body {
-    background: var(--paper);
+    background: var(--field);
     color: var(--ink);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
@@ -146,11 +158,67 @@
     letter-spacing: -0.01em;
   }
   * { border-color: var(--border); }
+  /* Keyboard focus is never removed for aesthetics. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
-/* Portrait-first mobile shell utilities */
-@utility safe-top { padding-top: max(env(safe-area-inset-top), 0.5rem); }
-@utility safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+/* ---- Type hierarchy ---------------------------------------------------- */
+@utility type-arrival {
+  font-family: var(--font-display);
+  font-size: clamp(3.25rem, 14vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+@utility type-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 7vw, 2.25rem);
+  line-height: 1.12;
+}
+@utility type-section {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+@utility type-athena {
+  font-family: var(--font-display);
+  font-size: 1.4375rem;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+}
+@utility type-conversation {
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  max-width: 34rem;
+}
+@utility type-body {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+@utility type-meta {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+@utility type-caption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+@utility type-legal {
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+
+/* ---- Shell + material -------------------------------------------------- */
+@utility safe-top { padding-top: max(env(safe-area-inset-top), 0.75rem); }
+@utility safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.75rem); }
 @utility screen-shell {
   min-height: 100dvh;
   max-width: 480px;
@@ -159,12 +227,43 @@
   flex-direction: column;
   position: relative;
 }
+/* Genuine grouped objects only — space and alignment come first. */
+@utility panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+@utility panel-warm {
+  background: var(--warm-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+@utility hairline {
+  border-top: 1px solid var(--border);
+}
+/* Touch targets meet the V1 accessibility baseline. */
+@utility tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---- Motion ------------------------------------------------------------ */
 @utility fade-in-slow {
-  animation: ri-fade 1200ms ease-out both;
+  animation: ri-fade 1100ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+/* Routine navigation feels immediate. */
+@utility fade-in-quick {
+  animation: ri-fade-quick 220ms ease-out both;
 }
 @keyframes ri-fade {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ri-fade-quick {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* F-16 — reduced motion is a beta gate.
