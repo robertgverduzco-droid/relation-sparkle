@@ -74,6 +74,7 @@ function AthenaPage() {
   const reflect = useServerFn(reflectAthena);
   const complete = useServerFn(completeFoundationalConversation);
   const logUsageFn = useServerFn(logUsage);
+  const readMembership = useServerFn(getMyMembership);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
