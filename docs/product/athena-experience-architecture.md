@@ -485,7 +485,7 @@ Governing question: How does Athena transform understanding into an opportunity 
 
 E8 governs the experiential expression of matchmaking and the relationship journey.
 
-Canonical doctrine: [E8 — Introduction, Connection & Relationship Experience](./experience/E8-introduction-connection-and-relationship.md) (v1.0, canonized 2026-08-17). Relationship-layer findings from E8 review: see Decision Register X-31–X-38.
+Canonical doctrine: [E8 — Introduction, Connection & Relationship Experience](./experience/E8-introduction-connection-and-relationship.md) (v1.0, canonized 2026-08-17). Relationship-layer findings from E8 review: see Decision Register X-31–X-38. E8 approved 2026-08-17; founder decisions F-31–F-38 recorded and binding.
 
 It includes:
 
@@ -630,3 +630,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.8 | 2026-08-17 | E6 approved; founder decisions F-16–F-21 recorded. E7 — Member Interaction & Conversation Experience canonized and linked; interaction findings recorded as X-22–X-30. E8 remains pending. |
 | 1.9 | 2026-08-17 | E7 approved; founder decisions F-22–F-30 recorded against X-22–X-30. No runtime or UI changes made. E8 remains pending. |
 | 2.0 | 2026-08-17 | E8 — Introduction, Connection & Relationship Experience canonized and linked; relationship-layer findings recorded as X-31–X-38. E1–E8 complete. Experience Final Integration remains pending and must not begin automatically. |
+| 2.1 | 2026-08-17 | E8 approved; founder decisions F-31–F-38 recorded against X-31–X-38. No runtime, matchmaking, UI, relationship-state, photography, messaging, Focus Mode, analytics, or safety changes made. Experience Final Integration remains pending and must not begin automatically. |

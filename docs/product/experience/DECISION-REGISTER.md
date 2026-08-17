@@ -319,6 +319,76 @@ The E6 audit findings that no fake progress indicators, engagement loops, artifi
 
 ---
 
+# Part VII — Founder decisions from E8 review
+
+*Recorded 2026-08-17. Binding. Each decision governs its paired X-entry. No runtime, matchmaking, UI, relationship-state, photography, messaging, Focus Mode, analytics, or safety behavior was altered during this pass.*
+
+### F-31 — Single-person attention — **APPROVED (2026-08-17)**
+
+*Source:* E8 §7, §12–§16; X-31.
+
+**Decision.** Athena's experience should favor meaningful attention to one person at a time. The existing three-introduction operational ceiling may remain, but the later Member Journey / UX specification determines presentation so the experience never becomes a three-person comparison list or candidate catalog.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-32 — Calibrated certainty language — **APPROVED (2026-08-17)**
+
+*Source:* E8 §17–§20; X-32.
+
+**Decision.** Athena must use calibrated language when describing why she is interested in an introduction. Reasoned interest ("I'm curious about this person for you," "something here caught my attention," or equivalent) is permitted. Athena must not imply certainty, destiny, guaranteed compatibility, or knowledge of an outcome she cannot know. Final language belongs to later conversational/UX copy work.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-33 — Progressive revelation and photography — **APPROVED (2026-08-17)**
+
+*Source:* E8 §21–§24; X-33.
+
+**Decision.** Progressive revelation remains the governing direction. Meaning and context should have an opportunity to precede or frame appearance so photography does not automatically become the first and dominant evaluation mechanism. Physical attraction remains legitimate and important. Exact reveal sequence, timing, photography treatment, and member controls belong to later Member Journey / UX and Visual Design work.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-34 — Mutual-interest handoff — **APPROVED (2026-08-17)**
+
+*Source:* E8 §31–§34; X-34, X-20.
+
+**Decision.** Mutual interest receives a meaningful but restrained transition from Athena-mediated introduction into direct human connection. It must communicate that two people independently chose curiosity, without conventional dating-app spectacle, "match" celebration mechanics, artificial certainty, or gamification. Exact choreography belongs downstream.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-35 — First-meeting safety experience — **APPROVED (2026-08-17)**
+
+*Source:* E8 §39–§42; X-35.
+
+**Decision.** First-meeting safety must be intentionally designed before beta. It must provide useful, discreet preparedness and member control without making the experience frightening or implying that Athena guarantees physical safety. Trust & Safety doctrine remains controlling. Exact features and presentation belong downstream.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented (beta gate).
+
+### F-36 — Focus Mode, development and endings — **APPROVED (2026-08-17)**
+
+*Source:* E8 §47–§55; X-36.
+
+**Decision.** Relationship Focus Mode, relationship development, and endings require deliberate experiential treatment. Athena should increasingly recede as the human relationship develops. Endings must be clear, dignified, non-punitive, and free of immediate matchmaking or commercial exploitation. Exact ceremony and transition behavior belongs downstream.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-37 — Return, recalibration and F-07 verification — **APPROVED (2026-08-17)**
+
+*Source:* E8 §56–§60; X-37, F-07, X-01, F-30.
+
+**Decision.** Returning to matchmaking after a relationship is continuation, not reset. Athena may retain permitted understanding genuinely about the member, while former-partner knowledge remains sealed from future matchmaking use under F-07. Before beta this boundary must be verified end-to-end in runtime — Living Profile updates, pair reasoning, partner perception, candidate reasoning, and post-ending return flows. Athena must recalibrate what changed before treating prior preferences as current truth.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented (beta verification gate).
+
+### F-38 — Successful departure and outcomes — **APPROVED (2026-08-17)**
+
+*Source:* E8 §61–§65; X-38.
+
+**Decision.** Athena must recognize reduced product dependence as a legitimate successful outcome. Relationship quality and meaningful successful departure should inform Analytics & Outcomes without turning relationships into scores, public status, engagement targets, or retention mechanisms. The product must remain structurally capable of succeeding when members need Athena less.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+---
+
 # Revision history
 
 | Version | Date | Description |
@@ -334,3 +404,4 @@ The E6 audit findings that no fake progress indicators, engagement loops, artifi
 | 1.8 | 2026-08-17 | X-22–X-30 recorded from E7 canonical review: arrival before administration, questionnaire framing, post-conversation/Waiting state, conversational controls and mode parity, navigation and Today surface, account-control discoverability, honest error/AI-failure/connectivity behavior, payment placement, Rest/Pause reconciliation. No runtime or UI changes made. |
 | 1.9 | 2026-08-17 | E7 approved. Founder decisions F-22 through F-30 recorded and linked to X-22–X-30. No runtime, UI, or interaction changes made. |
 | 2.0 | 2026-08-17 | X-31–X-38 recorded from E8 canonical review: single-person introduction attention, confidence/certainty language, progressive revelation and photography placement, mutual-interest handoff choreography, first-meeting safety experience, Focus Mode and ending experience, return/recalibration with F-07 verification, successful departure and outcome measurement. No runtime, matchmaking, privacy, messaging, or reflection changes made. |
+| 2.1 | 2026-08-17 | E8 approved. Founder decisions F-31 through F-38 recorded and linked to X-31–X-38 (single-person attention, calibrated certainty language, progressive revelation and photography, restrained mutual-interest handoff, first-meeting safety as a beta gate, Focus Mode and dignified endings, return/recalibration with end-to-end F-07 verification before beta, successful departure and outcome measurement). No runtime, matchmaking, UI, relationship-state, photography, messaging, Focus Mode, analytics, or safety changes made. Final Integration not begun. |
