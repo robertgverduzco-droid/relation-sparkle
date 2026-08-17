@@ -430,6 +430,9 @@ Governing question: How does interacting with Athena and Relationship Intelligen
 
 E7 connects experience philosophy to practical member interaction.
 
+Canonical doctrine: [E7 — Member Interaction & Conversation Experience](./experience/E7-member-interaction-and-conversation.md) (v1.0, canonized 2026-08-17). Interaction findings from E7 review: see Decision Register X-22–X-30.
+
+
 It governs:
 
 - voice conversation;
