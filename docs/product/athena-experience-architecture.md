@@ -430,6 +430,9 @@ Governing question: How does interacting with Athena and Relationship Intelligen
 
 E7 connects experience philosophy to practical member interaction.
 
+Canonical doctrine: [E7 — Member Interaction & Conversation Experience](./experience/E7-member-interaction-and-conversation.md) (v1.0, canonized 2026-08-17). Interaction findings from E7 review: see Decision Register X-22–X-30.
+
+
 It governs:
 
 - voice conversation;
@@ -592,7 +595,9 @@ E5 — Visual World: CANONICAL v1.0 (docs/product/experience/E5-visual-world.md)
 
 E6 — Motion, Curiosity & Revelation: CANONICAL v1.0 (docs/product/experience/E6-motion-curiosity-revelation.md)
 
-E7–E8 individual doctrine: NOT YET CANONICAL
+E7 — Member Interaction & Conversation Experience: CANONICAL v1.0 (docs/product/experience/E7-member-interaction-and-conversation.md)
+
+E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -618,3 +623,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.5 | 2026-08-17 | E4 — Voice & Sonic Identity canonized and linked; E5–E8 remain pending. |
 | 1.6 | 2026-08-17 | E5 — Visual World canonized and linked; E6–E8 remain pending. Visual-gap findings recorded as X-10–X-15. |
 | 1.7 | 2026-08-17 | E5 approved; founder decisions F-10–F-15 recorded. E6 — Motion, Curiosity & Revelation canonized and linked; motion findings recorded as X-16–X-21. E7–E8 remain pending. |
+| 1.8 | 2026-08-17 | E6 approved; founder decisions F-16–F-21 recorded. E7 — Member Interaction & Conversation Experience canonized and linked; interaction findings recorded as X-22–X-30. E8 remains pending. |
