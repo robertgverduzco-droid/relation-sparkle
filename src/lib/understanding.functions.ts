@@ -8,6 +8,7 @@ import {
   toFacetView,
   trimStatement,
   revisionPatch,
+  mirrorPatch,
   revisionAcknowledgement,
   type FacetView,
 } from "./understanding.server";
