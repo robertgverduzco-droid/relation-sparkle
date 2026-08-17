@@ -1,11 +1,14 @@
 # Athena Design Decision Register
 
-## v1.4 — updated 2026-08-17
+## v1.7 — updated 2026-08-17
 
 Companion to
-[the Design Foundation](./DESIGN-FOUNDATION-V1.md). It records unresolved
-aesthetic choices across D1–D6 so the design system cannot drift as Athena
-evolves.
+[the Design Foundation](./DESIGN-FOUNDATION-V1.md) and
+[Final Design Integration V1.0](./FINAL-DESIGN-INTEGRATION-V1.md). It records
+unresolved aesthetic choices across D1–D6 so the design system cannot drift as
+Athena evolves. Final Design Integration consolidates the implementation
+obligations these open decisions generate; this register remains authoritative
+for the decisions themselves and for recorded runtime divergences.
 
 This register governs **design** decisions only. Experience decisions (X-01–X-38,
 F-01–F-38) live in
@@ -158,6 +161,13 @@ Reconcile during the D6 photography specification.
 10. **Progressive revelation still absent.** Introductions contain no counterpart
    photography, so no revelation sequence exists to evaluate. Preserved as
    D-09/X-33; explicitly not implemented in this pass.
+11. **Integration-pass reconciliation (Final Design Integration).** Findings 1–10
+    were re-verified as still open and consolidated, together with
+    arrival/interior discontinuity, generic iconography, the 1200ms route
+    entrance, hardcoded color drift, undesigned Waiting and incomplete
+    Athena-native operational states, into the divergence list in
+    [Final Design Integration V1.0](./FINAL-DESIGN-INTEGRATION-V1.md) §D. No
+    divergence was repaired; implementation has not begun.
 
 ---
 
@@ -165,6 +175,7 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.7 | 2026-08-17 | Final Design Integration V1.0 canonized above D1–D6. Register scoped as authoritative for open decisions and recorded divergences; finding 11 added consolidating the reconciled divergence list. No new open decision created — D-02–D-45 carried forward unchanged. No runtime, CSS, token, component, asset, animation, audio, voice, photography, matchmaking or payment change. |
 | 1.6 | 2026-08-17 | D6 — Photography & Human Presentation v1.0 canonized; D1–D6 complete. D-41–D-45 added; D-07, D-09 and D-11 annotated with D6's governing direction. Six-photo runtime allowance, absent counterpart photography/progressive revelation, empty alt text and missing reorder control recorded as implementation divergences. D-07, F-31, F-33, F-37 and EXIF/GPS stripping preserved; no attractiveness ranking or engagement optimization created. No runtime change. |
 | 1.5 | 2026-08-17 | D5 — Voice & Sonic Identity v1.0 canonized. D-35–D-40 added; D-06, D-12 and D-13 annotated with D5's governing direction. Provisional `shimmer` voice and uncontrolled landing chime recorded as runtime implementation evidence only. Voice/text equivalence (F-04) and voice-privacy boundaries preserved; no acoustic profiling authority created. No runtime change. |
 | 1.4 | 2026-08-17 | D4 — Athena Presence & Motion v1.0 canonized. D-30–D-34 added; D-02, D-03, D-11, D-13 and D-16 annotated with D4's governing direction. Merging connection pairs, connection abundance, generic pulse states and the 1200ms route entrance recorded as runtime evidence. Reduced-motion baseline preserved. No runtime change. |
