@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+// D-07: five photographs is the canonical maximum.
+const MAX_PHOTOS = 5;
+
 const ALLOWED_TYPES = [
   "image/jpeg",
   "image/png",
@@ -76,8 +79,8 @@ export function PhotoUploader() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (photos.length >= 6) {
-      toast.error("You can share up to six photos.");
+    if (photos.length >= MAX_PHOTOS) {
+      toast.error("You can share up to five photos.");
       return;
     }
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -137,19 +140,28 @@ export function PhotoUploader() {
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-5">
-      <p className="text-[12px] uppercase tracking-[0.22em] text-muted-foreground">Photos</p>
-      <p className="mt-2 text-xs text-ink-soft">
-        A few natural photos help others recognize you. Up to six.
+    <div className="panel p-5">
+      <p className="type-section">Photos</p>
+      <p className="type-caption mt-2">
+        A few natural photos help someone recognise you. Up to five.
       </p>
       {loading ? (
         <p className="mt-3 text-xs text-muted-foreground">Loading…</p>
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-2">
           {photos.map((p) => (
-            <div key={p.id} className="relative aspect-square overflow-hidden rounded-xl border border-border">
+            <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg border border-border">
               {p.url ? (
-                <img src={p.url} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={p.url}
+                  alt={
+                    p.is_primary
+                      ? "Your primary photo"
+                      : `Your photo ${p.position + 1} of ${photos.length}`
+                  }
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="h-full w-full bg-muted" />
               )}
@@ -158,19 +170,32 @@ export function PhotoUploader() {
                   Primary
                 </span>
               )}
-              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/40 px-2 py-1 text-[11px]">
+              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-field/70 px-2 py-1 text-[11px]">
                 {!p.is_primary ? (
-                  <button onClick={() => void makePrimary(p)} className="text-white/90">Make primary</button>
+                  <button
+                    onClick={() => void makePrimary(p)}
+                    aria-label={`Make photo ${p.position + 1} your primary photo`}
+                    className="min-h-11 text-ink"
+                  >
+                    Make primary
+                  </button>
                 ) : <span />}
-                <button onClick={() => void remove(p)} className="text-white/90">Remove</button>
+                <button
+                  onClick={() => void remove(p)}
+                  aria-label={`Remove photo ${p.position + 1}`}
+                  className="min-h-11 text-ink"
+                >
+                  Remove
+                </button>
               </div>
             </div>
           ))}
-          {photos.length < 6 && (
+          {photos.length < MAX_PHOTOS && (
             <button
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground disabled:opacity-40"
+              aria-label="Add a photo"
+              className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-border-strong text-sm text-muted-foreground disabled:opacity-40"
             >
               {uploading ? "Uploading…" : "+ Add"}
             </button>
