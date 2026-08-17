@@ -219,12 +219,9 @@ function ProfilePage() {
         >
           Continue with Athena
         </Link>
-        <Link
-          to="/conversations"
-          className="block w-full rounded-full border border-border px-6 py-3 text-center text-[15px] text-foreground"
-        >
-          Your conversations
-        </Link>
+        {/* A-04: the legacy /conversations surface (pre-Athena interview
+            transcript) is no longer linked. /athena is the canonical
+            conversation surface. */}
         <button
           onClick={togglePause}
           disabled={busy || !profile}
