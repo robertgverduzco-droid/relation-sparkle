@@ -595,7 +595,9 @@ E5 — Visual World: CANONICAL v1.0 (docs/product/experience/E5-visual-world.md)
 
 E6 — Motion, Curiosity & Revelation: CANONICAL v1.0 (docs/product/experience/E6-motion-curiosity-revelation.md)
 
-E7–E8 individual doctrine: NOT YET CANONICAL
+E7 — Member Interaction & Conversation Experience: CANONICAL v1.0 (docs/product/experience/E7-member-interaction-and-conversation.md)
+
+E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
