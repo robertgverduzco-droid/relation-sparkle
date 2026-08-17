@@ -179,6 +179,62 @@ is never read as abandonment (consistent with F-01/F-02).
 
 ---
 
+## Part V — Founder decisions from E6 review
+
+### F-16 — Reduced-motion support is a beta gate — **APPROVED (2026-08-17)**
+
+*Source:* E6 §50, §51; X-16.
+
+**Decision.** Reduced-motion support is mandatory before beta. The Athena experience must remain complete and meaningful when continuous or nonessential motion is reduced or removed. A reduced-motion path may never deliver a lesser product.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-17 — Athena-native visual state language — **APPROVED (2026-08-17)**
+
+*Source:* E6 §7, §16–§19; X-05, X-17.
+
+**Decision.** Athena must ultimately have her own coherent visual state language for listening, genuine processing, speaking, waiting, and other Athena-specific states, consistent with E3–E6. Generic placeholders are provisional only.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-18 — Operational conditions must be distinguishable — **APPROVED (2026-08-17)**
+
+*Source:* E6 §53, §54; X-18.
+
+**Decision.** Genuine Athena processing, network delay, service failure, offline state, and other materially different operational conditions must be distinguishable to the member. Atmospheric motion must never conceal a technical failure.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-19 — Connection field is directional, not final — **APPROVED (2026-08-17)**
+
+*Source:* E6 §9–§15, §52; X-19.
+
+**Decision.** The connection field remains an approved conceptual direction, not a finalized implementation. Its exact behavior, density, movement, connection treatment, color behavior, performance rules, and reduced-motion equivalent belong to the later Visual / Sonic / Interaction Design System.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-20 — Ceremony choreography remains unresolved — **APPROVED (2026-08-17)**
+
+*Source:* E6 §33–§42, §55; X-04, X-20.
+
+**Decision.** Transition and ceremony choreography remains unresolved until the later design-system and Member Journey / UX work. Ceremony must remain proportional to significance and may never become spectacle.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-21 — Haptics optional and unresolved — **APPROVED (2026-08-17)**
+
+*Source:* E6 §48, §49; X-21.
+
+**Decision.** Haptics remain optional and unresolved. If ultimately used, they must be sparse, meaningful, accessible, member-respectful, and never used for engagement conditioning.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### Preserved E6 findings
+
+The E6 audit findings that no fake progress indicators, engagement loops, artificial delay, or conventional dating-application motion patterns exist in the current runtime are preserved as a canonical baseline. Any future change that would introduce them requires a new founder decision.
+
+---
+
 # Revision history
 
 | Version | Date | Description |
@@ -186,7 +242,9 @@ is never read as abandonment (consistent with F-01/F-02).
 | 1.0 | 2026-08-17 | Register established. X-01 founder decision recorded; X-02–X-04 recorded as downstream requirements from E2 review. |
 | 1.1 | 2026-08-17 | X-05 recorded: Athena thinking/processing state must be expressed through Athena's own visual and motion language rather than a generic spinner, pending E6/UX specification. |
 | 1.2 | 2026-08-17 | X-06–X-09 recorded from E4 canonical review: member sound controls, sonic signature prototyping, environmental/locked-screen voice privacy, voice interaction fidelity. |
-| 1.4 | 2026-08-17 | X-10–X-15 recorded from E5 canonical review: entry/internal visual split, palette/token reconciliation, hardcoded color removal, no scoring affordances, accessibility gate, visual privacy treatments. No runtime or visual changes made. |
 | 1.3 | 2026-08-17 | E4 approved. Founder decisions F-04 through F-09 recorded. X-06–X-09 scope refined and linked to F-04–F-09. No runtime or sound changes made. |
+| 1.4 | 2026-08-17 | X-10–X-15 recorded from E5 canonical review: entry/internal visual split, palette/token reconciliation, hardcoded color removal, no scoring affordances, accessibility gate, visual privacy treatments. No runtime or visual changes made. |
 | 1.5 | 2026-08-17 | E5 approved. Founder decisions F-10 through F-15 recorded (one Athena visual world; palette directional; hardcoded color deferred to design system; progress language limited to a member's own process; accessibility verification a beta gate; visual privacy resolved before beta). No runtime or visual changes made. |
 | 1.6 | 2026-08-17 | X-16–X-21 recorded from E6 canonical review: reduced-motion support, Athena-native state language replacing generic pulses, distinct operational states, connection-field temporal specification, transition/ceremony choreography, haptics and microinteractions. X-05 reconciled and scoped by E6 §7. No runtime or motion changes made. |
+| 1.7 | 2026-08-17 | E6 approved. Founder decisions F-16 through F-21 recorded and linked to X-16–X-21. E6 findings of no fake progress, engagement loops, or conventional dating-app motion preserved as baseline. No runtime, animation, CSS, loader, particle, haptic, or UI changes made. |
+| 1.8 | 2026-08-17 | X-22–X-30 recorded from E7 canonical review: arrival before administration, questionnaire framing, post-conversation/Waiting state, conversational controls and mode parity, navigation and Today surface, account-control discoverability, honest error/AI-failure/connectivity behavior, payment placement, Rest/Pause reconciliation. No runtime or UI changes made. |
