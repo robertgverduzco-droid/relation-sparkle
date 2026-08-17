@@ -623,3 +623,4 @@ This architecture establishes the structure within which that work will now proc
 | 1.5 | 2026-08-17 | E4 — Voice & Sonic Identity canonized and linked; E5–E8 remain pending. |
 | 1.6 | 2026-08-17 | E5 — Visual World canonized and linked; E6–E8 remain pending. Visual-gap findings recorded as X-10–X-15. |
 | 1.7 | 2026-08-17 | E5 approved; founder decisions F-10–F-15 recorded. E6 — Motion, Curiosity & Revelation canonized and linked; motion findings recorded as X-16–X-21. E7–E8 remain pending. |
+| 1.8 | 2026-08-17 | E6 approved; founder decisions F-16–F-21 recorded. E7 — Member Interaction & Conversation Experience canonized and linked; interaction findings recorded as X-22–X-30. E8 remains pending. |
