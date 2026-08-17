@@ -596,3 +596,95 @@ column-scoped, `rate_limit_counters` service-role only); public routes render
 with a single landmark, corrected heading, and no console errors. Authenticated
 surfaces could not be re-walked in this pass — no preview session was available
 to the automated browser.
+
+---
+
+## P2 REMEDIATION & PRODUCT POLISH WAVE — CLOSED
+
+Eight P2 findings were open at the start of this pass (A-16 … A-23). All eight are
+remediated. No P0/P1 repair was reopened; no canonical architecture was changed;
+the membership system was preserved untouched (`BILLING_ACTIVE = false`,
+`MEMBERSHIP_REQUIRED = false`), and `marin` remains the V1 voice with its D5
+delivery instructions unchanged.
+
+### Root-cause clusters
+
+1. **Defence-in-depth drift** — grants and purge lists trailed behind the doctrine
+   documents that describe them (A-16, A-23).
+2. **Doctrine expressed in prose but not in runtime** — the hold rule, the
+   correspondence framing and the attribution carve-out existed on paper only
+   (A-18, A-19, A-22).
+3. **Token bypass** — literal colour values duplicating semantic tokens (A-20).
+4. **Comprehension depth** — a canonical surface buried two levels down (A-21).
+
+### Remediation and status
+
+| ID | Remediation | Status |
+| --- | --- | --- |
+| A-16 | Migration revokes every `authenticated` privilege on `ops_alerts`, `ops_snapshots`, `banned_identifiers`, `purge_tombstones`, `restore_reconciliations`, `step_up_grants`, `athena_self_evaluations`, `founder_dialogue_messages`; `athena_outcome_signals` reduced to `SELECT` (admin-gated by RLS). `ACCESS-CONTROL.md` now states the intended grants and records the deliberate deny-by-default (RLS-on, no-policy) tables. | CLOSED — RUNTIME VERIFIED (`pg_class.relacl`) |
+| A-17 | Documented in `FOUNDER-DIALOGUE.md` as a UX layer, never the boundary; the structural controls (member-data-free context, no founder RLS privilege, server-side aggregate floor) are named as the actual control. No code change — the model refused all five probes in the original audit. | CLOSED — CODE-TRACED ONLY |
+| A-18 | `notify()` now suppresses the `introductions` category for any member held by Relationship Focus Mode or a chosen Rest, reusing `heldMemberIds()` rather than re-deriving state. Essential account/safety notifications are unaffected. | CLOSED — AUTOMATED TEST VERIFIED |
+| A-19 | Tab label "Chats" → "Messages", restoring the correspondence framing. | CLOSED — AUTOMATED TEST VERIFIED |
+| A-20 | New semantic `--scrim` token (`--color-scrim`); all six `bg-black/NN` scrims in `report-sheet.tsx`, `athena.tsx` and four shadcn primitives now use `bg-scrim/NN`. `theme-color` corrected to `#0a0c11`, the literal sRGB of `--field`, with a comment explaining why a meta tag cannot read the variable. | CLOSED — RUNTIME VERIFIED (theme-color read from the rendered document) |
+| A-21 | Today now links directly to "What Athena understands" (`/understanding`), one step instead of two. | CLOSED — AUTOMATED TEST VERIFIED |
+| A-22 | Doctrine strengthened: attribution is answered when asked and never volunteered; "in the spirit of X" flavouring is explicitly forbidden. | CLOSED — CODE-TRACED ONLY |
+| A-23 | `understanding_revisions`, `data_export_requests`, `pair_reasoning_history` added to `MEMBER_KEYED_TABLES`; columns verified against `information_schema`. `RETENTION-AND-DELETION.md` updated. | CLOSED — AUTOMATED TEST VERIFIED |
+
+### Incidentally resolved
+
+- A residual sub-44px tap target (the "← Back" control on `/auth`, both states) was
+  found during the runtime pass and given a `tap-target` hit area — closing the last
+  instance of A-12.
+
+### Tests
+
+`src/lib/p2-polish.test.ts` added: 13 assertions covering the hold guard, the tab
+label, scrim/theme tokens, the direct understanding link, the attribution clause,
+the three swept tables, plus two protected-behaviour guards (no-score boundary,
+canonical conversation routing). Full suite: **9 files, 87 tests, all passing**;
+typecheck clean.
+
+### Runtime verification
+
+Mobile viewport (390×844) walk of `/`, `/auth`, `/home`, `/athena`,
+`/understanding`, `/profile`, `/messages`, `/introductions`. No preview session
+was injectable (`LOVABLE_BROWSER_AUTH_STATUS = signed_out`), so all eight
+authenticated surfaces redirected to `/auth` — correct authorization behaviour,
+but the authenticated journey (onboarding → foundational conversation →
+membership → Today → Athena → introduction → messaging → reflection → Focus Mode
+→ Rest → return) remains **code-traced, not runtime-exercised**. No production
+member data was manufactured to force a pass.
+
+Verified in the browser: exactly one `<main>` landmark on every route; zero
+console errors; `theme-color = #0a0c11`; no sub-44px interactive targets on any
+reachable surface after the `/auth` fix; with `prefers-reduced-motion: reduce`
+the document reports **0 running animations** (3 without it) and the arrival
+screen stays fully legible.
+
+### Security / privacy regression
+
+Grants re-read from `pg_class.relacl` after the migration. Linter: 4 INFO
+(RLS-enabled/no-policy on the four service-role-only tables — the intended
+posture, now with no grants at all) and 1 pre-existing WARN on a
+`SECURITY DEFINER` function; no new issue introduced. Member-data RLS,
+sealed counterpart data, founder privacy boundary, message mutation
+authorization and the compatibility-score prohibition are unchanged and still
+guarded by `security.test.ts`, `no-score.test.ts` and `doctrine-guards.test.ts`.
+
+### Counts after this wave
+
+- Remaining P0: **0**
+- Remaining P1: **0**
+- Remaining P2: **0**
+- Remaining P3: **5** (A-24 … A-28, untouched by design)
+
+### Requiring Founder decision
+
+1. **D-44 / F-33** — counterpart photography and progressive revelation remain
+   unimplemented; still an open design decision, not a defect.
+2. **D5 divergences** — the landing chime and playback/caption controls remain
+   recorded open decisions.
+3. **Authenticated runtime verification** — needs a preview session (or a seeded
+   non-production test account) before the member journey can be walked live.
+4. **Private-beta determination** — with P0, P1 and P2 all closed, the readiness
+   call in section 37 is the founder's to re-take.
