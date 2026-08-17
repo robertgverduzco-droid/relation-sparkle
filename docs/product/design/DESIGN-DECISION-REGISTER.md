@@ -79,6 +79,9 @@ Reconcile during the D6 photography specification.
 | D-11 | D4 | Animation timing, easing, ceremony restraint and the complete reduced-motion equivalents for each meaningful state. | Open — F-16 baseline implemented |
 | D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | Open — F-04, F-05 |
 | D-13 | D4/D6 | Haptics and microinteraction vocabulary, if any. | Open — F-21 (optional) |
+| D-15 | D1 | Does Athena have a mark at all, and if so what is it? No mark is selected by D1; owl / helmet / goddess / A-monogram / brain / heart / infinity / neural-network defaults are excluded unless genuinely transformed. | Open — depends on D-02 |
+| D-16 | D1/D3 | Connection-field connection frequency: what rate reads as rarity rather than abundance, and how the field stays an honest metaphor rather than implied matchmaking activity. | Open — extends D-03; runtime currently reads as abundance |
+| D-17 | D1/D2 | Container policy: which objects genuinely deserve a card, and what replaces cardified surfaces (spacing, typography, material separation) elsewhere. | Open — runtime is broadly cardified |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 
 ---
@@ -92,7 +95,11 @@ Reconcile during the D6 photography specification.
    specification.
 3. **Landing chime.** An ambient chime exists on the arrival surface with no
    member control yet; its fate is D-06 under X-06/F-04.
-4. **Progressive revelation still absent.** Introductions contain no counterpart
+4. **Cardification, continuity, icons (D1 review).** Interior surfaces are
+   broadly cardified; arrival and interior do not yet share a material/accent
+   language; iconography is generic with no restraint policy. Recorded as
+   inputs to D2–D6, not repaired.
+5. **Progressive revelation still absent.** Introductions contain no counterpart
    photography, so no revelation sequence exists to evaluate. Preserved as
    D-09/X-33; explicitly not implemented in this pass.
 
@@ -102,4 +109,5 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.1 | 2026-08-17 | D1 — Visual Identity v1.0 canonized. D-15–D-17 added as open design questions; D1 review observations recorded. No runtime change. |
 | 1.0 | 2026-08-17 | Register established alongside Design Foundation v1.0. D-01 and D-07 recorded as binding founder design decisions; D-02–D-14 recorded as open. No runtime, UI, CSS, token, typography, color, asset, animation, sound, voice or photography change made. |
