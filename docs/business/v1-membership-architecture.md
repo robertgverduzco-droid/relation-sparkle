@@ -402,3 +402,15 @@ Per the permanent change-control standard, this pass was reviewed against existi
 | Existing runtime `MEMBERSHIP_PLANS` | Cadence-only; unchanged this pass. Level axis noted in §15 as an activation-time migration. |
 
 No canonical behaviour was overridden. No runtime member-facing behaviour was changed.
+
+### 18.1 Conflict review — M-01…M-05 recording pass (2026-08-17)
+
+| Area | Finding |
+| --- | --- |
+| §5 matrix C-05 (Voice) | Reclassified TIERABLE → **CORE** per M-04. Strengthens §7/§8; no canon conflict. |
+| §5 matrix C-19 (Relationship support) | Depth reclassified → **CORE** per M-05. Matches E8 canon. |
+| §6 allocation | Recommendation → **approved and binding**; Essential's voice allowance and support-depth scope removed. |
+| C-11 / C-13 capacity | Unchanged canonical cap of 3; Essential set to 1 as a capacity distinction only. |
+| Runtime membership UI / `MEMBERSHIP_PLANS` | **Unchanged** by instruction. No prices set, `BILLING_ACTIVE = false`. |
+
+No canonical behaviour was overridden and no runtime behaviour changed in this pass.
