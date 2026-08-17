@@ -226,6 +226,8 @@ The working progression is:
 
 Curiosity → Arrival → Safety → Discovery → Understanding → Anticipation → Recognition → Connection → Relationship
 
+Canonical doctrine: [E2 — Emotional Journey](./experience/E2-emotional-journey.md) (v1.0, canonized 2026-08-17).
+
 E2 governs major emotional transitions including first launch, meeting Athena, foundational conversation, waiting, introduction, connection, meeting, reflection, developing relationships, Relationship Focus Mode, endings, rest, return, and successful departure from matchmaking.
 
 ---
@@ -570,7 +572,9 @@ Athena Experience Architecture v1.0 — STRUCTURE ESTABLISHED
 
 E1 — Experience Philosophy: CANONICAL v1.0 (docs/product/experience/E1-experience-philosophy.md)
 
-E2–E8 individual doctrine: NOT YET CANONICAL
+E2 — Emotional Journey: CANONICAL v1.0 (docs/product/experience/E2-emotional-journey.md)
+
+E3–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -588,3 +592,4 @@ This architecture establishes the structure within which that work will now proc
 |---|---|---|
 | 1.0 | 2026-08-17 | Foundational architecture established. |
 | 1.1 | 2026-08-17 | E1 — Experience Philosophy canonized and linked; E2–E8 remain pending. |
+| 1.2 | 2026-08-17 | E2 — Emotional Journey canonized and linked; E3–E8 remain pending. |
