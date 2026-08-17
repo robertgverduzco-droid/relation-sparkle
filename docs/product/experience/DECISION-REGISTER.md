@@ -118,6 +118,58 @@ is never read as abandonment (consistent with F-01/F-02).
 
 ---
 
+## Part IV — Founder decisions from E5 review
+
+### F-10 — Entry/internal split must resolve into one Athena visual world — **APPROVED (2026-08-17)**
+
+*Source:* E5 §38, §45, §50; X-10.
+
+**Decision.** The entry experience and internal product surfaces must ultimately be reconciled into one coherent Athena visual world. This does not require every surface to look identical: functional density and light/dark context may vary, provided the identity remains unmistakably Athena. Resolution belongs to the Visual / Sonic / Interaction Design System.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-11 — Current palette is implementation only; E5 palette is directional — **APPROVED (2026-08-17)**
+
+*Source:* E5 §7–§13; X-11.
+
+**Decision.** The existing palette is preserved only as current implementation and carries no canonical authority. The E5 palette (midnight navy, warm ivory, antique gold, organic secondary) is also directional. Final palette selection belongs to the later Visual / Sonic / Interaction Design System and its prototype process.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-12 — Hardcoded color resolved during design-system implementation — **APPROVED (2026-08-17)**
+
+*Source:* E5 §8, §44, §45; X-12.
+
+**Decision.** Residual hardcoded and non-semantic color is not repaired now. It must be resolved during the later design-system implementation so all visual behavior is governed consistently by the final token system.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-13 — Progress language may describe a member's own process only — **APPROVED (2026-08-17)**
+
+*Source:* E5 §32, §33; X-13.
+
+**Decision.** Progress indicators may describe a member's own process where useful. No ranking or progress visual language may migrate into member comparison, compatibility, introductions, or matchmaking reasoning.
+
+*Status:* Founder Decision — Binding · Partially Governed (onboarding indicator permitted; prohibition already holds in current UI).
+
+### F-14 — Accessibility verification is a beta gate — **APPROVED (2026-08-17)**
+
+*Source:* E5 §44, §48, §49; X-14.
+
+**Decision.** Accessibility verification is mandatory before the visual system may be accepted for beta. This includes contrast, scalable type, motion alternatives, focus visibility, and non-color-only signaling.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+### F-15 — Visual privacy treatments resolved before beta — **APPROVED (2026-08-17)**
+
+*Source:* E5 §46; Privacy & Security Architecture v1; X-15.
+
+**Decision.** Visual privacy treatments must be resolved before beta and must inherit the existing Privacy & Security architecture rather than defining new privacy behavior.
+
+*Status:* Founder Decision — Binding · Recorded — Not Yet Implemented.
+
+---
+
 # Revision history
 
 | Version | Date | Description |
