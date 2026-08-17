@@ -24,8 +24,9 @@ describe("legacy conversation surface (A-04)", () => {
     expect(legacyRoute).toMatch(/redirect\(\{\s*to:\s*"\/athena"/);
   });
 
-  it("no longer reads the superseded interview transcript table", () => {
-    expect(legacyRoute).not.toMatch(/interview_sessions/);
+  it("no longer queries the superseded interview transcript table", () => {
+    expect(legacyRoute).not.toMatch(/from\("interview_sessions"\)/);
+    expect(legacyRoute).not.toMatch(/supabase/);
   });
 
   it("preserves the retired component for rollback and historical reference", () => {
