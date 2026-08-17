@@ -55,3 +55,4 @@ is never read as abandonment (consistent with F-01/F-02).
 | Version | Date | Description |
 |---|---|---|
 | 1.0 | 2026-08-17 | Register established. X-01 founder decision recorded; X-02–X-04 recorded as downstream requirements from E2 review. |
+| 1.1 | 2026-08-17 | X-05 recorded: Athena thinking/processing state must be expressed through Athena's own visual and motion language rather than a generic spinner, pending E6/UX specification. |
