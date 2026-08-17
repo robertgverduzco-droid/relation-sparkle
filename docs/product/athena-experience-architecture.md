@@ -568,7 +568,9 @@ Where no conflict exists, integrate the new material into the appropriate existi
 
 Athena Experience Architecture v1.0 — STRUCTURE ESTABLISHED
 
-E1–E8 individual doctrine: NOT YET CANONICAL
+E1 — Experience Philosophy: CANONICAL v1.0 (docs/product/experience/E1-experience-philosophy.md)
+
+E2–E8 individual doctrine: NOT YET CANONICAL
 
 Member Journey / UX Specification: NOT YET DEVELOPED
 
@@ -585,3 +587,4 @@ This architecture establishes the structure within which that work will now proc
 | Version | Date | Description |
 |---|---|---|
 | 1.0 | 2026-08-17 | Foundational architecture established. |
+| 1.1 | 2026-08-17 | E1 — Experience Philosophy canonized and linked; E2–E8 remain pending. |
