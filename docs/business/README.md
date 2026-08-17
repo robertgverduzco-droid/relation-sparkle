@@ -2,11 +2,11 @@
 
 **Purpose:** Define how Athena’s value is packaged, priced, monetized, and governed commercially. Business Architecture sits between Product and Technical: it translates user-facing value into commercial structures, and those structures into implementation rules.
 
-**Implementation status: FORWARD-LOOKING / NOT IMPLEMENTED.** No payment provider,
-subscription, entitlement, or billing code exists in the application today. Every
-document in this directory describes an intended future commercial architecture,
-not current runtime behavior. The only revenue-adjacent runtime artifact is
-`athena_usage_log`, which records Athena voice/text usage for future billing.
+**Implementation status: ENTITLEMENT ARCHITECTURE IMPLEMENTED, BILLING NOT ACTIVATED.**
+Provider-neutral server-side entitlements (`membership_entitlements`), the `/membership`
+surface and the entitlement evaluation exist in the runtime. No payment provider is connected
+and no money moves: `BILLING_ACTIVE = false`, `MEMBERSHIP_REQUIRED = false`. `athena_usage_log`
+records Athena voice/text usage for future billing.
 
 **Design principle:** Revenue must never compromise the Constitution. Every business rule must be checked against L2 Ethics and L7 Operations before it is enacted.
 
@@ -16,7 +16,8 @@ not current runtime behavior. The only revenue-adjacent runtime artifact is
 
 | Document | Purpose |
 | --- | --- |
-| [Membership Tiers & Entitlements](membership-tiers.md) | Plans, access levels, and what each tier unlocks |
+| [**V1 Membership Architecture**](v1-membership-architecture.md) | **GOVERNING** — commercial journey, three membership levels, tierability, non-tierable rights |
+| [Membership Tiers & Entitlements](membership-tiers.md) | Superseded scaffold, retained for history |
 | [Pricing & Packaging](pricing-and-packaging.md) | Prices, billing intervals, trial rules, bundles, and promotions |
 | [Subscriptions & Billing Lifecycle](subscription-lifecycle.md) | Sign-up, upgrade, downgrade, cancellation, pause, dunning, and refunds |
 | [Revenue Rules](revenue-rules.md) | Discounts, referral credits, promotions, and revenue recognition |
@@ -39,4 +40,5 @@ not current runtime behavior. The only revenue-adjacent runtime artifact is
 
 ## Status
 
-This domain is currently a scaffold. The canonical rules will be filled in once the product reaches the monetization phase.
+The governing commercial rules live in [V1 Membership Architecture](v1-membership-architecture.md).
+The remaining documents in this directory are scaffolds pending billing activation.

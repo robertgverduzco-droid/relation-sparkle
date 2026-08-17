@@ -1,6 +1,8 @@
 # Pricing & Packaging
 
-**Status:** Scaffold — content to be finalized when monetization begins.
+**Status:** Packaging superseded by [V1 Membership Architecture](v1-membership-architecture.md);
+pricing remains unresolved (see its §17 Founder decisions). No prices, percentages or discounts
+are defined anywhere in V1.
 
 **Purpose:** Define how much each tier costs, how it is billed, and how it is packaged into offers.
 

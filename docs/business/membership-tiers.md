@@ -1,6 +1,10 @@
 # Membership Tiers & Entitlements
 
-**Status:** Scaffold — content to be finalized when monetization begins.
+**Status:** SUPERSEDED by [V1 Membership Architecture](v1-membership-architecture.md).
+
+The draft tier table below (including the "Free / no introductions" row) is historical and
+non-binding. The canonical V1 model is three paid levels — Athena Essential, Athena Complete,
+Athena Private — with Monthly and Annual as cadences within a level.
 
 **Purpose:** Define the membership tiers that gate access to Athena’s value, and the entitlements each tier unlocks.
 
