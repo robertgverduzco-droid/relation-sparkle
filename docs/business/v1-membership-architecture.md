@@ -352,15 +352,29 @@ remains cadence-only until levels are approved.
 
 ---
 
-## 17. Unresolved Founder decisions
+## 17. Founder decision register
+
+### 17.1 Recorded decisions (binding)
+
+| ID | Decision | Recorded |
+| --- | --- | --- |
+| M-01 | §6 allocation **approved** as amended by M-03…M-05 | 2026-08-17 |
+| M-02 | Names approved for V1: **Athena Essential**, **Athena Complete**, **Athena Private** | 2026-08-17 |
+| M-03 | Capacity: Essential = 1 concurrent active introduction; Complete and Private = canonical maximum of 3. Capacity distinction only — no change to matchmaking quality, reasoning quality, explainability, readiness standards or member treatment | 2026-08-17 |
+| M-04 | Voice is **not** a tiered capability. Full canonical voice experience at every paid level; no monthly allowance, no forced text fallback. Provider-neutral, membership-neutral technical/rate protections may remain | 2026-08-17 |
+| M-05 | Relationship support is **CORE**. Full canonical architecture — intelligence, relationship reasoning, reflections, Relationship Focus Mode, endings, return/recalibration — preserved at every paid level | 2026-08-17 |
+
+Governing constraints recorded with these decisions: Private's differentiation is priority/early
+access to eligible future premium capabilities designated by Founder decision (those capabilities
+remain FUTURE and must never be represented as available); Founder authority over eligibility is
+preserved; no additional V1 restriction may be manufactured for the sake of differentiation; and
+Private may launch as unavailable/"coming later" rather than carry fabricated benefits.
+
+### 17.2 Unresolved decisions
 
 | ID | Decision | Blocking |
 | --- | --- | --- |
-| M-01 | Approve or amend the §6 capability allocation | Implementation |
-| M-02 | Final membership names (Essential / Complete / Private are working names) | Copy, store products |
-| M-03 | Essential introduction capacity (recommended: 1 concurrent) | M-01 |
-| M-04 | Essential voice scope and whether voice is tiered at all | M-01 |
-| M-05 | Whether relationship-support depth (C-19) is tiered or CORE (recommended: CORE) | M-01 |
+
 | M-06 | Prices for each level, Monthly and Annual | Billing activation |
 | M-07 | Annual economic benefit, if any | M-06 |
 | M-08 | Trial structure (currently: none) | Commercial |
