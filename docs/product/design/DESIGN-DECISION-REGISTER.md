@@ -81,7 +81,12 @@ Reconcile during the D6 photography specification.
 | D-13 | D4/D6 | Haptics and microinteraction vocabulary, if any. | Open — F-21 (optional) |
 | D-15 | D1 | Does Athena have a mark at all, and if so what is it? No mark is selected by D1; owl / helmet / goddess / A-monogram / brain / heart / infinity / neural-network defaults are excluded unless genuinely transformed. | Open — depends on D-02 |
 | D-16 | D1/D3 | Connection-field connection frequency: what rate reads as rarity rather than abundance, and how the field stays an honest metaphor rather than implied matchmaking activity. | Open — extends D-03; runtime currently reads as abundance |
-| D-17 | D1/D2 | Container policy: which objects genuinely deserve a card, and what replaces cardified surfaces (spacing, typography, material separation) elsewhere. | Open — runtime is broadly cardified |
+| D-17 | D1/D2 | Container policy: which objects genuinely deserve a card, and what replaces cardified surfaces (spacing, typography, material separation) elsewhere. | Open — governing direction set by D2 §9; component rules still open; runtime is broadly cardified |
+| D-18 | D2 | Exact type scale and responsive behavior: step sizes, fluid vs. breakpoint scaling, display sizing on narrow screens. | Open |
+| D-19 | D2 | Exact line-height, measure and letter-spacing scales for body, conversation and display. | Open |
+| D-20 | D2 | Exact spacing scale and the responsive grid (mobile/tablet/desktop), plus container radius. | Open |
+| D-21 | D2 | Conversation layout: correspondence composition, whether bubbles exist at all, and how member/Athena distinction is expressed. | Open — D2 §6 rejects bubble dependence |
+| D-22 | D2 | Introduction layout composition under single-person dominance and progressive revelation. | Open — depends on D-09, F-31, F-33 |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 
 ---
@@ -109,5 +114,6 @@ Reconcile during the D6 photography specification.
 
 | Version | Date | Description |
 |---|---|---|
+| 1.2 | 2026-08-17 | D2 — Typography & Composition v1.0 canonized. D-18–D-22 added; D-17 annotated with D2's governing container direction. Broad cardification and sub-44px links preserved as implementation gaps. No runtime change. |
 | 1.1 | 2026-08-17 | D1 — Visual Identity v1.0 canonized. D-15–D-17 added as open design questions; D1 review observations recorded. No runtime change. |
 | 1.0 | 2026-08-17 | Register established alongside Design Foundation v1.0. D-01 and D-07 recorded as binding founder design decisions; D-02–D-14 recorded as open. No runtime, UI, CSS, token, typography, color, asset, animation, sound, voice or photography change made. |
