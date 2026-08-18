@@ -1,10 +1,10 @@
 # Athena V1 — Membership & Commercial Architecture
 
-**Status:** GOVERNING ARCHITECTURE (v1.1). Product-definition pass only.
+**Status:** GOVERNING ARCHITECTURE (v1.2). Product-definition pass only.
 **Billing:** NOT ACTIVATED. `BILLING_ACTIVE = false`, `MEMBERSHIP_REQUIRED = false`.
-**Binding force:** The principles, protections and rules in §1–§3, §7, §9–§13 and §15–§16 are
+**Binding force:** The principles, protections and rules in §1–§3, §7, §9–§16 and §18–§19 are
 binding. The capability allocation in §6 is **APPROVED and binding** as of Founder decisions
-M-01 through M-05 (see §17). Prices remain unset and billing remains inactive.
+M-01 through M-10 (see §17). Prices remain unset and billing remains inactive.
 
 
 This document supersedes the scaffold content of `membership-tiers.md` and the tier portions of
@@ -227,9 +227,12 @@ Everything in Complete, plus the governing Private differentiation.
   Private early access, (b) a Complete-level capability, (c) a separate offering, or (d)
   universal. Private's only promise is priority consideration and early access to eligible
   capabilities.
-- **Launch condition:** if Private lacks sufficient implemented premium differentiation at V1
-  launch, the architecture permits Private to remain unavailable / "coming later" while Essential
-  and Complete are sold. Benefits must never be fabricated to justify its existence.
+- **Launch status (M-09):** Athena Private is architecturally defined but **not required to be
+  offered for sale at initial V1 launch.** Essential and Complete are sufficient for initial
+  commercial launch. Private becomes commercially available only when at least one meaningful
+  Founder-approved premium capability exists beyond Complete that can truthfully justify the
+  distinction. The architecture must preserve the ability to activate Private later without
+  redesigning the membership architecture.
 
 Private must not become the tier where dignity, privacy, safety or intelligence live.
 
@@ -310,12 +313,14 @@ Differentiation comes from **scope, access and additional capabilities** only.
 
 ## 14. Trials
 
-- **No post-foundational-conversation free trial is created.**
-- Trial structure remains an **unresolved Founder commercial decision**.
-- Rationale: the foundational conversation already serves as the member's genuine pre-payment
-  experience of Athena.
+- **No post-foundational-conversation free trial is authorized for V1 (M-08).**
+- The foundational conversation is the V1 pre-purchase experience.
+- After a production member completes the foundational conversation, continuing into the paid
+  Athena experience proceeds directly to membership selection and payment.
+- No 7-day, 14-day, 30-day or other post-conversation free trial may be added without a future
+  Founder decision.
 
-## 15. Entitlement relationship (preserved, unchanged)
+## 15. Entitlement relationship and membership gate
 
 This pass changes no entitlement code. Preserved:
 
@@ -326,6 +331,21 @@ This pass changes no entitlement code. Preserved:
 - Server-side entitlement verification only; **no client-controlled production entitlement**
   (no client INSERT/UPDATE/DELETE grant on the entitlement table).
 - **Founder role ≠ paid entitlement.**
+
+Authorized by M-10 (not yet active):
+
+- Membership will become required for ordinary production members who continue beyond the
+  completed foundational conversation.
+- The foundational conversation remains available before payment.
+- After its completion, continuing into paid-member functionality requires a valid server-verified
+  entitlement when `MEMBERSHIP_REQUIRED = true`.
+- `MEMBERSHIP_REQUIRED` must remain `false` during development and private-beta preparation until
+  the Founder separately authorizes commercial activation.
+- Private beta testers may receive explicitly governed non-production/internal-test entitlements
+  using the existing protected entitlement architecture.
+- No client flag or local state may bypass the production membership requirement.
+- Rest/Pause and Relationship Focus Mode are separate from billing and do not remove the
+  membership requirement.
 
 Implementation note for activation: membership *level* becomes a distinct axis from *cadence*.
 The existing `plan_key` currently encodes cadence (`monthly` / `annual`). At activation it should
@@ -363,6 +383,9 @@ remains cadence-only until levels are approved.
 | M-03 | Capacity: Essential = 1 concurrent active introduction; Complete and Private = canonical maximum of 3. Capacity distinction only — no change to matchmaking quality, reasoning quality, explainability, readiness standards or member treatment | 2026-08-17 |
 | M-04 | Voice is **not** a tiered capability. Full canonical voice experience at every paid level; no monthly allowance, no forced text fallback. Provider-neutral, membership-neutral technical/rate protections may remain | 2026-08-17 |
 | M-05 | Relationship support is **CORE**. Full canonical architecture — intelligence, relationship reasoning, reflections, Relationship Focus Mode, endings, return/recalibration — preserved at every paid level | 2026-08-17 |
+| M-08 | Trial structure: **no additional free trial for V1.** The foundational conversation is the pre-purchase experience. No post-conversation 7/14/30-day trial without future Founder decision | 2026-08-18 |
+| M-09 | Athena Private launch status: architecturally defined but **not required for initial V1 launch.** Essential and Complete are sufficient. Private becomes available only when a meaningful Founder-approved premium capability beyond Complete can truthfully justify it | 2026-08-18 |
+| M-10 | Membership requirement: membership will become required for ordinary production members who continue beyond the completed foundational conversation. `MEMBERSHIP_REQUIRED` remains `false` until Founder authorizes commercial activation. No client flag or local state may bypass it; Rest/Pause and Focus Mode do not remove the requirement | 2026-08-18 |
 
 Governing constraints recorded with these decisions: Private's differentiation is priority/early
 access to eligible future premium capabilities designated by Founder decision (those capabilities
@@ -376,9 +399,6 @@ Private may launch as unavailable/"coming later" rather than carry fabricated be
 | --- | --- | --- |
 | M-06 | Prices for each level, Monthly and Annual | Billing activation |
 | M-07 | Annual economic benefit, if any | M-06 |
-| M-08 | Trial structure (currently: none) | Commercial |
-| M-09 | Which future capabilities qualify for Private early access, and whether Private is offered at V1 launch | Per capability |
-| M-10 | Whether `MEMBERSHIP_REQUIRED` ever becomes true, and at what point in the journey | Commercial |
 | M-11 | Store/provider selection and App Store product identifiers | Billing activation |
 | M-12 | Grandfathering policy for early members at price changes | M-06 |
 | M-13 | Whether a level change mid-period is immediate or at renewal | Unblocked by M-01; open |
@@ -412,5 +432,17 @@ No canonical behaviour was overridden. No runtime member-facing behaviour was ch
 | §6 allocation | Recommendation → **approved and binding**; Essential's voice allowance and support-depth scope removed. |
 | C-11 / C-13 capacity | Unchanged canonical cap of 3; Essential set to 1 as a capacity distinction only. |
 | Runtime membership UI / `MEMBERSHIP_PLANS` | **Unchanged** by instruction. No prices set, `BILLING_ACTIVE = false`. |
+
+No canonical behaviour was overridden and no runtime behaviour changed in this pass.
+
+### 18.2 Conflict review — M-08…M-10 recording pass (2026-08-18)
+
+| Area | Finding |
+| --- | --- |
+| §14 (Trials) | No trial approved; text updated to reflect M-08. No conflict with §1 (foundational conversation as pre-payment experience) or §3.5. |
+| §6.3 / §5 (Private) | M-09 confirms Private launch is optional; strengthens existing "not sellable today" / "coming later" language. No new restriction introduced. |
+| §15 (Membership gate) | M-10 establishes future membership gate at the boundary after foundational conversation, preserving pre-payment availability and server-side verification. No conflict with §1, §12, or entitlement architecture. |
+| Runtime / `BILLING_ACTIVE`, `MEMBERSHIP_REQUIRED` | **Unchanged** by instruction. No prices, no UI, no store products. |
+| §7 Non-tierable rights | M-10 gate does not affect rights: privacy, safety, blocking, accessibility, deletion, export, etc. remain independent of entitlement. |
 
 No canonical behaviour was overridden and no runtime behaviour changed in this pass.
