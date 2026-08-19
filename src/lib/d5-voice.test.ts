@@ -11,6 +11,9 @@ import {
 } from "./arrival";
 
 const read = (p: string) => readFileSync(new URL(`../../${p}`, import.meta.url), "utf8");
+/** Code only — doctrine comments legitimately name the things we forbid. */
+const code = (p: string) =>
+  read(p).replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
 const base = {
   sessionGreeted: false,
@@ -144,9 +147,9 @@ describe("visual restraint", () => {
   });
 
   it("introduces no avatar, face or waveform in the presence language", () => {
-    const presence = read("src/components/athena-presence.tsx");
+    const presence = code("src/components/athena-presence.tsx");
     expect(presence).not.toMatch(/avatar|face|waveform|orb\b/i);
-    expect(presence).toContain("useReducedMotion");
+    expect(read("src/components/athena-presence.tsx")).toContain("useReducedMotion");
   });
 
   it("reuses the existing presence states rather than new AI visual language", () => {
