@@ -9,6 +9,7 @@ import { ReadinessCard } from "@/components/readiness-card";
 import { AthenaPresence } from "@/components/athena-presence";
 import { WaitingState } from "@/components/waiting-state";
 import { Bell } from "lucide-react";
+import { ReturnGreeting } from "@/components/return-greeting";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -71,7 +72,7 @@ function Home() {
       </div>
     );
 
-  const firstName = profile?.display_name?.split(" ")[0] ?? null;
+  const displayName = profile?.display_name ?? null;
 
   return (
     <div className="screen-shell safe-top pb-28 fade-in-quick" data-testid="today-screen">
@@ -86,9 +87,7 @@ function Home() {
             <Bell className="h-5 w-5 shrink-0" strokeWidth={1.5} />
           </Link>
         </div>
-        <h1 className="type-page-title mt-3 text-foreground">
-          Welcome back{firstName ? <>, {firstName}</> : ""}.
-        </h1>
+        <ReturnGreeting displayName={displayName} />
         <div className="mt-4">
           <AthenaPresence state="quiet" />
         </div>

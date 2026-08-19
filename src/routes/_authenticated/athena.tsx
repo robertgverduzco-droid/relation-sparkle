@@ -84,7 +84,6 @@ function AthenaPage() {
 
   /** Speak a line, tracking playback state so it can be shown as text. */
   const playLine = useCallback(async (text: string, signal: AbortSignal) => {
-    speechAbortRef.current = null;
     await speak(text, signal, setSpeaking);
   }, []);
 
@@ -107,6 +106,7 @@ function AthenaPage() {
   useEffect(() => {
     let cancelled = false;
     const abort = new AbortController();
+    speechAbortRef.current = abort;
     (async () => {
       const stored = typeof window !== "undefined" ? (localStorage.getItem(VOICE_KEY) as VoiceMode | null) : null;
 
@@ -191,6 +191,7 @@ function AthenaPage() {
     setAskingPreference(false);
     const opening = "What's something you've been thinking about recently?";
     const abort = new AbortController();
+    speechAbortRef.current = abort;
     setIntroducing(true);
     await wait(400);
     const next: Msg[] = [
