@@ -258,6 +258,14 @@ confidence value governed by L4.
   physical, and shared-experience registers.
 - **B7. Resilience.** How they recover from hardship, loss, and disappointment,
   and how those experiences have shaped them.
+- **B8. Physical Attraction.** What this person tends to be drawn to
+  physically, how much it matters to them, and how that has changed over their
+  life. A legitimate dimension of romantic compatibility, understood as the
+  member's own evolving self-understanding — never as a judgment of how
+  attractive any human being is, and never as an appearance specification.
+  Governed in full by
+  [Attraction Intelligence Architecture](../product/attraction-intelligence-architecture.md);
+  "I don't have a type" is a complete answer of equal standing.
 
 ### Family C — Relational Behavior in Practice
 
@@ -320,4 +328,5 @@ that are not grounded here.
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created. |
 | 1.0 | 2026-07-27 | Dimensions and guiding principles migrated from research v1. Pair reasoning excluded (owned by L6b). |
+| 2.1 | 2026-08-19 | B8 Physical Attraction added to Family B, grounding the pre-existing `physical_attraction_preferences` facet in doctrine. Subordinate to Attraction Intelligence Architecture v1.0. No runtime change. |
 | 2.0 | 2026-08-02 | Human Understanding Model adopted verbatim in substance as Section 1 governing doctrine; prior dimension taxonomy retained as Section 2 and extended with A5 Worldview, B7 Resilience, C8 Family & Friendship Bonds, D5 Interests/Curiosity/Joy. Runtime prompt aligned. |

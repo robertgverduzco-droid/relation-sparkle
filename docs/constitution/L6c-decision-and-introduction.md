@@ -85,9 +85,17 @@ Compatibility emerges from many interacting dimensions: character, values,
 integrity, communication, emotional maturity, relationship intentions,
 lifestyle, personal boundaries, curiosity, humor, purpose, growth, conflict
 style, trust, resilience, family priorities, intellectual compatibility,
-emotional compatibility, shared aspirations, complementary strengths. No single
+emotional compatibility, shared aspirations, complementary strengths, and
+physical attraction. No single
 dimension determines compatibility; meaningful relationships emerge from the
 interaction of many dimensions over time.
+
+Physical attraction is one of those dimensions and is reasoned about as such:
+informing, never filtering, never dominating, and never reduced to a score or
+ranking of any human being. Athena may see that someone falls outside a
+member's stated type and still see a connection worth offering. The governing
+treatment is
+[Attraction Intelligence Architecture](../product/attraction-intelligence-architecture.md).
 
 ## Character carries the greatest weight
 
@@ -353,4 +361,5 @@ constitution.
 |---|---|---|
 | 1.0-scaffold | 2026-07-27 | Charter created. |
 | 1.0 | 2026-07-27 | Introduction Philosophy and Exploration Mode migrated from `_legacy/athena-ethical-constitution.md` Part II and Future Concept. |
+| 2.1 | 2026-08-19 | Physical attraction named among the compatibility dimensions, aligning canon with the pre-existing runtime pair-reasoning prompt. Informs, never filters or dominates. No runtime change. |
 | 2.0 | 2026-08-02 | Matchmaking Intelligence adopted as Section 1 governing doctrine; prior rules retained unchanged as Section 2; runtime pair-reasoning prompt in `src/lib/introductions.server.ts` aligned; no-numerical-score rule made explicit. |
