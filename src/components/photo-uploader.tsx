@@ -161,7 +161,8 @@ export function PhotoUploader() {
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-2">
           {photos.map((p) => (
-            <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg border border-border">
+            <div key={p.id} className="space-y-1">
+            <div className="relative aspect-square overflow-hidden rounded-lg border border-border">
               {p.url ? (
                 <img
                   src={p.url}
