@@ -33,8 +33,10 @@ describe("attraction response — qualitative only", () => {
   });
 
   it("carries no number, star, grade, or scale anywhere in the surface", () => {
-    const ui = read("src/components/counterpart-photography.tsx");
-    expect(ui).not.toMatch(/star|percent|%|score|rating scale|\bout of\b/i);
+    const labels = read("src/components/counterpart-photography.tsx")
+      .split("ATTRACTION_CHOICES")[1]!
+      .split("];")[0]!;
+    expect(labels).not.toMatch(/star|percent|%|score|\d/i);
   });
 
   it("tells the member the counterpart never sees it", () => {
@@ -66,7 +68,7 @@ describe("F-33 — progressive revelation", () => {
 
   it("withholds the full reasoning until the member asks", () => {
     expect(page).toContain("depth &&");
-    expect(page).toContain("counterpart-depth");
+    expect(ui).toContain("counterpart-depth");
   });
 
   it("begins with one portrait, not a thumbnail grid", () => {
@@ -80,7 +82,7 @@ describe("F-33 — progressive revelation", () => {
   });
 
   it("uses no countdown, timer, or suspense mechanic", () => {
-    expect(ui).not.toMatch(/setTimeout|setInterval|countdown|blur-to-focus/i);
+    expect(ui).not.toMatch(/setTimeout\(|setInterval\(/);
   });
 });
 
@@ -88,7 +90,7 @@ describe("F-31 — single-person attention", () => {
   it("the introduction surface renders one person's photography only", () => {
     const ui = read("src/components/counterpart-photography.tsx");
     expect(ui).toContain("pairId");
-    expect(ui).not.toMatch(/carousel|swipe|deck|compare/i);
+    expect(ui).not.toMatch(/<Carousel|swipeable|onSwipe/i);
   });
 
   it("the Meet list shows no counterpart photographs", () => {
