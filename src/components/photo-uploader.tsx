@@ -55,7 +55,7 @@ export function PhotoUploader() {
     setLoading(true);
     const { data: rows } = await supabase
       .from("user_photos")
-      .select("id, storage_path, position, is_primary")
+      .select("id, storage_path, position, is_primary, alt_text")
       .order("position", { ascending: true });
     const list: Photo[] = [];
     for (const r of rows ?? []) {
@@ -68,6 +68,7 @@ export function PhotoUploader() {
         url: signed?.signedUrl ?? "",
         is_primary: r.is_primary as boolean,
         position: r.position as number,
+        alt_text: (r.alt_text as string | null) ?? null,
       });
     }
     setPhotos(list);
@@ -138,6 +139,15 @@ export function PhotoUploader() {
     await supabase.from("user_photos").update({ is_primary: false }).eq("user_id", uid);
     await supabase.from("user_photos").update({ is_primary: true }).eq("id", p.id);
     await load();
+  }
+
+  // Accessibility (D6 §18): the member writes the words a screen-reader
+  // member will hear. Athena never describes a human being's appearance, and
+  // never invents one from the image.
+  async function saveAlt(p: Photo, value: string) {
+    const text = value.trim().slice(0, 140);
+    setPhotos((cur) => cur.map((x) => (x.id === p.id ? { ...x, alt_text: text } : x)));
+    await supabase.from("user_photos").update({ alt_text: text || null }).eq("id", p.id);
   }
 
   return (
