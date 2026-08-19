@@ -36,6 +36,7 @@ function Home() {
   const [hasStartedAthena, setHasStartedAthena] = useState<boolean>(false);
   const [hasIntroduction, setHasIntroduction] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const [athenaSpeaking, setAthenaSpeaking] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -87,9 +88,9 @@ function Home() {
             <Bell className="h-5 w-5 shrink-0" strokeWidth={1.5} />
           </Link>
         </div>
-        <ReturnGreeting displayName={displayName} />
+        <ReturnGreeting displayName={displayName} onSpeakingChange={setAthenaSpeaking} />
         <div className="mt-4">
-          <AthenaPresence state="quiet" />
+          <AthenaPresence state={athenaSpeaking ? "speaking" : "quiet"} />
         </div>
       </header>
 

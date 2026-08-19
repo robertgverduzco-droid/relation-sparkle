@@ -21,10 +21,20 @@ const VOICE_KEY = "athena-voice-mode";
  * within the app. Nothing motivational is appended: recognition is the whole
  * experience.
  */
-export function ReturnGreeting({ displayName }: { displayName: string | null }) {
+export function ReturnGreeting({
+  displayName,
+  onSpeakingChange,
+}: {
+  displayName: string | null;
+  onSpeakingChange?: (speaking: boolean) => void;
+}) {
   const firstName = usableFirstName(displayName);
   const text = returnGreeting(firstName);
-  const [speaking, setSpeaking] = useState(false);
+  const [speaking, setSpeakingState] = useState(false);
+  const setSpeaking = (v: boolean) => {
+    setSpeakingState(v);
+    onSpeakingChange?.(v);
+  };
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
