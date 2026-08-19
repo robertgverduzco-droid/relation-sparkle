@@ -8,6 +8,8 @@ import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { speak } from "@/lib/athena-speech";
+import { ARRIVAL_WELCOME, markSeen, markSessionGreeted } from "@/lib/arrival";
 
 export const Route = createFileRoute("/_authenticated/athena")({
   head: () => ({
@@ -26,6 +28,8 @@ const VOICE_KEY = "athena-voice-mode";
 function buildIntro(firstName: string | null): string[] {
   const greeting = firstName ? `Hello, ${firstName}.` : "Hello.";
   return [
+    // D5: the one-time spoken welcome, on the first-ever arrival only.
+    ARRIVAL_WELCOME,
     greeting,
     "I'm Athena.",
     "It's a pleasure to finally meet you.",
@@ -42,31 +46,6 @@ async function authHeader(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-async function playLine(text: string, signal: AbortSignal): Promise<void> {
-  try {
-    const res = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...(await authHeader()) },
-      body: JSON.stringify({ text }),
-      signal,
-    });
-    if (!res.ok) return;
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    await new Promise<void>((resolve) => {
-      const done = () => { URL.revokeObjectURL(url); resolve(); };
-      audio.onended = done;
-      audio.onerror = done;
-      signal.addEventListener("abort", () => { audio.pause(); done(); }, { once: true });
-      audio.play().catch(done);
-    });
-  } catch {
-    /* silent */
-  }
 }
 
 function AthenaPage() {
@@ -87,6 +66,8 @@ function AthenaPage() {
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [showClosingCard, setShowClosingCard] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const speechAbortRef = useRef<AbortController | null>(null);
   const [completing, setCompleting] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -100,6 +81,18 @@ function AthenaPage() {
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
+
+  /** Speak a line, tracking playback state so it can be shown as text. */
+  const playLine = useCallback(async (text: string, signal: AbortSignal) => {
+    speechAbortRef.current = null;
+    await speak(text, signal, setSpeaking);
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    speechAbortRef.current?.abort();
+    speechAbortRef.current = null;
+    setSpeaking(false);
+  }, []);
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -168,7 +161,17 @@ function AthenaPage() {
       cancelled = true;
       abort.abort();
     };
-  }, [persist]);
+  }, [persist, playLine]);
+
+  // A conversation with Athena counts as activity: a return greeting is only
+  // for a genuinely new session, never for coming back from this screen.
+  useEffect(() => {
+    if (!hydrated) return;
+    markSessionGreeted();
+    markSeen();
+    const tick = setInterval(() => markSeen(), 60_000);
+    return () => { clearInterval(tick); markSeen(); };
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -199,7 +202,7 @@ function AthenaPage() {
     setIntroducing(false);
     conversationStartRef.current = Date.now();
     void persist(next);
-  }, [messages, persist]);
+  }, [messages, persist, playLine]);
 
   async function askWithRetry(payload: {
     messages: Msg[];
@@ -304,7 +307,8 @@ function AthenaPage() {
       void persist(withReply);
       if (voiceMode === "voice") {
         const abort = new AbortController();
-        void playLine(res.reply, abort.signal);
+        speechAbortRef.current = abort;
+        void speak(res.reply, abort.signal, setSpeaking);
       }
 
       // Log usage for later billing (Stripe deferred). Rough estimate: 4 chars/token.
@@ -503,6 +507,28 @@ function AthenaPage() {
         )}
       </div>
 
+      {/* D5 playback state, stated in words rather than motion alone. */}
+      <div aria-live="polite" className="px-5">
+        {speaking && (
+          <div
+            data-testid="athena-speaking"
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+          >
+            <p className="text-xs text-ink-soft">
+              Athena is speaking. Her words appear above as she says them.
+            </p>
+            <button
+              type="button"
+              data-testid="athena-stop-speaking"
+              onClick={stopSpeaking}
+              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+            >
+              Stop
+            </button>
+          </div>
+        )}
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -567,6 +593,7 @@ function AthenaPage() {
           onClose={() => setSettingsOpen(false)}
           onChoose={(mode) => {
             try { localStorage.setItem(VOICE_KEY, mode); } catch { /* ignore */ }
+            if (mode === "text") stopSpeaking();
             setVoiceMode(mode);
             setSettingsOpen(false);
           }}
