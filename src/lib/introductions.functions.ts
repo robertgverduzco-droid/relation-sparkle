@@ -190,3 +190,73 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
     return { ok: true, connection_id: connectionId };
   });
 
+
+// ---------------------------------------------------------------------------
+// D-44 / F-33 — counterpart photography and attraction response.
+// ---------------------------------------------------------------------------
+
+const pairInput = z.object({ pair_id: z.string().uuid() });
+
+export const getIntroductionPhotos = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => pairInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { counterpartForPresentedPair, loadCounterpartPhotos } = await import(
+      "./attraction.server"
+    );
+    const otherId = await counterpartForPresentedPair(
+      context.supabase,
+      data.pair_id,
+      context.userId,
+    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name")
+      .eq("id", otherId)
+      .maybeSingle();
+    const name = (prof?.display_name as string | null) ?? "Someone";
+    const photos = await loadCounterpartPhotos(
+      context.supabase,
+      data.pair_id,
+      context.userId,
+      name,
+    );
+    return { photos };
+  });
+
+const attractionInput = z.object({
+  pair_id: z.string().uuid(),
+  response: z.enum(["drawn", "curious", "unsure", "not_there"]),
+});
+
+/**
+ * A private, qualitative note to Athena about visual response. It is not a
+ * rating of another human being, is never shown to the counterpart, and never
+ * stands in for the accept / defer / decline decision.
+ */
+export const recordAttractionResponse = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => attractionInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { counterpartForPresentedPair } = await import("./attraction.server");
+    await counterpartForPresentedPair(context.supabase, data.pair_id, context.userId);
+    await context.supabase.from("introduction_attraction").upsert(
+      { pair_id: data.pair_id, user_id: context.userId, response: data.response },
+      { onConflict: "pair_id,user_id" },
+    );
+    return { ok: true };
+  });
+
+export const getAttractionResponse = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => pairInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { data: row } = await context.supabase
+      .from("introduction_attraction")
+      .select("response")
+      .eq("pair_id", data.pair_id)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    return { response: (row?.response as string | null) ?? null };
+  });
