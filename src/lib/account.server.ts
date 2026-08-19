@@ -34,6 +34,7 @@ const MEMBER_KEYED_TABLES: Array<[table: string, columns: string[]]> = [
   ["athena_usage_log", ["user_id"]],
   ["pair_reasoning", ["user_low", "user_high"]],
   ["introduction_responses", ["user_id"]],
+  ["introduction_attraction", ["user_id"]],
   ["introduction_feedback", ["user_id"]],
   ["connections", ["user_low", "user_high"]],
   ["conversations", ["user_a", "user_b"]],

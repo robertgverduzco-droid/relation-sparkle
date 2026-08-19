@@ -42,6 +42,7 @@ type Photo = {
   url: string;
   is_primary: boolean;
   position: number;
+  alt_text: string | null;
 };
 
 export function PhotoUploader() {
@@ -54,7 +55,7 @@ export function PhotoUploader() {
     setLoading(true);
     const { data: rows } = await supabase
       .from("user_photos")
-      .select("id, storage_path, position, is_primary")
+      .select("id, storage_path, position, is_primary, alt_text")
       .order("position", { ascending: true });
     const list: Photo[] = [];
     for (const r of rows ?? []) {
@@ -67,6 +68,7 @@ export function PhotoUploader() {
         url: signed?.signedUrl ?? "",
         is_primary: r.is_primary as boolean,
         position: r.position as number,
+        alt_text: (r.alt_text as string | null) ?? null,
       });
     }
     setPhotos(list);
@@ -139,6 +141,15 @@ export function PhotoUploader() {
     await load();
   }
 
+  // Accessibility (D6 §18): the member writes the words a screen-reader
+  // member will hear. Athena never describes a human being's appearance, and
+  // never invents one from the image.
+  async function saveAlt(p: Photo, value: string) {
+    const text = value.trim().slice(0, 140);
+    setPhotos((cur) => cur.map((x) => (x.id === p.id ? { ...x, alt_text: text } : x)));
+    await supabase.from("user_photos").update({ alt_text: text || null }).eq("id", p.id);
+  }
+
   return (
     <div className="panel p-5">
       <p className="type-section">Photos</p>
@@ -150,7 +161,8 @@ export function PhotoUploader() {
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-2">
           {photos.map((p) => (
-            <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg border border-border">
+            <div key={p.id} className="space-y-1">
+            <div className="relative aspect-square overflow-hidden rounded-lg border border-border">
               {p.url ? (
                 <img
                   src={p.url}
@@ -188,6 +200,18 @@ export function PhotoUploader() {
                   Remove
                 </button>
               </div>
+            </div>
+            <label className="block">
+              <span className="sr-only">Describe photo {p.position + 1}</span>
+              <input
+                type="text"
+                defaultValue={p.alt_text ?? ""}
+                maxLength={140}
+                placeholder="Describe this photo"
+                onBlur={(e) => void saveAlt(p, e.target.value)}
+                className="w-full rounded-md border border-border bg-transparent px-2 py-1 text-[11px] text-ink"
+              />
+            </label>
             </div>
           ))}
           {photos.length < MAX_PHOTOS && (
