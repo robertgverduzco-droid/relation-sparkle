@@ -1,7 +1,7 @@
 // D-44 / F-33 regression suite — counterpart photography, progressive
 // revelation, attraction response, and the five-photo maximum.
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import {
   ATTRACTION_RESPONSES,
   MAX_PHOTOS,
@@ -18,10 +18,12 @@ describe("D-07 — five photographs is the maximum", () => {
   });
 
   it("is enforced in the database", () => {
-    const sql = read("supabase/migrations")
-      ? ""
-      : "";
-    expect(sql).toBe("");
+    const dir = new URL("../../supabase/migrations/", import.meta.url);
+    const sql = readdirSync(dir)
+      .map((f) => readFileSync(new URL(f, dir), "utf8"))
+      .join("\n");
+    expect(sql).toContain("tg_enforce_photo_maximum");
+    expect(sql).toContain("at most five photographs");
   });
 });
 
