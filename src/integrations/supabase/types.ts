@@ -595,6 +595,41 @@ export type Database = {
         }
         Relationships: []
       }
+      introduction_attraction: {
+        Row: {
+          created_at: string
+          id: string
+          pair_id: string
+          response: Database["public"]["Enums"]["attraction_response"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pair_id: string
+          response: Database["public"]["Enums"]["attraction_response"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pair_id?: string
+          response?: Database["public"]["Enums"]["attraction_response"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introduction_attraction_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "pair_reasoning"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       introduction_feedback: {
         Row: {
           created_at: string
@@ -1965,6 +2000,7 @@ export type Database = {
       }
       user_photos: {
         Row: {
+          alt_text: string | null
           created_at: string
           id: string
           is_primary: boolean
@@ -1974,6 +2010,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          alt_text?: string | null
           created_at?: string
           id?: string
           is_primary?: boolean
@@ -1983,6 +2020,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          alt_text?: string | null
           created_at?: string
           id?: string
           is_primary?: boolean
@@ -2148,6 +2186,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "founder"
+      attraction_response: "drawn" | "curious" | "unsure" | "not_there"
       match_status:
         | "proposed"
         | "accepted_by_a"
@@ -2295,6 +2334,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "founder"],
+      attraction_response: ["drawn", "curious", "unsure", "not_there"],
       match_status: [
         "proposed",
         "accepted_by_a",
