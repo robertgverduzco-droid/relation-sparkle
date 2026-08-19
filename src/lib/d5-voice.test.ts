@@ -128,7 +128,7 @@ describe("voice character and privacy", () => {
 
   it("never caches or stores synthesized audio", () => {
     expect(tts).toContain('"Cache-Control": "no-store"');
-    const speech = read("src/lib/athena-speech.ts");
+    const speech = code("src/lib/athena-speech.ts");
     expect(speech).toContain("URL.revokeObjectURL");
     expect(speech).not.toMatch(/localStorage|indexedDB|upload/i);
   });
