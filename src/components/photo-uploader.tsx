@@ -201,6 +201,18 @@ export function PhotoUploader() {
                 </button>
               </div>
             </div>
+            <label className="block">
+              <span className="sr-only">Describe photo {p.position + 1}</span>
+              <input
+                type="text"
+                defaultValue={p.alt_text ?? ""}
+                maxLength={140}
+                placeholder="Describe this photo"
+                onBlur={(e) => void saveAlt(p, e.target.value)}
+                className="w-full rounded-md border border-border bg-transparent px-2 py-1 text-[11px] text-ink"
+              />
+            </label>
+            </div>
           ))}
           {photos.length < MAX_PHOTOS && (
             <button
