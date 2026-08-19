@@ -41,3 +41,5 @@ cognition, or decision policy — those are constitutional and belong upstream.
 - No product document may introduce a rule that is properly constitutional.
   If a product need reveals a missing constitutional rule, propose the rule
   through the process in `constitution/META-PREAMBLE.md`.
+
+- [Attraction Intelligence Architecture](./attraction-intelligence-architecture.md) — v1.0 canonical: how physical attraction is understood, evolved, reasoned about in matchmaking, and bounded against scoring or appearance analysis.

@@ -14,6 +14,12 @@ them.
 **Governing principle.** Athena chooses the person. The member experiences the
 person. Attraction gets room to exist without becoming the selection mechanism.
 
+**Supplement:** [Attraction Intelligence Architecture
+v1.0](../attraction-intelligence-architecture.md) governs how attraction is
+*understood* and how it may inform matchmaking. It preserves this sequence
+unchanged. Attraction responses recorded here remain write-only until Founder
+decisions AT-01–AT-04 are resolved.
+
 ---
 
 ## 1. Final revelation sequence

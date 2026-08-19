@@ -172,6 +172,17 @@ Reconcile during the D6 photography specification.
 
 ---
 
+## Attraction intelligence (supplemental, 2026-08-19)
+
+| ID | Domain | Decision | Status |
+|---|---|---|---|
+| D-45 | D6 / L3 / L6c | Representation of physical attraction inside Athena's understanding and matchmaking architecture. | **Resolved v1.0 (2026-08-19)** — [Attraction Intelligence Architecture](../attraction-intelligence-architecture.md): existing facet + confidence/correction/removal + counterpart sealing; no parallel system; absolute prohibition on attractiveness scoring and automated appearance analysis. |
+| AT-01 | Understanding | May private D-44 attraction responses become longitudinal evidence for the responding member? | Open — Founder decision. Blocks the observed-attraction loop. |
+| AT-02 | Understanding | Minimum evidence before an observed attraction pattern may form (proposed ≥4 across distinct introductions). | Open — Founder decision. |
+| AT-03 | Understanding | Observed attraction surfaced in Understanding, or held internally and raised only for confirmation? | Open — Founder decision. |
+| AT-04 | Privacy | Distinct consent statement required before attraction responses inform understanding? | Open — Founder decision. |
+| AT-05 | Matchmaking | May a member elect a stated physical preference as a true boundary, and which are eligible? | Open — Founder decision. Until resolved, no attraction preference filters. |
+
 # Revision history
 
 | Version | Date | Description |
