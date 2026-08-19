@@ -42,6 +42,7 @@ type Photo = {
   url: string;
   is_primary: boolean;
   position: number;
+  alt_text: string | null;
 };
 
 export function PhotoUploader() {
