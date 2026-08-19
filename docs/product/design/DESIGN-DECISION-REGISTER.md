@@ -111,7 +111,7 @@ Reconcile during the D6 photography specification.
 | D-41 | D6 | Photo requirements: minimum count, exact categories, primary-photo technical/face-visibility requirements, aspect ratios, and moderation technology. | Open — D6 §§5–7; D-07 five-photo ceiling binding |
 | D-42 | D6 | Group-photo policy and treatment of photographs containing children or non-members. | Open — D6 §8; Privacy & Security and Trust & Safety controlling |
 | D-43 | D6 | Authenticity policy: outdated photos, deceptive editing, filter/modification threshold, and synthetic/AI-generated member imagery. | Open — D6 §9; V1 strongly favors actual photographs |
-| D-44 | D6 | Progressive-revelation choreography: exact introduction sequence, transition treatment for the primary photograph, and Athena's recession as the person appears. | Open — F-33, F-31, D-09 controlling; no counterpart photography exists in runtime |
+| D-44 | D6 | Progressive-revelation choreography: exact introduction sequence, transition treatment for the primary photograph, and Athena's recession as the person appears. | **Resolved v1.0 (2026-08-19)** — see [D-44 / F-33 Progressive Visual Revelation](./D-44-progressive-visual-revelation.md); implemented in runtime |
 | D-45 | D6 | Photography accessibility and visual privacy: alt-text implementation, screen-reader context, keyboard/touch controls, caption policy, photo-order controls, and screenshot/visual-privacy treatment. | Open — D6 §§16, 18; no speculative descriptions of physical attributes |
 | D-14 | D1–D6 | Accessibility verification of every final aesthetic choice as a beta gate: contrast, scalable text, focus, state differentiation, touch targets, screen readers, sound-off equivalents. | Open — F-14, X-14 |
 

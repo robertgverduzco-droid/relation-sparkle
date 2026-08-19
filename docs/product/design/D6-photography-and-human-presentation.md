@@ -64,8 +64,9 @@ side-by-side comparison. The member encounters someone, not a selection screen.
 ## 5. Five-photo maximum (D-07 binding)
 
 A member may have at most five photographs in V1. Five is a ceiling, not a
-required minimum. The runtime allowance of six is an implementation divergence
-to be repaired later.
+required minimum. The former runtime allowance of six was repaired on
+2026-08-19; five is now enforced in the uploader, the counterpart read path and
+the database.
 
 **Why five.** Enough range to convey face, physical presence, personality, life
 context and variation, without becoming a social-media gallery. Each image
@@ -160,7 +161,8 @@ manipulates curiosity by withholding photographs.
 4. **The member chooses whether to know more** — additional permitted context
    and photographs become naturally available.
 
-Exact screen choreography is downstream (D-44). The sequence should be fast
+Exact screen choreography is resolved in
+[D-44 / F-33 Progressive Visual Revelation](./D-44-progressive-visual-revelation.md). The sequence should be fast
 enough to feel honest; its purpose is only to prevent the encounter beginning
 and ending with a photograph.
 
