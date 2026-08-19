@@ -350,19 +350,18 @@ upload, EXIF/GPS removal, access and deletion boundaries preserved.
 12. **No runtime change:** no upload behavior, storage, CSS, component,
     photography, layout, matchmaking, prompt or UI modification was made.
 
-### Runtime divergences recorded (evidence only, not repaired)
+### Runtime divergences (resolved 2026-08-19 under D-44)
 
-- **Six-photo allowance.** `src/components/photo-uploader.tsx` caps uploads at
-  six (`photos.length >= 6`, `photos.length < 6`), contradicting D-07's five.
-  Repair belongs to downstream implementation.
-- **No counterpart photography exists.** Introductions render no counterpart
-  imagery, so no progressive-revelation sequence exists to evaluate (D-09,
-  D-44); F-33 remains unimplemented in runtime.
-- **Uploader is a square thumbnail grid.** Member-facing photo management uses
-  a cardified `aspect-square` grid inside a bordered card — acceptable for
-  self-management, but it must not become the introduction presentation pattern
-  under §4 and §10.
-- **Empty alt text.** Photo thumbnails render `alt=""`; no accessible
-  alternative or screen-reader context strategy exists yet (§18, D-45).
+- **Six-photo allowance.** Repaired. Five is enforced in the uploader, the
+  counterpart read path and a database trigger.
+- **Counterpart photography.** Implemented. The introduction presents one
+  primary portrait, then further photographs one at a time by member choice,
+  with Athena's fuller reasoning available on request
+  ([D-44](./D-44-progressive-visual-revelation.md)).
+- **Uploader is a square thumbnail grid.** Retained for self-management only;
+  it is not the introduction presentation pattern.
+- **Accessible alternatives.** Resolved: members author the description of
+  their own photograph, and it is the only description a counterpart hears;
+  otherwise a truthful non-appearance alternative is used (§18, D-44 §6).
 - **No photo reordering control.** Photos carry a `position` column but the
   member has no reorder affordance; only primary selection exists (§16).
