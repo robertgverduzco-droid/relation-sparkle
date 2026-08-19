@@ -75,12 +75,12 @@ Reconcile during the D6 photography specification.
 | D-03 | D1 | Connection-field geometry, density, movement, color, connection frequency and choreography; how to keep it a metaphor rather than a matchmaking diagram. | Open — depends on X-19, F-19 |
 | D-04 | D2 | Exact type families, the serif/sans pairing question, scale, weights, line length and the reading-comfort standard for extended conversation. | Open |
 | D-05 | D3 | Exact palette and tokens for the arrival and interior environments; gold usage rules; organic secondaries; connection/relational color. | Open — structural direction set by D3; depends on F-11, F-12, X-11, X-12 |
-| D-06 | D5 | Sonic signature: existence, length, notes, intervals, instrumentation, timbre, tuning; whether the current landing chime is retired or replaced. | Open — D5 §19 governing: ~3 restrained tones, warm harmonic body, subtle synthetic air, 1–3s, non-jingle. Depends on X-07, F-05 |
+| D-06 | D5 | Sonic signature: existence, length, notes, intervals, instrumentation, timbre, tuning; whether the current landing chime is retired or replaced. | Partially resolved (2026-08-19): chime **retired**, V1 ships no sonic signature. Signature itself still open — D5 §19 governing: ~3 restrained tones, warm harmonic body, subtle synthetic air, 1–3s, non-jingle. Depends on X-07, F-05 |
 | D-08 | D6 | The five-photo structure: minimum count, whether categories are required or suggested, and how the uploader guides intentional selection. | Open |
 | D-09 | D6 | Progressive revelation sequence — what precedes photography, and how staged revelation avoids becoming a game. | Open — F-33 controlling; do not implement from the Foundation alone |
 | D-10 | D3/D4 | Material vocabulary: depth, shadow, translucency, texture, and the arrival→interior transition treatment. | Open — D3 §14–§15 sets governing direction; values unresolved |
 | D-11 | D4 | Animation timing, easing, ceremony restraint and the complete reduced-motion equivalents for each meaningful state. | Open — D4 sets the three-level motion hierarchy; values unresolved. F-16 baseline implemented and protected |
-| D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | Open — D5 §§1–12 governing: lower-middle feminine register, subtly synthetic purity, contextual restrained modulation. Runtime still defaults to stock `shimmer`. F-04, F-05 |
+| D-12 | D5 | Voice selection and direction (character, pacing, adaptive delivery), replacing the provisional voice. | V1 voice is `marin` with the D5 delivery direction applied; production audition still open. D5 §§1–12 governing. F-04, F-05 |
 | D-13 | D4/D5/D6 | Haptics and microinteraction vocabulary, if any. | Open — D4 §8 and D5 §20 permit functional/safety use only, never reward conditioning. F-21 (optional) |
 | D-15 | D1 | Does Athena have a mark at all, and if so what is it? No mark is selected by D1; owl / helmet / goddess / A-monogram / brain / heart / infinity / neural-network defaults are excluded unless genuinely transformed. | Open — depends on D-02 |
 | D-16 | D1/D3/D4 | Connection-field connection frequency: what rate reads as rarity rather than abundance, and how the field stays an honest metaphor rather than implied matchmaking activity. | Open — extends D-03; runtime currently reads as abundance |
@@ -102,11 +102,11 @@ Reconcile during the D6 photography specification.
 | D-32 | D4 | Routine transition timing: whether the current 1200ms global route entrance adds coherence or sluggishness, and the final page-transition and microinteraction vocabulary. | Open — D4 §8 requires quick, restrained routine transitions |
 | D-33 | D4 | Motion performance budget and animation technology: frame targets, CPU/GPU/battery/thermal limits for ambient behavior, and the implementation approach. | Open |
 | D-34 | D4 | Introduction and human-handoff choreography: how Athena frames, the human emerges, and Athena recedes — plus the photograph-appearance motion. | Open — depends on D-09; F-31, F-33 controlling |
-| D-35 | D5 | Sound control surface: where voice on/off, stop, mute, auto-play, playback speed, volume and caption/transcript visibility live, how preferences persist, and the fate of the uncontrolled landing chime. | Open — F-04, X-06 controlling; runtime chime currently has no control |
+| D-35 | D5 | Sound control surface: where voice on/off, stop, mute, auto-play, playback speed, volume and caption/transcript visibility live, how preferences persist, and the fate of the uncontrolled landing chime. | **Resolved v1.0 (2026-08-19)** — see [D5 Arrival & Audio Closure](./D5-ARRIVAL-AND-AUDIO-CLOSURE.md): voice/text preference + Stop control + always-visible transcript; landing chime retired. Prior state: F-04, X-06 controlling; runtime chime currently has no control |
 | D-36 | D5 | Production voice: provider, synthesis model, named voice, exact pitch, speech rate and modulation parameters, chosen through the D5 §25 audition set and blind comparison. | Open — D5 canonizes no provider or voice |
 | D-37 | D5 | Spoken composition: how long text responses are segmented for voice while preserving meaning, and how voice-length differs from text-length. | Open — D5 §17 |
 | D-38 | D5 | Sonic signature implementation: notes, intervals, tuning, timbre realization, duration, audio format, and synchronization with D4 presence (attention → organization → settling). | Open — depends on D-06, D-30 |
-| D-39 | D5 | Event sound treatments: arrival, Athena readiness, introduction, mutual curiosity, Focus Mode, ending, successful departure, error, safety and notification — which exist at all, and their restraint bounds. | Open — D5 §§21–22; no dating-app match sound, no reward loop |
+| D-39 | D5 | Event sound treatments: arrival, Athena readiness, introduction, mutual curiosity, Focus Mode, ending, successful departure, error, safety and notification — which exist at all, and their restraint bounds. | **V1 answer: none exist.** Spoken voice is Athena's whole sonic presence. Post-V1 bounds still open — D5 §§21–22; no dating-app match sound, no reward loop |
 | D-40 | D5 | Barge-in technology: how natural interruption is detected and how Athena yields, including failure and false-trigger behavior. | Open — E4 barge-in decision preserved |
 | D-41 | D6 | Photo requirements: minimum count, exact categories, primary-photo technical/face-visibility requirements, aspect ratios, and moderation technology. | Open — D6 §§5–7; D-07 five-photo ceiling binding |
 | D-42 | D6 | Group-photo policy and treatment of photographs containing children or non-members. | Open — D6 §8; Privacy & Security and Trust & Safety controlling |
@@ -124,7 +124,8 @@ Reconcile during the D6 photography specification.
 2. **Touch targets.** Three standalone text links remain below the 44px
    minimum, carried from the P0 closure pass; belongs to D-14 and the UX
    specification.
-3. **Landing chime.** An ambient chime exists on the arrival surface with no
+3. **Landing chime.** *(Retired 2026-08-19 — no chime exists in runtime.)*
+   An ambient chime existed on the arrival surface with no
    member control yet; its fate is D-06 under X-06/F-04.
 4. **Cardification, continuity, icons (D1 review).** Interior surfaces are
    broadly cardified; arrival and interior do not yet share a material/accent
@@ -150,7 +151,7 @@ Reconcile during the D6 photography specification.
    strategy; members can set a primary photo but cannot reorder photographs
    despite a stored `position`. Recorded under D-07/D-09/D-41/D-44/D-45; not
    repaired.
-9. **Voice & sonic divergence (D5 review).** The landing chime is synthesized
+9. **Voice & sonic divergence (D5 review).** *(Closed 2026-08-19.)* The landing chime was synthesized
    on arrival with no mute, no persisted preference and no member control
    (`src/components/landing-background.tsx`), in tension with D5 §15 and F-04.
    The TTS route (`src/routes/api/tts.ts`) defaults to a stock `shimmer` voice
