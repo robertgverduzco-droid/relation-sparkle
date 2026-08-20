@@ -590,8 +590,36 @@ function AthenaPage() {
         )}
       </div>
 
+      {/* Live conversation state, stated in words rather than motion alone. */}
+      <div aria-live="polite" className="px-5">
+        {live && (
+          <div
+            data-testid="athena-live-panel"
+            data-live-status={liveStatus}
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+          >
+            <p className="text-xs text-ink-soft">
+              {liveStatus === "connecting"
+                ? "Opening a live conversation…"
+                : liveStatus === "speaking"
+                  ? "Athena is speaking. You can simply begin talking whenever you like."
+                  : "Athena is listening. Take your time."}
+            </p>
+            <button
+              type="button"
+              data-testid="athena-live-end"
+              onClick={endLive}
+              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+            >
+              End
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* D5 playback state, stated in words rather than motion alone. */}
       <div aria-live="polite" className="px-5">
+
         {speaking && (
           <div
             data-testid="athena-speaking"
