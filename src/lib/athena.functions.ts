@@ -25,6 +25,7 @@ import {
 } from "./athena.server";
 import { runtimeDoctrine } from "./athena-doctrine.server";
 import { assessCoverage, foundationalGuidance } from "./foundational";
+import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
 
 export const askAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -167,7 +168,14 @@ Use this memory to:
     const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
 
 
-    return askOutput.parse({ reply, pacing, timeAcknowledged: shouldAcknowledgeTime });
+    const notice = boundary ? boundaryNotice(boundary) : null;
+
+    return askOutput.parse({
+      reply,
+      pacing,
+      timeAcknowledged: shouldAcknowledgeTime,
+      ...(notice ? { notice } : {}),
+    });
   });
 
 export const reflectAthena = createServerFn({ method: "POST" })

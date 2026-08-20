@@ -28,6 +28,15 @@ export const askOutput = z.object({
   reply: z.string(),
   pacing: z.enum(["continue", "wind_down", "offer_return"]),
   timeAcknowledged: z.boolean().optional(),
+  // Accompanies a reply when a boundary situation warrants a member-facing
+  // notice. Never replaces the reply; rendered after it.
+  notice: z
+    .object({
+      tone: z.enum(["info", "urgent"]),
+      title: z.string(),
+      body: z.string(),
+    })
+    .optional(),
 });
 
 export const reflectInput = z.object({ messages: z.array(messageSchema) });
