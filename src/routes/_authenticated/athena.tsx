@@ -12,6 +12,7 @@ import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
 import { assessBoundary, boundaryGuidance } from "@/lib/boundaries";
+import { earlyExitGuidance, wantsToFinishFoundational } from "@/lib/early-exit";
 import {
   ARRIVAL_WELCOME,
   arrivalDelivered,
@@ -111,6 +112,7 @@ function AthenaPage() {
   const closingOfferedRef = useRef(false);
   // Server-derived readiness. The client never computes it.
   const [introReady, setIntroReady] = useState(false);
+  const introReadyRef = useRef(false);
   const [showReadinessSheet, setShowReadinessSheet] = useState(false);
   const readinessNoticeShownRef = useRef<Record<string, boolean>>({});
 
@@ -177,6 +179,11 @@ function AthenaPage() {
           liveRef.current?.guide(
             boundaryGuidance(boundary, !foundationCompleteRef.current),
           );
+        }
+        // Early exit is handled as its own experience in spoken mode too.
+        // Readiness comes from the last server response, never from the client.
+        if (!foundationCompleteRef.current && wantsToFinishFoundational(turn.content)) {
+          liveRef.current?.guide(earlyExitGuidance(introReadyRef.current, []));
         }
       }
       // Live sessions carry fixed instructions, so breadth-first correction
@@ -422,6 +429,7 @@ function AthenaPage() {
       } catch { /* non-fatal */ }
       if (!ready) {
         setIntroReady(false);
+        introReadyRef.current = false;
         setShowReadinessSheet(true);
         return;
       }
@@ -475,7 +483,10 @@ function AthenaPage() {
         return;
       }
       if (res.timeAcknowledged) timeAcknowledgedRef.current = true;
-      if (res.readiness) setIntroReady(res.readiness.ready);
+      if (res.readiness) {
+        setIntroReady(res.readiness.ready);
+        introReadyRef.current = res.readiness.ready;
+      }
       // The readiness explanation is shown once per state per conversation:
       // Athena's own words carry it from then on.
       const rn = res.readinessNotice;
