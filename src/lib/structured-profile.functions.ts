@@ -14,13 +14,13 @@ export const getStructuredProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: prefs }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe")
+        .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking")
         .eq("id", userId)
         .maybeSingle(),
       supabase
         .from("user_preferences")
         .select(
-          "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes",
+          "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking",
         )
         .eq("user_id", userId)
         .maybeSingle(),
@@ -47,6 +47,7 @@ export const saveStructuredProfile = createServerFn({ method: "POST" })
           ethnicity_self_describe: data.self.ethnicity_self_describe?.trim() || null,
           religions: data.self.religions ?? [],
           religion_self_describe: data.self.religion_self_describe?.trim() || null,
+          smoking: data.self.smoking ?? null,
         })
         .eq("id", userId);
       if (error) throw new Error(error.message);
@@ -69,6 +70,13 @@ export const saveStructuredProfile = createServerFn({ method: "POST" })
           height_max_cm: p.height_max_cm ?? null,
           height_strength: p.height_strength,
           additional_notes: notes.text,
+          age_strength: p.age_strength ?? "preference",
+          children_strength: p.children_strength ?? "preference",
+          smoking_openness: p.smoking_openness ?? "open",
+          preferred_smoking:
+            !p.smoking_openness || p.smoking_openness === "open" || p.smoking_openness === "discuss_with_athena"
+              ? []
+              : (p.preferred_smoking ?? []),
         },
         { onConflict: "user_id" },
       );
@@ -85,5 +93,17 @@ export const saveStructuredProfile = createServerFn({ method: "POST" })
       }
     }
 
+    // A correction or removal changes what Athena may conclude about every pair
+    // this member belongs to. Mark them stale so nothing rests on stale
+    // constraint state; presentation re-reads constraints regardless.
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("pair_reasoning")
+        .update({ is_stale: true, stale_reason: "structured profile changed" })
+        .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+    }
+
     return { ok: true, notesTrimmed };
   });
+

@@ -86,13 +86,14 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
         const [{ data: prof }, { data: prefs }] = await Promise.all([
           supabase
             .from("profiles")
-            .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe")
+            .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking")
             .maybeSingle(),
           supabase
             .from("user_preferences")
             .select(
-              "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes",
+              "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_min, age_max, age_strength, wants_children, children_strength, smoking_openness, preferred_smoking",
             )
+
             .maybeSingle(),
         ]);
         structuredBlock = structuredContextBlock(

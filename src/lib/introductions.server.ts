@@ -10,10 +10,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   EMPTY_PREFERENCES,
   EMPTY_SELF,
+  constraintsPermitIntroduction,
   evaluateStructuredConstraints,
   type MatchPreferences,
   type SelfDescription,
+  type StructuredEvaluation,
 } from "./structured-profile";
+
 
 // Understanding thresholds. Athena needs enough understanding of each person
 // before she is willing to reason about them at all. She does NOT gate
@@ -49,12 +52,13 @@ export type ProfileRow = {
   ethnicity_self_describe?: string | null;
   religions?: string[] | null;
   religion_self_describe?: string | null;
+  smoking?: string | null;
 };
 
 const PROFILE_COLUMNS =
-  "id, display_name, birth_date, gender, city, is_paused, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe";
+  "id, display_name, birth_date, gender, city, is_paused, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
 const PREFS_COLUMNS =
-  "user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes";
+  "user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
 
 /** Structured party view used by the tri-state constraint evaluation. */
 export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
@@ -65,6 +69,9 @@ export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
     ethnicity_self_describe: profile.ethnicity_self_describe ?? null,
     religions: profile.religions ?? [],
     religion_self_describe: profile.religion_self_describe ?? null,
+    smoking: profile.smoking ?? null,
+    age: ageFromDob(profile.birth_date ?? null),
+    wants_children: prefs?.wants_children ?? null,
   };
   const p: MatchPreferences = {
     ...EMPTY_PREFERENCES,
@@ -76,11 +83,80 @@ export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
     height_max_cm: prefs?.height_max_cm ?? null,
     height_strength: (prefs?.height_strength as MatchPreferences["height_strength"]) ?? "preference",
     additional_notes: prefs?.additional_notes ?? null,
+    age_min: prefs?.age_min ?? null,
+    age_max: prefs?.age_max ?? null,
+    age_strength: (prefs?.age_strength as MatchPreferences["age_strength"]) ?? "preference",
+    wants_children: prefs?.wants_children ?? null,
+    children_strength: (prefs?.children_strength as MatchPreferences["children_strength"]) ?? "preference",
+    smoking_openness: (prefs?.smoking_openness as MatchPreferences["smoking_openness"]) ?? "open",
+    preferred_smoking: prefs?.preferred_smoking ?? [],
   };
   return { id: profile.id, self, prefs: p };
 }
 
+/**
+ * Authoritative, freshly-read hard-constraint state for one pair.
+ * Every path that could present an introduction must call this; nothing may be
+ * presented unless it returns "compatible".
+ */
+export async function constraintStateForPair(
+  supabase: SupabaseClient,
+  aId: string,
+  bId: string,
+): Promise<StructuredEvaluation> {
+  const [{ data: profs }, { data: prefs }] = await Promise.all([
+    supabase.from("profiles").select(PROFILE_COLUMNS).in("id", [aId, bId]),
+    supabase.from("user_preferences").select(PREFS_COLUMNS).in("user_id", [aId, bId]),
+  ]);
+  const profById = new Map((profs ?? []).map((p) => [p.id as string, p as ProfileRow]));
+  const prefById = new Map((prefs ?? []).map((p) => [p.user_id as string, p as PrefsRow]));
+  const a = profById.get(aId);
+  const b = profById.get(bId);
+  if (!a || !b) {
+    // A missing profile is unknown, never compatible.
+    return {
+      verdict: "unknown",
+      outcomes: [],
+      softSignals: [],
+      unresolved: [{ subjectId: a ? bId : aId, field: "height" }],
+    };
+  }
+  return evaluateStructuredConstraints(
+    structuredParty(a, prefById.get(aId) ?? null),
+    structuredParty(b, prefById.get(bId) ?? null),
+  );
+}
+
+/**
+ * Ask the member who is missing information for it — neutrally.
+ * PRIVACY: the member is never told who needs it, that a specific counterpart
+ * exists, that anyone is waiting, or what anyone else's private requirement is.
+ */
+export async function requestMissingConstraintData(
+  supabase: SupabaseClient,
+  evaluation: StructuredEvaluation,
+): Promise<void> {
+  const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+  const seen = new Set<string>();
+  for (const item of evaluation.unresolved) {
+    if (seen.has(item.subjectId)) continue;
+    seen.add(item.subjectId);
+    await notify(supabase, {
+      userId: item.subjectId,
+      category: "introductions",
+      eventType: "profile_detail_needed",
+      title: NOTIFICATION_COPY.profile_detail_needed?.title ?? "A small detail would help Athena",
+      body:
+        NOTIFICATION_COPY.profile_detail_needed?.body ??
+        "There is something in your profile Athena does not know yet. Adding it helps her think clearly about who to introduce you to.",
+      actionPath: "/profile",
+      dedupeKey: `profile_detail_needed:${item.subjectId}:${item.field}`,
+    });
+  }
+}
+
 export type PrefsRow = {
+
   user_id: string;
   seeking_genders: string[] | null;
   age_min: number | null;
@@ -95,7 +171,12 @@ export type PrefsRow = {
   height_max_cm?: number | null;
   height_strength?: string | null;
   additional_notes?: string | null;
+  age_strength?: string | null;
+  children_strength?: string | null;
+  smoking_openness?: string | null;
+  preferred_smoking?: string[] | null;
 };
+
 
 export function ageFromDob(dob: string | null): number | null {
   if (!dob) return null;
@@ -452,30 +533,21 @@ export async function runMatchmakingForUser(
       if (!gateSelf.allowed || !gateOther.allowed) wantsIntroduction = false;
     }
 
-    // UNKNOWN ≠ INCOMPATIBLE. If this introduction depends on a genuine
-    // constraint Athena cannot yet evaluate, she holds it and asks the
-    // relevant member for the missing information first. No member is ever
-    // told that someone else's private preference is the reason.
-    if (wantsIntroduction && c.structured.verdict === "unknown") {
-      wantsIntroduction = false;
-      const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
-      const seen = new Set<string>();
-      for (const item of c.structured.unresolved) {
-        if (seen.has(item.subjectId)) continue;
-        seen.add(item.subjectId);
-        await notify(supabase, {
-          userId: item.subjectId,
-          category: "introductions",
-          eventType: "profile_detail_needed",
-          title: NOTIFICATION_COPY.profile_detail_needed?.title ?? "A small detail would help Athena",
-          body:
-            NOTIFICATION_COPY.profile_detail_needed?.body ??
-            "There is something in your profile Athena does not know yet. Adding it helps her think clearly about who to introduce you to.",
-          actionPath: "/profile",
-          dedupeKey: `profile_detail_needed:${item.subjectId}:${item.field}`,
-        });
+    // HARD CONSTRAINT GATE (authoritative, server-side).
+    // UNKNOWN ≠ INCOMPATIBLE. A pair whose genuine constraint Athena cannot yet
+    // evaluate stays a live possibility but can never be presented. Re-read at
+    // the moment of presentation: either member may have corrected or removed
+    // information while Athena was reasoning.
+    if (wantsIntroduction) {
+      const fresh = await constraintStateForPair(supabase, userId, c.other.id);
+      if (!constraintsPermitIntroduction(fresh)) {
+        wantsIntroduction = false;
+        if (fresh.verdict === "unknown") {
+          await requestMissingConstraintData(supabase, fresh);
+        }
       }
     }
+
     const nowIso = new Date().toISOString();
     const selfIsLow = userId === low;
     const presentedForLow = selfIsLow ? object.presentation_for_a : object.presentation_for_b;
@@ -609,7 +681,19 @@ export async function refreshStalePairsForUser(userId: string): Promise<{ refres
       const wasIntroduced = Boolean(pair.presented_to_a_at && pair.presented_to_b_at);
       // Preserve already-presented intros; downgrading a live intro would
       // yank it from users mid-flow. Update presentation text either way.
-      const nextStatus = wasIntroduced ? "introduced" : object.status;
+      let nextStatus = wasIntroduced ? "introduced" : object.status;
+      // A pair that has never been presented may not acquire "introduced"
+      // status here while a hard constraint is unresolved or violated. This
+      // path never sets presented_to_*, so it cannot present on its own, but
+      // the recorded status must not claim eligibility it does not have.
+      if (!wasIntroduced && nextStatus === "introduced") {
+        const fresh = await constraintStateForPair(supabase, pair.user_low as string, pair.user_high as string);
+        if (!constraintsPermitIntroduction(fresh)) {
+          nextStatus = "considering";
+          if (fresh.verdict === "unknown") await requestMissingConstraintData(supabase, fresh);
+        }
+      }
+
       await supabase
         .from("pair_reasoning")
         .update({

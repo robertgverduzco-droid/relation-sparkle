@@ -51,6 +51,16 @@ export type PacingInput = {
   latestMemberMessage: string;
   /** False when whole areas of the member's life are still unseen. */
   breadthSufficient: boolean;
+  /**
+   * True once the server-side minimum foundational understanding is held.
+   *
+   * FOUNDATIONAL COMPLETION AT MINIMUM READINESS
+   * The foundational conversation exists to reach a threshold, not to gather
+   * as much as possible. Once the threshold is genuinely met, continuing to
+   * intake turns a conversation into an interview. Everything beyond the
+   * minimum is learned in ordinary ongoing conversation instead.
+   */
+  readinessMet?: boolean;
 };
 
 export function decidePacing(input: PacingInput): Pacing {
@@ -58,6 +68,11 @@ export function decidePacing(input: PacingInput): Pacing {
 
   // The member asking to stop is always honoured, immediately and at any point.
   if (memberWantsToStop(latestMemberMessage)) return "offer_return";
+
+  // Minimum readiness reached: close. The time floor exists to stop a terse
+  // member being rushed out before Athena understands them — it is not a
+  // quota to be served once she does.
+  if (input.readinessMet) return "offer_return";
 
   // Time floor: turn count alone can never close a conversation. A terse
   // member reaches twenty turns in five minutes; that is a conversational
@@ -78,3 +93,4 @@ export function decidePacing(input: PacingInput): Pacing {
   if (offerReturn) return "offer_return";
   return elapsed >= 18 || userTurns >= 12 ? "wind_down" : "continue";
 }
+
