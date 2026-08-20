@@ -244,6 +244,8 @@ Rules:
 - Never invent quotes; evidence must come from THEY's words
 - Prefer nuance over labels
 - Understanding is provisional and will keep evolving
+- For physical_attraction_preferences specifically: write it in prose, in their terms, and make clear for anything they named whether it is a preference (something they generally like), a strong preference (meaningfully shapes attraction but leaves room), or a constraint (they indicate romantic attraction is unlikely or unavailable outside it). "Appearance matters little to me" and "attraction grows once I know someone" are complete, valid understandings — record them as such. Never rate, rank, score or judge anyone's appearance or their preferences, and never record a specification list of physical characteristics.
+
 
 PRIOR FACETS (what you believed before today):
 ${priorFacetLines}

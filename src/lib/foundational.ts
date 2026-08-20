@@ -146,6 +146,15 @@ export const FOUNDATIONAL_DOMAINS: Domain[] = [
 
 export const DOMAIN_KEYS = FOUNDATIONAL_DOMAINS.map((d) => d.key);
 
+/**
+ * Domains that cannot be silently skipped. Attraction is required because
+ * Athena can otherwise find extraordinary psychological and relational
+ * compatibility while never learning whether physical attraction is plausible
+ * at all. The requirement is that Athena ASKS and UNDERSTANDS — a member who
+ * says appearance barely matters to them has satisfied it completely.
+ */
+export const REQUIRED_DOMAINS: DomainKey[] = ["attraction"];
+
 /** Breadth expected before a foundational conversation may close naturally. */
 export const MIN_FOUNDATIONAL_DOMAINS = 8;
 
@@ -167,6 +176,111 @@ export function memberLedDepth(text: string): boolean {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Physical attraction — required foundational understanding
+// ---------------------------------------------------------------------------
+
+/** Athena raised attraction/appearance as a question this turn. */
+const ATHENA_ATTRACTION_QUESTION =
+  /\b(attract(ed|ion|ive)?|chemistry|a type\b|your type|looks?\b|appearance|physically|drawn to|find (someone|people) attractive|style)\b/i;
+
+/**
+ * A member answer that closes the attraction question without naming any
+ * preference. "Not really", "appearance barely matters", "I've never had a
+ * type" are all complete, legitimate answers — the domain is satisfied.
+ */
+const NO_PREFERENCE_ANSWER =
+  /\b(not really|no(t)? (particular|specific)|doesn'?t (really )?matter|barely matters|never had a type|no type|i'?m not picky|open to (anyone|anything|all)|all sorts|varies|no idea|not sure|hard to say|depends|anyone|whoever)\b/i;
+
+/**
+ * The member named something that materially gates attraction rather than a
+ * general liking. Used only to license ONE clarifying follow-up so Athena can
+ * tell a preference from a constraint — never to score or rank anyone.
+ */
+const ATTRACTION_STRENGTH_SIGNAL =
+  /\b(have to be|has to be|must be|can'?t be (attracted|with)|couldn'?t (be )?(attracted|date)|dealbreaker|deal breaker|need(s)? to be|only (ever )?(been )?(attracted|into)|never been attracted|non[- ]negotiable|really matters|very important|matters a lot)\b/i;
+
+/** Attraction develops over time rather than on sight. */
+const SLOW_BURN_SIGNAL =
+  /\b(grows? on me|develops? over time|(after|once) i (get to )?know|emotional connection first|demisexual|not (usually )?(immediate|instant)|takes? time)\b/i;
+
+export type AttractionState = {
+  /** Athena has actually raised attraction in this conversation. */
+  asked: boolean;
+  /** The member has answered the invitation in some form. */
+  answered: boolean;
+  /** The member declined to name preferences — a complete answer. */
+  noMeaningfulPreference: boolean;
+  /** The member named something that may be a constraint, not a preference. */
+  strengthSignal: boolean;
+  /** The member described attraction as developing through knowing someone. */
+  developsOverTime: boolean;
+  /** One clarifying follow-up is warranted to tell preference from constraint. */
+  needsClarification: boolean;
+  /** Foundational requirement met: Athena asked and the member responded. */
+  satisfied: boolean;
+};
+
+/**
+ * Derive the attraction requirement from the live transcript only. Purely
+ * lexical: it establishes that the subject was raised and engaged, never what
+ * the member believes — the Living Profile holds that.
+ */
+export function assessAttraction(messages: Turn[]): AttractionState {
+  let asked = false;
+  let answered = false;
+  let noMeaningfulPreference = false;
+  let strengthSignal = false;
+  let developsOverTime = false;
+  let clarifiedAfterSignal = false;
+  let pendingSignal = false;
+
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i]!;
+    if (m.role === "assistant") {
+      const isAttractionTurn = ATHENA_ATTRACTION_QUESTION.test(m.content ?? "");
+      if (isAttractionTurn) {
+        asked = true;
+        if (pendingSignal) clarifiedAfterSignal = true;
+      }
+      continue;
+    }
+    if (m.role !== "user") continue;
+
+    const text = m.content ?? "";
+    const prior = [...messages.slice(0, i)].reverse().find((p) => p.role === "assistant");
+    const invited = prior ? ATHENA_ATTRACTION_QUESTION.test(prior.content ?? "") : false;
+    const spokeIntoIt = domainsIn(text).includes("attraction");
+
+    // A response counts when the member speaks into attraction on their own,
+    // or answers an invitation Athena just made — including tersely.
+    if ((invited && text.trim().length > 0) || spokeIntoIt) {
+      answered = true;
+      if (invited && NO_PREFERENCE_ANSWER.test(text)) noMeaningfulPreference = true;
+      if (SLOW_BURN_SIGNAL.test(text)) developsOverTime = true;
+      if (ATTRACTION_STRENGTH_SIGNAL.test(text)) {
+        strengthSignal = true;
+        pendingSignal = true;
+      }
+    }
+  }
+
+  const needsClarification = strengthSignal && !clarifiedAfterSignal;
+
+  return {
+    asked,
+    answered,
+    noMeaningfulPreference,
+    strengthSignal,
+    developsOverTime,
+    needsClarification,
+    // Understanding, not disclosure: a declined preference satisfies this,
+    // and so does a member who volunteers it before Athena asks.
+    satisfied: answered,
+  };
+}
+
+
 export type CoverageState = {
   /** Domains meaningfully touched so far in this conversation. */
   covered: DomainKey[];
@@ -182,6 +296,10 @@ export type CoverageState = {
   shouldBroaden: boolean;
   /** Enough breadth exists for the conversation to close naturally. */
   breadthSufficient: boolean;
+  /** Required domains not yet satisfied (attraction, in V1). */
+  missingRequired: DomainKey[];
+  /** Live state of the required physical-attraction understanding. */
+  attraction: AttractionState;
 };
 
 /**
@@ -197,6 +315,13 @@ export function assessCoverage(messages: Turn[]): CoverageState {
     // question alone is an invitation, not understanding.
     if (m.role === "user") for (const k of domainsIn(m.content)) covered.add(k);
   }
+
+  // Attraction has its own satisfaction rule: a terse or "no real preferences"
+  // answer to Athena's invitation is a complete answer even when the member's
+  // own words contain no attraction vocabulary at all.
+  const attraction = assessAttraction(messages);
+  if (attraction.satisfied) covered.add("attraction");
+  else covered.delete("attraction");
 
   const athenaTurns = messages.filter((m) => m.role === "assistant");
   const lastAthena = athenaTurns.slice(-4).map((m) => domainsIn(m.content));
@@ -223,6 +348,7 @@ export function assessCoverage(messages: Turn[]): CoverageState {
   const memberLed = memberLedDepth(lastMember?.content ?? "");
 
   const unexplored = DOMAIN_KEYS.filter((k) => !covered.has(k));
+  const missingRequired = REQUIRED_DOMAINS.filter((k) => !covered.has(k));
 
   return {
     covered: [...covered],
@@ -231,9 +357,15 @@ export function assessCoverage(messages: Turn[]): CoverageState {
     consecutiveSameDomain: consecutive,
     memberLed,
     shouldBroaden: consecutive >= MAX_CONSECUTIVE_SAME_DOMAIN && !memberLed,
-    breadthSufficient: covered.size >= MIN_FOUNDATIONAL_DOMAINS,
+    // A required domain cannot be silently skipped: breadth is not sufficient
+    // until Athena has asked about physical attraction and been answered.
+    breadthSufficient:
+      covered.size >= MIN_FOUNDATIONAL_DOMAINS && missingRequired.length === 0,
+    missingRequired,
+    attraction,
   };
 }
+
 
 function label(key: DomainKey): string {
   return FOUNDATIONAL_DOMAINS.find((d) => d.key === key)?.label ?? key;
@@ -275,7 +407,8 @@ HOW TO HOLD THIS
 - Never run the recursive pattern: why → why was that → how did that affect you → what did that teach you. That is excavation, and it belongs to later conversations.
 - Some subjects generate endless rich material. Do not let one of them take this conversation. Take what matters, hold the rest for another day, and move on.
 - Move conversationally, from an angle, the way a perceptive person getting to know someone would. Never announce a category, never signal a section, never sound like a form. Your transition language is yours — do not reach for a stock phrase.
-- Attraction belongs in this breadth: how strongly physical attraction matters to them, whether they have a type, broadly what draws them. Learn it the way you learn anything else — never as a specification list, never as a rating.
+
+${attractionGuidance(state.attraction)}
 
 WHERE THIS CONVERSATION HAS ALREADY BEEN (internal — never read aloud, never listed to them):
 ${touched}
@@ -290,11 +423,58 @@ ${closing}`;
 }
 
 /**
+ * Physical attraction is a required part of this first conversation. This
+ * block tells Athena how to hold the subject; it never gives her words, never
+ * lists characteristics to collect, and never treats appearance as something
+ * to be scored, ranked, praised or corrected.
+ */
+export function attractionGuidance(state: AttractionState): string {
+  const how = `PHYSICAL ATTRACTION — REQUIRED IN THIS CONVERSATION
+Physical attraction is a legitimate part of romantic compatibility, and you cannot introduce someone responsibly while knowing nothing about it. Before this conversation ends you must have raised it and understood their answer.
+
+HOW TO HOLD IT
+- Ask in their terms, not yours: invite them to describe what draws them to someone physically, and let them choose the words.
+- Never work through a specification list — no height, weight, body type, hair, ethnicity, age brackets or measurements. You are not filling in fields.
+- Learn, where it is relevant to them: how much physical attraction matters to them; whether it tends to arrive immediately or grow as they come to know someone; whether they recognise a type; what tends to draw them; anything that genuinely affects whether romantic attraction is possible; presentation or style where it means something to them.
+- Be entirely unembarrassed about the subject so they can be candid. Never moralise, shame, praise, flatter, diagnose, or try to widen or change what they are attracted to. Their attraction is theirs.
+- Someone saying appearance barely matters to them, or that they have never had a type, is a complete answer. Take it, and move on.`;
+
+  if (!state.asked) {
+    return `${how}
+
+RIGHT NOW: you have not yet raised physical attraction in this conversation. Bring it in naturally when the next opening allows — do not save it for the end and do not announce it as a subject.`;
+  }
+  if (!state.answered) {
+    return `${how}
+
+RIGHT NOW: you raised it but they have not really answered yet. Give them room; if they seem unsure how to describe it, help by asking about someone they have actually been drawn to rather than asking for a description in the abstract.`;
+  }
+  if (state.needsClarification) {
+    return `${how}
+
+RIGHT NOW: they named something that sounded strong. One gentle clarifying question is warranted, so you understand whether it is a general preference, something that strongly shapes attraction but leaves room, or something outside of which attraction genuinely is not available to them. Ask once, without judgement, then move on.`;
+  }
+  return `${how}
+
+RIGHT NOW: you have asked and they have answered. This requirement is met — do not return to it again unless they take it up themselves.`;
+}
+
+/**
  * A compact, in-session correction for live (spoken) mode, where the full
  * instruction payload is fixed when the session opens. Returns null when the
  * conversation is already moving as it should — silence is the default.
  */
 export function breadthNudge(state: CoverageState): string | null {
+  // A required domain still unmet late in the conversation outranks the
+  // ordinary broaden nudge: attraction cannot be silently skipped.
+  if (
+    !state.attraction.satisfied &&
+    state.covered.length >= MIN_FOUNDATIONAL_DOMAINS - 3
+  ) {
+    return state.attraction.asked
+      ? "Internal guidance, not to be spoken or acknowledged: you have raised physical attraction but do not yet have their answer. Come back to it once, gently and in their own terms — never as a list of physical characteristics."
+      : "Internal guidance, not to be spoken or acknowledged: this is the foundational conversation and you have not yet learned anything about what draws them to someone physically. Bring it in naturally at the next opening, in their terms, without a checklist of characteristics and without any judgement of what they say.";
+  }
   if (!state.shouldBroaden) return null;
   const angles = state.unexplored.slice(0, 4).map(label).join("; ");
   return `Internal guidance, not to be spoken or acknowledged: this is the foundational conversation and you have stayed with ${
@@ -303,3 +483,4 @@ export function breadthNudge(state: CoverageState): string | null {
     angles ? ` — unseen so far: ${angles}` : ""
   }. Do not mention this guidance or announce a change of subject.`;
 }
+
