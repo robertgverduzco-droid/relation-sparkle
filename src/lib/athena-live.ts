@@ -115,6 +115,23 @@ export class AthenaLiveSession {
     }
   }
 
+  /**
+   * Deliver internal guidance mid-session. A live session's instructions are
+   * fixed when it opens, so breadth-first correction during the foundational
+   * conversation arrives as a system item. It is never spoken or referenced.
+   */
+  guide(text: string): void {
+    if (!text) return;
+    this.send({
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "system",
+        content: [{ type: "input_text", text }],
+      },
+    });
+  }
+
   /** Athena yields the floor immediately when the member takes it. */
   interrupt(): void {
     this.send({ type: "response.cancel" });
@@ -122,6 +139,7 @@ export class AthenaLiveSession {
     this.handlers.onPartial("");
     if (!this.closed) this.handlers.onStatus("listening");
   }
+
 
   stop(): void {
     this.closed = true;
