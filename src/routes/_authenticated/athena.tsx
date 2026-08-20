@@ -81,17 +81,28 @@ function AthenaPage() {
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // BR01-01: every utterance carries an epoch. A callback from an older
+  // utterance can never change the state of a newer one, and playback state
+  // is always released by `speak`'s bounded recovery.
+  const speechEpochRef = useRef(0);
 
   /** Speak a line, tracking playback state so it can be shown as text. */
   const playLine = useCallback(async (text: string, signal: AbortSignal) => {
-    await speak(text, signal, setSpeaking);
+    const epoch = ++speechEpochRef.current;
+    await speak(text, signal, (on) => {
+      if (epoch !== speechEpochRef.current) return;
+      setSpeaking(on);
+    });
+    if (epoch === speechEpochRef.current) setSpeaking(false);
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    speechEpochRef.current += 1;
     speechAbortRef.current?.abort();
     speechAbortRef.current = null;
     setSpeaking(false);
   }, []);
+
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
