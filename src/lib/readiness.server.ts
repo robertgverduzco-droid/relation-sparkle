@@ -183,10 +183,33 @@ export async function evaluateReadiness(
   }
 
   // --- Understanding-based states ---------------------------------------
-  const rows = (facets ?? []) as { confidence: number; understanding: string | null; needs_clarification: boolean | null }[];
+  const rows = (facets ?? []) as {
+    facet_key: string;
+    confidence: number;
+    understanding: string | null;
+    needs_clarification: boolean | null;
+  }[];
   const understood = rows.filter((r) => r.understanding);
   const avg = facetAverage(understood.map((r) => ({ facet_key: "", understanding: r.understanding, reasoning: null, confidence: Number(r.confidence ?? 0) })));
   const unresolved = rows.filter((r) => r.needs_clarification).length;
+
+  // Foundational readiness for MATCHMAKING. Higher bar than conversational
+  // completion: Athena must actually understand intent, values, communication,
+  // everyday life, relational patterns, boundaries and physical attraction
+  // before anyone may be considered. Member impatience cannot move this.
+  {
+    const { assessFoundationalReadiness } = await import("./introduction-readiness");
+    const foundational = assessFoundationalReadiness(rows);
+    if (!foundational.ready) {
+      return persist({
+        state: "A",
+        reason_code: foundational.missing.length > 0 ? "foundational_gaps" : "foundational_breadth",
+        reason_text: COPY.A_foundation_gaps,
+        hold_kind: null,
+        hold_until: null,
+      });
+    }
+  }
 
   if (understood.length < MIN_FACETS_EACH || avg < EXPLORATORY_MIN_AVG) {
     return persist({
