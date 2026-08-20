@@ -16,7 +16,14 @@ export const askInput = z.object({
   messages: z.array(messageSchema),
   elapsedMinutes: z.number().min(0).max(600).optional(),
   timeAcknowledged: z.boolean().optional(),
+  /**
+   * The client's view of whether this is the member's first foundational
+   * conversation. Advisory only: the server confirms it against the member's
+   * own session record before applying breadth-first orchestration.
+   */
+  foundational: z.boolean().optional(),
 });
+
 export const askOutput = z.object({
   reply: z.string(),
   pacing: z.enum(["continue", "wind_down", "offer_return"]),

@@ -24,6 +24,7 @@ import {
   type Json,
 } from "./athena.server";
 import { runtimeDoctrine } from "./athena-doctrine.server";
+import { assessCoverage, foundationalGuidance } from "./foundational";
 
 export const askAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -34,7 +35,7 @@ export const askAthena = createServerFn({ method: "POST" })
 
     const { supabase } = context;
 
-    const [{ data: facetRows }, { data: topicRows }] = await Promise.all([
+    const [{ data: facetRows }, { data: topicRows }, { data: sessionRow }] = await Promise.all([
       supabase
         .from("understanding_facets")
         .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at")
@@ -42,10 +43,16 @@ export const askAthena = createServerFn({ method: "POST" })
       supabase
         .from("topic_map")
         .select("topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at"),
+      // Foundational mode is decided by the member's own record, never by the
+      // caller: the client's flag may only ever narrow it, not grant it.
+      supabase.from("interview_sessions").select("completed_at").maybeSingle(),
     ]);
 
     const facets = (facetRows ?? []) as FacetRow[];
     const topics = (topicRows ?? []) as TopicRow[];
+    const isFoundational =
+      !sessionRow?.completed_at && data.foundational !== false;
+
 
     const profileSummary = summarizeLivingProfile(facets);
     const topicSummary = summarizeTopicMap(topics);
@@ -86,12 +93,26 @@ Use this memory to:
     // conversation itself is designed to last approximately 20 minutes.
     const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= 12;
 
-    const pacingHint =
+    // Breadth-first orchestration, foundational mode only. The topic map is
+    // written after a conversation, so during the first one it is empty for
+    // the whole session; this recovers live coverage from the transcript.
+    const coverage = isFoundational ? assessCoverage(data.messages) : null;
+    const breadthHint = coverage ? foundationalGuidance(coverage) : "";
+
+    const basePacing =
       elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
         ? "You have now been speaking for around twenty minutes — the length this foundational conversation is designed for. If a natural resting place is near, warmly offer to continue another day. Do not cut them off; let the closing feel like a graceful pause, not an ending."
         : elapsed >= 18
           ? "You are approaching the natural length of this foundational conversation. Let it breathe. If a good pause presents itself, you may gently note it."
           : "Stay curious. There is time — the foundational conversation is designed to last approximately twenty minutes.";
+
+    // Completion is breadth plus initial understanding, never exhaustive
+    // depth: if the clock is running out while whole areas of their life are
+    // still unseen, widen rather than dig.
+    const pacingHint =
+      coverage && !coverage.breadthSufficient && elapsed >= 14
+        ? `${basePacing} There are still parts of their life you have not seen at all, so use the time that remains to widen rather than to deepen.`
+        : basePacing;
 
     const timeHint = shouldAcknowledgeTime
       ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes now — our foundational conversation is designed for around twenty, and I'm happy to keep going if that still works for you." Then either continue naturally or invite them to choose. Do this only once per conversation.`
@@ -105,11 +126,12 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint],
+        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
     );
+
 
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
@@ -123,14 +145,20 @@ Use this memory to:
     const lowered = reply.toLowerCase();
     // Pacing is driven primarily by elapsed minutes (foundational = ~20 min),
     // with turn-count as a secondary signal so unusually terse users still
-    // reach a natural close.
+    // reach a natural close. Breadth is now part of readiness: a conversation
+    // that spent its time inside two subjects has not yet done the work of a
+    // foundational conversation, so closing waits a little longer.
+    const breadthReady = !coverage || coverage.breadthSufficient;
     const readyToOffer =
-      (elapsed >= 20 && userTurns >= 10) || elapsed >= 24 || userTurns >= 16;
+      ((elapsed >= 20 && userTurns >= 10) || elapsed >= 24 || userTurns >= 16) &&
+      // Never hold a member indefinitely: past the long stop, close regardless.
+      (breadthReady || elapsed >= 28 || userTurns >= 22);
     const languageOffersReturn =
       /(another day|another time|pick this back up|come back|next time|good place to (pause|stop|rest))/.test(lowered);
     const offerReturn = readyToOffer && (languageOffersReturn || elapsed >= 22);
     const windDown = !offerReturn && (elapsed >= 18 || userTurns >= 12);
     const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
+
 
     return askOutput.parse({ reply, pacing, timeAcknowledged: shouldAcknowledgeTime });
   });

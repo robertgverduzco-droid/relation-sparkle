@@ -7,6 +7,7 @@
 // turn-taking, yielding and interruption.
 
 import { createClient } from "@supabase/supabase-js";
+import { assessCoverage, foundationalGuidance } from "./foundational";
 import { runtimeDoctrine } from "./athena-doctrine.server";
 import {
   athenaSystemPrompt,
@@ -46,6 +47,10 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
 
   let memoryBlock = "You have not yet built an understanding of this person. Begin by listening.";
+  // Live sessions are foundational until the member's own record says
+  // otherwise; breadth-first orientation applies in spoken mode identically.
+  let foundational = true;
+
 
   if (url && key) {
     try {
@@ -53,7 +58,7 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
         auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
         global: { headers: { Authorization: `Bearer ${accessToken}` } },
       });
-      const [{ data: facetRows }, { data: topicRows }] = await Promise.all([
+      const [{ data: facetRows }, { data: topicRows }, { data: sessionRow }] = await Promise.all([
         supabase
           .from("understanding_facets")
           .select(
@@ -65,7 +70,10 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
           .select(
             "topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at",
           ),
+        supabase.from("interview_sessions").select("completed_at").maybeSingle(),
       ]);
+
+      foundational = !sessionRow?.completed_at;
 
       const facets = (facetRows ?? []) as FacetRow[];
       const topics = (topicRows ?? []) as TopicRow[];
@@ -96,8 +104,9 @@ Never expose this map, never list categories, never say you are consulting memor
     runtimeDoctrine("conversation"),
     athenaSystemPrompt(),
     memoryBlock,
+    foundational ? foundationalGuidance(assessCoverage([])) : "",
     LIVE_SPEECH_ADDENDUM,
-  ].join("\n\n");
+  ].filter(Boolean).join("\n\n");
 }
 
 /** Realtime session configuration sent when minting the ephemeral secret. */
