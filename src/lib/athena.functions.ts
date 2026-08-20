@@ -34,6 +34,7 @@ import {
   asksToBeginMatching,
 } from "./introduction-readiness";
 import { decidePacing } from "./pacing";
+import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
 
 
 export const askAthena = createServerFn({ method: "POST" })
@@ -145,8 +146,13 @@ Use this memory to:
     const pressed =
       !introReadiness.ready &&
       (asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText));
+    // Early exit is its own experience, never a boundary/safety notice.
+    const wantsFinish = wantsToFinishFoundational(lastMemberText);
     const readinessHint = [
       introductionReadinessGuidance(introReadiness),
+      wantsFinish
+        ? earlyExitGuidance(introReadiness.ready, introReadiness.missing.map((a) => a.label))
+        : "",
       pressed
         ? "They have just asked about this directly. Answer it warmly and honestly in your own voice, hold the threshold without a number and without a timeframe, and then continue the conversation naturally with a real question."
         : "",
@@ -225,6 +231,8 @@ Use this memory to:
       pacing,
       timeAcknowledged: shouldAcknowledgeTime,
       ...(notice ? { notice } : {}),
+      readiness: { ready: introReadiness.ready },
+      ...(wantsFinish ? { readinessNotice: readinessNotice(introReadiness.ready) } : {}),
     });
   });
 
@@ -547,6 +555,24 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
       .maybeSingle();
     const alreadyComplete = Boolean(session?.completed_at);
 
+    // Leaving early must never silently mark someone introduction-ready.
+    // Readiness comes from persisted understanding, the same source the
+    // matchmaking gate uses.
+    const { data: facetRows } = await supabase
+      .from("understanding_facets")
+      .select("facet_key, understanding, confidence");
+    const readiness = assessFoundationalReadiness(
+      (facetRows ?? []).map((f) => ({
+        facet_key: f.facet_key as string,
+        understanding: (f.understanding as string | null) ?? null,
+        confidence: Number(f.confidence ?? 0),
+      })),
+    );
+    if (!readiness.ready && !alreadyComplete) {
+      // Their progress is already persisted; they may leave and return.
+      return { ok: true, alreadyComplete: false, ready: false };
+    }
+
     if (!alreadyComplete) {
       await supabase
         .from("interview_sessions")
@@ -573,6 +599,6 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
     const { runMatchmakingForUser } = await import("./introductions.server");
     void runMatchmakingForUser(userId, { force: true }).catch(() => {});
 
-    return { ok: true, alreadyComplete };
+    return { ok: true, alreadyComplete, ready: true };
   });
 

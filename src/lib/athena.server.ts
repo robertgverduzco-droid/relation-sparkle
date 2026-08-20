@@ -37,6 +37,18 @@ export const askOutput = z.object({
       body: z.string(),
     })
     .optional(),
+  // Server-derived matchmaking readiness. The client renders from this only —
+  // it never computes readiness itself.
+  readiness: z.object({ ready: z.boolean() }).optional(),
+  // Early-exit experience: separate from `notice` (Trust & Safety) by type.
+  readinessNotice: z
+    .object({
+      kind: z.literal("readiness"),
+      state: z.enum(["not_ready", "ready"]),
+      title: z.string(),
+      body: z.string(),
+    })
+    .optional(),
 });
 
 export const reflectInput = z.object({ messages: z.array(messageSchema) });
