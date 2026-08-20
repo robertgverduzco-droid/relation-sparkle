@@ -18,6 +18,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
+import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -80,6 +81,11 @@ const ApiTtsRoute = ApiTtsRouteImport.update({
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRealtimeSessionRoute = ApiRealtimeSessionRouteImport.update({
+  id: '/api/realtime-session',
+  path: '/api/realtime-session',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUnderstandingRoute =
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
@@ -298,6 +307,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/understanding'
+    | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/understanding'
+    | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
@@ -357,6 +368,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/understanding'
+    | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/connections/$id'
@@ -375,6 +387,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiPublicOpsHeartbeatRoute: typeof ApiPublicOpsHeartbeatRoute
@@ -444,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/api/stt'
       fullPath: '/api/stt'
       preLoaderRoute: typeof ApiSttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/realtime-session': {
+      id: '/api/realtime-session'
+      path: '/api/realtime-session'
+      fullPath: '/api/realtime-session'
+      preLoaderRoute: typeof ApiRealtimeSessionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/understanding': {
@@ -677,6 +697,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiPublicOpsHeartbeatRoute: ApiPublicOpsHeartbeatRoute,
