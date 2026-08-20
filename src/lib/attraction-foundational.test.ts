@@ -174,7 +174,7 @@ describe("guidance is conversational, never a specification form", () => {
 
   it("nudges spoken mode when attraction is still unmet late in the conversation", () => {
     const nudge = breadthNudge(assessCoverage(BROAD));
-    expect(nudge).toMatch(/drawn to them physically/i);
+    expect(nudge).toMatch(/what draws them to someone physically/i);
     expect(nudge).toMatch(/without a checklist/i);
   });
 });

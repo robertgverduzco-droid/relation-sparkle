@@ -274,8 +274,9 @@ export function assessAttraction(messages: Turn[]): AttractionState {
     strengthSignal,
     developsOverTime,
     needsClarification,
-    // Understanding, not disclosure: a declined preference satisfies this.
-    satisfied: asked && answered,
+    // Understanding, not disclosure: a declined preference satisfies this,
+    // and so does a member who volunteers it before Athena asks.
+    satisfied: answered,
   };
 }
 
