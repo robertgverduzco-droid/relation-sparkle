@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { amIModerator, listOpenReports, resolveReport } from "@/lib/moderation.functions";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
