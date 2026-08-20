@@ -345,7 +345,7 @@ Return two things:
 
 1) FACETS — for any facet where the conversation offers genuine, non-speculative signal:
 - key: one of ${FACET_KEYS.join(", ")}
-- understanding: 1–3 sentences in your own considered voice
+- understanding: your standing synthesis of this facet — NOT a summary of today alone. Carry forward what still holds from PRIOR FACETS, fold in what today adds, and say plainly what has shifted. Length is governed per facet by the 'synthesis licence' shown in PRIOR FACETS; for a facet you have never held before, one or two careful sentences.
 - reasoning: 1–2 sentences explaining why you currently hold this view
 - evidence: 1–5 short direct quotes / near-quotes from THEY, each under 200 chars
 - basis: 'stated' ONLY when THEY explicitly expressed this understanding in their own words; 'inferred' whenever you arrived at it by interpretation, pattern, tone, or implication — even if you can quote them. Never mark an interpretation as stated.
