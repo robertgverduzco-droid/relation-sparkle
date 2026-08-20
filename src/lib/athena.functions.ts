@@ -92,12 +92,26 @@ Use this memory to:
     // conversation itself is designed to last approximately 20 minutes.
     const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= 12;
 
-    const pacingHint =
+    // Breadth-first orchestration, foundational mode only. The topic map is
+    // written after a conversation, so during the first one it is empty for
+    // the whole session; this recovers live coverage from the transcript.
+    const coverage = isFoundational ? assessCoverage(data.messages) : null;
+    const breadthHint = coverage ? foundationalGuidance(coverage) : "";
+
+    const basePacing =
       elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
         ? "You have now been speaking for around twenty minutes — the length this foundational conversation is designed for. If a natural resting place is near, warmly offer to continue another day. Do not cut them off; let the closing feel like a graceful pause, not an ending."
         : elapsed >= 18
           ? "You are approaching the natural length of this foundational conversation. Let it breathe. If a good pause presents itself, you may gently note it."
           : "Stay curious. There is time — the foundational conversation is designed to last approximately twenty minutes.";
+
+    // Completion is breadth plus initial understanding, never exhaustive
+    // depth: if the clock is running out while whole areas of their life are
+    // still unseen, widen rather than dig.
+    const pacingHint =
+      coverage && !coverage.breadthSufficient && elapsed >= 14
+        ? `${basePacing} There are still parts of their life you have not seen at all, so use the time that remains to widen rather than to deepen.`
+        : basePacing;
 
     const timeHint = shouldAcknowledgeTime
       ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes now — our foundational conversation is designed for around twenty, and I'm happy to keep going if that still works for you." Then either continue naturally or invite them to choose. Do this only once per conversation.`
@@ -111,11 +125,12 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint],
+        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
     );
+
 
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
