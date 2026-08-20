@@ -109,6 +109,16 @@ function AthenaPage() {
     setSpeaking(false);
   }, []);
 
+  const persist = useCallback(async (msgs: Msg[]) => {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    if (!uid) return;
+    await supabase.from("interview_sessions").upsert(
+      { user_id: uid, messages: msgs, completed_at: null },
+      { onConflict: "user_id" },
+    );
+  }, []);
+
   // ---- Live Conversation (speech-to-speech) ----
   const liveRef = useRef<AthenaLiveSession | null>(null);
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
@@ -158,17 +168,6 @@ function AthenaPage() {
   useEffect(() => () => { liveRef.current?.stop(); liveRef.current = null; }, []);
 
 
-
-
-  const persist = useCallback(async (msgs: Msg[]) => {
-    const { data: userRes } = await supabase.auth.getUser();
-    const uid = userRes.user?.id;
-    if (!uid) return;
-    await supabase.from("interview_sessions").upsert(
-      { user_id: uid, messages: msgs, completed_at: null },
-      { onConflict: "user_id" },
-    );
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
