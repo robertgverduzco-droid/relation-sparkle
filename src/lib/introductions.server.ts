@@ -56,7 +56,7 @@ export type ProfileRow = {
 };
 
 const PROFILE_COLUMNS =
-  "id, display_name, birth_date, gender, city, is_paused, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
+  "id, display_name, birth_date, gender, city, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
 const PREFS_COLUMNS =
   "user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
 
@@ -434,11 +434,17 @@ export async function runMatchmakingForUser(
     if (eligibleIds.size === 0) return { ok: true, considered: 0, reason: "no_pool" };
   }
 
+  // Synthetic beta personas and real members are two separate matching pools.
+  // A test account may only ever be introduced to another test account, and a
+  // real member is never shown a fictional persona.
+  const selfSynthetic = Boolean((selfProfile as { is_synthetic?: boolean | null }).is_synthetic);
+
   const { data: others } = await supabase
     .from("profiles")
     .select(PROFILE_COLUMNS)
     .in("id", Array.from(eligibleIds))
     .eq("is_paused", false)
+    .eq("is_synthetic", selfSynthetic)
     .limit(200);
   if (!others || others.length === 0) return { ok: true, considered: 0, reason: "no_pool" };
 
