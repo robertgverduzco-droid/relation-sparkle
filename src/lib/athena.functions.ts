@@ -26,6 +26,12 @@ import {
 import { runtimeDoctrine } from "./athena-doctrine.server";
 import { assessCoverage, foundationalGuidance } from "./foundational";
 import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
+import {
+  assessFoundationalReadiness,
+  introductionReadinessGuidance,
+  asksAboutRequirement,
+  asksToBeginMatching,
+} from "./introduction-readiness";
 import { decidePacing } from "./pacing";
 
 
@@ -102,6 +108,32 @@ Use this memory to:
     const coverage = isFoundational ? assessCoverage(data.messages) : null;
     const breadthHint = coverage ? foundationalGuidance(coverage) : "";
 
+    // Matchmaking readiness is decided by persisted understanding, never by
+    // the member's patience. Athena is told the truth about what she does and
+    // does not yet understand so she cannot promise an introduction she is
+    // not allowed to make; the server gate in readiness.server.ts enforces it
+    // regardless of what is said here.
+    const introReadiness = assessFoundationalReadiness(
+      facets.map((f) => ({
+        facet_key: f.facet_key as string,
+        understanding: f.understanding ?? null,
+        confidence: Number(f.confidence ?? 0),
+      })),
+    );
+    const lastMemberText =
+      [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const pressed =
+      !introReadiness.ready &&
+      (asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText));
+    const readinessHint = [
+      introductionReadinessGuidance(introReadiness),
+      pressed
+        ? "They have just asked about this directly. Answer it warmly and honestly in your own voice, hold the threshold without a number and without a timeframe, and then continue the conversation naturally with a real question."
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     const basePacing =
       elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
         ? "You have now been speaking for around twenty minutes — the length this foundational conversation is designed for. If a natural resting place is near, warmly offer to continue another day. Do not cut them off; let the closing feel like a graceful pause, not an ending."
@@ -135,7 +167,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, boundaryHint].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, readinessHint, boundaryHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,

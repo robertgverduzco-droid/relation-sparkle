@@ -8,6 +8,10 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { assessCoverage, foundationalGuidance } from "./foundational";
+import {
+  assessFoundationalReadiness,
+  introductionReadinessGuidance,
+} from "./introduction-readiness";
 import { runtimeDoctrine } from "./athena-doctrine.server";
 import {
   athenaSystemPrompt,
@@ -49,6 +53,7 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
   let memoryBlock = "You have not yet built an understanding of this person. Begin by listening.";
   // Live sessions are foundational until the member's own record says
   // otherwise; breadth-first orientation applies in spoken mode identically.
+  let readinessHint = "";
   let foundational = true;
 
 
@@ -78,6 +83,15 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
       const facets = (facetRows ?? []) as FacetRow[];
       const topics = (topicRows ?? []) as TopicRow[];
       const topicSummary = summarizeTopicMap(topics);
+      readinessHint = introductionReadinessGuidance(
+        assessFoundationalReadiness(
+          facets.map((f) => ({
+            facet_key: f.facet_key as string,
+            understanding: f.understanding ?? null,
+            confidence: Number(f.confidence ?? 0),
+          })),
+        ),
+      );
 
       memoryBlock = clampMemoryBlock(`WHAT YOU ALREADY UNDERSTAND ABOUT THIS PERSON (your Living Profile — internal, never quote back verbatim):
 ${summarizeLivingProfile(facets)}
@@ -105,6 +119,7 @@ Never expose this map, never list categories, never say you are consulting memor
     athenaSystemPrompt(),
     memoryBlock,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
+    readinessHint,
     LIVE_SPEECH_ADDENDUM,
   ].filter(Boolean).join("\n\n");
 }
