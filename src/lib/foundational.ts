@@ -295,6 +295,10 @@ export type CoverageState = {
   shouldBroaden: boolean;
   /** Enough breadth exists for the conversation to close naturally. */
   breadthSufficient: boolean;
+  /** Required domains not yet satisfied (attraction, in V1). */
+  missingRequired: DomainKey[];
+  /** Live state of the required physical-attraction understanding. */
+  attraction: AttractionState;
 };
 
 /**
@@ -310,6 +314,13 @@ export function assessCoverage(messages: Turn[]): CoverageState {
     // question alone is an invitation, not understanding.
     if (m.role === "user") for (const k of domainsIn(m.content)) covered.add(k);
   }
+
+  // Attraction has its own satisfaction rule: a terse or "no real preferences"
+  // answer to Athena's invitation is a complete answer even when the member's
+  // own words contain no attraction vocabulary at all.
+  const attraction = assessAttraction(messages);
+  if (attraction.satisfied) covered.add("attraction");
+  else covered.delete("attraction");
 
   const athenaTurns = messages.filter((m) => m.role === "assistant");
   const lastAthena = athenaTurns.slice(-4).map((m) => domainsIn(m.content));
@@ -336,6 +347,7 @@ export function assessCoverage(messages: Turn[]): CoverageState {
   const memberLed = memberLedDepth(lastMember?.content ?? "");
 
   const unexplored = DOMAIN_KEYS.filter((k) => !covered.has(k));
+  const missingRequired = REQUIRED_DOMAINS.filter((k) => !covered.has(k));
 
   return {
     covered: [...covered],
@@ -344,9 +356,15 @@ export function assessCoverage(messages: Turn[]): CoverageState {
     consecutiveSameDomain: consecutive,
     memberLed,
     shouldBroaden: consecutive >= MAX_CONSECUTIVE_SAME_DOMAIN && !memberLed,
-    breadthSufficient: covered.size >= MIN_FOUNDATIONAL_DOMAINS,
+    // A required domain cannot be silently skipped: breadth is not sufficient
+    // until Athena has asked about physical attraction and been answered.
+    breadthSufficient:
+      covered.size >= MIN_FOUNDATIONAL_DOMAINS && missingRequired.length === 0,
+    missingRequired,
+    attraction,
   };
 }
+
 
 function label(key: DomainKey): string {
   return FOUNDATIONAL_DOMAINS.find((d) => d.key === key)?.label ?? key;
