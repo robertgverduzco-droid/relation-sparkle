@@ -499,7 +499,7 @@ function AthenaPage() {
 
   useEffect(() => () => { stopStream(); }, [stopStream]);
 
-  const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing;
+  const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing || live;
   // BR01-02: a single source of truth for Athena's runtime state.
   const runtimeState = resolveRuntimeState({
     hydrated,
