@@ -2,9 +2,10 @@
 
 ## Kill switches
 
-`security_kill_switches` (readable by signed-in members, writable only by
-service-role code) gates six subsystems. Flipping a row takes effect on the
-next request — no deploy required.
+`security_kill_switches` (readable only by admin/founder roles, writable only by
+service-role code; runtime checks read it through the service-role client) gates
+six subsystems. Flipping a row takes effect on the next request — no deploy
+required.
 
 | Key | Effect when disabled |
 | --- | --- |
