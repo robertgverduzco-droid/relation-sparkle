@@ -72,14 +72,25 @@ function AuthPage() {
 
   async function resend(address: string | null) {
     if (!address) { toast.error("Enter your email and sign in to resend."); return; }
+    // Beta: any cooldown observed for this address is capped at two hours and
+    // reported honestly, with the time they may try again.
+    const pending = retryReadyAt(address);
+    if (pending) { toast.error(cooldownMessage(pending)); return; }
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: address,
       options: { emailRedirectTo: window.location.origin + "/home" },
     });
-    if (error) toast.error(error.message);
-    else toast.success("Verification email sent.");
+    if (error) {
+      const wait = parseRetryAfterMs(error);
+      if (wait) toast.error(cooldownMessage(noteCooldown(address, wait)));
+      else toast.error(error.message);
+    } else {
+      clearCooldown(address);
+      toast.success("Verification email sent.");
+    }
   }
+
 
   async function recheckVerification() {
     setBusy(true);
