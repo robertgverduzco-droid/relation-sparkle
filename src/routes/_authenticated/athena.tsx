@@ -333,7 +333,7 @@ function AthenaPage() {
     messages: Msg[];
     elapsedMinutes: number;
     timeAcknowledged: boolean;
-  }): Promise<{ reply: string; pacing?: string; timeAcknowledged?: boolean } | null> {
+  }): Promise<{ reply: string; pacing?: string; timeAcknowledged?: boolean; notice?: Notice } | null> {
     try {
       return await ask({ data: payload });
     } catch {
