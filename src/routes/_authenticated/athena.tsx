@@ -235,6 +235,21 @@ function AthenaPage() {
     };
   }, [persist, playLine]);
 
+  // Beta reliability: unlock the audio element on the member's first real
+  // gesture. Playback later begins after an awaited network round-trip, which
+  // mobile browsers otherwise treat as outside the gesture and reject.
+  useEffect(() => {
+    const prime = () => primeSpeechAudio();
+    window.addEventListener("pointerdown", prime, { once: true });
+    window.addEventListener("keydown", prime, { once: true });
+    window.addEventListener("touchstart", prime, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+      window.removeEventListener("touchstart", prime);
+    };
+  }, []);
+
   // A conversation with Athena counts as activity: a return greeting is only
   // for a genuinely new session, never for coming back from this screen.
   useEffect(() => {
