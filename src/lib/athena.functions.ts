@@ -149,8 +149,16 @@ Use this memory to:
       (asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText));
     // Early exit is its own experience, never a boundary/safety notice.
     const wantsFinish = wantsToFinishFoundational(lastMemberText);
+    // Completion at minimum readiness: the foundational conversation is a
+    // threshold, not a collection exercise. Once it is met, Athena closes
+    // warmly and briefly rather than continuing to gather.
+    const completionHint =
+      isFoundational && introReadiness.ready
+        ? "You now hold enough foundational understanding to begin considering introductions. Bring this conversation to a close warmly and briefly — a few sentences at most. Say in your own words that you know enough to begin, that you will keep learning about them as you talk over time, and that they can return whenever they like. Do not recite, summarise or list back what you have learned about them. Do not describe their traits, give any rating or number, or ask another intake question. If they clearly want to keep talking, stay with them naturally — but do not restart the intake."
+        : "";
     const readinessHint = [
       introductionReadinessGuidance(introReadiness),
+      completionHint,
       wantsFinish
         ? earlyExitGuidance(introReadiness.ready, introReadiness.missing.map((a) => a.label))
         : "",
@@ -160,6 +168,7 @@ Use this memory to:
     ]
       .filter(Boolean)
       .join(" ");
+
 
     const basePacing =
       elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
