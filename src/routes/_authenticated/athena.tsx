@@ -647,10 +647,24 @@ function AthenaPage() {
         }}
         className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
       >
+        {!askingPreference && hydrated && !introducing && (
+          <div className="mb-2 flex justify-center">
+            <button
+              type="button"
+              data-testid="athena-live-toggle"
+              onClick={() => (live ? endLive() : void startLive())}
+              disabled={busy || recording || transcribing}
+              className="tap-target rounded-full border border-border px-4 text-xs uppercase tracking-[0.2em] text-muted-foreground transition disabled:opacity-40 hover:text-foreground"
+            >
+              {live ? "End live conversation" : "Speak with Athena"}
+            </button>
+          </div>
+        )}
         <div
           className="flex items-end gap-2 rounded-3xl border border-input bg-card px-2 py-2 transition-opacity"
-          style={{ opacity: inputDisabled && !recording ? 0.5 : 1 }}
+          style={{ opacity: (inputDisabled && !recording) || live ? 0.5 : 1 }}
         >
+
           <button
             type="button"
             data-testid="athena-record"
