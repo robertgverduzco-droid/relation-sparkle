@@ -124,11 +124,14 @@ function AuthPage() {
     setBusy(true);
     try {
       if (isSignup) {
+        const pending = retryReadyAt(email);
+        if (pending) { toast.error(cooldownMessage(pending)); return; }
         const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: window.location.origin + "/home" },
         });
         if (error) throw error;
+        clearCooldown(email);
         const u = data.user;
         if (u && !u.email_confirmed_at) {
           setPendingEmail(email);
@@ -139,6 +142,7 @@ function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        clearCooldown(email);
         if (data.user && !data.user.email_confirmed_at && !data.user.phone_confirmed_at) {
           setPendingEmail(data.user.email ?? email);
           return;
@@ -146,7 +150,10 @@ function AuthPage() {
         navigate({ to: "/home" });
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      const wait = parseRetryAfterMs(err);
+      if (wait) toast.error(cooldownMessage(noteCooldown(email, wait)));
+      else toast.error(err instanceof Error ? err.message : "Something went wrong");
+
     } finally {
       setBusy(false);
     }
