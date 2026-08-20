@@ -460,11 +460,18 @@ function AthenaPage() {
       }
 
       // Athena's server-side pacing tells us when she's offering to close
-      // this foundational conversation gracefully. Show the closing card
-      // once — only if the foundation isn't already marked complete.
-      if (res.pacing === "offer_return" && !foundationCompleteRef.current) {
+      // this foundational conversation gracefully. Shown at most once per
+      // conversation: if the member chooses "Keep talking", the offer is not
+      // repeated on later turns.
+      if (
+        res.pacing === "offer_return" &&
+        !foundationCompleteRef.current &&
+        !closingOfferedRef.current
+      ) {
+        closingOfferedRef.current = true;
         setShowClosingCard(true);
       }
+
     } finally {
       setBusy(false);
     }
