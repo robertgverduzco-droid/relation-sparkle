@@ -205,8 +205,15 @@ export async function speak(
 
     // Armed before playback even starts, so a rejected or silently stalled
     // play() can never leave the conversation locked.
-    arm(estimateSpeechMs(text));
+    arm(estimateSpeechMs(spoken));
 
-    void Promise.resolve(audio.play()).catch(() => finish("failed"));
+    // A single re-attempt covers the case where the element was interrupted
+    // mid-load; a second rejection is a real failure the caller can surface.
+    void Promise.resolve(audio.play()).catch(() => {
+      if (settled) return;
+      try { audio.load(); } catch { /* ignore */ }
+      void Promise.resolve(audio.play()).catch(() => finish("failed"));
+    });
   });
+
 }
