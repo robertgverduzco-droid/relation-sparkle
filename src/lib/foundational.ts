@@ -146,6 +146,15 @@ export const FOUNDATIONAL_DOMAINS: Domain[] = [
 
 export const DOMAIN_KEYS = FOUNDATIONAL_DOMAINS.map((d) => d.key);
 
+/**
+ * Domains that cannot be silently skipped. Attraction is required because
+ * Athena can otherwise find extraordinary psychological and relational
+ * compatibility while never learning whether physical attraction is plausible
+ * at all. The requirement is that Athena ASKS and UNDERSTANDS — a member who
+ * says appearance barely matters to them has satisfied it completely.
+ */
+export const REQUIRED_DOMAINS: DomainKey[] = ["attraction"];
+
 /** Breadth expected before a foundational conversation may close naturally. */
 export const MIN_FOUNDATIONAL_DOMAINS = 8;
 
@@ -166,6 +175,110 @@ export function memberLedDepth(text: string): boolean {
     text ?? "",
   );
 }
+
+// ---------------------------------------------------------------------------
+// Physical attraction — required foundational understanding
+// ---------------------------------------------------------------------------
+
+/** Athena raised attraction/appearance as a question this turn. */
+const ATHENA_ATTRACTION_QUESTION =
+  /\b(attract(ed|ion|ive)?|chemistry|a type\b|your type|looks?\b|appearance|physically|drawn to|find (someone|people) attractive|style)\b/i;
+
+/**
+ * A member answer that closes the attraction question without naming any
+ * preference. "Not really", "appearance barely matters", "I've never had a
+ * type" are all complete, legitimate answers — the domain is satisfied.
+ */
+const NO_PREFERENCE_ANSWER =
+  /\b(not really|no(t)? (particular|specific)|doesn'?t (really )?matter|barely matters|never had a type|no type|i'?m not picky|open to (anyone|anything|all)|all sorts|varies|no idea|not sure|hard to say|depends|anyone|whoever)\b/i;
+
+/**
+ * The member named something that materially gates attraction rather than a
+ * general liking. Used only to license ONE clarifying follow-up so Athena can
+ * tell a preference from a constraint — never to score or rank anyone.
+ */
+const ATTRACTION_STRENGTH_SIGNAL =
+  /\b(have to be|has to be|must be|can'?t be (attracted|with)|couldn'?t (be )?(attracted|date)|dealbreaker|deal breaker|need(s)? to be|only (ever )?(been )?(attracted|into)|never been attracted|non[- ]negotiable|really matters|very important|matters a lot)\b/i;
+
+/** Attraction develops over time rather than on sight. */
+const SLOW_BURN_SIGNAL =
+  /\b(grows? on me|develops? over time|(after|once) i (get to )?know|emotional connection first|demisexual|not (usually )?(immediate|instant)|takes? time)\b/i;
+
+export type AttractionState = {
+  /** Athena has actually raised attraction in this conversation. */
+  asked: boolean;
+  /** The member has answered the invitation in some form. */
+  answered: boolean;
+  /** The member declined to name preferences — a complete answer. */
+  noMeaningfulPreference: boolean;
+  /** The member named something that may be a constraint, not a preference. */
+  strengthSignal: boolean;
+  /** The member described attraction as developing through knowing someone. */
+  developsOverTime: boolean;
+  /** One clarifying follow-up is warranted to tell preference from constraint. */
+  needsClarification: boolean;
+  /** Foundational requirement met: Athena asked and the member responded. */
+  satisfied: boolean;
+};
+
+/**
+ * Derive the attraction requirement from the live transcript only. Purely
+ * lexical: it establishes that the subject was raised and engaged, never what
+ * the member believes — the Living Profile holds that.
+ */
+export function assessAttraction(messages: Turn[]): AttractionState {
+  let asked = false;
+  let answered = false;
+  let noMeaningfulPreference = false;
+  let strengthSignal = false;
+  let developsOverTime = false;
+  let clarifiedAfterSignal = false;
+  let pendingSignal = false;
+
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i]!;
+    if (m.role === "assistant") {
+      const isAttractionTurn = ATHENA_ATTRACTION_QUESTION.test(m.content ?? "");
+      if (isAttractionTurn) {
+        asked = true;
+        if (pendingSignal) clarifiedAfterSignal = true;
+      }
+      continue;
+    }
+    if (m.role !== "user") continue;
+
+    const text = m.content ?? "";
+    const prior = [...messages.slice(0, i)].reverse().find((p) => p.role === "assistant");
+    const invited = prior ? ATHENA_ATTRACTION_QUESTION.test(prior.content ?? "") : false;
+    const spokeIntoIt = domainsIn(text).includes("attraction");
+
+    // A response counts when the member speaks into attraction on their own,
+    // or answers an invitation Athena just made — including tersely.
+    if ((invited && text.trim().length > 0) || spokeIntoIt) {
+      answered = true;
+      if (invited && NO_PREFERENCE_ANSWER.test(text)) noMeaningfulPreference = true;
+      if (SLOW_BURN_SIGNAL.test(text)) developsOverTime = true;
+      if (ATTRACTION_STRENGTH_SIGNAL.test(text)) {
+        strengthSignal = true;
+        pendingSignal = true;
+      }
+    }
+  }
+
+  const needsClarification = strengthSignal && !clarifiedAfterSignal;
+
+  return {
+    asked,
+    answered,
+    noMeaningfulPreference,
+    strengthSignal,
+    developsOverTime,
+    needsClarification,
+    // Understanding, not disclosure: a declined preference satisfies this.
+    satisfied: asked && answered,
+  };
+}
+
 
 export type CoverageState = {
   /** Domains meaningfully touched so far in this conversation. */
