@@ -1,4 +1,5 @@
 // F-13 / F-14 — what Athena understands about you, and how to change it.
+import { BASIS_LABEL } from "@/lib/understanding.server";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -126,8 +127,12 @@ function UnderstandingScreen() {
           >
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="text-[15px] text-foreground">{f.label}</h2>
-              <span className="shrink-0 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                {f.basis === "stated" ? "you told me" : "I inferred"}
+              <span
+                data-testid={`understanding-basis-${f.key}`}
+                data-basis={f.basis}
+                className="shrink-0 text-[11px] uppercase tracking-[0.16em] text-muted-foreground"
+              >
+                {BASIS_LABEL[f.basis]}
               </span>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.understanding}</p>
