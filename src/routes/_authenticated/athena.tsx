@@ -99,6 +99,8 @@ function AthenaPage() {
   const conversationStartRef = useRef<number>(Date.now());
   const timeAcknowledgedRef = useRef(false);
   const foundationCompleteRef = useRef(false);
+  const closingOfferedRef = useRef(false);
+
   const flushingRef = useRef(false);
   const messagesRef = useRef<Msg[]>([]);
   const recorderRef = useRef<MediaRecorder | null>(null);
