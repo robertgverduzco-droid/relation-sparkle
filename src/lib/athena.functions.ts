@@ -29,6 +29,8 @@ import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
 import {
   assessFoundationalReadiness,
   introductionReadinessGuidance,
+  asksAboutRequirement,
+  asksToBeginMatching,
 } from "./introduction-readiness";
 import { decidePacing } from "./pacing";
 
@@ -118,7 +120,19 @@ Use this memory to:
         confidence: Number(f.confidence ?? 0),
       })),
     );
-    const readinessHint = introductionReadinessGuidance(introReadiness);
+    const lastMemberText =
+      [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const pressed =
+      !introReadiness.ready &&
+      (asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText));
+    const readinessHint = [
+      introductionReadinessGuidance(introReadiness),
+      pressed
+        ? "They have just asked about this directly. Answer it warmly and honestly in your own voice, hold the threshold without a number and without a timeframe, and then continue the conversation naturally with a real question."
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     const basePacing =
       elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
