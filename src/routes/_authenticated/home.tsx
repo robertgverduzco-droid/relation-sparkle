@@ -7,7 +7,7 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { EndingChoiceCard } from "@/components/ending-choice-card";
 import { ReadinessCard } from "@/components/readiness-card";
 import { AthenaPresence } from "@/components/athena-presence";
-import { WaitingState } from "@/components/waiting-state";
+import { LookingState } from "@/components/looking-state";
 import { Bell } from "lucide-react";
 import { ReturnGreeting } from "@/components/return-greeting";
 
