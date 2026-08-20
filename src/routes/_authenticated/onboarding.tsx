@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ConsentPanel } from "@/components/consent-panel";
 import { saveOnboardingStep } from "@/lib/onboarding.functions";
+import { ARRIVAL_WELCOME, arrivalDelivered, markArrivalDelivered } from "@/lib/arrival";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
