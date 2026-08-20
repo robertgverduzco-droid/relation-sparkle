@@ -26,6 +26,8 @@ import {
 import { runtimeDoctrine } from "./athena-doctrine.server";
 import { assessCoverage, foundationalGuidance } from "./foundational";
 import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
+import { decidePacing } from "./pacing";
+
 
 export const askAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -150,22 +152,18 @@ Use this memory to:
 
 
     const reply = text.trim();
-    const lowered = reply.toLowerCase();
-    // Pacing is driven primarily by elapsed minutes (foundational = ~20 min),
-    // with turn-count as a secondary signal so unusually terse users still
-    // reach a natural close. Breadth is now part of readiness: a conversation
-    // that spent its time inside two subjects has not yet done the work of a
-    // foundational conversation, so closing waits a little longer.
-    const breadthReady = !coverage || coverage.breadthSufficient;
-    const readyToOffer =
-      ((elapsed >= 20 && userTurns >= 10) || elapsed >= 24 || userTurns >= 16) &&
-      // Never hold a member indefinitely: past the long stop, close regardless.
-      (breadthReady || elapsed >= 28 || userTurns >= 22);
-    const languageOffersReturn =
-      /(another day|another time|pick this back up|come back|next time|good place to (pause|stop|rest))/.test(lowered);
-    const offerReturn = readyToOffer && (languageOffersReturn || elapsed >= 22);
-    const windDown = !offerReturn && (elapsed >= 18 || userTurns >= 12);
-    const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
+    // Pacing lives in ./pacing.ts and is time-anchored. Brevity is a
+    // conversational style, never evidence of disengagement, so turn count
+    // alone can no longer close a foundational conversation.
+    const latestMember = [...data.messages].reverse().find((m) => m.role === "user");
+    const pacing = decidePacing({
+      elapsedMinutes: elapsed,
+      userTurns,
+      reply,
+      latestMemberMessage: latestMember?.content ?? "",
+      breadthSufficient: !coverage || coverage.breadthSufficient,
+    });
+
 
 
     const notice = boundary ? boundaryNotice(boundary) : null;
