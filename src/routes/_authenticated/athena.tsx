@@ -31,11 +31,12 @@ type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 type VoiceMode = "voice" | "text";
 const VOICE_KEY = "athena-voice-mode";
 
-function buildIntro(firstName: string | null): string[] {
+function buildIntro(firstName: string | null, welcomeAlreadyDelivered = false): string[] {
   const greeting = firstName ? `Hello, ${firstName}.` : "Hello.";
   return [
-    // D5: the one-time spoken welcome, on the first-ever arrival only.
-    ARRIVAL_WELCOME,
+    // D5: the one-time welcome. If the member already received it at their
+    // arrival — before the first onboarding question — it is never repeated.
+    ...(welcomeAlreadyDelivered ? [] : [ARRIVAL_WELCOME]),
     greeting,
     "I'm Athena.",
     "It's a pleasure to finally meet you.",
@@ -46,6 +47,7 @@ function buildIntro(firstName: string | null): string[] {
     "Speak naturally. I'll do the same.",
   ];
 }
+
 
 /** Bearer token for the voice endpoints, which authenticate every request. */
 async function authHeader(): Promise<Record<string, string>> {
