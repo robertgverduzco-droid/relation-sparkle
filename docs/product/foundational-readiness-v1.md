@@ -57,3 +57,23 @@ lists or progress indicators, ever.
 No understanding is deleted and no one is re-interviewed. Members who completed
 foundational mode under the previous weaker logic are simply re-evaluated against
 these criteria; any missing areas are filled naturally before a new introduction.
+
+## Early-Exit Experience (V1.1)
+
+A member trying to finish or rush the foundational conversation is **not** a
+boundary, moderation, or enforcement event. It has its own module
+(`src/lib/early-exit.ts`), its own member-facing language, and its own UI
+treatment (`ReadinessNotice`, `ReadinessSheet`) — neutral surface, `role="status"`,
+no warning colour, no alert semantics. Trust & Safety notices are unchanged.
+
+- Before readiness: Athena explains warmly that she is not ready to make
+  introductions yet and continues breadth-first. `completeFoundationalConversation`
+  refuses to mark the session complete, so leaving early can never create
+  introduction eligibility. Progress persists; the member may leave at any time
+  ("Leave for now").
+- After readiness: the member may finish, and Athena states that she knows
+  enough to begin considering introductions while continued understanding makes
+  them more thoughtful.
+- Single source of truth: readiness is returned by the server on every turn
+  (`askAthena.readiness.ready`) from the same `assessFoundationalReadiness`
+  the matchmaking gate uses. The client never computes it.
