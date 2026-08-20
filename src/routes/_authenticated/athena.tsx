@@ -558,7 +558,10 @@ function AthenaPage() {
             {messages.map((m, i) => (
               <Bubble key={i} role={m.role} content={m.content} />
             ))}
-            {showsThinkingIndicator(runtimeState) && (
+            {livePartial && (
+              <Bubble role="assistant" content={livePartial} />
+            )}
+            {showsThinkingIndicator(runtimeState) && !live && (
               <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
             )}
             {askingPreference && (
