@@ -23,6 +23,28 @@ export const RETURN_IDLE_MS = 30 * 60 * 1000;
 
 export const LAST_SEEN_KEY = "athena-last-seen";
 export const SESSION_GREETED_KEY = "athena-session-greeted";
+/** Set once the one-time arrival welcome has actually been delivered. */
+export const ARRIVAL_DELIVERED_KEY = "athena-arrival-delivered";
+
+/** Has this member already received the one-time arrival welcome? */
+export function arrivalDelivered(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.localStorage.getItem(ARRIVAL_DELIVERED_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
+export function markArrivalDelivered(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(ARRIVAL_DELIVERED_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
 
 /**
  * Only member-provided identity is ever spoken. No inference from email,

@@ -35,12 +35,77 @@ export function durationWatchdogMs(durationSeconds: number, text: string): numbe
   return Math.min(SPEECH_MAX_MS, durationSeconds * 1000 + SPEECH_MARGIN_MS);
 }
 
-export type SpeechOutcome = "completed" | "failed" | "aborted" | "timed-out";
+export type SpeechOutcome = "completed" | "failed" | "aborted" | "timed-out" | "empty";
 
 async function authHeader(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/**
+ * Beta reliability fix — one long-lived audio element, unlocked by a real
+ * user gesture.
+ *
+ * `new Audio()` created *after* an awaited network round-trip is no longer
+ * inside the gesture that started the turn, so mobile browsers reject
+ * `play()` with NotAllowedError. That rejection was swallowed, which is why
+ * some replies were spoken and others silently were not. A single element
+ * primed on the first gesture stays permanently unlocked, and reusing it also
+ * makes overlapping playback structurally impossible.
+ */
+let sharedAudio: HTMLAudioElement | null = null;
+
+export function primeSpeechAudio(): void {
+  if (typeof window === "undefined") return;
+  if (!sharedAudio) {
+    sharedAudio = new Audio();
+    sharedAudio.preload = "auto";
+  }
+  if (sharedAudio.src) return;
+  // A silent, zero-length clip: playing it inside the gesture unlocks the
+  // element for every later programmatic play().
+  sharedAudio.src =
+    "data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICA//////////////////////////////////8AAAA5TEFNRTMuMTAwAc0AAAAAAAAAABSAJAJAQgAAgAAAAnGMHkkIAAAAAAAAAAAAAAAAAAAA";
+  sharedAudio.muted = true;
+  void sharedAudio.play().then(() => {
+    sharedAudio?.pause();
+    if (sharedAudio) {
+      sharedAudio.muted = false;
+      sharedAudio.currentTime = 0;
+    }
+  }).catch(() => { /* will simply fall back to a fresh element */ });
+}
+
+function speechElement(): HTMLAudioElement {
+  if (!sharedAudio) {
+    sharedAudio = new Audio();
+    sharedAudio.preload = "auto";
+  }
+  sharedAudio.muted = false;
+  return sharedAudio;
+}
+
+/** One retry for transient upstream/network failures, then give up honestly. */
+async function fetchSpeech(text: string, signal: AbortSignal): Promise<Response | null> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (signal.aborted) return null;
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeader()) },
+        body: JSON.stringify({ text }),
+        signal,
+      });
+      if (res.ok) return res;
+      // 4xx other than 429 will not succeed on a retry.
+      if (res.status < 500 && res.status !== 429) return null;
+    } catch {
+      if (signal.aborted) return null;
+    }
+    if (attempt === 0) await new Promise((r) => setTimeout(r, 500));
+  }
+  return null;
 }
 
 export async function speak(
@@ -56,23 +121,15 @@ export async function speak(
     onState?.(speaking);
   };
 
+  const spoken = (text ?? "").trim();
+  // An empty or whitespace-only reply is never sent to the voice endpoint.
+  if (!spoken) return "empty";
   if (signal.aborted) return "aborted";
 
-  let res: Response;
-  try {
-    res = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...(await authHeader()) },
-      body: JSON.stringify({ text }),
-      signal,
-    });
-  } catch {
+  const res = await fetchSpeech(spoken, signal);
+  if (!res) {
     notify(false);
     return signal.aborted ? "aborted" : "failed";
-  }
-  if (!res.ok) {
-    notify(false);
-    return "failed";
   }
   if (signal.aborted) {
     notify(false);
@@ -83,14 +140,24 @@ export async function speak(
   let audio: HTMLAudioElement;
   try {
     const blob = await res.blob();
+    if (blob.size === 0) {
+      notify(false);
+      return "failed";
+    }
     url = URL.createObjectURL(blob);
-    audio = new Audio(url);
+    audio = speechElement();
+    // Any previous clip stops before the next begins: no overlap, ever.
+    try { audio.pause(); } catch { /* nothing playing */ }
+    audio.src = url;
+    audio.currentTime = 0;
   } catch {
     notify(false);
     return signal.aborted ? "aborted" : "failed";
   }
 
   notify(true);
+
+
 
   return await new Promise<SpeechOutcome>((resolve) => {
     let watchdog: ReturnType<typeof setTimeout> | null = null;
@@ -138,8 +205,15 @@ export async function speak(
 
     // Armed before playback even starts, so a rejected or silently stalled
     // play() can never leave the conversation locked.
-    arm(estimateSpeechMs(text));
+    arm(estimateSpeechMs(spoken));
 
-    void Promise.resolve(audio.play()).catch(() => finish("failed"));
+    // A single re-attempt covers the case where the element was interrupted
+    // mid-load; a second rejection is a real failure the caller can surface.
+    void Promise.resolve(audio.play()).catch(() => {
+      if (settled) return;
+      try { audio.load(); } catch { /* ignore */ }
+      void Promise.resolve(audio.play()).catch(() => finish("failed"));
+    });
   });
+
 }

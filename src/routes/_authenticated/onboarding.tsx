@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ConsentPanel } from "@/components/consent-panel";
 import { saveOnboardingStep } from "@/lib/onboarding.functions";
+import { ARRIVAL_WELCOME, arrivalDelivered, markArrivalDelivered } from "@/lib/arrival";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -124,7 +125,9 @@ function Onboarding() {
       <ProgressBar current={currentIdx} total={STEPS.length - 1} />
 
       <div className="mt-8 flex-1 fade-in-slow" key={step}>
+        {step === "welcome" && <ArrivalWelcome />}
         {step === "welcome" && (
+
           <Section
             eyebrow="A quiet beginning"
             title={
@@ -330,5 +333,29 @@ function Field({
         className="mt-1 w-full rounded-2xl border border-input bg-card px-4 py-3 text-[15px] text-foreground outline-none focus:border-ring"
       />
     </label>
+  );
+}
+
+/**
+ * The canonical arrival welcome, restored to its proper place: Athena speaks
+ * to the member before the first onboarding question, never after it.
+ *
+ * Text-first by doctrine — the words are always visible, whether or not audio
+ * is available. It is delivered once, ever; the first-meeting sequence in
+ * /athena drops its duplicate line once this has been shown.
+ */
+function ArrivalWelcome() {
+  const [already] = useState(() => arrivalDelivered());
+  useEffect(() => {
+    markArrivalDelivered();
+  }, []);
+  if (already) return null;
+  return (
+    <div className="mb-8 fade-in-slow" data-testid="onboarding-arrival-welcome">
+      <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Athena</p>
+      <p className="mt-3 font-display text-[1.75rem] leading-[1.15] text-foreground">
+        {ARRIVAL_WELCOME}
+      </p>
+    </div>
   );
 }

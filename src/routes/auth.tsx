@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+  clearCooldown,
+  cooldownMessage,
+  noteCooldown,
+  parseRetryAfterMs,
+  retryReadyAt,
+} from "@/lib/auth-cooldown";
+
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -72,14 +80,25 @@ function AuthPage() {
 
   async function resend(address: string | null) {
     if (!address) { toast.error("Enter your email and sign in to resend."); return; }
+    // Beta: any cooldown observed for this address is capped at two hours and
+    // reported honestly, with the time they may try again.
+    const pending = retryReadyAt(address);
+    if (pending) { toast.error(cooldownMessage(pending)); return; }
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: address,
       options: { emailRedirectTo: window.location.origin + "/home" },
     });
-    if (error) toast.error(error.message);
-    else toast.success("Verification email sent.");
+    if (error) {
+      const wait = parseRetryAfterMs(error);
+      if (wait) toast.error(cooldownMessage(noteCooldown(address, wait)));
+      else toast.error(error.message);
+    } else {
+      clearCooldown(address);
+      toast.success("Verification email sent.");
+    }
   }
+
 
   async function recheckVerification() {
     setBusy(true);
@@ -105,11 +124,14 @@ function AuthPage() {
     setBusy(true);
     try {
       if (isSignup) {
+        const pending = retryReadyAt(email);
+        if (pending) { toast.error(cooldownMessage(pending)); return; }
         const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: window.location.origin + "/home" },
         });
         if (error) throw error;
+        clearCooldown(email);
         const u = data.user;
         if (u && !u.email_confirmed_at) {
           setPendingEmail(email);
@@ -120,6 +142,7 @@ function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        clearCooldown(email);
         if (data.user && !data.user.email_confirmed_at && !data.user.phone_confirmed_at) {
           setPendingEmail(data.user.email ?? email);
           return;
@@ -127,7 +150,10 @@ function AuthPage() {
         navigate({ to: "/home" });
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      const wait = parseRetryAfterMs(err);
+      if (wait) toast.error(cooldownMessage(noteCooldown(email, wait)));
+      else toast.error(err instanceof Error ? err.message : "Something went wrong");
+
     } finally {
       setBusy(false);
     }

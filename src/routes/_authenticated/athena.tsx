@@ -8,9 +8,15 @@ import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
-import { speak } from "@/lib/athena-speech";
+import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
-import { ARRIVAL_WELCOME, markSeen, markSessionGreeted } from "@/lib/arrival";
+import {
+  ARRIVAL_WELCOME,
+  arrivalDelivered,
+  markArrivalDelivered,
+  markSeen,
+  markSessionGreeted,
+} from "@/lib/arrival";
 import {
   RUNTIME_STATE_LABEL,
   resolveRuntimeState,
@@ -31,11 +37,12 @@ type Msg = { role: "user" | "assistant"; content: string; ts?: string };
 type VoiceMode = "voice" | "text";
 const VOICE_KEY = "athena-voice-mode";
 
-function buildIntro(firstName: string | null): string[] {
+function buildIntro(firstName: string | null, welcomeAlreadyDelivered = false): string[] {
   const greeting = firstName ? `Hello, ${firstName}.` : "Hello.";
   return [
-    // D5: the one-time spoken welcome, on the first-ever arrival only.
-    ARRIVAL_WELCOME,
+    // D5: the one-time welcome. If the member already received it at their
+    // arrival — before the first onboarding question — it is never repeated.
+    ...(welcomeAlreadyDelivered ? [] : [ARRIVAL_WELCOME]),
     greeting,
     "I'm Athena.",
     "It's a pleasure to finally meet you.",
@@ -46,6 +53,7 @@ function buildIntro(firstName: string | null): string[] {
     "Speak naturally. I'll do the same.",
   ];
 }
+
 
 /** Bearer token for the voice endpoints, which authenticate every request. */
 async function authHeader(): Promise<Record<string, string>> {
@@ -95,12 +103,18 @@ function AthenaPage() {
   /** Speak a line, tracking playback state so it can be shown as text. */
   const playLine = useCallback(async (text: string, signal: AbortSignal) => {
     const epoch = ++speechEpochRef.current;
-    await speak(text, signal, (on) => {
+    const outcome = await speak(text, signal, (on) => {
       if (epoch !== speechEpochRef.current) return;
       setSpeaking(on);
     });
     if (epoch === speechEpochRef.current) setSpeaking(false);
+    // Beta reliability: a voice failure is no longer swallowed in silence.
+    if (outcome === "failed" && epoch === speechEpochRef.current) {
+      toast("Athena's voice didn't come through that time. Her words are here.");
+    }
+    return outcome;
   }, []);
+
 
   const stopSpeaking = useCallback(() => {
     speechEpochRef.current += 1;
@@ -200,7 +214,9 @@ function AthenaPage() {
       setVoiceMode(stored ?? "voice");
 
       const firstName = (profile?.display_name as string | null)?.split(" ")[0] ?? null;
-      const lines = buildIntro(firstName);
+      const lines = buildIntro(firstName, arrivalDelivered());
+      markArrivalDelivered();
+
       const accumulated: Msg[] = [];
       await wait(500);
       for (let i = 0; i < lines.length; i++) {
@@ -228,6 +244,21 @@ function AthenaPage() {
       abort.abort();
     };
   }, [persist, playLine]);
+
+  // Beta reliability: unlock the audio element on the member's first real
+  // gesture. Playback later begins after an awaited network round-trip, which
+  // mobile browsers otherwise treat as outside the gesture and reject.
+  useEffect(() => {
+    const prime = () => primeSpeechAudio();
+    window.addEventListener("pointerdown", prime, { once: true });
+    window.addEventListener("keydown", prime, { once: true });
+    window.addEventListener("touchstart", prime, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+      window.removeEventListener("touchstart", prime);
+    };
+  }, []);
 
   // A conversation with Athena counts as activity: a return greeting is only
   // for a genuinely new session, never for coming back from this screen.
