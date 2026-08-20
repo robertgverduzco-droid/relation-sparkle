@@ -25,6 +25,8 @@ import {
   type Json,
 } from "./athena.server";
 import { runtimeDoctrine } from "./athena-doctrine.server";
+import { LENS_LABELS, depthLicence, depthStage, lensForFacet, mergeEvidence } from "./profile-depth";
+
 import { assessCoverage, foundationalGuidance } from "./foundational";
 import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
 import {
@@ -277,23 +279,59 @@ export const reflectAthena = createServerFn({ method: "POST" })
       .map((m) => `${m.role === "user" ? "THEY" : "ATHENA"}: ${m.content}`)
       .join("\n\n");
 
-    const [{ data: priorFacets }, { data: priorTopics }] = await Promise.all([
-      supabase
-        .from("understanding_facets")
-        .select("facet_key, understanding, confidence"),
-      supabase
-        .from("topic_map")
-        .select("topic_key, status, confidence, observations, open_questions"),
-    ]);
+    const [{ data: priorFacets }, { data: priorTopics }, { data: priorHistory }] =
+      await Promise.all([
+        supabase
+          .from("understanding_facets")
+          .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at"),
+        supabase
+          .from("topic_map")
+          .select("topic_key, status, confidence, observations, open_questions"),
+        supabase.from("facet_history").select("facet_key"),
+      ]);
 
-    const priorFacetLines = (priorFacets ?? [])
-      .filter((r) => (r.understanding ?? "").length > 0)
-      .map((r) => `- ${r.facet_key} (${Math.round(Number(r.confidence ?? 0) * 100)}%): ${r.understanding}`)
-      .join("\n") || "(none yet)";
+    // Depth architecture (docs: Living Profile depth & specialist lenses).
+    // The reflection model previously received only a one-line summary of each
+    // prior facet, so it rewrote a fresh short observation every pass instead
+    // of synthesising across time. It now receives the standing understanding,
+    // its reasoning, how much evidence supports it, how many times it has
+    // already been refined, and the synthesis licence that earns.
+    const historyCounts = new Map<string, number>();
+    for (const h of priorHistory ?? []) {
+      const k = (h as { facet_key: string }).facet_key;
+      historyCounts.set(k, (historyCounts.get(k) ?? 0) + 1);
+    }
 
-    const priorTopicLines = (priorTopics ?? [])
-      .map((r) => `- ${r.topic_key} [${r.status}, ${Math.round(Number(r.confidence ?? 0) * 100)}%]`)
-      .join("\n") || "(none yet)";
+    const priorFacetLines =
+      (priorFacets ?? [])
+        .filter((r) => (r.understanding ?? "").length > 0)
+        .map((r) => {
+          const key = r.facet_key as string;
+          const evidence = Array.isArray(r.evidence) ? (r.evidence as unknown[]) : [];
+          const stage = depthStage({
+            evidenceCount: evidence.length,
+            historyCount: historyCounts.get(key) ?? 0,
+            confidence: Number(r.confidence ?? 0),
+          });
+          const lens = LENS_LABELS[lensForFacet(key)];
+          const flag = r.needs_clarification
+            ? ` [unresolved: ${r.clarification_note ?? "clarify gently"}]`
+            : "";
+          return [
+            `- ${key} (lens: ${lens}; basis so far: ${r.basis ?? "unrecorded"}; evidence held: ${evidence.length}; times refined: ${historyCounts.get(key) ?? 0}; synthesis licence: ${depthLicence(stage)})${flag}`,
+            `  standing understanding: ${r.understanding}`,
+            r.reasoning ? `  why you hold it: ${r.reasoning}` : null,
+          ]
+            .filter(Boolean)
+            .join("\n");
+        })
+        .join("\n") || "(none yet)";
+
+    const priorTopicLines =
+      (priorTopics ?? [])
+        .map((r) => `- ${r.topic_key} [${r.status}, ${Math.round(Number(r.confidence ?? 0) * 100)}%]`)
+        .join("\n") || "(none yet)";
+
 
     const { object } = await generateObject({
       model: gateway("openai/gpt-5.5"),
@@ -307,7 +345,7 @@ Return two things:
 
 1) FACETS — for any facet where the conversation offers genuine, non-speculative signal:
 - key: one of ${FACET_KEYS.join(", ")}
-- understanding: 1–3 sentences in your own considered voice
+- understanding: your standing synthesis of this facet — NOT a summary of today alone. Carry forward what still holds from PRIOR FACETS, fold in what today adds, and say plainly what has shifted. Length is governed per facet by the 'synthesis licence' shown in PRIOR FACETS; for a facet you have never held before, one or two careful sentences.
 - reasoning: 1–2 sentences explaining why you currently hold this view
 - evidence: 1–5 short direct quotes / near-quotes from THEY, each under 200 chars
 - basis: 'stated' ONLY when THEY explicitly expressed this understanding in their own words; 'inferred' whenever you arrived at it by interpretation, pattern, tone, or implication — even if you can quote them. Never mark an interpretation as stated.
@@ -331,7 +369,16 @@ Rules:
 - Never invent quotes; evidence must come from THEY's words
 - Prefer nuance over labels
 - Understanding is provisional and will keep evolving
+
+DEPTH (Living Profile depth model):
+- Depth is earned by evidence, never by word count. Never pad, repeat, flatter, generalise into personality-test prose, or offer relationship advice. If you know little, say little — concise honesty beats fabricated depth.
+- Never re-summarise a standing understanding into something shorter or vaguer than it already is. Only revise it when today gives you reason to deepen, qualify, contextualise, contradict or replace it.
+- Where the licence allows more: distinguish context-dependent behaviour ("with people they trust… with strangers…"), name what has held over time versus what has changed, and name tension you cannot yet resolve rather than smoothing it over.
+- Integration across lenses: where an observation in one facet genuinely illuminates another (communication and autonomy; conflict and attachment; attraction and pacing), draw that connection once, in the facet where it is most load-bearing. Do not restate the same observation in every facet.
+- Mark a facet's basis honestly per revision: a synthesis you built across conversations is 'inferred' even when it quotes them.
+
 - For physical_attraction_preferences specifically: write it in prose, in their terms, and make clear for anything they named whether it is a preference (something they generally like), a strong preference (meaningfully shapes attraction but leaves room), or a constraint (they indicate romantic attraction is unlikely or unavailable outside it). "Appearance matters little to me" and "attraction grows once I know someone" are complete, valid understandings — record them as such. Never rate, rank, score or judge anyone's appearance or their preferences, and never record a specification list of physical characteristics.
+
 
 
 PRIOR FACETS (what you believed before today):
@@ -424,7 +471,7 @@ ${transcript}`,
         facet_key: f.key,
         understanding,
         reasoning: f.reasoning,
-        evidence: f.evidence,
+        evidence: mergeEvidence(prev?.evidence, f.evidence),
         basis: f.basis,
         confidence,
         needs_clarification: contradicts,
