@@ -8,7 +8,7 @@ import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
-import { speak } from "@/lib/athena-speech";
+import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { ARRIVAL_WELCOME, markSeen, markSessionGreeted } from "@/lib/arrival";
 import {
