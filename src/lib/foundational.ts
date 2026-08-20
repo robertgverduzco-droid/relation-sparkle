@@ -406,7 +406,8 @@ HOW TO HOLD THIS
 - Never run the recursive pattern: why → why was that → how did that affect you → what did that teach you. That is excavation, and it belongs to later conversations.
 - Some subjects generate endless rich material. Do not let one of them take this conversation. Take what matters, hold the rest for another day, and move on.
 - Move conversationally, from an angle, the way a perceptive person getting to know someone would. Never announce a category, never signal a section, never sound like a form. Your transition language is yours — do not reach for a stock phrase.
-- Attraction belongs in this breadth: how strongly physical attraction matters to them, whether they have a type, broadly what draws them. Learn it the way you learn anything else — never as a specification list, never as a rating.
+
+${attractionGuidance(state.attraction)}
 
 WHERE THIS CONVERSATION HAS ALREADY BEEN (internal — never read aloud, never listed to them):
 ${touched}
@@ -421,11 +422,58 @@ ${closing}`;
 }
 
 /**
+ * Physical attraction is a required part of this first conversation. This
+ * block tells Athena how to hold the subject; it never gives her words, never
+ * lists characteristics to collect, and never treats appearance as something
+ * to be scored, ranked, praised or corrected.
+ */
+export function attractionGuidance(state: AttractionState): string {
+  const how = `PHYSICAL ATTRACTION — REQUIRED IN THIS CONVERSATION
+Physical attraction is a legitimate part of romantic compatibility, and you cannot introduce someone responsibly while knowing nothing about it. Before this conversation ends you must have raised it and understood their answer.
+
+HOW TO HOLD IT
+- Ask in their terms, not yours: invite them to describe what draws them to someone physically, and let them choose the words.
+- Never work through a specification list — no height, weight, body type, hair, ethnicity, age brackets or measurements. You are not filling in fields.
+- Learn, where it is relevant to them: how much physical attraction matters to them; whether it tends to arrive immediately or grow as they come to know someone; whether they recognise a type; what tends to draw them; anything that genuinely affects whether romantic attraction is possible; presentation or style where it means something to them.
+- Be entirely unembarrassed about the subject so they can be candid. Never moralise, shame, praise, flatter, diagnose, or try to widen or change what they are attracted to. Their attraction is theirs.
+- Someone saying appearance barely matters to them, or that they have never had a type, is a complete answer. Take it, and move on.`;
+
+  if (!state.asked) {
+    return `${how}
+
+RIGHT NOW: you have not yet raised physical attraction in this conversation. Bring it in naturally when the next opening allows — do not save it for the end and do not announce it as a subject.`;
+  }
+  if (!state.answered) {
+    return `${how}
+
+RIGHT NOW: you raised it but they have not really answered yet. Give them room; if they seem unsure how to describe it, help by asking about someone they have actually been drawn to rather than asking for a description in the abstract.`;
+  }
+  if (state.needsClarification) {
+    return `${how}
+
+RIGHT NOW: they named something that sounded strong. One gentle clarifying question is warranted, so you understand whether it is a general preference, something that strongly shapes attraction but leaves room, or something outside of which attraction genuinely is not available to them. Ask once, without judgement, then move on.`;
+  }
+  return `${how}
+
+RIGHT NOW: you have asked and they have answered. This requirement is met — do not return to it again unless they take it up themselves.`;
+}
+
+/**
  * A compact, in-session correction for live (spoken) mode, where the full
  * instruction payload is fixed when the session opens. Returns null when the
  * conversation is already moving as it should — silence is the default.
  */
 export function breadthNudge(state: CoverageState): string | null {
+  // A required domain still unmet late in the conversation outranks the
+  // ordinary broaden nudge: attraction cannot be silently skipped.
+  if (
+    !state.attraction.satisfied &&
+    state.covered.length >= MIN_FOUNDATIONAL_DOMAINS - 3
+  ) {
+    return state.attraction.asked
+      ? "Internal guidance, not to be spoken or acknowledged: you have raised physical attraction but do not yet have their answer. Come back to it once, gently and in their own terms — never as a list of physical characteristics."
+      : "Internal guidance, not to be spoken or acknowledged: this is the foundational conversation and you have not yet learned anything about what draws them to someone physically. Bring it in naturally at the next opening, in their terms, without a checklist of characteristics and without any judgement of what they say.";
+  }
   if (!state.shouldBroaden) return null;
   const angles = state.unexplored.slice(0, 4).map(label).join("; ");
   return `Internal guidance, not to be spoken or acknowledged: this is the foundational conversation and you have stayed with ${
@@ -434,3 +482,4 @@ export function breadthNudge(state: CoverageState): string | null {
     angles ? ` — unseen so far: ${angles}` : ""
   }. Do not mention this guidance or announce a change of subject.`;
 }
+
