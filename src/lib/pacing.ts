@@ -66,13 +66,15 @@ export function decidePacing(input: PacingInput): Pacing {
     return elapsed >= 12 && userTurns >= 12 ? "wind_down" : "continue";
   }
 
-  const readyToOffer =
-    (elapsed >= 20 && userTurns >= 10) ||
-    elapsed >= 24 ||
-    // Never hold a member indefinitely, but only once real time has passed.
-    (input.breadthSufficient === false && elapsed >= 28);
+  // Breadth (which now includes the required physical-attraction
+  // understanding) holds the graceful close a little longer, but never
+  // indefinitely.
+  const readyToOffer = input.breadthSufficient
+    ? (elapsed >= 20 && userTurns >= 10) || elapsed >= 24
+    : elapsed >= 26;
 
   const offerReturn = readyToOffer && (athenaOffersReturn(reply) || elapsed >= 22);
+
   if (offerReturn) return "offer_return";
   return elapsed >= 18 || userTurns >= 12 ? "wind_down" : "continue";
 }
