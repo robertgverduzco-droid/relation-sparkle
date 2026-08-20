@@ -26,29 +26,51 @@ export type FacetView = {
   understanding: string;
   /** Qualitative only — numbers are never shown to members (L4). */
   held: "held lightly" | "reasonably understood" | "well-understood";
-  /** F-14: did the member say it, or did Athena infer it? */
-  basis: "stated" | "inferred";
+  /**
+   * F-14 provenance. `stated` and `inferred` come from the stored basis.
+   * `unestablished` means provenance was never recorded (legacy understanding)
+   * — Athena must not claim member authorship she cannot evidence.
+   */
+  basis: FacetBasis;
   last_updated: string | null;
   revised: boolean;
 };
+
+export type FacetBasis = "stated" | "inferred" | "unestablished";
+
+/** Member-facing wording for each provenance state. */
+export const BASIS_LABEL: Record<FacetBasis, string> = {
+  stated: "you told me",
+  inferred: "I inferred",
+  unestablished: "from our conversations",
+};
+
+/**
+ * BR01-04 — provenance is read from the canonical `basis` column only.
+ * The presence of evidence quotes never implies the member authored the
+ * understanding; an inference can quote them and still be an inference.
+ */
+export function resolveBasis(basis: unknown): FacetBasis {
+  return basis === "stated" ? "stated" : basis === "inferred" ? "inferred" : "unestablished";
+}
 
 type FacetRecord = {
   facet_key: string;
   understanding: string | null;
   confidence: number | null;
   evidence: unknown;
+  basis?: unknown;
   refined_at: string | null;
 };
 
 export function toFacetView(row: FacetRecord, revisedKeys: Set<string>): FacetView {
   const c = row.confidence ?? 0;
-  const evidence = Array.isArray(row.evidence) ? row.evidence : [];
   return {
     key: row.facet_key,
     label: FACET_LABELS[row.facet_key as FacetKey] ?? row.facet_key,
     understanding: (row.understanding ?? "").trim(),
     held: c >= 0.7 ? "well-understood" : c >= 0.45 ? "reasonably understood" : "held lightly",
-    basis: evidence.length > 0 ? "stated" : "inferred",
+    basis: resolveBasis(row.basis),
     last_updated: row.refined_at,
     revised: revisedKeys.has(row.facet_key),
   };
