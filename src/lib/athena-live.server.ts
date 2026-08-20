@@ -46,6 +46,10 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
 
   let memoryBlock = "You have not yet built an understanding of this person. Begin by listening.";
+  // Live sessions are foundational until the member's own record says
+  // otherwise; breadth-first orientation applies in spoken mode identically.
+  let foundational = true;
+
 
   if (url && key) {
     try {
