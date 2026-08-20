@@ -100,7 +100,10 @@ function Home() {
           <ReadinessCard />
         </section>
 
-        {!hasIntroduction && <WaitingState />}
+        {/* Post-foundational: Athena's own Looking state. It renders only when
+            she is genuinely eligible and empty-handed; otherwise readiness and
+            hold copy above already own the surface. */}
+        {!hasIntroduction && <LookingState />}
 
         <section className="space-y-1 px-6">
           <Continuation
