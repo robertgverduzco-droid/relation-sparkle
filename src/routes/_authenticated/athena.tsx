@@ -445,6 +445,16 @@ function AthenaPage() {
   useEffect(() => () => { stopStream(); }, [stopStream]);
 
   const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing;
+  // BR01-02: a single source of truth for Athena's runtime state.
+  const runtimeState = resolveRuntimeState({
+    hydrated,
+    speaking,
+    recording,
+    transcribing,
+    busy,
+    introducing,
+    askingPreference,
+  });
   const placeholder = introducing || !hydrated || askingPreference
     ? ""
     : transcribing
@@ -454,6 +464,7 @@ function AthenaPage() {
         : busy
           ? "…"
           : "Say it — or type it";
+
 
   return (
     <div className="screen-shell safe-top pb-24" data-testid="athena-screen">
