@@ -24,6 +24,7 @@ import {
   type Json,
 } from "./athena.server";
 import { runtimeDoctrine } from "./athena-doctrine.server";
+import { assessCoverage, foundationalGuidance } from "./foundational";
 
 export const askAthena = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
