@@ -7,7 +7,7 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { EndingChoiceCard } from "@/components/ending-choice-card";
 import { ReadinessCard } from "@/components/readiness-card";
 import { AthenaPresence } from "@/components/athena-presence";
-import { WaitingState } from "@/components/waiting-state";
+import { LookingState } from "@/components/looking-state";
 import { Bell } from "lucide-react";
 import { ReturnGreeting } from "@/components/return-greeting";
 
@@ -100,7 +100,10 @@ function Home() {
           <ReadinessCard />
         </section>
 
-        {!hasIntroduction && <WaitingState />}
+        {/* Post-foundational: Athena's own Looking state. It renders only when
+            she is genuinely eligible and empty-handed; otherwise readiness and
+            hold copy above already own the surface. */}
+        {!hasIntroduction && <LookingState />}
 
         <section className="space-y-1 px-6">
           <Continuation

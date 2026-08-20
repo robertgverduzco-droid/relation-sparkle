@@ -195,6 +195,21 @@ Use this memory to:
     const boundary = assessBoundary(data.messages);
     const boundaryHint = boundary ? boundaryGuidance(boundary, isFoundational) : "";
 
+    // Post-foundational waiting. Ordinary ongoing conversation, with the
+    // candidate-specific sentences unlocked strictly by verified runtime
+    // state — never as a persuasion technique.
+    let waitingHint = "";
+    if (!isFoundational) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { evaluateWaitingState } = await import("./waiting.server");
+        const { waitingGuidance } = await import("./waiting");
+        waitingHint = waitingGuidance(await evaluateWaitingState(supabaseAdmin, context.userId));
+      } catch {
+        waitingHint = "";
+      }
+    }
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -203,7 +218,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, readinessHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
