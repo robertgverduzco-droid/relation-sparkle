@@ -17,6 +17,14 @@
 // pair reasoning, or any system-internal material.
 import type { FacetBasis, FacetKey } from "./facets";
 import { BASIS_LABEL, FACET_LABELS } from "./facets";
+import {
+  depthStage,
+  hasEvolvedSince,
+  lensForFacet,
+  memberFacingDepth,
+  type DepthStage,
+  type LensKey,
+} from "./profile-depth";
 
 export type { FacetBasis };
 export { BASIS_LABEL };
@@ -37,6 +45,14 @@ export type FacetView = {
   basis: FacetBasis;
   last_updated: string | null;
   revised: boolean;
+  /** Specialist lens this facet belongs to (grouping only, not a new domain). */
+  lens: LensKey;
+  /** Internal depth stage; rendered as prose, never as a level or score. */
+  stage: DepthStage;
+  /** Member-facing wording for the stage. */
+  depth: string;
+  /** True when this understanding changed since the member last read it. */
+  evolved: boolean;
 };
 
 /**
@@ -57,8 +73,18 @@ type FacetRecord = {
   refined_at: string | null;
 };
 
-export function toFacetView(row: FacetRecord, revisedKeys: Set<string>): FacetView {
+export function toFacetView(
+  row: FacetRecord,
+  revisedKeys: Set<string>,
+  opts?: { historyCount?: number; reviewedAt?: string | null },
+): FacetView {
   const c = row.confidence ?? 0;
+  const evidenceCount = Array.isArray(row.evidence) ? row.evidence.length : 0;
+  const stage = depthStage({
+    evidenceCount,
+    historyCount: opts?.historyCount ?? 0,
+    confidence: c,
+  });
   return {
     key: row.facet_key,
     label: FACET_LABELS[row.facet_key as FacetKey] ?? row.facet_key,
@@ -67,8 +93,13 @@ export function toFacetView(row: FacetRecord, revisedKeys: Set<string>): FacetVi
     basis: resolveBasis(row.basis),
     last_updated: row.refined_at,
     revised: revisedKeys.has(row.facet_key),
+    lens: lensForFacet(row.facet_key),
+    stage,
+    depth: memberFacingDepth(stage),
+    evolved: hasEvolvedSince(row.refined_at, opts?.reviewedAt ?? null),
   };
 }
+
 
 /** Applied to a member's own words before they are stored on a revision. */
 export function trimStatement(input: string | undefined | null): string | null {
