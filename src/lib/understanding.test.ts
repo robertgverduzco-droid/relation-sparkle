@@ -5,21 +5,24 @@ import {
   FACET_MIRROR_COLUMNS,
   mirrorPatch,
   revisionPatch,
+  athenaRestatement,
   toFacetView,
   trimStatement,
 } from "./understanding.server";
 import { FACET_KEYS } from "./facets";
 
 describe("F-13 revision patches", () => {
-  it("change keeps the member's own words as authoritative stated material", () => {
+  it("change is restated in Athena's voice while the member's words stay authoritative", () => {
     const p = revisionPatch("change", "I moved to Chicago last spring.");
-    expect(p.understanding).toBe("I moved to Chicago last spring.");
+    // BR01-05: Athena never speaks as the member.
+    expect(p.understanding).toBe("You moved to Chicago last spring.");
     expect(p.evidence).toEqual(["I moved to Chicago last spring."]);
+    expect(p.basis).toBe("stated");
   });
 
   it("correction supersedes the wrong understanding and lowers confidence", () => {
     const p = revisionPatch("correction", "I'm not avoidant, I just need warning.");
-    expect(p.understanding).toBe("I'm not avoidant, I just need warning.");
+    expect(p.understanding).toBe("You're not avoidant, you just need warning.");
     expect(p.confidence).toBeLessThan(revisionPatch("change", "x").confidence + 0.01);
     expect(p.confidence).toBeLessThanOrEqual(0.5);
   });
@@ -53,10 +56,15 @@ describe("F-13 mirror propagation (A-01)", () => {
     });
   });
 
-  it("correction overwrites the mirror with the member's words", () => {
+  it("correction overwrites the mirror with Athena's restatement", () => {
     expect(mirrorPatch("conflict_style", "correction", "I withdraw, then I come back.")).toEqual({
-      conflict_style: "I withdraw, then I come back.",
+      conflict_style: "You withdraw, then you come back.",
     });
+  });
+
+  it("a statement with no first-person voice is left exactly as written", () => {
+    expect(athenaRestatement("Partnership, not a project.")).toBe("Partnership, not a project.");
+    expect(athenaRestatement("You had this right already.")).toBe("You had this right already.");
   });
 
   it("change overwrites the mirror with the member's words", () => {
@@ -97,12 +105,26 @@ describe("stated vs inferred survives revision (F-14)", () => {
         understanding: patch.understanding,
         confidence: patch.confidence,
         evidence: patch.evidence,
+        basis: patch.basis,
         refined_at: patch.refined_at,
       },
       new Set(["self_understanding"]),
     );
     expect(view.basis).toBe("stated");
     expect(view.revised).toBe(true);
+    // BR01-04: provenance comes from the stored basis, never from evidence.
+    expect(
+      toFacetView(
+        { facet_key: "lifestyle", understanding: "x", confidence: 0.5, evidence: ["quoted"], basis: "inferred", refined_at: null },
+        new Set(),
+      ).basis,
+    ).toBe("inferred");
+    expect(
+      toFacetView(
+        { facet_key: "lifestyle", understanding: "x", confidence: 0.5, evidence: [], basis: null, refined_at: null },
+        new Set(),
+      ).basis,
+    ).toBe("unestablished");
     expect(String(view.held)).not.toMatch(/\d/);
   });
 });
