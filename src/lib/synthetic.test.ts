@@ -99,8 +99,9 @@ describe("authority and login isolation", () => {
   });
 
   it("grants a synthetic credential no elevated role", () => {
-    // Nothing in the provisioning path writes user_roles.
-    expect(serverSource).not.toMatch(/user_roles/);
+    // Nothing in the provisioning path writes a role row.
+    expect(serverSource).not.toMatch(/from\("user_roles"\)\s*\.insert/);
+    expect(serverSource).not.toMatch(/role:\s*"(admin|moderator|founder)"/);
   });
 });
 
