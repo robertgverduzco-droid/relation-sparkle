@@ -7,12 +7,15 @@ const openness = z.enum(["open", "preference", "requirement", "discuss_with_athe
 // judging any of them.
 const heightCm = z.number().int().min(120).max(230).nullable().optional();
 
+const strength = z.enum(["preference", "requirement"]);
+
 export const selfDescriptionInput = z.object({
   height_cm: heightCm,
   ethnicities: z.array(z.string().max(40)).max(12).optional(),
   ethnicity_self_describe: z.string().max(160).nullable().optional(),
   religions: z.array(z.string().max(40)).max(12).optional(),
   religion_self_describe: z.string().max(160).nullable().optional(),
+  smoking: z.enum(["no", "occasionally", "yes", "prefer_not_to_say"]).nullable().optional(),
 });
 
 export const matchPreferencesInput = z.object({
@@ -22,9 +25,16 @@ export const matchPreferencesInput = z.object({
   preferred_religions: z.array(z.string().max(40)).max(12).optional(),
   height_min_cm: heightCm,
   height_max_cm: heightCm,
-  height_strength: z.enum(["preference", "requirement"]),
+  height_strength: strength,
   additional_notes: z.string().max(2000).nullable().optional(),
+  // Strength turns an existing canonical preference into a genuine
+  // non-negotiable. The ranges themselves are collected elsewhere.
+  age_strength: strength.optional(),
+  children_strength: strength.optional(),
+  smoking_openness: openness.optional(),
+  preferred_smoking: z.array(z.enum(["no", "occasionally", "yes"])).max(3).optional(),
 });
+
 
 export const structuredProfileInput = z.object({
   self: selfDescriptionInput.optional(),

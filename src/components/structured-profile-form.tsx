@@ -5,11 +5,13 @@ import {
   OPENNESS_OPTIONS,
   PREFER_NOT_TO_SAY,
   RELIGION_OPTIONS,
+  SMOKING_OPTIONS,
   cmToFeetInches,
   feetInchesToCm,
   type MatchPreferences,
   type SelfDescription,
 } from "@/lib/structured-profile";
+
 
 function Chip({
   label,
@@ -178,9 +180,31 @@ export function SelfDescriptionFields({
           className="mt-3 min-h-11 w-full rounded-xl border border-border bg-card px-4 text-sm"
         />
       </div>
+
+      <fieldset data-testid="self-smoking">
+        <legend className="mb-2 text-sm text-foreground">Do you smoke?</legend>
+        <div className="flex flex-wrap gap-2">
+          {SMOKING_OPTIONS.map((o) => (
+            <Chip
+              key={o.value}
+              label={o.label}
+              selected={value.smoking === o.value}
+              onToggle={() => onChange({ ...value, smoking: value.smoking === o.value ? null : o.value })}
+            />
+          ))}
+          <Chip
+            label="Prefer not to say"
+            selected={value.smoking === PREFER_NOT_TO_SAY}
+            onToggle={() =>
+              onChange({ ...value, smoking: value.smoking === PREFER_NOT_TO_SAY ? null : PREFER_NOT_TO_SAY })
+            }
+          />
+        </div>
+      </fieldset>
     </div>
   );
 }
+
 
 function OpennessRow({
   legend,
@@ -283,6 +307,58 @@ export function MatchPreferenceFields({
           </div>
         )}
       </div>
+
+      <OpennessRow
+        legend="Smoking, in someone you'd meet"
+        openness={value.smoking_openness}
+        onOpenness={(v) => onChange({ ...value, smoking_openness: v })}
+        options={SMOKING_OPTIONS}
+        selected={value.preferred_smoking}
+        onSelected={(v) => onChange({ ...value, preferred_smoking: v })}
+      />
+
+      <fieldset data-testid="constraint-strength">
+        <legend className="mb-2 text-sm text-foreground">
+          Are any of these truly non-negotiable?
+        </legend>
+        <p className="mb-3 text-xs text-muted-foreground">
+          A preference is something Athena weighs. A non-negotiable is a line she won't cross —
+          and she'll make sure she knows where someone stands before introducing you.
+        </p>
+        <div className="space-y-3">
+          <div>
+            <Label>Your age range</Label>
+            <div className="flex flex-wrap gap-2">
+              <Chip
+                label="A preference"
+                selected={value.age_strength === "preference"}
+                onToggle={() => onChange({ ...value, age_strength: "preference" })}
+              />
+              <Chip
+                label="Non-negotiable"
+                selected={value.age_strength === "requirement"}
+                onToggle={() => onChange({ ...value, age_strength: "requirement" })}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>Where you stand on children</Label>
+            <div className="flex flex-wrap gap-2">
+              <Chip
+                label="A preference"
+                selected={value.children_strength === "preference"}
+                onToggle={() => onChange({ ...value, children_strength: "preference" })}
+              />
+              <Chip
+                label="Non-negotiable"
+                selected={value.children_strength === "requirement"}
+                onToggle={() => onChange({ ...value, children_strength: "requirement" })}
+              />
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
 
       <div>
         <Label hint="Share any preferences or boundaries that matter to you.">

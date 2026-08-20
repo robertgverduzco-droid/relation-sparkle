@@ -45,7 +45,23 @@ export const RELIGION_OPTIONS = [
 ] as const;
 
 export type Openness = "open" | "preference" | "requirement" | "discuss_with_athena";
+/**
+ * Strength is the whole difference between a taste and a gate.
+ *   preference  — weighs in Athena's qualitative reasoning; missing counterpart
+ *                 data is never resolved before considering the pair.
+ *   requirement — a genuine non-negotiable; counterpart data MUST be known and
+ *                 satisfied before this pair can be presented.
+ * There is no third "strong preference" storage state: a strong preference is a
+ * preference Athena weighs more heavily in reasoning, never a gate.
+ */
 export type HeightStrength = "preference" | "requirement";
+export type Strength = "preference" | "requirement";
+
+export const SMOKING_OPTIONS = [
+  { value: "no", label: "I don't smoke" },
+  { value: "occasionally", label: "Occasionally" },
+  { value: "yes", label: "I smoke" },
+] as const;
 
 export const OPENNESS_OPTIONS: Array<{ value: Openness; label: string; help: string }> = [
   { value: "open", label: "Open to anyone", help: "No preference here." },
@@ -64,6 +80,12 @@ export type SelfDescription = {
   ethnicity_self_describe: string | null;
   religions: string[];
   religion_self_describe: string | null;
+  /** Member-stated smoking. Never inferred from photographs or anything else. */
+  smoking: string | null;
+  /** Derived from the member's own stated birth date; null when not supplied. */
+  age: number | null;
+  /** The member's own stance on children (their statement about themselves). */
+  wants_children: string | null;
 };
 
 export type MatchPreferences = {
@@ -75,6 +97,14 @@ export type MatchPreferences = {
   height_max_cm: number | null;
   height_strength: HeightStrength;
   additional_notes: string | null;
+  age_min: number | null;
+  age_max: number | null;
+  age_strength: Strength;
+  /** The member's own stance, reused as the thing a children requirement asks of a counterpart. */
+  wants_children: string | null;
+  children_strength: Strength;
+  smoking_openness: Openness;
+  preferred_smoking: string[];
 };
 
 export const EMPTY_SELF: SelfDescription = {
@@ -83,6 +113,9 @@ export const EMPTY_SELF: SelfDescription = {
   ethnicity_self_describe: null,
   religions: [],
   religion_self_describe: null,
+  smoking: null,
+  age: null,
+  wants_children: null,
 };
 
 export const EMPTY_PREFERENCES: MatchPreferences = {
@@ -94,7 +127,15 @@ export const EMPTY_PREFERENCES: MatchPreferences = {
   height_max_cm: null,
   height_strength: "preference",
   additional_notes: null,
+  age_min: null,
+  age_max: null,
+  age_strength: "preference",
+  wants_children: null,
+  children_strength: "preference",
+  smoking_openness: "open",
+  preferred_smoking: [],
 };
+
 
 export function labelFor(
   value: string,
@@ -122,9 +163,18 @@ function disclosed(values: string[] | null | undefined, selfDescribe?: string | 
 
 export type Tri = "compatible" | "incompatible" | "unknown";
 
+/** Every characteristic a member may declare a genuine non-negotiable about. */
+export type ConstraintField =
+  | "height"
+  | "ethnicity"
+  | "religion"
+  | "age"
+  | "children"
+  | "smoking";
+
 export type ConstraintOutcome = {
   /** Which constraint this is. */
-  field: "height" | "ethnicity" | "religion";
+  field: ConstraintField;
   /** Whose stated requirement this is. */
   holder: "self" | "other";
   verdict: Tri;
@@ -141,8 +191,19 @@ export type StructuredEvaluation = {
   softSignals: string[];
   /** Information Athena must obtain before an introduction that depends on an
    *  unresolved genuine constraint. */
-  unresolved: Array<{ subjectId: string; field: "height" | "ethnicity" | "religion" }>;
+  unresolved: Array<{ subjectId: string; field: ConstraintField }>;
 };
+
+/**
+ * BINDING: an introduction may only be presented when every genuine hard
+ * constraint bearing on the pair is COMPATIBLE. UNKNOWN keeps the pair alive
+ * as a possibility but can never be presented. No client state, conversational
+ * statement, Founder role or member request may bypass this.
+ */
+export function constraintsPermitIntroduction(evaluation: StructuredEvaluation): boolean {
+  return evaluation.verdict === "compatible";
+}
+
 
 type Party = { id: string; self: SelfDescription; prefs: MatchPreferences };
 
@@ -176,7 +237,8 @@ function evaluateOneDirection(holder: Party, counterpart: Party, side: "self" | 
   }
 
   const categorical = (
-    field: "ethnicity" | "religion",
+    field: ConstraintField,
+
     openness: Openness,
     preferred: string[],
     stated: string[],
@@ -224,6 +286,59 @@ function evaluateOneDirection(holder: Party, counterpart: Party, side: "self" | 
     counterpart.self.religions,
     counterpart.self.religion_self_describe,
   );
+  categorical(
+    "smoking",
+    holder.prefs.smoking_openness,
+    holder.prefs.preferred_smoking,
+    counterpart.self.smoking ? [counterpart.self.smoking] : [],
+    null,
+  );
+
+  // Age. The stated range is an ordinary preference unless the member marked it
+  // a non-negotiable. A missing birth date is UNKNOWN, never a mismatch.
+  {
+    const { age_min, age_max, age_strength } = holder.prefs;
+    if (age_min != null || age_max != null) {
+      const age = counterpart.self.age;
+      if (age == null) {
+        if (age_strength === "requirement") {
+          outcomes.push({ field: "age", holder: side, verdict: "unknown", note: "Age is a stated non-negotiable; the other person has not recorded a birth date." });
+          unresolved.push({ subjectId: counterpart.id, field: "age" });
+        } else {
+          soft.push("An age preference exists and the other person's age is not recorded. Unknown, never a mismatch.");
+        }
+      } else {
+        const within = (age_min == null || age >= age_min) && (age_max == null || age <= age_max);
+        if (within) {
+          outcomes.push({ field: "age", holder: side, verdict: "compatible", note: "Stated age sits inside the stated range." });
+        } else if (age_strength === "requirement") {
+          outcomes.push({ field: "age", holder: side, verdict: "incompatible", note: "Stated age falls outside a genuine stated non-negotiable." });
+        } else {
+          soft.push("Age sits outside a soft preference. Weigh it; it is not a disqualification.");
+        }
+      }
+    }
+  }
+
+  // Children / family. Only a declared non-negotiable gates; anything else is
+  // reasoning material.
+  {
+    const mine = holder.prefs.wants_children;
+    const theirs = counterpart.self.wants_children;
+    if (mine && holder.prefs.children_strength === "requirement") {
+      if (!theirs) {
+        outcomes.push({ field: "children", holder: side, verdict: "unknown", note: "Children are a stated non-negotiable; the other person has not recorded their position." });
+        unresolved.push({ subjectId: counterpart.id, field: "children" });
+      } else if (theirs === mine) {
+        outcomes.push({ field: "children", holder: side, verdict: "compatible", note: "Both recorded the same position on children." });
+      } else {
+        outcomes.push({ field: "children", holder: side, verdict: "incompatible", note: "A genuine stated position on children is not shared." });
+      }
+    } else if (mine && theirs && mine !== theirs) {
+      soft.push("Their positions on children differ. Explore what that difference actually means to each of them.");
+    }
+  }
+
 
   return { outcomes, soft, unresolved };
 }

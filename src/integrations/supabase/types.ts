@@ -1410,6 +1410,7 @@ export type Database = {
           region: string | null
           religion_self_describe: string | null
           religions: string[]
+          smoking: string | null
           updated_at: string
         }
         Insert: {
@@ -1434,6 +1435,7 @@ export type Database = {
           region?: string | null
           religion_self_describe?: string | null
           religions?: string[]
+          smoking?: string | null
           updated_at?: string
         }
         Update: {
@@ -1458,6 +1460,7 @@ export type Database = {
           region?: string | null
           religion_self_describe?: string | null
           religions?: string[]
+          smoking?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -2054,6 +2057,8 @@ export type Database = {
           additional_notes: string | null
           age_max: number | null
           age_min: number | null
+          age_strength: string
+          children_strength: string
           created_at: string
           deal_breakers: Json
           ethnicity_openness: string
@@ -2065,9 +2070,11 @@ export type Database = {
           max_distance_km: number | null
           preferred_ethnicities: string[]
           preferred_religions: string[]
+          preferred_smoking: string[]
           relationship_intent: string | null
           religion_openness: string
           seeking_genders: string[]
+          smoking_openness: string
           updated_at: string
           user_id: string
           wants_children: string | null
@@ -2076,6 +2083,8 @@ export type Database = {
           additional_notes?: string | null
           age_max?: number | null
           age_min?: number | null
+          age_strength?: string
+          children_strength?: string
           created_at?: string
           deal_breakers?: Json
           ethnicity_openness?: string
@@ -2087,9 +2096,11 @@ export type Database = {
           max_distance_km?: number | null
           preferred_ethnicities?: string[]
           preferred_religions?: string[]
+          preferred_smoking?: string[]
           relationship_intent?: string | null
           religion_openness?: string
           seeking_genders?: string[]
+          smoking_openness?: string
           updated_at?: string
           user_id: string
           wants_children?: string | null
@@ -2098,6 +2109,8 @@ export type Database = {
           additional_notes?: string | null
           age_max?: number | null
           age_min?: number | null
+          age_strength?: string
+          children_strength?: string
           created_at?: string
           deal_breakers?: Json
           ethnicity_openness?: string
@@ -2109,9 +2122,11 @@ export type Database = {
           max_distance_km?: number | null
           preferred_ethnicities?: string[]
           preferred_religions?: string[]
+          preferred_smoking?: string[]
           relationship_intent?: string | null
           religion_openness?: string
           seeking_genders?: string[]
+          smoking_openness?: string
           updated_at?: string
           user_id?: string
           wants_children?: string | null
