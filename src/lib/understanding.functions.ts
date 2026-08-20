@@ -22,24 +22,79 @@ const reviseInput = z.object({
 /** What Athena currently understands about *you*, in plain language. */
 export const getMyUnderstanding = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ facets: FacetView[] }> => {
+  .handler(async ({ context }): Promise<{
+    facets: FacetView[];
+    lenses: Array<{ key: LensKey; label: string; facets: FacetView[] }>;
+    stillLearning: string | null;
+  }> => {
     const { supabase, userId } = context;
-    const [{ data: facetRows, error }, { data: revisions }] = await Promise.all([
-      supabase
-        .from("understanding_facets")
-        .select("facet_key, understanding, confidence, evidence, basis, refined_at")
-        .eq("user_id", userId),
-      supabase.from("understanding_revisions").select("facet_key").eq("user_id", userId),
-    ]);
+    const [{ data: facetRows, error }, { data: revisions }, { data: history }, { data: intel }] =
+      await Promise.all([
+        supabase
+          .from("understanding_facets")
+          .select("facet_key, understanding, confidence, evidence, basis, refined_at, needs_clarification")
+          .eq("user_id", userId),
+        supabase.from("understanding_revisions").select("facet_key").eq("user_id", userId),
+        supabase.from("facet_history").select("facet_key").eq("user_id", userId),
+        supabase
+          .from("user_intelligence")
+          .select("understanding_reviewed_at")
+          .eq("user_id", userId)
+          .maybeSingle(),
+      ]);
     if (error) throw new Error(error.message);
 
     const revised = new Set((revisions ?? []).map((r) => (r as { facet_key: string }).facet_key));
-    const facets = (facetRows ?? [])
-      .map((r) => toFacetView(r as never, revised))
+    const historyCounts = new Map<string, number>();
+    for (const h of history ?? []) {
+      const k = (h as { facet_key: string }).facet_key;
+      historyCounts.set(k, (historyCounts.get(k) ?? 0) + 1);
+    }
+    const reviewedAt =
+      (intel as { understanding_reviewed_at?: string | null } | null)?.understanding_reviewed_at ??
+      null;
+
+    const rows = facetRows ?? [];
+    const facets = rows
+      .map((r) =>
+        toFacetView(r as never, revised, {
+          historyCount: historyCounts.get((r as { facet_key: string }).facet_key) ?? 0,
+          reviewedAt,
+        }),
+      )
       .filter((f) => f.understanding.length > 0)
       .sort((a, b) => a.label.localeCompare(b.label));
-    return { facets };
+
+    const lenses = LENS_ORDER.map((key) => ({
+      key,
+      label: LENS_LABELS[key],
+      facets: facets.filter((f) => f.lens === key),
+    })).filter((l) => l.facets.length > 0);
+
+    return {
+      facets,
+      lenses,
+      stillLearning: stillLearningCopy(stillLearning(rows as never)),
+    };
   });
+
+/**
+ * Records that the member has read their profile, so evolved sections can be
+ * marked next time. Nothing is counted and nothing is scored.
+ */
+export const markUnderstandingReviewed = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await supabase
+      .from("user_intelligence")
+      .upsert(
+        { user_id: userId, understanding_reviewed_at: new Date().toISOString() } as never,
+        { onConflict: "user_id" },
+      );
+    return { ok: true as const };
+  });
+
 
 /** Change / Correction / Removal (F-13). */
 export const reviseUnderstanding = createServerFn({ method: "POST" })
