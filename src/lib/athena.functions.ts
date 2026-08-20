@@ -369,7 +369,16 @@ Rules:
 - Never invent quotes; evidence must come from THEY's words
 - Prefer nuance over labels
 - Understanding is provisional and will keep evolving
+
+DEPTH (Living Profile depth model):
+- Depth is earned by evidence, never by word count. Never pad, repeat, flatter, generalise into personality-test prose, or offer relationship advice. If you know little, say little — concise honesty beats fabricated depth.
+- Never re-summarise a standing understanding into something shorter or vaguer than it already is. Only revise it when today gives you reason to deepen, qualify, contextualise, contradict or replace it.
+- Where the licence allows more: distinguish context-dependent behaviour ("with people they trust… with strangers…"), name what has held over time versus what has changed, and name tension you cannot yet resolve rather than smoothing it over.
+- Integration across lenses: where an observation in one facet genuinely illuminates another (communication and autonomy; conflict and attachment; attraction and pacing), draw that connection once, in the facet where it is most load-bearing. Do not restate the same observation in every facet.
+- Mark a facet's basis honestly per revision: a synthesis you built across conversations is 'inferred' even when it quotes them.
+
 - For physical_attraction_preferences specifically: write it in prose, in their terms, and make clear for anything they named whether it is a preference (something they generally like), a strong preference (meaningfully shapes attraction but leaves room), or a constraint (they indicate romantic attraction is unlikely or unavailable outside it). "Appearance matters little to me" and "attraction grows once I know someone" are complete, valid understandings — record them as such. Never rate, rank, score or judge anyone's appearance or their preferences, and never record a specification list of physical characteristics.
+
 
 
 PRIOR FACETS (what you believed before today):
