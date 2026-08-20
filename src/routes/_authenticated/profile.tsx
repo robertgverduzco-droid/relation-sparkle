@@ -290,6 +290,15 @@ function ProfilePage() {
             Founder Dialogue
           </Link>
         )}
+        {isFounder && (
+          <Link
+            to="/beta-accounts"
+            data-testid="profile-beta-accounts"
+            className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-muted-foreground"
+          >
+            Synthetic beta accounts
+          </Link>
+        )}
 
         <button
           data-testid="profile-sign-out"
