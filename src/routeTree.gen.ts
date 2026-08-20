@@ -31,6 +31,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticated/founder'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
+import { Route as AuthenticatedBetaAccountsRouteImport } from './routes/_authenticated/beta-accounts'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as ApiPublicRestoreReconcileRouteImport } from './routes/api/public/restore-reconcile'
 import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/ops-heartbeat'
@@ -153,6 +154,12 @@ const AuthenticatedConnectionsRoute =
     path: '/connections',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBetaAccountsRoute =
+  AuthenticatedBetaAccountsRouteImport.update({
+    id: '/beta-accounts',
+    path: '/beta-accounts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
   id: '/athena',
   path: '/athena',
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
+  '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
   '/founder': typeof AuthenticatedFounderRoute
@@ -231,6 +239,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/athena': typeof AuthenticatedAthenaRoute
+  '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
   '/founder': typeof AuthenticatedFounderRoute
@@ -263,6 +272,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
+  '/_authenticated/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/founder': typeof AuthenticatedFounderRoute
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/athena'
+    | '/beta-accounts'
     | '/connections'
     | '/conversations'
     | '/founder'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/athena'
+    | '/beta-accounts'
     | '/connections'
     | '/conversations'
     | '/founder'
@@ -356,6 +368,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/_authenticated/athena'
+    | '/_authenticated/beta-accounts'
     | '/_authenticated/connections'
     | '/_authenticated/conversations'
     | '/_authenticated/founder'
@@ -550,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConnectionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/beta-accounts': {
+      id: '/_authenticated/beta-accounts'
+      path: '/beta-accounts'
+      fullPath: '/beta-accounts'
+      preLoaderRoute: typeof AuthenticatedBetaAccountsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/athena': {
       id: '/_authenticated/athena'
       path: '/athena'
@@ -656,6 +676,7 @@ const AuthenticatedProfileRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
+  AuthenticatedBetaAccountsRoute: typeof AuthenticatedBetaAccountsRoute
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedFounderRoute: typeof AuthenticatedFounderRoute
@@ -672,6 +693,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
+  AuthenticatedBetaAccountsRoute: AuthenticatedBetaAccountsRoute,
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedFounderRoute: AuthenticatedFounderRoute,
