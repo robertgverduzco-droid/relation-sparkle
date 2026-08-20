@@ -277,23 +277,59 @@ export const reflectAthena = createServerFn({ method: "POST" })
       .map((m) => `${m.role === "user" ? "THEY" : "ATHENA"}: ${m.content}`)
       .join("\n\n");
 
-    const [{ data: priorFacets }, { data: priorTopics }] = await Promise.all([
-      supabase
-        .from("understanding_facets")
-        .select("facet_key, understanding, confidence"),
-      supabase
-        .from("topic_map")
-        .select("topic_key, status, confidence, observations, open_questions"),
-    ]);
+    const [{ data: priorFacets }, { data: priorTopics }, { data: priorHistory }] =
+      await Promise.all([
+        supabase
+          .from("understanding_facets")
+          .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at"),
+        supabase
+          .from("topic_map")
+          .select("topic_key, status, confidence, observations, open_questions"),
+        supabase.from("facet_history").select("facet_key"),
+      ]);
 
-    const priorFacetLines = (priorFacets ?? [])
-      .filter((r) => (r.understanding ?? "").length > 0)
-      .map((r) => `- ${r.facet_key} (${Math.round(Number(r.confidence ?? 0) * 100)}%): ${r.understanding}`)
-      .join("\n") || "(none yet)";
+    // Depth architecture (docs: Living Profile depth & specialist lenses).
+    // The reflection model previously received only a one-line summary of each
+    // prior facet, so it rewrote a fresh short observation every pass instead
+    // of synthesising across time. It now receives the standing understanding,
+    // its reasoning, how much evidence supports it, how many times it has
+    // already been refined, and the synthesis licence that earns.
+    const historyCounts = new Map<string, number>();
+    for (const h of priorHistory ?? []) {
+      const k = (h as { facet_key: string }).facet_key;
+      historyCounts.set(k, (historyCounts.get(k) ?? 0) + 1);
+    }
 
-    const priorTopicLines = (priorTopics ?? [])
-      .map((r) => `- ${r.topic_key} [${r.status}, ${Math.round(Number(r.confidence ?? 0) * 100)}%]`)
-      .join("\n") || "(none yet)";
+    const priorFacetLines =
+      (priorFacets ?? [])
+        .filter((r) => (r.understanding ?? "").length > 0)
+        .map((r) => {
+          const key = r.facet_key as string;
+          const evidence = Array.isArray(r.evidence) ? (r.evidence as unknown[]) : [];
+          const stage = depthStage({
+            evidenceCount: evidence.length,
+            historyCount: historyCounts.get(key) ?? 0,
+            confidence: Number(r.confidence ?? 0),
+          });
+          const lens = LENS_LABELS[lensForFacet(key)];
+          const flag = r.needs_clarification
+            ? ` [unresolved: ${r.clarification_note ?? "clarify gently"}]`
+            : "";
+          return [
+            `- ${key} (lens: ${lens}; basis so far: ${r.basis ?? "unrecorded"}; evidence held: ${evidence.length}; times refined: ${historyCounts.get(key) ?? 0}; synthesis licence: ${depthLicence(stage)})${flag}`,
+            `  standing understanding: ${r.understanding}`,
+            r.reasoning ? `  why you hold it: ${r.reasoning}` : null,
+          ]
+            .filter(Boolean)
+            .join("\n");
+        })
+        .join("\n") || "(none yet)";
+
+    const priorTopicLines =
+      (priorTopics ?? [])
+        .map((r) => `- ${r.topic_key} [${r.status}, ${Math.round(Number(r.confidence ?? 0) * 100)}%]`)
+        .join("\n") || "(none yet)";
+
 
     const { object } = await generateObject({
       model: gateway("openai/gpt-5.5"),
