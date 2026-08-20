@@ -50,3 +50,25 @@ Exactly one row per member.
    legacy in the database via `COMMENT ON`.
 4. Deleting a member purges both tables plus `facet_history` (see
    `src/lib/account.server.ts`).
+
+## Depth model (Living Profile depth & specialist lenses, v1)
+
+`src/lib/profile-depth.ts` is the single authority for:
+
+- **Specialist lenses** — the 21 facets are grouped into eight member-facing
+  lenses (what matters to you, how you connect, how you feel, friction and
+  boundaries, attraction, the shape of your life, what you're building, where
+  you are now). Lenses are presentation and reasoning groupings only; the facet
+  remains the storage unit.
+- **Depth stages** — `early` / `developing` / `mature`, earned from accumulated
+  evidence *and* refinement history, never from confidence or word count alone.
+  Stages are shown to members qualitatively; numbers are never surfaced (L4).
+- **Synthesis licence** — the stage sets how much room `reflectAthena` has to
+  write. Depth is permitted, never required; thin evidence must stay thin.
+- **Evidence accumulation** — evidence merges newest-first, de-duplicated and
+  capped at `MAX_EVIDENCE`. Without this a facet could never mature.
+- **What Athena is still learning** — honest gaps, ranked unclear → thin →
+  untouched, rendered as prose rather than a checklist or completeness meter.
+
+`user_intelligence.understanding_reviewed_at` records when the member last read
+/understanding, which is the only basis for the "this has evolved" marker.
