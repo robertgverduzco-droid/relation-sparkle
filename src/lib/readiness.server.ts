@@ -40,6 +40,8 @@ export const READY_MIN_FACETS = 6;
 const COPY = {
   A_foundation:
     "We haven't spent enough time together yet for me to introduce you to anyone. I'd rather keep listening than guess.",
+  A_foundation_gaps:
+    "There are still a few parts of your life, and of what you're looking for, that I don't understand well enough yet. I'd rather keep talking than introduce you to someone on a guess.",
   A_paused:
     "You've paused introductions. Nothing changes until you tell me otherwise.",
   A_safety:
@@ -78,7 +80,7 @@ export async function evaluateReadiness(
   const [{ data: profile }, { data: intel }, { data: facets }] = await Promise.all([
     supabase.from("profiles").select("id, is_paused").eq("id", userId).maybeSingle(),
     supabase.from("user_intelligence").select("last_interview_at").eq("user_id", userId).maybeSingle(),
-    supabase.from("understanding_facets").select("confidence, understanding, needs_clarification").eq("user_id", userId),
+    supabase.from("understanding_facets").select("facet_key, confidence, understanding, needs_clarification").eq("user_id", userId),
   ]);
 
   if (!profile) {
