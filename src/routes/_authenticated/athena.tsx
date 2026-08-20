@@ -208,7 +208,9 @@ function AthenaPage() {
       setVoiceMode(stored ?? "voice");
 
       const firstName = (profile?.display_name as string | null)?.split(" ")[0] ?? null;
-      const lines = buildIntro(firstName);
+      const lines = buildIntro(firstName, arrivalDelivered());
+      markArrivalDelivered();
+
       const accumulated: Msg[] = [];
       await wait(500);
       for (let i = 0; i < lines.length; i++) {
