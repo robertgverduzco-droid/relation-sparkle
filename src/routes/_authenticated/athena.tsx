@@ -95,12 +95,18 @@ function AthenaPage() {
   /** Speak a line, tracking playback state so it can be shown as text. */
   const playLine = useCallback(async (text: string, signal: AbortSignal) => {
     const epoch = ++speechEpochRef.current;
-    await speak(text, signal, (on) => {
+    const outcome = await speak(text, signal, (on) => {
       if (epoch !== speechEpochRef.current) return;
       setSpeaking(on);
     });
     if (epoch === speechEpochRef.current) setSpeaking(false);
+    // Beta reliability: a voice failure is no longer swallowed in silence.
+    if (outcome === "failed" && epoch === speechEpochRef.current) {
+      toast("Athena's voice didn't come through that time. Her words are here.");
+    }
+    return outcome;
   }, []);
+
 
   const stopSpeaking = useCallback(() => {
     speechEpochRef.current += 1;
