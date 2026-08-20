@@ -141,6 +141,11 @@ export const NOTIFICATION_COPY = {
     title: "Athena has someone for you to consider",
     body: "There's a new introduction waiting whenever you have a quiet moment.",
   },
+  // Never names the other member, the constraint, or whose preference it is.
+  profile_detail_needed: {
+    title: "A small detail would help Athena",
+    body: "There's something in your profile Athena doesn't know yet. Adding it helps her think clearly about who to introduce you to.",
+  },
   introduction_mutual: {
     title: "You both said yes",
     body: "A conversation is open when you're ready.",

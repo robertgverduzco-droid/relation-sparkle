@@ -1395,7 +1395,10 @@ export type Database = {
           country: string | null
           created_at: string
           display_name: string | null
+          ethnicities: string[]
+          ethnicity_self_describe: string | null
           gender: string | null
+          height_cm: number | null
           id: string
           is_paused: boolean
           learning_opt_out: boolean
@@ -1405,6 +1408,8 @@ export type Database = {
           onboarding_stage: Database["public"]["Enums"]["onboarding_stage"]
           pronouns: string | null
           region: string | null
+          religion_self_describe: string | null
+          religions: string[]
           updated_at: string
         }
         Insert: {
@@ -1414,7 +1419,10 @@ export type Database = {
           country?: string | null
           created_at?: string
           display_name?: string | null
+          ethnicities?: string[]
+          ethnicity_self_describe?: string | null
           gender?: string | null
+          height_cm?: number | null
           id: string
           is_paused?: boolean
           learning_opt_out?: boolean
@@ -1424,6 +1432,8 @@ export type Database = {
           onboarding_stage?: Database["public"]["Enums"]["onboarding_stage"]
           pronouns?: string | null
           region?: string | null
+          religion_self_describe?: string | null
+          religions?: string[]
           updated_at?: string
         }
         Update: {
@@ -1433,7 +1443,10 @@ export type Database = {
           country?: string | null
           created_at?: string
           display_name?: string | null
+          ethnicities?: string[]
+          ethnicity_self_describe?: string | null
           gender?: string | null
+          height_cm?: number | null
           id?: string
           is_paused?: boolean
           learning_opt_out?: boolean
@@ -1443,6 +1456,8 @@ export type Database = {
           onboarding_stage?: Database["public"]["Enums"]["onboarding_stage"]
           pronouns?: string | null
           region?: string | null
+          religion_self_describe?: string | null
+          religions?: string[]
           updated_at?: string
         }
         Relationships: []
@@ -2036,42 +2051,66 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          additional_notes: string | null
           age_max: number | null
           age_min: number | null
           created_at: string
           deal_breakers: Json
+          ethnicity_openness: string
+          height_max_cm: number | null
+          height_min_cm: number | null
+          height_strength: string
           important_values: Json
           lifestyle_notes: string | null
           max_distance_km: number | null
+          preferred_ethnicities: string[]
+          preferred_religions: string[]
           relationship_intent: string | null
+          religion_openness: string
           seeking_genders: string[]
           updated_at: string
           user_id: string
           wants_children: string | null
         }
         Insert: {
+          additional_notes?: string | null
           age_max?: number | null
           age_min?: number | null
           created_at?: string
           deal_breakers?: Json
+          ethnicity_openness?: string
+          height_max_cm?: number | null
+          height_min_cm?: number | null
+          height_strength?: string
           important_values?: Json
           lifestyle_notes?: string | null
           max_distance_km?: number | null
+          preferred_ethnicities?: string[]
+          preferred_religions?: string[]
           relationship_intent?: string | null
+          religion_openness?: string
           seeking_genders?: string[]
           updated_at?: string
           user_id: string
           wants_children?: string | null
         }
         Update: {
+          additional_notes?: string | null
           age_max?: number | null
           age_min?: number | null
           created_at?: string
           deal_breakers?: Json
+          ethnicity_openness?: string
+          height_max_cm?: number | null
+          height_min_cm?: number | null
+          height_strength?: string
           important_values?: Json
           lifestyle_notes?: string | null
           max_distance_km?: number | null
+          preferred_ethnicities?: string[]
+          preferred_religions?: string[]
           relationship_intent?: string | null
+          religion_openness?: string
           seeking_genders?: string[]
           updated_at?: string
           user_id?: string

@@ -11,6 +11,7 @@ import { setAccountPaused } from "@/lib/account.functions";
 import { amIModerator } from "@/lib/moderation.functions";
 import { getFounderStatus } from "@/lib/founder.functions";
 import { toast } from "sonner";
+import { StructuredProfilePanel } from "@/components/structured-profile-panel";
 
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -212,6 +213,8 @@ function ProfilePage() {
           </div>
         </>
       )}
+
+      <StructuredProfilePanel />
 
       <div className="mt-8 space-y-2 px-6">
         <Link

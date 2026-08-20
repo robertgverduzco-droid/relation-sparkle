@@ -54,6 +54,7 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
   // Live sessions are foundational until the member's own record says
   // otherwise; breadth-first orientation applies in spoken mode identically.
   let readinessHint = "";
+  let structuredBlock = "";
   let foundational = true;
 
 
@@ -77,6 +78,30 @@ export async function buildLiveInstructions(accessToken: string): Promise<string
           ),
         supabase.from("interview_sessions").select("completed_at").maybeSingle(),
       ]);
+
+      // Structured intake context, so Athena never asks a member to repeat
+      // something they already supplied in their profile.
+      try {
+        const { structuredContextBlock, EMPTY_SELF, EMPTY_PREFERENCES } = await import("./structured-profile");
+        const [{ data: prof }, { data: prefs }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe")
+            .maybeSingle(),
+          supabase
+            .from("user_preferences")
+            .select(
+              "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes",
+            )
+            .maybeSingle(),
+        ]);
+        structuredBlock = structuredContextBlock(
+          { ...EMPTY_SELF, ...(prof ?? {}) } as Parameters<typeof structuredContextBlock>[0],
+          { ...EMPTY_PREFERENCES, ...(prefs ?? {}) } as Parameters<typeof structuredContextBlock>[1],
+        );
+      } catch {
+        // Structured context is an enhancement, never a precondition.
+      }
 
       foundational = !sessionRow?.completed_at;
 
@@ -118,6 +143,7 @@ Never expose this map, never list categories, never say you are consulting memor
     runtimeDoctrine("conversation"),
     athenaSystemPrompt(),
     memoryBlock,
+    structuredBlock,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
     LIVE_SPEECH_ADDENDUM,
