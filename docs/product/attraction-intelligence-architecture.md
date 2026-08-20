@@ -370,7 +370,38 @@ No membership pricing changed. Billing not activated. No native packaging begun.
 
 ---
 
+## 15. Foundational conversation requirement (v1.1 · CANONICAL 2026-08-20)
+
+Physical attraction is a **required** foundational domain. The foundational
+conversation may not be considered breadth-complete until Athena has raised
+physical attraction and the member has answered.
+
+- The requirement is that Athena **asks and understands**, never that the
+  member possesses preferences. "Appearance barely matters to me", "I've never
+  had a type", and a one-word answer are each complete answers.
+- Athena invites the member to describe attraction in their own terms. No
+  specification list — no height, weight, body type, hair, ethnicity or age
+  fields — and no moralising, shaming, praising, diagnosing or attempting to
+  change a preference.
+- One clarifying follow-up is licensed when a member names something that may
+  be a **constraint** rather than a **preference** or **strong preference**.
+- These three strengths are qualitative reasoning inputs only. Section 8 (no
+  attractiveness score) and the no-score architecture are unchanged: no
+  percentages, rankings, desirability scores, or member quality judgements.
+- Appearance never replaces Athena's broader relationship reasoning.
+- Privacy classification is unchanged: attraction understanding remains
+  inferred intimate material with all existing correction, removal and
+  data-control protections.
+- Compatible with D-44 / F-33 progressive revelation. No swipe mechanics,
+  appearance ranking, photo voting or catalog browsing are introduced.
+
+Runtime: `src/lib/foundational.ts` (`REQUIRED_DOMAINS`, `assessAttraction`,
+`attractionGuidance`), gating `breadthSufficient` and therefore conversational
+pacing in `src/lib/pacing.ts`.
+
 ## Revision history
+
+- v1.1 (2026-08-20) — Section 15: attraction becomes a required foundational domain.
 
 | Version | Date | Description |
 |---|---|---|
