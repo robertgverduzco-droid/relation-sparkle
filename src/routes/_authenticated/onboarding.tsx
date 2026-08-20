@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ConsentPanel } from "@/components/consent-panel";
 import { saveOnboardingStep } from "@/lib/onboarding.functions";
+import { MatchPreferenceFields, SelfDescriptionFields } from "@/components/structured-profile-form";
+import { saveStructuredProfile } from "@/lib/structured-profile.functions";
+import { EMPTY_PREFERENCES, EMPTY_SELF } from "@/lib/structured-profile";
 import { ARRIVAL_WELCOME, arrivalDelivered, markArrivalDelivered } from "@/lib/arrival";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -33,6 +36,9 @@ function Onboarding() {
     pronouns: "",
     city: "",
   });
+  // Member-stated structured data (never inferred). Saved alongside each step.
+  const [self, setSelf] = useState(EMPTY_SELF);
+  const [openness, setOpenness] = useState(EMPTY_PREFERENCES);
   const [prefs, setPrefs] = useState({
     seeking_genders: "",
     age_min: "",
@@ -105,6 +111,11 @@ function Onboarding() {
               : undefined,
         },
       });
+      if (step === "identity" || step === "preferences") {
+        await saveStructuredProfile({
+          data: step === "identity" ? { self } : { preferences: openness },
+        });
+      }
       setStep(next);
       if (next === "complete") {
         toast.success("Athena is ready to meet you.");
@@ -183,6 +194,9 @@ function Onboarding() {
                 value={identity.city}
                 onChange={(v) => setIdentity({ ...identity, city: v })}
               />
+              <div className="pt-2">
+                <SelfDescriptionFields value={self} onChange={setSelf} />
+              </div>
             </div>
           </Section>
         )}
@@ -225,6 +239,9 @@ function Onboarding() {
                 }
                 placeholder="a long-term partnership"
               />
+              <div className="pt-2">
+                <MatchPreferenceFields value={openness} onChange={setOpenness} />
+              </div>
             </div>
           </Section>
         )}
