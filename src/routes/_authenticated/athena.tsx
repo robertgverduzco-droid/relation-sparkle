@@ -11,6 +11,7 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
+import { assessBoundary, boundaryGuidance } from "@/lib/boundaries";
 import {
   ARRIVAL_WELCOME,
   arrivalDelivered,
@@ -153,6 +154,16 @@ function AthenaPage() {
       const next: Msg[] = [...prev, { ...turn, ts: new Date().toISOString() }];
       messagesRef.current = next;
       void persist(next);
+      // Spoken mode carries fixed instructions too, so boundary posture is
+      // delivered turn by turn — the same graduation as the text path.
+      if (turn.role === "user") {
+        const boundary = assessBoundary(next);
+        if (boundary) {
+          liveRef.current?.guide(
+            boundaryGuidance(boundary, !foundationCompleteRef.current),
+          );
+        }
+      }
       // Live sessions carry fixed instructions, so breadth-first correction
       // during the foundational conversation is delivered turn by turn.
       if (turn.role === "assistant" && !foundationCompleteRef.current) {
