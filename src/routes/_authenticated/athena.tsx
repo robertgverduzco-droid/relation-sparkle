@@ -34,7 +34,15 @@ export const Route = createFileRoute("/_authenticated/athena")({
   component: AthenaPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string; ts?: string };
+type Notice = { tone: "info" | "urgent"; title: string; body: string };
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  ts?: string;
+  // A boundary notice always accompanies Athena's reply and is rendered
+  // beneath it — it never precedes, replaces, or obscures what she said.
+  notice?: Notice;
+};
 type VoiceMode = "voice" | "text";
 const VOICE_KEY = "athena-voice-mode";
 
@@ -407,7 +415,12 @@ function AthenaPage() {
       if (res.timeAcknowledged) timeAcknowledgedRef.current = true;
       const withReply: Msg[] = [
         ...next,
-        { role: "assistant", content: res.reply, ts: new Date().toISOString() },
+        {
+          role: "assistant",
+          content: res.reply,
+          ts: new Date().toISOString(),
+          ...(res.notice ? { notice: res.notice as Notice } : {}),
+        },
       ];
       setMessages(withReply);
       void persist(withReply);
@@ -595,7 +608,10 @@ function AthenaPage() {
         ) : (
           <>
             {messages.map((m, i) => (
-              <Bubble key={i} role={m.role} content={m.content} />
+              <div key={i}>
+                <Bubble role={m.role} content={m.content} />
+                {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
+              </div>
             ))}
             {livePartial && (
               <Bubble role="assistant" content={livePartial} />
@@ -934,5 +950,29 @@ function Dot({ delay }: { delay: string }) {
       className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground"
       style={{ animationDelay: delay }}
     />
+  );
+}
+
+/**
+ * Rendered beneath Athena's reply, never in front of it and never as a modal
+ * or toast, so nothing she said is covered or lost. Graduated boundaries show
+ * this once per conversation; after that the boundary lives in her words.
+ */
+function BoundaryNotice({ notice }: { notice: Notice }) {
+  const urgent = notice.tone === "urgent";
+  return (
+    <div
+      role={urgent ? "alert" : "status"}
+      aria-live={urgent ? "assertive" : "polite"}
+      data-testid="boundary-notice"
+      className={`fade-in-slow mt-3 rounded-2xl border px-4 py-3 text-[13px] leading-relaxed ${
+        urgent
+          ? "border-destructive/40 bg-destructive/10 text-foreground"
+          : "border-border bg-muted/40 text-muted-foreground"
+      }`}
+    >
+      <p className="font-medium text-foreground">{notice.title}</p>
+      <p className="mt-1">{notice.body}</p>
+    </div>
   );
 }
