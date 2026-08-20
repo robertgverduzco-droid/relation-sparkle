@@ -118,6 +118,12 @@ Use this memory to:
       ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes now — our foundational conversation is designed for around twenty, and I'm happy to keep going if that still works for you." Then either continue naturally or invite them to choose. Do this only once per conversation.`
       : "Do not comment on how long the conversation has been going.";
 
+    // Boundaries are session-aware: the same line held a second or third time
+    // must not sound like the same warning replayed. Guidance sets posture
+    // only; the words stay Athena's.
+    const boundary = assessBoundary(data.messages);
+    const boundaryHint = boundary ? boundaryGuidance(boundary, isFoundational) : "";
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -126,11 +132,12 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, boundaryHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
     );
+
 
 
     const { text } = await generateText({
