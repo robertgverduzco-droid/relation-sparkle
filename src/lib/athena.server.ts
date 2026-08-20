@@ -30,6 +30,8 @@ export const facetSchema = z.object({
   understanding: z.string(),
   reasoning: z.string(),
   evidence: z.array(z.string()).max(6),
+  // F-14 provenance (BR01-04): did the member say this, or did Athena infer it?
+  basis: z.enum(["stated", "inferred"]),
   confidence: z.number().min(0).max(1),
   contradictsPrior: z.boolean().nullable(),
   clarificationNote: z.string().nullable(),

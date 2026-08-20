@@ -182,6 +182,7 @@ Return two things:
 - understanding: 1–3 sentences in your own considered voice
 - reasoning: 1–2 sentences explaining why you currently hold this view
 - evidence: 1–5 short direct quotes / near-quotes from THEY, each under 200 chars
+- basis: 'stated' ONLY when THEY explicitly expressed this understanding in their own words; 'inferred' whenever you arrived at it by interpretation, pattern, tone, or implication — even if you can quote them. Never mark an interpretation as stated.
 - confidence: 0.1–0.9 (never 1.0; be conservative)
 - contradictsPrior: true ONLY if today's signal materially conflicts with the prior understanding you already had
 - clarificationNote: if contradictsPrior, one sentence naming what to gently clarify next time
@@ -246,6 +247,7 @@ ${transcript}`,
       understanding: string;
       reasoning: string;
       evidence: Json;
+      basis: "stated" | "inferred";
       confidence: number;
       needs_clarification: boolean;
       clarification_note: string | null;
@@ -293,6 +295,7 @@ ${transcript}`,
         understanding,
         reasoning: f.reasoning,
         evidence: f.evidence,
+        basis: f.basis,
         confidence,
         needs_clarification: contradicts,
         clarification_note: contradicts
