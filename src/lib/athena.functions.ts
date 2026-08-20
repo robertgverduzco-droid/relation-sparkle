@@ -34,7 +34,7 @@ export const askAthena = createServerFn({ method: "POST" })
 
     const { supabase } = context;
 
-    const [{ data: facetRows }, { data: topicRows }] = await Promise.all([
+    const [{ data: facetRows }, { data: topicRows }, { data: sessionRow }] = await Promise.all([
       supabase
         .from("understanding_facets")
         .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at")
@@ -42,10 +42,16 @@ export const askAthena = createServerFn({ method: "POST" })
       supabase
         .from("topic_map")
         .select("topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at"),
+      // Foundational mode is decided by the member's own record, never by the
+      // caller: the client's flag may only ever narrow it, not grant it.
+      supabase.from("interview_sessions").select("completed_at").maybeSingle(),
     ]);
 
     const facets = (facetRows ?? []) as FacetRow[];
     const topics = (topicRows ?? []) as TopicRow[];
+    const isFoundational =
+      !sessionRow?.completed_at && data.foundational !== false;
+
 
     const profileSummary = summarizeLivingProfile(facets);
     const topicSummary = summarizeTopicMap(topics);
