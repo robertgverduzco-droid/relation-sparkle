@@ -208,3 +208,31 @@ export function hasEvolvedSince(
   if (!Number.isFinite(r) || !Number.isFinite(v)) return false;
   return r > v;
 }
+
+// ---------------------------------------------------------------------------
+// Evidence accumulation
+// ---------------------------------------------------------------------------
+
+/**
+ * Evidence used to be replaced wholesale on every reflection pass, so a facet
+ * never held more than one conversation's worth of grounding and could never
+ * mature. Evidence now accumulates: newest first, de-duplicated, and capped so
+ * the stored trail stays proportionate (data minimisation still applies).
+ */
+export const MAX_EVIDENCE = 10;
+
+export function mergeEvidence(prior: unknown, incoming: string[], cap = MAX_EVIDENCE): string[] {
+  const priorList = Array.isArray(prior) ? prior.filter((x): x is string => typeof x === "string") : [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const q of [...incoming, ...priorList]) {
+    const t = q.trim();
+    if (!t) continue;
+    const norm = t.toLowerCase();
+    if (seen.has(norm)) continue;
+    seen.add(norm);
+    out.push(t);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
