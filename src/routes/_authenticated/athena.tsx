@@ -10,6 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { speak } from "@/lib/athena-speech";
 import { ARRIVAL_WELCOME, markSeen, markSessionGreeted } from "@/lib/arrival";
+import {
+  RUNTIME_STATE_LABEL,
+  resolveRuntimeState,
+  showsThinkingIndicator,
+} from "@/lib/athena-runtime-state";
 
 export const Route = createFileRoute("/_authenticated/athena")({
   head: () => ({
@@ -491,9 +496,7 @@ function AthenaPage() {
         ref={scrollerRef}
         data-testid="athena-transcript"
         data-hydrated={hydrated ? "true" : "false"}
-        data-conversation-state={
-          introducing ? "first-meeting" : askingPreference ? "choosing-mode" : busy ? "thinking" : "open"
-        }
+        data-conversation-state={runtimeState}
         className="flex-1 overflow-y-auto px-5 py-6 space-y-4"
       >
         {!hydrated ? (
@@ -505,7 +508,9 @@ function AthenaPage() {
             {messages.map((m, i) => (
               <Bubble key={i} role={m.role} content={m.content} />
             ))}
-            {(busy || introducing) && <TypingBubble />}
+            {showsThinkingIndicator(runtimeState) && (
+              <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
+            )}
             {askingPreference && (
               <div className="fade-in-slow pt-4 flex flex-col items-start gap-3">
                 <p className="text-sm text-muted-foreground">How would you like to continue?</p>
@@ -777,11 +782,11 @@ function Bubble({ role, content }: { role: "user" | "assistant"; content: string
   );
 }
 
-function TypingBubble() {
+function TypingBubble({ label }: { label: string }) {
   return (
     <div className="flex justify-start">
       <div className="flex items-center gap-1.5 px-1 py-2" role="status" aria-live="polite">
-        <span className="sr-only">Athena is thinking</span>
+        <span className="sr-only">{label}</span>
         <Dot delay="0ms" />
         <Dot delay="150ms" />
         <Dot delay="300ms" />
