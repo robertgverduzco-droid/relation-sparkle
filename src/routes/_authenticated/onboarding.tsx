@@ -124,7 +124,9 @@ function Onboarding() {
       <ProgressBar current={currentIdx} total={STEPS.length - 1} />
 
       <div className="mt-8 flex-1 fade-in-slow" key={step}>
+        {step === "welcome" && <ArrivalWelcome />}
         {step === "welcome" && (
+
           <Section
             eyebrow="A quiet beginning"
             title={
