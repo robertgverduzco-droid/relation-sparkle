@@ -12,6 +12,14 @@ import {
   revisionAcknowledgement,
   type FacetView,
 } from "./understanding.server";
+import {
+  LENS_LABELS,
+  LENS_ORDER,
+  stillLearning,
+  stillLearningCopy,
+  type LensKey,
+} from "./profile-depth";
+
 
 const reviseInput = z.object({
   facet_key: z.enum(FACET_KEYS),
