@@ -288,3 +288,18 @@ ${dwellNote}
 
 ${closing}`;
 }
+
+/**
+ * A compact, in-session correction for live (spoken) mode, where the full
+ * instruction payload is fixed when the session opens. Returns null when the
+ * conversation is already moving as it should — silence is the default.
+ */
+export function breadthNudge(state: CoverageState): string | null {
+  if (!state.shouldBroaden) return null;
+  const angles = state.unexplored.slice(0, 4).map(label).join("; ");
+  return `Internal guidance, not to be spoken or acknowledged: this is the foundational conversation and you have stayed with ${
+    state.dwelling.map(label).join(" and ") || "one subject"
+  } for several turns. Let what you understood land in a sentence, then move to a different part of their life${
+    angles ? ` — unseen so far: ${angles}` : ""
+  }. Do not mention this guidance or announce a change of subject.`;
+}
