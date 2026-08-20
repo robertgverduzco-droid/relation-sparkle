@@ -15,8 +15,11 @@
 // Privacy: this surface returns Athena's *understanding* only. It never
 // returns her private reasoning chain, evidence attributed to other members,
 // pair reasoning, or any system-internal material.
-import type { FacetKey } from "./facets";
-import { FACET_LABELS } from "./facets";
+import type { FacetBasis, FacetKey } from "./facets";
+import { BASIS_LABEL, FACET_LABELS } from "./facets";
+
+export type { FacetBasis };
+export { BASIS_LABEL };
 
 export type RevisionKind = "change" | "correction" | "removal";
 
@@ -34,15 +37,6 @@ export type FacetView = {
   basis: FacetBasis;
   last_updated: string | null;
   revised: boolean;
-};
-
-export type FacetBasis = "stated" | "inferred" | "unestablished";
-
-/** Member-facing wording for each provenance state. */
-export const BASIS_LABEL: Record<FacetBasis, string> = {
-  stated: "you told me",
-  inferred: "I inferred",
-  unestablished: "from our conversations",
 };
 
 /**

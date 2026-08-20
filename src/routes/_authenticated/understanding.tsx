@@ -1,5 +1,5 @@
 // F-13 / F-14 — what Athena understands about you, and how to change it.
-import { BASIS_LABEL } from "@/lib/understanding.server";
+import { BASIS_LABEL } from "@/lib/facets";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
