@@ -1,6 +1,7 @@
 // Thin wrapper: module scope contains only imports, types, and server-fn
 // declarations. All helpers, prompts, and schemas live in ./athena.server.ts.
 import { createServerFn } from "@tanstack/react-start";
+import { structuredContextBlock, EMPTY_SELF, EMPTY_PREFERENCES } from "./structured-profile";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, generateObject, type ModelMessage } from "ai";
 import {
@@ -56,6 +57,25 @@ export const askAthena = createServerFn({ method: "POST" })
       // caller: the client's flag may only ever narrow it, not grant it.
       supabase.from("interview_sessions").select("completed_at").maybeSingle(),
     ]);
+
+    // Structured intake (member-stated) is context, not a replacement for her
+    // conversation: she may explore what it means, never ask for it again.
+    const [{ data: profileRow }, { data: prefsRow }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe")
+        .maybeSingle(),
+      supabase
+        .from("user_preferences")
+        .select(
+          "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes",
+        )
+        .maybeSingle(),
+    ]);
+    const structuredBlock = structuredContextBlock(
+      { ...EMPTY_SELF, ...(profileRow ?? {}) } as Parameters<typeof structuredContextBlock>[0],
+      { ...EMPTY_PREFERENCES, ...(prefsRow ?? {}) } as Parameters<typeof structuredContextBlock>[1],
+    );
 
     const facets = (facetRows ?? []) as FacetRow[];
     const topics = (topicRows ?? []) as TopicRow[];
@@ -167,7 +187,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, readinessHint, boundaryHint].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, readinessHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,

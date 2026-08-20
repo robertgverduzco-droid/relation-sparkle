@@ -7,6 +7,13 @@ import { runtimeDoctrine } from "./athena-doctrine.server";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  EMPTY_PREFERENCES,
+  EMPTY_SELF,
+  evaluateStructuredConstraints,
+  type MatchPreferences,
+  type SelfDescription,
+} from "./structured-profile";
 
 // Understanding thresholds. Athena needs enough understanding of each person
 // before she is willing to reason about them at all. She does NOT gate
@@ -36,7 +43,42 @@ export type ProfileRow = {
   gender: string | null;
   city: string | null;
   is_paused: boolean | null;
+  // Member-stated structured self-description. Never inferred.
+  height_cm?: number | null;
+  ethnicities?: string[] | null;
+  ethnicity_self_describe?: string | null;
+  religions?: string[] | null;
+  religion_self_describe?: string | null;
 };
+
+const PROFILE_COLUMNS =
+  "id, display_name, birth_date, gender, city, is_paused, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe";
+const PREFS_COLUMNS =
+  "user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes";
+
+/** Structured party view used by the tri-state constraint evaluation. */
+export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
+  const self: SelfDescription = {
+    ...EMPTY_SELF,
+    height_cm: profile.height_cm ?? null,
+    ethnicities: profile.ethnicities ?? [],
+    ethnicity_self_describe: profile.ethnicity_self_describe ?? null,
+    religions: profile.religions ?? [],
+    religion_self_describe: profile.religion_self_describe ?? null,
+  };
+  const p: MatchPreferences = {
+    ...EMPTY_PREFERENCES,
+    ethnicity_openness: (prefs?.ethnicity_openness as MatchPreferences["ethnicity_openness"]) ?? "open",
+    preferred_ethnicities: prefs?.preferred_ethnicities ?? [],
+    religion_openness: (prefs?.religion_openness as MatchPreferences["religion_openness"]) ?? "open",
+    preferred_religions: prefs?.preferred_religions ?? [],
+    height_min_cm: prefs?.height_min_cm ?? null,
+    height_max_cm: prefs?.height_max_cm ?? null,
+    height_strength: (prefs?.height_strength as MatchPreferences["height_strength"]) ?? "preference",
+    additional_notes: prefs?.additional_notes ?? null,
+  };
+  return { id: profile.id, self, prefs: p };
+}
 
 export type PrefsRow = {
   user_id: string;
@@ -45,6 +87,14 @@ export type PrefsRow = {
   age_max: number | null;
   relationship_intent: string | null;
   wants_children: string | null;
+  ethnicity_openness?: string | null;
+  preferred_ethnicities?: string[] | null;
+  religion_openness?: string | null;
+  preferred_religions?: string[] | null;
+  height_min_cm?: number | null;
+  height_max_cm?: number | null;
+  height_strength?: string | null;
+  additional_notes?: string | null;
 };
 
 export function ageFromDob(dob: string | null): number | null {
@@ -184,8 +234,8 @@ export async function runMatchmakingForUser(
 
   const [{ data: selfProfile }, { data: selfPrefs }, { data: selfFacets }, { data: selfIntel }] =
     await Promise.all([
-      supabase.from("profiles").select("id, display_name, birth_date, gender, city, is_paused").eq("id", userId).maybeSingle(),
-      supabase.from("user_preferences").select("user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children").eq("user_id", userId).maybeSingle(),
+      supabase.from("profiles").select(PROFILE_COLUMNS).eq("id", userId).maybeSingle(),
+      supabase.from("user_preferences").select(PREFS_COLUMNS).eq("user_id", userId).maybeSingle(),
       supabase.from("understanding_facets").select("facet_key, understanding, reasoning, confidence").eq("user_id", userId),
       supabase.from("user_intelligence").select("last_interview_at, last_matchmaking_at").eq("user_id", userId).maybeSingle(),
     ]);
@@ -305,7 +355,7 @@ export async function runMatchmakingForUser(
 
   const { data: others } = await supabase
     .from("profiles")
-    .select("id, display_name, birth_date, gender, city, is_paused")
+    .select(PROFILE_COLUMNS)
     .in("id", Array.from(eligibleIds))
     .eq("is_paused", false)
     .limit(200);
@@ -314,7 +364,7 @@ export async function runMatchmakingForUser(
   const otherIds = others.map((o) => o.id as string);
   const [{ data: otherPrefs }, { data: otherFacets }, { data: blocks }, { data: existingPairs }] =
     await Promise.all([
-      supabase.from("user_preferences").select("user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children").in("user_id", otherIds),
+      supabase.from("user_preferences").select(PREFS_COLUMNS).in("user_id", otherIds),
       supabase.from("understanding_facets").select("user_id, facet_key, understanding, reasoning, confidence").in("user_id", otherIds),
       supabase.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`),
       supabase.from("pair_reasoning").select("user_low, user_high, status").or(`user_low.eq.${userId},user_high.eq.${userId}`),
@@ -347,7 +397,11 @@ export async function runMatchmakingForUser(
   const selfAge = ageFromDob(selfProfile.birth_date as string | null);
   const selfBundle = { profile: selfProfile as ProfileRow, prefs: (selfPrefs as PrefsRow | null) ?? null, ageA: selfAge };
 
-  type Candidate = { other: ProfileRow; otherFacets: FacetRow[] };
+  type Candidate = {
+    other: ProfileRow;
+    otherFacets: FacetRow[];
+    structured: ReturnType<typeof evaluateStructuredConstraints>;
+  };
   const eligible: Candidate[] = [];
   for (const o of others as ProfileRow[]) {
     if (blockedIds.has(o.id)) continue;
@@ -358,7 +412,16 @@ export async function runMatchmakingForUser(
     if (facetAverage(oFacets) < EXPLORATORY_MIN_AVG) continue;
     const oBundle = { profile: o, prefs: prefsByUser.get(o.id) ?? null, ageA: ageFromDob(o.birth_date) };
     if (!mutuallyEligible(selfBundle, oBundle)) continue;
-    eligible.push({ other: o, otherFacets: oFacets });
+    // Structured constraints are tri-state. A genuine stated requirement that
+    // is clearly violated removes the candidate; a requirement that cannot yet
+    // be evaluated is UNKNOWN — never silent incompatibility. Unknown
+    // candidates stay in the pool and are resolved before any introduction.
+    const structured = evaluateStructuredConstraints(
+      structuredParty(selfProfile as ProfileRow, (selfPrefs as PrefsRow | null) ?? null),
+      structuredParty(o, prefsByUser.get(o.id) ?? null),
+    );
+    if (structured.verdict === "incompatible") continue;
+    eligible.push({ other: o, otherFacets: oFacets, structured });
   }
   if (eligible.length === 0) {
     await supabase.from("user_intelligence").update({ last_matchmaking_at: new Date().toISOString() }).eq("user_id", userId);
@@ -387,6 +450,31 @@ export async function runMatchmakingForUser(
         introductionGate(supabase, c.other.id, "manual_request"),
       ]);
       if (!gateSelf.allowed || !gateOther.allowed) wantsIntroduction = false;
+    }
+
+    // UNKNOWN ≠ INCOMPATIBLE. If this introduction depends on a genuine
+    // constraint Athena cannot yet evaluate, she holds it and asks the
+    // relevant member for the missing information first. No member is ever
+    // told that someone else's private preference is the reason.
+    if (wantsIntroduction && c.structured.verdict === "unknown") {
+      wantsIntroduction = false;
+      const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+      const seen = new Set<string>();
+      for (const item of c.structured.unresolved) {
+        if (seen.has(item.subjectId)) continue;
+        seen.add(item.subjectId);
+        await notify(supabase, {
+          userId: item.subjectId,
+          category: "introductions",
+          eventType: "profile_detail_needed",
+          title: NOTIFICATION_COPY.profile_detail_needed?.title ?? "A small detail would help Athena",
+          body:
+            NOTIFICATION_COPY.profile_detail_needed?.body ??
+            "There is something in your profile Athena does not know yet. Adding it helps her think clearly about who to introduce you to.",
+          actionPath: "/profile",
+          dedupeKey: `profile_detail_needed:${item.subjectId}:${item.field}`,
+        });
+      }
     }
     const nowIso = new Date().toISOString();
     const selfIsLow = userId === low;
