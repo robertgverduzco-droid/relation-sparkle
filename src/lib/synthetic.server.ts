@@ -219,7 +219,7 @@ export async function createSyntheticBatch(args: {
   const { auditAdminAccess } = await import("./security.server");
   await auditAdminAccess({
     actorId: args.founderId,
-    actorRole: "founder",
+    actorRole: "admin",
     action: "synthetic.batch.created",
     resource: "profiles",
     purpose: "Founder-authorized synthetic beta persona provisioning",
@@ -299,7 +299,7 @@ export async function reissueBatchCredentials(args: {
   const { auditAdminAccess } = await import("./security.server");
   await auditAdminAccess({
     actorId: args.founderId,
-    actorRole: "founder",
+    actorRole: "admin",
     action: "synthetic.batch.credentials_reissued",
     resource: "profiles",
     purpose: "Founder-authorized synthetic credential re-issue",
@@ -334,7 +334,7 @@ export async function resetSyntheticBatch(args: {
   const { auditAdminAccess } = await import("./security.server");
   await auditAdminAccess({
     actorId: args.founderId,
-    actorRole: "founder",
+    actorRole: "admin",
     action: "synthetic.batch.reset",
     resource: "profiles",
     purpose: "Founder-authorized synthetic persona reset",
@@ -385,7 +385,7 @@ export async function deleteSyntheticBatch(args: {
   const { auditAdminAccess } = await import("./security.server");
   await auditAdminAccess({
     actorId: args.founderId,
-    actorRole: "founder",
+    actorRole: "admin",
     action: "synthetic.batch.deleted",
     resource: "profiles",
     purpose: "Founder-authorized synthetic batch teardown",
