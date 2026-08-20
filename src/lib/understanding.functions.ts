@@ -27,7 +27,7 @@ export const getMyUnderstanding = createServerFn({ method: "GET" })
     const [{ data: facetRows, error }, { data: revisions }] = await Promise.all([
       supabase
         .from("understanding_facets")
-        .select("facet_key, understanding, confidence, evidence, refined_at")
+        .select("facet_key, understanding, confidence, evidence, basis, refined_at")
         .eq("user_id", userId),
       supabase.from("understanding_revisions").select("facet_key").eq("user_id", userId),
     ]);

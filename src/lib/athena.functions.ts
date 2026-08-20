@@ -37,7 +37,7 @@ export const askAthena = createServerFn({ method: "POST" })
     const [{ data: facetRows }, { data: topicRows }] = await Promise.all([
       supabase
         .from("understanding_facets")
-        .select("facet_key, understanding, reasoning, evidence, confidence, needs_clarification, clarification_note, refined_at")
+        .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at")
         .order("confidence", { ascending: false }),
       supabase
         .from("topic_map")
