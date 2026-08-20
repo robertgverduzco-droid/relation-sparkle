@@ -52,6 +52,8 @@ it, and how it is handled. Classes are defined in `src/lib/security.server.ts`
 | `user_roles` | 4 | own | never | never stored on `profiles` |
 | `admin_audit_log` | 5 | admin only | n/a | append-only; no update/delete grant |
 | `security_kill_switches` | 1 | admin/founder only | n/a | state only; service-role writes and runtime reads |
+| `synthetic_batches` | 1 | none | n/a | founder-only test provisioning; no member data |
+| `synthetic_accounts` | 1 | none | n/a | fictional identities only; passwords never stored |
 
 ## Minimisation rules
 
