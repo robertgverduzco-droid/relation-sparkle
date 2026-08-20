@@ -409,6 +409,21 @@ export function structuredContextBlock(self: SelfDescription, prefs: MatchPrefer
     const hi = prefs.height_max_cm != null ? cmToFeetInches(prefs.height_max_cm) : "any";
     lines.push(`- Stated height ${prefs.height_strength === "requirement" ? "constraint" : "preference"} for a partner: ${lo} to ${hi}.`);
   }
+  if (self.smoking && self.smoking !== PREFER_NOT_TO_SAY) {
+    lines.push(`- On smoking, they said about themselves: ${labelFor(self.smoking, SMOKING_OPTIONS)}.`);
+  }
+  if (prefs.smoking_openness === "requirement" && prefs.preferred_smoking.length > 0) {
+    lines.push(`- Stated non-negotiable about a partner and smoking: ${prefs.preferred_smoking.map((v) => labelFor(v, SMOKING_OPTIONS)).join(", ")}.`);
+  } else if (prefs.preferred_smoking.length > 0) {
+    lines.push(`- Preference about a partner and smoking: ${prefs.preferred_smoking.map((v) => labelFor(v, SMOKING_OPTIONS)).join(", ")}.`);
+  }
+  if (prefs.age_strength === "requirement" && (prefs.age_min != null || prefs.age_max != null)) {
+    lines.push(`- They marked their age range a genuine non-negotiable: ${prefs.age_min ?? "any"} to ${prefs.age_max ?? "any"}.`);
+  }
+  if (prefs.children_strength === "requirement" && prefs.wants_children) {
+    lines.push("- They marked their position on children a genuine non-negotiable.");
+  }
+
   if ((prefs.additional_notes ?? "").trim()) {
     lines.push(`- In their own words, about who they are open to meeting: "${prefs.additional_notes!.trim()}"`);
   }
