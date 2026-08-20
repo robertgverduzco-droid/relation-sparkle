@@ -15,8 +15,11 @@
 // Privacy: this surface returns Athena's *understanding* only. It never
 // returns her private reasoning chain, evidence attributed to other members,
 // pair reasoning, or any system-internal material.
-import type { FacetKey } from "./facets";
-import { FACET_LABELS } from "./facets";
+import type { FacetBasis, FacetKey } from "./facets";
+import { BASIS_LABEL, FACET_LABELS } from "./facets";
+
+export type { FacetBasis };
+export { BASIS_LABEL };
 
 export type RevisionKind = "change" | "correction" | "removal";
 
@@ -26,29 +29,42 @@ export type FacetView = {
   understanding: string;
   /** Qualitative only — numbers are never shown to members (L4). */
   held: "held lightly" | "reasonably understood" | "well-understood";
-  /** F-14: did the member say it, or did Athena infer it? */
-  basis: "stated" | "inferred";
+  /**
+   * F-14 provenance. `stated` and `inferred` come from the stored basis.
+   * `unestablished` means provenance was never recorded (legacy understanding)
+   * — Athena must not claim member authorship she cannot evidence.
+   */
+  basis: FacetBasis;
   last_updated: string | null;
   revised: boolean;
 };
+
+/**
+ * BR01-04 — provenance is read from the canonical `basis` column only.
+ * The presence of evidence quotes never implies the member authored the
+ * understanding; an inference can quote them and still be an inference.
+ */
+export function resolveBasis(basis: unknown): FacetBasis {
+  return basis === "stated" ? "stated" : basis === "inferred" ? "inferred" : "unestablished";
+}
 
 type FacetRecord = {
   facet_key: string;
   understanding: string | null;
   confidence: number | null;
   evidence: unknown;
+  basis?: unknown;
   refined_at: string | null;
 };
 
 export function toFacetView(row: FacetRecord, revisedKeys: Set<string>): FacetView {
   const c = row.confidence ?? 0;
-  const evidence = Array.isArray(row.evidence) ? row.evidence : [];
   return {
     key: row.facet_key,
     label: FACET_LABELS[row.facet_key as FacetKey] ?? row.facet_key,
     understanding: (row.understanding ?? "").trim(),
     held: c >= 0.7 ? "well-understood" : c >= 0.45 ? "reasonably understood" : "held lightly",
-    basis: evidence.length > 0 ? "stated" : "inferred",
+    basis: resolveBasis(row.basis),
     last_updated: row.refined_at,
     revised: revisedKeys.has(row.facet_key),
   };
@@ -59,6 +75,73 @@ export function trimStatement(input: string | undefined | null): string | null {
   const s = (input ?? "").trim();
   if (!s) return null;
   return s.slice(0, 1200);
+}
+
+/**
+ * BR01-05 — Athena-native restatement.
+ *
+ * A member's correction arrives in the member's voice ("I'm not driven by
+ * status"). Rendering it verbatim inside Athena's understanding makes her
+ * appear to speak as the member. Athena therefore restates it in her own
+ * register — second person, addressed to the member — without adding,
+ * softening, or reinterpreting anything. The member's exact words are still
+ * preserved on the revision record as the authoritative source.
+ *
+ * The transform is deliberately conservative: it only runs when the statement
+ * is written in the first person and does not already address the member. If
+ * anything is ambiguous, the member's wording is kept untouched rather than
+ * risk changing meaning.
+ */
+const FIRST_PERSON = /\b(i|i'm|i've|i'd|i'll|im|me|my|mine|myself)\b/i;
+const SECOND_PERSON = /\b(you|you're|your|yours|yourself)\b/i;
+
+const PRONOUN_MAP: Array<[RegExp, string]> = [
+  [/\bI am\b/g, "You are"],
+  [/\bI'm\b/g, "You're"],
+  [/\bI’m\b/g, "You’re"],
+  [/\bI have\b/g, "You have"],
+  [/\bI've\b/g, "You've"],
+  [/\bI’ve\b/g, "You’ve"],
+  [/\bI will\b/g, "You will"],
+  [/\bI'll\b/g, "You'll"],
+  [/\bI’ll\b/g, "You’ll"],
+  [/\bI would\b/g, "You would"],
+  [/\bI'd\b/g, "You'd"],
+  [/\bI’d\b/g, "You’d"],
+  [/\bI\b/g, "you"],
+  [/\bmyself\b/gi, "yourself"],
+  [/\bmine\b/gi, "yours"],
+  [/\bmy\b/gi, "your"],
+  [/\bMy\b/g, "Your"],
+  [/\bme\b/g, "you"],
+  [/\bMe\b/g, "You"],
+];
+
+/** Verbs that must follow the person shift when "I" becomes "you". */
+const VERB_MAP: Array<[RegExp, string]> = [
+  [/\byou was\b/g, "you were"],
+  [/\byou wasn't\b/g, "you weren't"],
+  [/\byou am\b/g, "you are"],
+];
+
+export function athenaRestatement(statement: string | null): string | null {
+  if (!statement) return null;
+  const raw = statement.trim();
+  if (!raw) return null;
+  // Already in Athena's register, or not first-person: keep the member's words.
+  if (SECOND_PERSON.test(raw) || !FIRST_PERSON.test(raw)) return sentence(raw);
+
+  let out = raw;
+  for (const [re, to] of PRONOUN_MAP) out = out.replace(re, to);
+  for (const [re, to] of VERB_MAP) out = out.replace(re, to);
+  // A sentence should not open in lower case after the shift.
+  out = out.charAt(0).toUpperCase() + out.slice(1);
+  return sentence(out);
+}
+
+function sentence(text: string): string {
+  const t = text.trim();
+  return /[.!?…]$/.test(t) ? t : `${t}.`;
 }
 
 /**
@@ -73,6 +156,8 @@ export function revisionPatch(
   reasoning: string;
   confidence: number;
   evidence: unknown[];
+  /** F-14: a member revision is stated material by definition. */
+  basis: FacetBasis | null;
   needs_clarification: boolean;
   clarification_note: string | null;
   refined_at: string;
@@ -81,12 +166,13 @@ export function revisionPatch(
   if (kind === "change") {
     return {
       // The member's own account of the change is authoritative and is stated,
-      // not inferred, material.
-      understanding: statement,
+      // not inferred, material — restated in Athena's own voice (BR01-05).
+      understanding: athenaRestatement(statement),
       reasoning:
         "The member told me directly that this has changed. Earlier understanding is kept as history, not as present truth.",
       confidence: statement ? 0.6 : 0.2,
       evidence: statement ? [statement] : [],
+      basis: "stated",
       needs_clarification: false,
       clarification_note: null,
       refined_at: now,
@@ -94,11 +180,12 @@ export function revisionPatch(
   }
   if (kind === "correction") {
     return {
-      understanding: statement,
+      understanding: athenaRestatement(statement),
       reasoning:
         "I had misunderstood this. The member corrected me; the correction is authoritative for what it corrects, and I should be slower to infer in this area.",
       confidence: statement ? 0.5 : 0.15,
       evidence: statement ? [statement] : [],
+      basis: "stated",
       needs_clarification: false,
       clarification_note: null,
       refined_at: now,
@@ -110,6 +197,7 @@ export function revisionPatch(
     reasoning: "",
     confidence: 0,
     evidence: [],
+    basis: null,
     needs_clarification: false,
     clarification_note: null,
     refined_at: now,
@@ -161,7 +249,7 @@ export function mirrorPatch(
   if (!column) return null;
   if (column === "core_values") return { core_values: [] };
   if (kind === "removal") return { [column]: null };
-  return { [column]: statement };
+  return { [column]: athenaRestatement(statement) };
 }
 
 /** Member-facing acknowledgement in Athena's voice. */

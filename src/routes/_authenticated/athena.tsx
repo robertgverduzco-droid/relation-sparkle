@@ -10,6 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { speak } from "@/lib/athena-speech";
 import { ARRIVAL_WELCOME, markSeen, markSessionGreeted } from "@/lib/arrival";
+import {
+  RUNTIME_STATE_LABEL,
+  resolveRuntimeState,
+  showsThinkingIndicator,
+} from "@/lib/athena-runtime-state";
 
 export const Route = createFileRoute("/_authenticated/athena")({
   head: () => ({
@@ -81,17 +86,28 @@ function AthenaPage() {
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // BR01-01: every utterance carries an epoch. A callback from an older
+  // utterance can never change the state of a newer one, and playback state
+  // is always released by `speak`'s bounded recovery.
+  const speechEpochRef = useRef(0);
 
   /** Speak a line, tracking playback state so it can be shown as text. */
   const playLine = useCallback(async (text: string, signal: AbortSignal) => {
-    await speak(text, signal, setSpeaking);
+    const epoch = ++speechEpochRef.current;
+    await speak(text, signal, (on) => {
+      if (epoch !== speechEpochRef.current) return;
+      setSpeaking(on);
+    });
+    if (epoch === speechEpochRef.current) setSpeaking(false);
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    speechEpochRef.current += 1;
     speechAbortRef.current?.abort();
     speechAbortRef.current = null;
     setSpeaking(false);
   }, []);
+
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -307,10 +323,12 @@ function AthenaPage() {
       setMessages(withReply);
       void persist(withReply);
       if (voiceMode === "voice") {
+        speechAbortRef.current?.abort();
         const abort = new AbortController();
         speechAbortRef.current = abort;
-        void speak(res.reply, abort.signal, setSpeaking);
+        void playLine(res.reply, abort.signal);
       }
+
 
       // Log usage for later billing (Stripe deferred). Rough estimate: 4 chars/token.
       void logUsageFn({
@@ -432,6 +450,16 @@ function AthenaPage() {
   useEffect(() => () => { stopStream(); }, [stopStream]);
 
   const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing;
+  // BR01-02: a single source of truth for Athena's runtime state.
+  const runtimeState = resolveRuntimeState({
+    hydrated,
+    speaking,
+    recording,
+    transcribing,
+    busy,
+    introducing,
+    askingPreference,
+  });
   const placeholder = introducing || !hydrated || askingPreference
     ? ""
     : transcribing
@@ -441,6 +469,7 @@ function AthenaPage() {
         : busy
           ? "…"
           : "Say it — or type it";
+
 
   return (
     <div className="screen-shell safe-top pb-24" data-testid="athena-screen">
@@ -467,9 +496,7 @@ function AthenaPage() {
         ref={scrollerRef}
         data-testid="athena-transcript"
         data-hydrated={hydrated ? "true" : "false"}
-        data-conversation-state={
-          introducing ? "first-meeting" : askingPreference ? "choosing-mode" : busy ? "thinking" : "open"
-        }
+        data-conversation-state={runtimeState}
         className="flex-1 overflow-y-auto px-5 py-6 space-y-4"
       >
         {!hydrated ? (
@@ -481,7 +508,9 @@ function AthenaPage() {
             {messages.map((m, i) => (
               <Bubble key={i} role={m.role} content={m.content} />
             ))}
-            {(busy || introducing) && <TypingBubble />}
+            {showsThinkingIndicator(runtimeState) && (
+              <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
+            )}
             {askingPreference && (
               <div className="fade-in-slow pt-4 flex flex-col items-start gap-3">
                 <p className="text-sm text-muted-foreground">How would you like to continue?</p>
@@ -753,11 +782,11 @@ function Bubble({ role, content }: { role: "user" | "assistant"; content: string
   );
 }
 
-function TypingBubble() {
+function TypingBubble({ label }: { label: string }) {
   return (
     <div className="flex justify-start">
       <div className="flex items-center gap-1.5 px-1 py-2" role="status" aria-live="polite">
-        <span className="sr-only">Athena is thinking</span>
+        <span className="sr-only">{label}</span>
         <Dot delay="0ms" />
         <Dot delay="150ms" />
         <Dot delay="300ms" />

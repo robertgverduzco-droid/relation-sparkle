@@ -30,6 +30,8 @@ export const facetSchema = z.object({
   understanding: z.string(),
   reasoning: z.string(),
   evidence: z.array(z.string()).max(6),
+  // F-14 provenance (BR01-04): did the member say this, or did Athena infer it?
+  basis: z.enum(["stated", "inferred"]),
   confidence: z.number().min(0).max(1),
   contradictsPrior: z.boolean().nullable(),
   clarificationNote: z.string().nullable(),
@@ -62,6 +64,7 @@ export type FacetRow = {
   understanding: string | null;
   reasoning: string | null;
   evidence: Json;
+  basis?: string | null;
   confidence: number;
   needs_clarification?: boolean | null;
   clarification_note?: string | null;
@@ -104,8 +107,10 @@ export function summarizeLivingProfile(facets: FacetRow[]): string {
       // L4: confidence is internal and qualitative here — never a number you say aloud.
       const held =
         c >= 0.7 ? "well-understood" : c >= 0.45 ? "reasonably understood" : "held lightly";
-      // L5: keep what they stated distinct from what you inferred.
-      const grounded = (f.evidence ?? "").toString().trim().length > 0 ? "stated" : "inferred";
+      // L5 / F-14: keep what they stated distinct from what you inferred.
+      // Provenance comes from the stored basis, never from the mere presence
+      // of evidence; unestablished provenance is reported as such.
+      const grounded = f.basis === "stated" ? "stated" : f.basis === "inferred" ? "inferred" : "provenance unclear";
       const refined = f.refined_at ? Date.parse(f.refined_at) : NaN;
       const stale =
         Number.isFinite(refined) && now - refined > 1000 * 60 * 60 * 24 * 120 ? " [may be dated]" : "";

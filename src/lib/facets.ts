@@ -49,3 +49,15 @@ export const FACET_LABELS: Record<FacetKey, string> = {
   partnership_vision: "What you're building toward with someone",
   readiness: "Where you are right now",
 };
+
+
+// F-14 provenance (BR01-04). Client-safe so member surfaces can render it
+// without importing server-only understanding logic.
+export type FacetBasis = "stated" | "inferred" | "unestablished";
+
+/** Member-facing wording for each provenance state. */
+export const BASIS_LABEL: Record<FacetBasis, string> = {
+  stated: "you told me",
+  inferred: "I inferred",
+  unestablished: "from our conversations",
+};

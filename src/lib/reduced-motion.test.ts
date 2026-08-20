@@ -35,7 +35,9 @@ describe("reduced motion support", () => {
 
   it("Athena's thinking state carries a text label, not only motion", () => {
     const athena = read("src/routes/_authenticated/athena.tsx");
-    expect(athena).toContain("Athena is thinking");
+    const state = read("src/lib/athena-runtime-state.ts");
+    expect(state).toContain("Athena is thinking");
+    expect(athena).toContain("RUNTIME_STATE_LABEL");
     expect(athena).toContain('aria-live="polite"');
   });
 });

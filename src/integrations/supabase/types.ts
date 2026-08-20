@@ -1853,6 +1853,7 @@ export type Database = {
       }
       understanding_facets: {
         Row: {
+          basis: string | null
           clarification_note: string | null
           confidence: number
           created_at: string
@@ -1867,6 +1868,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          basis?: string | null
           clarification_note?: string | null
           confidence?: number
           created_at?: string
@@ -1881,6 +1883,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          basis?: string | null
           clarification_note?: string | null
           confidence?: number
           created_at?: string
