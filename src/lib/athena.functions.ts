@@ -145,14 +145,20 @@ Use this memory to:
     const lowered = reply.toLowerCase();
     // Pacing is driven primarily by elapsed minutes (foundational = ~20 min),
     // with turn-count as a secondary signal so unusually terse users still
-    // reach a natural close.
+    // reach a natural close. Breadth is now part of readiness: a conversation
+    // that spent its time inside two subjects has not yet done the work of a
+    // foundational conversation, so closing waits a little longer.
+    const breadthReady = !coverage || coverage.breadthSufficient;
     const readyToOffer =
-      (elapsed >= 20 && userTurns >= 10) || elapsed >= 24 || userTurns >= 16;
+      ((elapsed >= 20 && userTurns >= 10) || elapsed >= 24 || userTurns >= 16) &&
+      // Never hold a member indefinitely: past the long stop, close regardless.
+      (breadthReady || elapsed >= 28 || userTurns >= 22);
     const languageOffersReturn =
       /(another day|another time|pick this back up|come back|next time|good place to (pause|stop|rest))/.test(lowered);
     const offerReturn = readyToOffer && (languageOffersReturn || elapsed >= 22);
     const windDown = !offerReturn && (elapsed >= 18 || userTurns >= 12);
     const pacing = offerReturn ? "offer_return" : windDown ? "wind_down" : "continue";
+
 
     return askOutput.parse({ reply, pacing, timeAcknowledged: shouldAcknowledgeTime });
   });
