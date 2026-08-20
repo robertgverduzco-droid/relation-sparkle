@@ -109,6 +109,56 @@ function AthenaPage() {
     setSpeaking(false);
   }, []);
 
+  // ---- Live Conversation (speech-to-speech) ----
+  const liveRef = useRef<AthenaLiveSession | null>(null);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
+  const [livePartial, setLivePartial] = useState("");
+  const live = liveStatus === "connecting" || liveStatus === "listening" || liveStatus === "speaking";
+
+  const appendLiveTurn = useCallback((turn: LiveTurn) => {
+    setMessages((prev) => {
+      const next: Msg[] = [...prev, { ...turn, ts: new Date().toISOString() }];
+      messagesRef.current = next;
+      void persist(next);
+      return next;
+    });
+  }, [persist]);
+
+  const endLive = useCallback(() => {
+    liveRef.current?.stop();
+    liveRef.current = null;
+    setLivePartial("");
+    setLiveStatus("idle");
+  }, []);
+
+  const startLive = useCallback(async () => {
+    if (liveRef.current) return;
+    // Live mode owns the audio channel; the fallback voice must go quiet.
+    speechEpochRef.current += 1;
+    speechAbortRef.current?.abort();
+    speechAbortRef.current = null;
+    setSpeaking(false);
+
+    const session = new AthenaLiveSession({
+      onStatus: (s) => setLiveStatus(s),
+      onTurn: appendLiveTurn,
+      onPartial: (t) => setLivePartial(t),
+      onError: (m) => {
+        toast(m);
+        liveRef.current = null;
+      },
+    });
+    liveRef.current = session;
+    await session.start(await authHeader(), messagesRef.current.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })));
+  }, [appendLiveTurn]);
+
+  useEffect(() => () => { liveRef.current?.stop(); liveRef.current = null; }, []);
+
+
+
 
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
