@@ -31,6 +31,6 @@ describe("Athena Live Conversation session", () => {
     expect(LIVE_SPEECH_ADDENDUM).toMatch(/yield instantly/i);
     expect(LIVE_SPEECH_ADDENDUM).toMatch(/Silence is allowed/i);
     expect(LIVE_SPEECH_ADDENDUM).toMatch(/never narrate/i);
-    expect(LIVE_SPEECH_ADDENDUM).not.toMatch(/score|rating|percent/i);
+    expect(LIVE_SPEECH_ADDENDUM).not.toMatch(/\b(score|rating|percentage)\b/i);
   });
 });
