@@ -24,6 +24,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  // BR01-03: the form must never fall through to a native GET navigation
+  // while React is still hydrating. Submission controls stay inert until the
+  // client handler is actually attached.
+  const [hydrated, setHydrated] = useState(false);
   // Verification state: set when a session exists but the address is not
   // confirmed, or when the gate sent us here with ?verify=1.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
@@ -31,6 +35,10 @@ function AuthPage() {
 
   const isSignup = mode === "signup";
   const awaitingVerification = pendingEmail !== null;
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   // Expired / invalid verification links come back with an error in the hash.
   useEffect(() => {
@@ -91,6 +99,9 @@ function AuthPage() {
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Belt and braces: a submit that somehow arrives before hydration
+    // completes is swallowed rather than navigating.
+    if (!hydrated || busy) return;
     setBusy(true);
     try {
       if (isSignup) {
@@ -207,7 +218,7 @@ function AuthPage() {
       <div className="mt-8 space-y-3">
         <button
           onClick={handleGoogle}
-          disabled={busy}
+          disabled={busy || !hydrated}
           className="flex w-full items-center justify-center gap-3 rounded-full border border-border bg-card px-5 py-3.5 text-sm font-medium text-foreground transition active:scale-[0.98] disabled:opacity-60"
         >
           <GoogleIcon /> Continue with Google
@@ -220,7 +231,14 @@ function AuthPage() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <form onSubmit={handleEmailSubmit} className="space-y-3">
+      <form
+        onSubmit={handleEmailSubmit}
+        // No `name` attributes anywhere in this form, and no `action`: even a
+        // pre-hydration native submit could not place credentials in a URL.
+        action={undefined}
+        noValidate={false}
+        className="space-y-3"
+      >
         <label className="block">
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Email</span>
           <input
@@ -238,10 +256,10 @@ function AuthPage() {
           />
         </label>
         <button
-          type="submit" disabled={busy}
+          type="submit" disabled={busy || !hydrated}
           className="w-full rounded-full bg-primary px-6 py-4 text-center text-[15px] font-medium text-primary-foreground transition active:scale-[0.98] disabled:opacity-60"
         >
-          {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
+          {!hydrated ? "One moment…" : busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
         </button>
       </form>
 
