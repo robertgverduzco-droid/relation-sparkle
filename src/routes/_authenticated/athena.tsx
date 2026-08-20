@@ -318,10 +318,12 @@ function AthenaPage() {
       setMessages(withReply);
       void persist(withReply);
       if (voiceMode === "voice") {
+        speechAbortRef.current?.abort();
         const abort = new AbortController();
         speechAbortRef.current = abort;
-        void speak(res.reply, abort.signal, setSpeaking);
+        void playLine(res.reply, abort.signal);
       }
+
 
       // Log usage for later billing (Stripe deferred). Rough estimate: 4 chars/token.
       void logUsageFn({
