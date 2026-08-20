@@ -230,6 +230,8 @@ Use this memory to:
       reply,
       latestMemberMessage: latestMember?.content ?? "",
       breadthSufficient: !coverage || coverage.breadthSufficient,
+      readinessMet: isFoundational && introReadiness.ready,
+
     });
 
 
