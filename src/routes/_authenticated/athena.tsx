@@ -9,6 +9,7 @@ import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { speak } from "@/lib/athena-speech";
+import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { ARRIVAL_WELCOME, markSeen, markSessionGreeted } from "@/lib/arrival";
 import {
   RUNTIME_STATE_LABEL,
@@ -108,7 +109,6 @@ function AthenaPage() {
     setSpeaking(false);
   }, []);
 
-
   const persist = useCallback(async (msgs: Msg[]) => {
     const { data: userRes } = await supabase.auth.getUser();
     const uid = userRes.user?.id;
@@ -118,6 +118,56 @@ function AthenaPage() {
       { onConflict: "user_id" },
     );
   }, []);
+
+  // ---- Live Conversation (speech-to-speech) ----
+  const liveRef = useRef<AthenaLiveSession | null>(null);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
+  const [livePartial, setLivePartial] = useState("");
+  const live = liveStatus === "connecting" || liveStatus === "listening" || liveStatus === "speaking";
+
+  const appendLiveTurn = useCallback((turn: LiveTurn) => {
+    setMessages((prev) => {
+      const next: Msg[] = [...prev, { ...turn, ts: new Date().toISOString() }];
+      messagesRef.current = next;
+      void persist(next);
+      return next;
+    });
+  }, [persist]);
+
+  const endLive = useCallback(() => {
+    liveRef.current?.stop();
+    liveRef.current = null;
+    setLivePartial("");
+    setLiveStatus("idle");
+  }, []);
+
+  const startLive = useCallback(async () => {
+    if (liveRef.current) return;
+    // Live mode owns the audio channel; the fallback voice must go quiet.
+    speechEpochRef.current += 1;
+    speechAbortRef.current?.abort();
+    speechAbortRef.current = null;
+    setSpeaking(false);
+
+    const session = new AthenaLiveSession({
+      onStatus: (s) => setLiveStatus(s),
+      onTurn: appendLiveTurn,
+      onPartial: (t) => setLivePartial(t),
+      onError: (m) => {
+        toast(m);
+        liveRef.current = null;
+      },
+    });
+    liveRef.current = session;
+    await session.start(await authHeader(), messagesRef.current.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })));
+  }, [appendLiveTurn]);
+
+  useEffect(() => () => { liveRef.current?.stop(); liveRef.current = null; }, []);
+
+
 
   useEffect(() => {
     let cancelled = false;
@@ -449,7 +499,7 @@ function AthenaPage() {
 
   useEffect(() => () => { stopStream(); }, [stopStream]);
 
-  const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing;
+  const inputDisabled = busy || introducing || !hydrated || askingPreference || transcribing || live;
   // BR01-02: a single source of truth for Athena's runtime state.
   const runtimeState = resolveRuntimeState({
     hydrated,
@@ -508,7 +558,10 @@ function AthenaPage() {
             {messages.map((m, i) => (
               <Bubble key={i} role={m.role} content={m.content} />
             ))}
-            {showsThinkingIndicator(runtimeState) && (
+            {livePartial && (
+              <Bubble role="assistant" content={livePartial} />
+            )}
+            {showsThinkingIndicator(runtimeState) && !live && (
               <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
             )}
             {askingPreference && (
@@ -537,8 +590,36 @@ function AthenaPage() {
         )}
       </div>
 
+      {/* Live conversation state, stated in words rather than motion alone. */}
+      <div aria-live="polite" className="px-5">
+        {live && (
+          <div
+            data-testid="athena-live-panel"
+            data-live-status={liveStatus}
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+          >
+            <p className="text-xs text-ink-soft">
+              {liveStatus === "connecting"
+                ? "Opening a live conversation…"
+                : liveStatus === "speaking"
+                  ? "Athena is speaking. You can simply begin talking whenever you like."
+                  : "Athena is listening. Take your time."}
+            </p>
+            <button
+              type="button"
+              data-testid="athena-live-end"
+              onClick={endLive}
+              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+            >
+              End
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* D5 playback state, stated in words rather than motion alone. */}
       <div aria-live="polite" className="px-5">
+
         {speaking && (
           <div
             data-testid="athena-speaking"
@@ -566,10 +647,24 @@ function AthenaPage() {
         }}
         className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
       >
+        {!askingPreference && hydrated && !introducing && (
+          <div className="mb-2 flex justify-center">
+            <button
+              type="button"
+              data-testid="athena-live-toggle"
+              onClick={() => (live ? endLive() : void startLive())}
+              disabled={busy || recording || transcribing}
+              className="tap-target rounded-full border border-border px-4 text-xs uppercase tracking-[0.2em] text-muted-foreground transition disabled:opacity-40 hover:text-foreground"
+            >
+              {live ? "End live conversation" : "Speak with Athena"}
+            </button>
+          </div>
+        )}
         <div
           className="flex items-end gap-2 rounded-3xl border border-input bg-card px-2 py-2 transition-opacity"
-          style={{ opacity: inputDisabled && !recording ? 0.5 : 1 }}
+          style={{ opacity: (inputDisabled && !recording) || live ? 0.5 : 1 }}
         >
+
           <button
             type="button"
             data-testid="athena-record"
