@@ -86,7 +86,7 @@ describe("early-exit guidance follows server readiness", () => {
     const g = earlyExitGuidance(r.ready, r.missing.map((a) => a.label));
     expect(g).toMatch(/NOT YET READY/);
     expect(g).toMatch(/free to stop/i);
-    expect(g).not.toMatch(/warn|misconduct/i);
+    expect(g).toMatch(/do not warn them/i);
   });
 
   it("holds when breadth exists but attraction understanding is missing", () => {
