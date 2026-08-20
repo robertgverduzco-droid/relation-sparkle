@@ -20,7 +20,7 @@ export type AthenaRuntimeState =
 /** Restrained, Athena-native status language. */
 export const RUNTIME_STATE_LABEL: Record<AthenaRuntimeState, string> = {
   preparing: "Athena is preparing to meet you",
-  "first-meeting": "Athena is speaking",
+  "first-meeting": "Athena is beginning",
   "choosing-mode": "Athena is waiting for you to choose",
   listening: "Athena is listening",
   transcribing: "Athena is taking down your words",
