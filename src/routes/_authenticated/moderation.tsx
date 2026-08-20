@@ -24,20 +24,34 @@ function ModerationPage() {
   const resolve = useServerFn(resolveReport);
   const [ready, setReady] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
+  // BR01-06: exactly one denial notice per attempt. Effect re-runs (StrictMode,
+  // remount, or a changed server-fn identity) must not repeat it, and sonner
+  // dedupes on the shared id even if the route is re-entered.
+  const deniedRef = useRef(false);
 
   useEffect(() => {
+    let alive = true;
     (async () => {
       const { moderator } = await check({});
+      if (!alive) return;
       if (!moderator) {
-        toast("You don't have access to moderation.");
+        if (!deniedRef.current) {
+          deniedRef.current = true;
+          toast("You don't have access to moderation.", { id: "moderation-denied" });
+        }
         navigate({ to: "/home" });
         return;
       }
       const res = await list({});
+      if (!alive) return;
       setReports(res.reports);
       setReady(true);
     })();
+    return () => {
+      alive = false;
+    };
   }, [check, list, navigate]);
+
 
   async function act(id: string, action: "dismiss" | "suspend" | "ban") {
     if (action === "ban" && !confirm("Permanently delete this account?")) return;
