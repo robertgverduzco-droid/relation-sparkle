@@ -36,6 +36,12 @@ export const Route = createFileRoute("/_authenticated/athena")({
 });
 
 type Notice = { tone: "info" | "urgent"; title: string; body: string };
+type ReadinessNoticeT = {
+  kind: "readiness";
+  state: "not_ready" | "ready";
+  title: string;
+  body: string;
+};
 type Msg = {
   role: "user" | "assistant";
   content: string;
@@ -43,6 +49,9 @@ type Msg = {
   // A boundary notice always accompanies Athena's reply and is rendered
   // beneath it — it never precedes, replaces, or obscures what she said.
   notice?: Notice;
+  // Foundational readiness is a separate experience from Trust & Safety: it
+  // never borrows safety styling or language.
+  readinessNotice?: ReadinessNoticeT;
 };
 type VoiceMode = "voice" | "text";
 const VOICE_KEY = "athena-voice-mode";
@@ -100,6 +109,10 @@ function AthenaPage() {
   const timeAcknowledgedRef = useRef(false);
   const foundationCompleteRef = useRef(false);
   const closingOfferedRef = useRef(false);
+  // Server-derived readiness. The client never computes it.
+  const [introReady, setIntroReady] = useState(false);
+  const [showReadinessSheet, setShowReadinessSheet] = useState(false);
+  const readinessNoticeShownRef = useRef<Record<string, boolean>>({});
 
   const flushingRef = useRef(false);
   const messagesRef = useRef<Msg[]>([]);
@@ -335,7 +348,14 @@ function AthenaPage() {
     messages: Msg[];
     elapsedMinutes: number;
     timeAcknowledged: boolean;
-  }): Promise<{ reply: string; pacing?: string; timeAcknowledged?: boolean; notice?: Notice } | null> {
+  }): Promise<{
+    reply: string;
+    pacing?: string;
+    timeAcknowledged?: boolean;
+    notice?: Notice;
+    readiness?: { ready: boolean };
+    readinessNotice?: ReadinessNoticeT;
+  } | null> {
     try {
       return await ask({ data: payload });
     } catch {
@@ -392,14 +412,43 @@ function AthenaPage() {
         await reflect({ data: { messages: messagesRef.current } });
         lastReflectedTurnRef.current = messagesRef.current.filter((m) => m.role === "user").length;
       } catch { /* non-fatal */ }
-      // 3. Mark session complete and force matchmaking.
-      try { await complete({}); } catch { /* non-fatal */ }
+      // 3. Mark session complete and force matchmaking. The server refuses
+      // when readiness is unmet, so leaving early can never make someone
+      // introduction-eligible.
+      let ready = true;
+      try {
+        const res = await complete({});
+        ready = (res as { ready?: boolean }).ready !== false;
+      } catch { /* non-fatal */ }
+      if (!ready) {
+        setIntroReady(false);
+        setShowReadinessSheet(true);
+        return;
+      }
       foundationCompleteRef.current = true;
       toast("Athena has what she needs for now. She'll begin reflecting.");
       // 4. Membership is offered only after the foundation exists — never before.
       let entitled = false;
       try { entitled = (await readMembership()).entitled; } catch { /* non-fatal */ }
       navigate({ to: entitled ? "/home" : "/membership" });
+    } finally {
+      setCompleting(false);
+    }
+  }
+
+  // Member autonomy: they may leave at any point. Progress is saved, and the
+  // session is deliberately NOT marked complete.
+  async function leaveWithProgressSaved() {
+    if (completing) return;
+    setCompleting(true);
+    try {
+      await persist(messagesRef.current);
+      try {
+        await reflect({ data: { messages: messagesRef.current } });
+        lastReflectedTurnRef.current = messagesRef.current.filter((m) => m.role === "user").length;
+      } catch { /* non-fatal */ }
+      toast("Saved. Athena will pick this up where you left off.");
+      navigate({ to: "/home" });
     } finally {
       setCompleting(false);
     }
@@ -426,6 +475,12 @@ function AthenaPage() {
         return;
       }
       if (res.timeAcknowledged) timeAcknowledgedRef.current = true;
+      if (res.readiness) setIntroReady(res.readiness.ready);
+      // The readiness explanation is shown once per state per conversation:
+      // Athena's own words carry it from then on.
+      const rn = res.readinessNotice;
+      const showReadiness = Boolean(rn && !readinessNoticeShownRef.current[rn.state]);
+      if (rn && showReadiness) readinessNoticeShownRef.current[rn.state] = true;
       const withReply: Msg[] = [
         ...next,
         {
@@ -433,6 +488,7 @@ function AthenaPage() {
           content: res.reply,
           ts: new Date().toISOString(),
           ...(res.notice ? { notice: res.notice as Notice } : {}),
+          ...(showReadiness ? { readinessNotice: res.readinessNotice as ReadinessNoticeT } : {}),
         },
       ];
       setMessages(withReply);
@@ -471,7 +527,10 @@ function AthenaPage() {
         !closingOfferedRef.current
       ) {
         closingOfferedRef.current = true;
-        setShowClosingCard(true);
+        // Readiness decides which experience appears. Before readiness there
+        // is no "finish" — only an explanation and the freedom to leave.
+        if (res.readiness?.ready ?? introReady) setShowClosingCard(true);
+        else setShowReadinessSheet(true);
       }
 
     } finally {
@@ -631,6 +690,7 @@ function AthenaPage() {
               <div key={i}>
                 <Bubble role={m.role} content={m.content} />
                 {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
+                {m.readinessNotice ? <ReadinessNotice notice={m.readinessNotice} /> : null}
               </div>
             ))}
             {livePartial && (
@@ -800,6 +860,17 @@ function AthenaPage() {
         />
       )}
 
+      {showReadinessSheet && (
+        <ReadinessSheet
+          busy={completing}
+          onKeepTalking={() => setShowReadinessSheet(false)}
+          onLeave={() => {
+            setShowReadinessSheet(false);
+            void leaveWithProgressSaved();
+          }}
+        />
+      )}
+
       {showClosingCard && (
         <ClosingSheet
           busy={completing}
@@ -858,6 +929,73 @@ function VoiceSettingsSheet({
         <p className="mt-5 text-xs text-muted-foreground">
           You can speak to Athena at any time by tapping the microphone — whichever mode you're in.
         </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The foundational-readiness explanation. Deliberately unlike a boundary or
+ * moderation notice: neutral surface, no alert semantics, no warning colour.
+ */
+function ReadinessNotice({ notice }: { notice: ReadinessNoticeT }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      data-testid="readiness-notice"
+      data-readiness-state={notice.state}
+      className="fade-in-slow mt-3 rounded-2xl border border-border/60 bg-card px-4 py-3 text-[13px] leading-relaxed text-ink-soft"
+    >
+      <p className="font-display text-[15px] text-foreground">{notice.title}</p>
+      <p className="mt-1">{notice.body}</p>
+    </div>
+  );
+}
+
+/** Shown when a member tries to finish before Athena can stand behind an
+ *  introduction. Not a warning, and never a dead end. */
+function ReadinessSheet({
+  busy,
+  onKeepTalking,
+  onLeave,
+}: {
+  busy: boolean;
+  onKeepTalking: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-scrim/50 backdrop-blur-sm">
+      <div
+        className="w-full max-w-md rounded-t-3xl border-t border-border/60 bg-background p-6 pb-8 fade-in-slow"
+        data-testid="readiness-sheet"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
+        <h2 className="mb-2 font-display text-lg">Not quite ready for introductions</h2>
+        <p className="text-sm leading-relaxed text-ink-soft">
+          There are still a few important parts of the picture Athena needs before she'd feel
+          comfortable introducing you to someone. You're welcome to stop whenever you like —
+          everything you've shared is saved, and she'll continue from here when you return.
+        </p>
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            onClick={onKeepTalking}
+            disabled={busy}
+            data-testid="readiness-keep-talking"
+            className="min-h-11 rounded-full bg-primary px-6 py-3 text-[15px] font-medium text-primary-foreground disabled:opacity-60"
+          >
+            Keep talking
+          </button>
+          <button
+            onClick={onLeave}
+            disabled={busy}
+            data-testid="readiness-leave"
+            className="min-h-11 rounded-full border border-border px-6 py-3 text-[15px] text-foreground disabled:opacity-60"
+          >
+            {busy ? "Saving…" : "Leave for now"}
+          </button>
+        </div>
       </div>
     </div>
   );
