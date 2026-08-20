@@ -48,7 +48,7 @@ describe("BR01-01 — speech never locks the conversation", () => {
 
   it("playback settles on error and abort, not only on completion", () => {
     const src = read("src/lib/athena-speech.ts");
-    for (const hook of ["onended", "onerror", "onabort", "timed-out"]) {
+    for (const hook of ['"ended"', '"error"', '"abort"', "timed-out"]) {
       expect(src).toContain(hook);
     }
   });
