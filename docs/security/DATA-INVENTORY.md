@@ -51,7 +51,7 @@ it, and how it is handled. Classes are defined in `src/lib/security.server.ts`
 | `athena_outcome_signals` | 5 | admin only | n/a | pseudonymous pair token, purged on deletion |
 | `user_roles` | 4 | own | never | never stored on `profiles` |
 | `admin_audit_log` | 5 | admin only | n/a | append-only; no update/delete grant |
-| `security_kill_switches` | 1 | any signed-in member | n/a | state only; service-role writes |
+| `security_kill_switches` | 1 | admin/founder only | n/a | state only; service-role writes and runtime reads |
 
 ## Minimisation rules
 
