@@ -334,3 +334,27 @@ function Field({
     </label>
   );
 }
+
+/**
+ * The canonical arrival welcome, restored to its proper place: Athena speaks
+ * to the member before the first onboarding question, never after it.
+ *
+ * Text-first by doctrine — the words are always visible, whether or not audio
+ * is available. It is delivered once, ever; the first-meeting sequence in
+ * /athena drops its duplicate line once this has been shown.
+ */
+function ArrivalWelcome() {
+  const [already] = useState(() => arrivalDelivered());
+  useEffect(() => {
+    markArrivalDelivered();
+  }, []);
+  if (already) return null;
+  return (
+    <div className="mb-8 fade-in-slow" data-testid="onboarding-arrival-welcome">
+      <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Athena</p>
+      <p className="mt-3 font-display text-[1.75rem] leading-[1.15] text-foreground">
+        {ARRIVAL_WELCOME}
+      </p>
+    </div>
+  );
+}
