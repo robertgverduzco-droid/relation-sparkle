@@ -2053,6 +2053,7 @@ export type Database = {
           profile_approved_at: string | null
           readiness_summary: string | null
           self_understanding: string | null
+          understanding_reviewed_at: string | null
           updated_at: string
           user_id: string
         }
@@ -2075,6 +2076,7 @@ export type Database = {
           profile_approved_at?: string | null
           readiness_summary?: string | null
           self_understanding?: string | null
+          understanding_reviewed_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -2097,6 +2099,7 @@ export type Database = {
           profile_approved_at?: string | null
           readiness_summary?: string | null
           self_understanding?: string | null
+          understanding_reviewed_at?: string | null
           updated_at?: string
           user_id?: string
         }
