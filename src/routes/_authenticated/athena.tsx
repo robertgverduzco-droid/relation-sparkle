@@ -144,9 +144,16 @@ function AthenaPage() {
       const next: Msg[] = [...prev, { ...turn, ts: new Date().toISOString() }];
       messagesRef.current = next;
       void persist(next);
+      // Live sessions carry fixed instructions, so breadth-first correction
+      // during the foundational conversation is delivered turn by turn.
+      if (turn.role === "assistant" && !foundationCompleteRef.current) {
+        const nudge = breadthNudge(assessCoverage(next));
+        if (nudge) liveRef.current?.guide(nudge);
+      }
       return next;
     });
   }, [persist]);
+
 
   const endLive = useCallback(() => {
     liveRef.current?.stop();
