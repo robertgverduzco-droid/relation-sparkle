@@ -162,6 +162,8 @@ export function revisionPatch(
   reasoning: string;
   confidence: number;
   evidence: unknown[];
+  /** F-14: a member revision is stated material by definition. */
+  basis: FacetBasis | null;
   needs_clarification: boolean;
   clarification_note: string | null;
   refined_at: string;
@@ -176,6 +178,7 @@ export function revisionPatch(
         "The member told me directly that this has changed. Earlier understanding is kept as history, not as present truth.",
       confidence: statement ? 0.6 : 0.2,
       evidence: statement ? [statement] : [],
+      basis: "stated",
       needs_clarification: false,
       clarification_note: null,
       refined_at: now,
@@ -188,6 +191,7 @@ export function revisionPatch(
         "I had misunderstood this. The member corrected me; the correction is authoritative for what it corrects, and I should be slower to infer in this area.",
       confidence: statement ? 0.5 : 0.15,
       evidence: statement ? [statement] : [],
+      basis: "stated",
       needs_clarification: false,
       clarification_note: null,
       refined_at: now,
@@ -199,6 +203,7 @@ export function revisionPatch(
     reasoning: "",
     confidence: 0,
     evidence: [],
+    basis: null,
     needs_clarification: false,
     clarification_note: null,
     refined_at: now,
