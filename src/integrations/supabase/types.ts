@@ -1401,6 +1401,7 @@ export type Database = {
           height_cm: number | null
           id: string
           is_paused: boolean
+          is_synthetic: boolean
           learning_opt_out: boolean
           location_lat: number | null
           location_lng: number | null
@@ -1426,6 +1427,7 @@ export type Database = {
           height_cm?: number | null
           id: string
           is_paused?: boolean
+          is_synthetic?: boolean
           learning_opt_out?: boolean
           location_lat?: number | null
           location_lng?: number | null
@@ -1451,6 +1453,7 @@ export type Database = {
           height_cm?: number | null
           id?: string
           is_paused?: boolean
+          is_synthetic?: boolean
           learning_opt_out?: boolean
           location_lat?: number | null
           location_lng?: number | null
@@ -1806,6 +1809,86 @@ export type Database = {
           id?: string
           purpose?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      synthetic_accounts: {
+        Row: {
+          batch_id: string
+          created_at: string
+          credential_issued_at: string
+          email: string
+          id: string
+          label: string
+          revoked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          credential_issued_at?: string
+          email: string
+          id?: string
+          label: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          credential_issued_at?: string
+          email?: string
+          id?: string
+          label?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "synthetic_accounts_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "synthetic_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      synthetic_batches: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          created_size: number
+          deleted_at: string | null
+          id: string
+          label: string
+          note: string | null
+          requested_size: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          created_size?: number
+          deleted_at?: string | null
+          id?: string
+          label: string
+          note?: string | null
+          requested_size: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          created_size?: number
+          deleted_at?: string | null
+          id?: string
+          label?: string
+          note?: string | null
+          requested_size?: number
+          updated_at?: string
         }
         Relationships: []
       }
