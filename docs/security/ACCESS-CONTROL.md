@@ -95,3 +95,19 @@ writes run through the service-role client inside a verified server function.
 `GRANT UPDATE (col) ... TO authenticated` in the same migration. Omitting it
 produces `permission denied for table profiles` on the member's save even
 though RLS would allow the row.
+
+## Auth email links may not land on the route we asked for
+
+Supabase redirects a confirmation to its fallback (the site root) whenever the
+requested target is not on the project's redirect allow-list, and it strips the
+path when it does so. A confirmation can therefore arrive at `/` with the
+session — or an `otp_expired` error — in the fragment.
+
+Two rules follow, and both are covered by tests:
+
+1. Any route that receives auth link parameters hands them to `/auth-callback`
+   (root-level rescue in `src/routes/__root.tsx`, plus the protected-layout
+   rescue). Never render a page over an unconsumed link.
+2. An `access_denied` / `otp_expired` result means the one-time link was already
+   spent — usually by a desktop mail scanner prefetching it — not that the
+   member did something wrong. The member is confirmed; send them to sign in.

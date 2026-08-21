@@ -156,8 +156,19 @@ function AuthPage() {
       }
     } catch (err: unknown) {
       const wait = parseRetryAfterMs(err);
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      // A member whose link was spent by a mail scanner may still be
+      // unconfirmed here; put them on the verification screen with a resend
+      // rather than showing a bare error.
+      if (/email not confirmed|not confirmed/i.test(message)) {
+        setPendingEmail(email);
+        setLinkError(message);
+        return;
+      }
       if (wait) toast.error(cooldownMessage(noteCooldown(email, wait)));
-      else toast.error(err instanceof Error ? err.message : "Something went wrong");
+      else toast.error(message);
+
+
 
     } finally {
       setBusy(false);
