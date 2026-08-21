@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  destinationFor,
+  isMissingVerifier,
+  readCallbackLink,
+} from "@/lib/auth-callback";
 
 /**
  * Single landing point for every Supabase email link (signup confirmation,
@@ -10,13 +15,19 @@ import { supabase } from "@/integrations/supabase/client";
  * protected route whose gate redirects unauthenticated visitors to /auth —
  * discarding the `code` / `token_hash` the auth client still needed to
  * consume, and swallowing any `error_description` the link came back with.
- * The member saw Athena open, nothing was verified, and no reason was shown.
  *
- * This route is public, client-only, and consumes the link before any gate
- * runs. It handles all three link shapes:
- *   - ?token_hash=&type=   (verifyOtp — works across browsers/devices)
- *   - ?code=               (PKCE exchange — same browser as sign-up)
- *   - #access_token=...    (implicit; the client picks it up itself)
+ * Why it no longer depends on the device: the link is a one-time GET, and on
+ * desktop a mail scanner or browser prefetch often spends it before the
+ * member clicks. That first GET *does* confirm the address; the member's click
+ * then arrives as `#error=access_denied&error_code=otp_expired`. Treating that
+ * as "already confirmed — sign in" instead of "invalid link" is what makes a
+ * fresh email work on iPhone, Chrome, Safari, laptop or desktop alike.
+ *
+ * Link shapes handled, in order:
+ *   - #access_token=&refresh_token=   implicit session (set explicitly)
+ *   - ?token_hash=&type=              verifyOtp — device independent
+ *   - ?code=                          PKCE exchange — same browser only
+ *   - error / otp_expired             already consumed, or genuinely broken
  */
 export const Route = createFileRoute("/auth-callback")({
   ssr: false,
@@ -40,78 +51,84 @@ export const Route = createFileRoute("/auth-callback")({
   component: AuthCallbackPage,
 });
 
-type OtpType = "signup" | "magiclink" | "recovery" | "invite" | "email_change" | "email";
-
-function toAuth(error?: string): void {
-  const dest = error
-    ? `/auth#error_description=${encodeURIComponent(error)}`
-    : "/auth?verify=1";
-  window.location.replace(dest);
-}
-
 function AuthCallbackPage() {
   const [message, setMessage] = useState("Confirming your email…");
 
   useEffect(() => {
     let alive = true;
-    (async () => {
-      const url = new URL(window.location.href);
-      const q = url.searchParams;
-      const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
 
-      const linkError =
-        q.get("error_description") ??
-        q.get("error") ??
-        hash.get("error_description") ??
-        hash.get("error");
-      if (linkError) {
-        toAuth(linkError.replace(/\+/g, " "));
-        return;
-      }
+    const go = (dest: string) => {
+      // Tokens never linger in history.
+      window.history.replaceState(null, "", window.location.pathname);
+      window.location.replace(dest);
+    };
 
-      const tokenHash = q.get("token_hash") ?? q.get("token");
-      const type = (q.get("type") as OtpType | null) ?? "signup";
-      const code = q.get("code");
-
-      try {
-        if (tokenHash) {
-          const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-          if (error) throw error;
-        } else if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-        }
-      } catch (err) {
-        // A consumed or expired link is the common case; report it honestly
-        // rather than dropping the member into a silent verification loop.
-        if (!alive) return;
-        const detail = err instanceof Error ? err.message : "This link is no longer valid.";
-        const { data } = await supabase.auth.getUser();
-        const u = data.user;
-        if (u?.email_confirmed_at || u?.phone_confirmed_at) {
-          window.location.replace("/home");
-          return;
-        }
-        toAuth(detail);
-        return;
-      }
-
-      if (!alive) return;
+    const settle = async (fallback: "consumed" | "error", detail?: string) => {
       const { data } = await supabase.auth.getUser();
       const u = data.user;
       if (u?.email_confirmed_at || u?.phone_confirmed_at) {
         setMessage("Verified. Taking you in…");
-        window.location.replace("/home");
+        go(destinationFor("verified"));
         return;
       }
-      // Token consumed but this browser holds no session (cross-device open):
-      // the address is confirmed server-side; ask them to sign in.
-      if (tokenHash || code) {
-        window.location.replace("/auth?mode=signin#confirmed=1");
+      go(destinationFor(fallback, detail));
+    };
+
+    (async () => {
+      const link = readCallbackLink(window.location.href);
+
+      if (link.kind === "error") {
+        go(destinationFor("error", link.detail));
         return;
       }
-      toAuth("That link did not include a verification token.");
+
+      if (link.kind === "consumed") {
+        // The address was confirmed by whatever spent the link first.
+        setMessage("Your email is already confirmed…");
+        await settle("consumed");
+        return;
+      }
+
+      try {
+        if (link.kind === "session") {
+          const { error } = await supabase.auth.setSession({
+            access_token: link.accessToken,
+            refresh_token: link.refreshToken,
+          });
+          if (error) throw error;
+        } else if (link.kind === "token_hash") {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: link.tokenHash,
+            type: link.type,
+          });
+          if (error) throw error;
+        } else if (link.kind === "code") {
+          const { error } = await supabase.auth.exchangeCodeForSession(link.code);
+          // Opening the link on a different browser than sign-up means this
+          // browser holds no PKCE verifier. Normal, not a broken link.
+          if (error && isMissingVerifier(error.message)) {
+            if (!alive) return;
+            await settle("consumed");
+            return;
+          }
+          if (error) throw error;
+        } else {
+          if (!alive) return;
+          await settle("error", "That link did not include a verification token.");
+          return;
+        }
+      } catch (err) {
+        if (!alive) return;
+        const detail = err instanceof Error ? err.message : "This link is no longer valid.";
+        // A spent token is the common case and is not a failure for the member.
+        await settle(/expired|invalid|already/i.test(detail) ? "consumed" : "error", detail);
+        return;
+      }
+
+      if (!alive) return;
+      await settle("consumed");
     })();
+
     return () => {
       alive = false;
     };
@@ -125,3 +142,4 @@ function AuthCallbackPage() {
     </div>
   );
 }
+
