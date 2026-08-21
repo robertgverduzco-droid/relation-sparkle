@@ -66,3 +66,24 @@ describe("verification link parsing — device and browser independent", () => {
     );
   });
 });
+
+describe("hasAuthLinkParams — links that land on the wrong route", () => {
+  it("recognises a confirmation that fell back to the site root", () => {
+    expect(hasAuthLinkParams("https://app.example/#access_token=a&refresh_token=b&type=signup")).toBe(true);
+  });
+
+  it("recognises an already-spent link error at the root", () => {
+    expect(hasAuthLinkParams("https://app.example/?x=1#error=access_denied&error_code=otp_expired")).toBe(true);
+  });
+
+  it("recognises token_hash and PKCE code in the query", () => {
+    expect(hasAuthLinkParams("https://app.example/home?token_hash=abc&type=signup")).toBe(true);
+    expect(hasAuthLinkParams("https://app.example/home?code=abc")).toBe(true);
+  });
+
+  it("leaves ordinary pages alone, and never loops on the callback itself", () => {
+    expect(hasAuthLinkParams("https://app.example/today")).toBe(false);
+    expect(hasAuthLinkParams("https://app.example/auth-callback#access_token=a")).toBe(false);
+    expect(hasAuthLinkParams("https://app.example/meet?intro=7")).toBe(false);
+  });
+});
