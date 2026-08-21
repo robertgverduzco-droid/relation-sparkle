@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { destinationFor, isMissingVerifier, readCallbackLink } from "./auth-callback";
+import { destinationFor, hasAuthLinkParams, isMissingVerifier, readCallbackLink } from "./auth-callback";
 
 const ORIGIN = "https://relation-sparkle.lovable.app/auth-callback";
 
