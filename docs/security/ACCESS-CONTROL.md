@@ -78,3 +78,20 @@ that read to admins, and every write is service-role only.
 `purge_tombstones`, `banned_identifiers`, `step_up_grants` and
 `restore_reconciliations` have RLS enabled with no policies. That is the
 intended deny-by-default posture for service-role-only tables, not a gap.
+
+## Column-level grants on `profiles` (A-08)
+
+`profiles` deliberately has **no table-level `UPDATE`** for `authenticated`.
+Member-editable columns are granted individually: `display_name`, `birth_date`,
+`gender`, `pronouns`, `city`, `region`, `country`, `location_lat`,
+`location_lng`, `bio`, `height_cm`, `ethnicities`, `ethnicity_self_describe`,
+`religions`, `religion_self_describe`, `smoking`.
+
+Server-owned columns (`onboarding_stage`, `onboarding_completed_at`,
+`is_paused`, `learning_opt_out`, `is_synthetic`) are never granted; those
+writes run through the service-role client inside a verified server function.
+
+**Rule:** any new member-editable column on `profiles` must ship its own
+`GRANT UPDATE (col) ... TO authenticated` in the same migration. Omitting it
+produces `permission denied for table profiles` on the member's save even
+though RLS would allow the row.
