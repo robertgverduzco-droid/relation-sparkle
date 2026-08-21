@@ -53,6 +53,11 @@ function AuthPage() {
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash) return;
     const params = new URLSearchParams(hash);
+    if (params.get("confirmed")) {
+      toast.success("Your email is confirmed. Sign in to continue.");
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      return;
+    }
     const desc = params.get("error_description") ?? params.get("error");
     if (desc) {
       setLinkError(desc.replace(/\+/g, " "));
@@ -87,7 +92,7 @@ function AuthPage() {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: address,
-      options: { emailRedirectTo: window.location.origin + "/home" },
+      options: { emailRedirectTo: window.location.origin + "/auth-callback" },
     });
     if (error) {
       const wait = parseRetryAfterMs(error);
@@ -128,7 +133,7 @@ function AuthPage() {
         if (pending) { toast.error(cooldownMessage(pending)); return; }
         const { data, error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin + "/home" },
+          options: { emailRedirectTo: window.location.origin + "/auth-callback" },
         });
         if (error) throw error;
         clearCooldown(email);

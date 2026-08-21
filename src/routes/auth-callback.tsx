@@ -106,11 +106,11 @@ function AuthCallbackPage() {
       }
       // Token consumed but this browser holds no session (cross-device open):
       // the address is confirmed server-side; ask them to sign in.
-      toAuth(
-        tokenHash || code
-          ? "Your email is confirmed. Please sign in to continue."
-          : "That link did not include a verification token.",
-      );
+      if (tokenHash || code) {
+        window.location.replace("/auth?mode=signin#confirmed=1");
+        return;
+      }
+      toAuth("That link did not include a verification token.");
     })();
     return () => {
       alive = false;
