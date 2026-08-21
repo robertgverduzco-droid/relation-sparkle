@@ -14,8 +14,11 @@ export const Route = createFileRoute("/_authenticated")({
         u.searchParams.has("token_hash") ||
         u.searchParams.has("token") ||
         u.searchParams.has("error_description") ||
-        u.hash.includes("access_token=") ||
-        u.hash.includes("error_description=");
+        u.searchParams.has("error_code") ||
+        /(^|[#&])(access_token|token_hash|token|code|error|error_code|error_description)=/.test(
+          u.hash,
+        );
+
       if (hasLinkParams) {
         window.location.replace(`/auth-callback${u.search}${u.hash}`);
         throw new Error("redirecting to auth callback");

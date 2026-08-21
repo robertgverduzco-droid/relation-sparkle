@@ -124,3 +124,35 @@ export function destinationFor(
       return `/auth#error_description=${encodeURIComponent(detail ?? "This link is no longer valid.")}`;
   }
 }
+
+/**
+ * True when a URL carries anything an auth email link can deliver.
+ *
+ * Needed because Supabase does not always land the member on the route we
+ * asked for: when a redirect target is not on the project's allow-list it
+ * falls back to the site root, so a confirmation can arrive at "/" with the
+ * session — or the error — in the fragment. Whatever route receives it must
+ * hand it to /auth-callback rather than render a marketing page over it.
+ */
+export function hasAuthLinkParams(href: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return false;
+  }
+  if (url.pathname === "/auth-callback") return false;
+  const names = [
+    "access_token",
+    "refresh_token",
+    "token_hash",
+    "token",
+    "code",
+    "error",
+    "error_code",
+    "error_description",
+  ];
+  const inQuery = names.some((n) => url.searchParams.has(n));
+  const inHash = new RegExp(`(^|[#&])(${names.join("|")})=`).test(url.hash);
+  return inQuery || inHash;
+}

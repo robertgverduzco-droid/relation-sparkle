@@ -13,9 +13,11 @@ describe("email verification link flow", () => {
   });
 
   it("consumes both token_hash and PKCE code link shapes", () => {
-    expect(callback).toMatch(/verifyOtp\(\{ token_hash/);
-    expect(callback).toMatch(/exchangeCodeForSession\(code\)/);
+    expect(callback).toMatch(/verifyOtp\(\{/);
+    expect(callback).toMatch(/token_hash: link\.tokenHash/);
+    expect(callback).toMatch(/exchangeCodeForSession\(link\.code\)/);
   });
+
 
   it("keeps the callback public and client-only", () => {
     expect(callback).toMatch(/ssr: false/);
@@ -39,5 +41,26 @@ describe("email verification link flow", () => {
   it("surfaces expired or reused links instead of looping silently", () => {
     expect(callback).toMatch(/error_description/);
     expect(auth).toMatch(/error_description/);
+  });
+});
+
+describe("callback resilience across devices", () => {
+  it("sets the session explicitly instead of trusting URL detection timing", () => {
+    expect(callback).toMatch(/setSession\(\{/);
+  });
+
+  it("never tells a member with an already-spent link that it was invalid", () => {
+    expect(callback).toMatch(/consumed/);
+    expect(callback).toMatch(/already confirmed/i);
+  });
+
+  it("rescues error and token parameters arriving in the hash on protected routes", () => {
+    expect(gate).toMatch(/error_code/);
+    expect(gate).toMatch(/access_token\|token_hash/);
+  });
+
+  it("puts an unconfirmed sign-in on the verification screen with a resend", () => {
+    expect(auth).toMatch(/email not confirmed/i);
+    expect(auth).toMatch(/setPendingEmail\(email\)/);
   });
 });

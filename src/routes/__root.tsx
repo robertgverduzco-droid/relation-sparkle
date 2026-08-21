@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { hasAuthLinkParams } from "@/lib/auth-callback";
+
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { AppLock } from "@/components/app-lock";
 
@@ -121,6 +123,18 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  // Auth email links do not always land where we asked. When a redirect target
+  // is not on the project's allow-list, Supabase falls back to the site root,
+  // so a confirmation can arrive at "/" with the session — or an
+  // already-spent-link error — in the fragment. Hand it to /auth-callback from
+  // whatever route receives it, before the page renders over it.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!hasAuthLinkParams(window.location.href)) return;
+    const { search, hash } = window.location;
+    window.location.replace(`/auth-callback${search}${hash}`);
+  }, []);
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
@@ -130,6 +144,7 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
