@@ -124,10 +124,10 @@ export function shouldSpeakReturn(ctx: ReturnContext): boolean {
   return ctx.now - ctx.lastSeenAt >= RETURN_IDLE_MS;
 }
 
-export function readLastSeen(): number | null {
+export function readLastSeen(accountId?: string | null): number | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(LAST_SEEN_KEY);
+    const raw = window.localStorage.getItem(scopedKey(LAST_SEEN_KEY, accountId));
     const n = raw ? Number(raw) : NaN;
     return Number.isFinite(n) ? n : null;
   } catch {
@@ -135,28 +135,28 @@ export function readLastSeen(): number | null {
   }
 }
 
-export function markSeen(now = Date.now()): void {
+export function markSeen(accountId?: string | null, now = Date.now()): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(LAST_SEEN_KEY, String(now));
+    window.localStorage.setItem(scopedKey(LAST_SEEN_KEY, accountId), String(now));
   } catch {
     /* storage unavailable — the greeting simply stays silent */
   }
 }
 
-export function sessionGreeted(): boolean {
+export function sessionGreeted(accountId?: string | null): boolean {
   if (typeof window === "undefined") return true;
   try {
-    return window.sessionStorage.getItem(SESSION_GREETED_KEY) === "1";
+    return window.sessionStorage.getItem(scopedKey(SESSION_GREETED_KEY, accountId)) === "1";
   } catch {
     return true;
   }
 }
 
-export function markSessionGreeted(): void {
+export function markSessionGreeted(accountId?: string | null): void {
   if (typeof window === "undefined") return;
   try {
-    window.sessionStorage.setItem(SESSION_GREETED_KEY, "1");
+    window.sessionStorage.setItem(scopedKey(SESSION_GREETED_KEY, accountId), "1");
   } catch {
     /* ignore */
   }
