@@ -182,9 +182,16 @@ export const optIntoFocus = createServerFn({ method: "POST" })
     const isLow = conn.user_low === userId;
     const nowIso = new Date().toISOString();
 
+    // Participation and eligibility are proven above with the member-scoped
+    // client. `relationship_focus` is SELECT-only for `authenticated`, so the
+    // opt-in itself is a narrow privileged write — and only ever to this
+    // member's own side of the row. Mutual opt-in semantics are unchanged.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const writer = supabaseAdmin as unknown as typeof supabase;
+
     let row = await getFocusRow(supabase, data.connection_id);
     if (!row) {
-      const { error } = await supabase.from("relationship_focus").insert({
+      const { error } = await writer.from("relationship_focus").insert({
         connection_id: data.connection_id,
         user_low: conn.user_low as string,
         user_high: conn.user_high as string,
@@ -194,13 +201,14 @@ export const optIntoFocus = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       row = await getFocusRow(supabase, data.connection_id);
     } else if (!(isLow ? row.low_opted_in_at : row.high_opted_in_at)) {
-      const { error } = await supabase
+      const { error } = await writer
         .from("relationship_focus")
         .update(isLow ? { low_opted_in_at: nowIso } : { high_opted_in_at: nowIso })
         .eq("id", row.id as string);
       if (error) throw new Error(error.message);
       row = await getFocusRow(supabase, data.connection_id);
     }
+
 
     const both = Boolean(row?.low_opted_in_at && row?.high_opted_in_at);
     if (both && row && !row.started_at) {
