@@ -561,7 +561,7 @@ ${transcript}`,
             .slice(0, 7)
         : [];
 
-    await supabase.from("user_intelligence").upsert(
+    await supabaseAdmin.from("user_intelligence").upsert(
       {
         user_id: userId,
         core_values: coreValuesList,
@@ -576,10 +576,12 @@ ${transcript}`,
       { onConflict: "user_id" },
     );
 
-    await supabase
+    // Cross-member rows: never member-scoped, and never silently swallowed.
+    const { error: staleError } = await supabaseAdmin
       .from("pair_reasoning")
       .update({ is_stale: true, stale_reason: "understanding refined" })
       .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+    if (staleError) throw new Error(staleError.message);
 
     // Automatic matchmaking trigger: whenever Athena's understanding
     // materially deepens (facets changed) OR the foundational conversation
