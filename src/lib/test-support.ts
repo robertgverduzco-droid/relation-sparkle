@@ -204,16 +204,14 @@ export class Db {
   admin() {
     return this.clientFor("admin");
   }
-  private clientFor(role: "member" | "admin") {
+  private clientFor(role: "member" | "admin"): FakeClient {
     const db = this;
     return {
       role,
       from(table: string) {
-        return new Query(db, table, role) as unknown as ReturnType<
-          typeof makeAnyBuilder
-        >;
+        return new Query(db, table, role) as unknown as AnyBuilder;
       },
-    } as never;
+    };
   }
   rows(table: string) {
     return this.tables[table] ?? [];
@@ -225,5 +223,12 @@ export class Db {
   }
 }
 
-// Type-only helper so `from()` stays assignable to the Supabase client shape.
-declare function makeAnyBuilder(): Query;
+/**
+ * The builder is intentionally loose: call sites pass these clients where a
+ * real `SupabaseClient` is expected, and the harness only needs to satisfy the
+ * query surface actually exercised.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyBuilder = any;
+
+export type FakeClient = { role: "member" | "admin"; from(table: string): AnyBuilder };
