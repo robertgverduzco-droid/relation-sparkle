@@ -185,8 +185,26 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => proposalActionInput.parse(v))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const now = new Date().toISOString();
+
+    // Authorization first: the proposal must belong to a connection this
+    // member is part of. The member-scoped read is the proof; the transition
+    // itself is a system-owned write.
+    const { data: proposal } = await supabase
+      .from("meeting_proposals")
+      .select("id, connection_id")
+      .eq("id", data.proposal_id)
+      .maybeSingle();
+    if (!proposal) throw new Error("Not found");
+    const { data: conn } = await supabase
+      .from("connections")
+      .select("id, user_low, user_high, status")
+      .eq("id", proposal.connection_id as string)
+      .maybeSingle();
+    if (!conn) throw new Error("Not found");
+    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
+
     const patch =
       data.action === "confirm"
         ? { status: "confirmed", confirmed_at: now }
@@ -194,7 +212,8 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
           ? { status: "completed", completed_at: now }
           : { status: "canceled" };
 
-    const { data: updated, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: updated, error } = await supabaseAdmin
       .from("meeting_proposals")
       .update(patch)
       .eq("id", data.proposal_id)
@@ -203,16 +222,17 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
     if (error || !updated) throw new Error(error?.message ?? "Update failed");
 
     if (data.action === "confirm") {
-      await supabase
+      await supabaseAdmin
         .from("connections")
         .update({ status: "meeting_planned" })
         .eq("id", updated.connection_id as string);
     } else if (data.action === "complete") {
-      await supabase
+      await supabaseAdmin
         .from("connections")
         .update({ status: "met" })
         .eq("id", updated.connection_id as string);
     }
+
 
     // Outcome-learning: anonymized signal only. No influence on reasoning.
     if (data.action === "confirm" || data.action === "complete") {
