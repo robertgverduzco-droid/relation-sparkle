@@ -562,7 +562,12 @@ export async function runMatchmakingForUser(
     return { ok: true, considered: 0, reason: "no_eligible" };
   }
 
-  eligible.sort((x, y) => facetAverage(y.otherFacets) - facetAverage(x.otherFacets));
+  // Minimum understanding is an eligibility threshold, applied above. Once a
+  // person is eligible they are not ranked by how much Athena happens to know
+  // about them: depth of profile is a measure of Athena's progress, not of the
+  // person's worth, and someone quieter must not queue behind someone more
+  // verbose. Ordering is deterministic and content-neutral.
+  eligible.sort((x, y) => (x.other.id < y.other.id ? -1 : x.other.id > y.other.id ? 1 : 0));
   const toReason = eligible.slice(0, 6);
 
   let introduced = 0;
