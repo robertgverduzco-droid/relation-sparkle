@@ -116,7 +116,10 @@ export async function openConnectionIfMutual(
     .maybeSingle();
   if (existing) return existing.id as string;
 
-  const { data: opened } = await supabase
+  // ACL contract: `connections` is SELECT-only for `authenticated`; opening a
+  // connection is a platform action taken only after mutual acceptance above.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: opened } = await (supabaseAdmin as unknown as SupabaseClient)
     .from("connections")
     .insert({
       pair_id: pairId,
@@ -277,7 +280,11 @@ export async function postSystemMessage(
   conversationId: string,
   body: string,
 ): Promise<void> {
-  await supabase.from("messages").insert({
+  // Athena's own system messages carry no member sender and are written with
+  // the service-role client; member RLS requires sender_id = auth.uid().
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  void supabase;
+  await (supabaseAdmin as unknown as SupabaseClient).from("messages").insert({
     conversation_id: conversationId,
     sender_id: null,
     kind: "system",
@@ -421,15 +428,19 @@ export async function markReflectionRequired(
 
   if (existing?.submitted_at) return; // already reflected — nothing required
 
+  // ACL contract: `post_meeting_reflections` is SELECT-only for `authenticated`.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const writer = supabaseAdmin as unknown as SupabaseClient;
+
   if (existing) {
-    await supabase
+    await writer
       .from("post_meeting_reflections")
       .update({ reflection_required: true, required_since: new Date().toISOString() })
       .eq("id", existing.id as string);
     return;
   }
 
-  await supabase.from("post_meeting_reflections").insert({
+  await writer.from("post_meeting_reflections").insert({
     connection_id: args.connectionId,
     user_id: args.userId,
     transcript: [],

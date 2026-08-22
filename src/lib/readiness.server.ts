@@ -98,7 +98,9 @@ export async function evaluateReadiness(
   }
 
   const persist = async (e: ReadinessEvaluation) => {
-    await supabase.from("member_readiness").upsert(
+    // ACL contract: `member_readiness` is SELECT-only for `authenticated`.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await (supabaseAdmin as unknown as SupabaseClient).from("member_readiness").upsert(
       {
         user_id: userId,
         state: e.state,

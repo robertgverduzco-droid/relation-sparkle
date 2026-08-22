@@ -38,3 +38,43 @@ These closures are permanent constraints. Future work must not reintroduce them.
 - Arrival and return-greeting state is keyed by account id. Two accounts on one
   browser each receive their own first welcome; the written onboarding welcome
   does not consume Athena's spoken first greeting.
+
+## Write-path correction pass (post-verification)
+
+Tightening ACLs without moving legitimate member actions onto a trusted write
+path breaks real behaviour. Every action affected by the revoked grants was
+audited against the LIVE `authenticated` grants and repaired to one shape:
+
+1. prove intent and membership with the MEMBER-SCOPED client (RLS applies);
+2. perform the transition with the SERVICE ROLE, always pinned to the caller's
+   own `user_id` — never on behalf of a counterpart.
+
+Grants are never widened to make an action work.
+
+### Governed write paths (`src/lib/write-paths.server.ts`)
+- `recordEndingChoice` — `member_transitions`
+- `optIntoFocusFor` — `relationship_focus` (mutual opt-in preserved)
+- `recordIntroductionResponse` — `introduction_responses`, `introduction_feedback`
+- `recordAttractionFor` — `introduction_attraction`
+
+`relationship.functions.ts` and `introductions.functions.ts` are thin wrappers
+over these; the transition logic is importable and therefore testable.
+
+### Platform-owned writes (service role inside the helper)
+`notifications.server.notify` / `obsoleteNotifications`, `readiness.server`
+persistence, `relationship.server.openEndingChoice`,
+`connections.server.openConnectionIfMutual` / `postSystemMessage` /
+`markReflectionRequired`, and matchmaking's `pair_reasoning` writes.
+
+### Standing guards
+- `src/lib/acl-manifest.ts` — the live `authenticated` grant surface, captured
+  from the database, as a checked-in contract.
+- `src/lib/acl-contracts.test.ts` — fails the build on any member-scoped write
+  to a table or column the grants forbid (service-role aliases resolved), and
+  asserts the system-owned tables stay closed.
+- `src/lib/test-support.ts` — deterministic in-memory PostgREST harness whose
+  member client enforces the manifest and whose admin client stands in for the
+  service role.
+- `src/lib/write-path.test.ts` / `src/lib/system-write-path.test.ts` — both
+  halves per action: direct mutation DENIED, governed action ALLOWED, and
+  acting for another member REFUSED. Suite total: 433 tests.

@@ -121,32 +121,20 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    const { data: pair } = await supabase
-      .from("pair_reasoning")
-      .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at")
-      .eq("id", data.pair_id)
-      .maybeSingle();
-
-    if (!pair) throw new Error("Introduction not found");
-    const isLow = pair.user_low === userId;
-    const isHigh = pair.user_high === userId;
-    if (!isLow && !isHigh) throw new Error("Not your introduction");
-    if ((isLow && !pair.presented_to_a_at) || (isHigh && !pair.presented_to_b_at)) {
-      throw new Error("Introduction has not been presented to you");
-    }
-
-    await supabase.from("introduction_responses").upsert(
-      { pair_id: data.pair_id, user_id: userId, response: data.response, note: data.note ?? null },
-      { onConflict: "pair_id,user_id" },
+    // Membership in this pair and presentation to this side are proven with
+    // the member-scoped client. `introduction_responses` and
+    // `introduction_feedback` are SELECT-only for `authenticated`, so the
+    // response is written with the service-role client — always keyed to the
+    // caller's own user_id, never on behalf of the counterpart.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { recordIntroductionResponse } = await import("./write-paths.server");
+    const pair = await recordIntroductionResponse(
+      supabase,
+      supabaseAdmin as unknown as typeof supabase,
+      userId,
+      data,
     );
-
-    await supabase.from("introduction_feedback").insert({
-      pair_id: data.pair_id,
-      user_id: userId,
-      kind: data.response,
-      perspective: data.note ?? null,
-      signals: {},
-    });
+    const isLow = pair.isLow;
 
     let connectionId: string | null = null;
     if (data.response === "accepted") {
@@ -154,13 +142,15 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       connectionId = await openConnectionIfMutual(supabase, data.pair_id);
     }
 
+
+
     // Outcome-learning (recording only): categorical, anonymized, no influence
     // on this or any future introduction decision.
     {
       const { emitOutcomeSignal } = await import("./learning.server");
       const both = {
-        userA: pair.user_low as string,
-        userB: pair.user_high as string,
+        userA: pair.low,
+        userB: pair.high,
       };
       if (data.response === "declined") {
         emitOutcomeSignal({
@@ -184,7 +174,7 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
     // 3-active-cap and cooldown inside runMatchmakingForUser protect against
     // thrash. If mutual acceptance opened a connection, the pair is out of
     // the intro pool and slots may have freed up.
-    const otherId = (isLow ? pair.user_high : pair.user_low) as string;
+    const otherId = isLow ? pair.high : pair.low;
     void runMatchmakingForUser(userId).catch(() => {});
     void runMatchmakingForUser(otherId).catch(() => {});
 
@@ -240,13 +230,17 @@ export const recordAttractionResponse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => attractionInput.parse(v))
   .handler(async ({ data, context }) => {
-    const { counterpartForPresentedPair } = await import("./attraction.server");
-    await counterpartForPresentedPair(context.supabase, data.pair_id, context.userId);
-    await context.supabase.from("introduction_attraction").upsert(
-      { pair_id: data.pair_id, user_id: context.userId, response: data.response },
-      { onConflict: "pair_id,user_id" },
+    // Presentation + membership validated with the member-scoped client
+    // inside the governed write path; the row is written with the service
+    // role and pinned to the caller.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { recordAttractionFor } = await import("./write-paths.server");
+    return recordAttractionFor(
+      context.supabase,
+      supabaseAdmin as unknown as typeof context.supabase,
+      context.userId,
+      data,
     );
-    return { ok: true };
   });
 
 export const getAttractionResponse = createServerFn({ method: "POST" })
