@@ -184,17 +184,21 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
     // never keep showing an understanding the member corrected or removed.
     const mirror = mirrorPatch(data.facet_key, data.kind, statement);
     if (mirror) {
-      const { error: mirrorError } = await supabase
+      const { error: mirrorError } = await supabaseAdmin
         .from("user_intelligence")
         .upsert({ user_id: userId, ...mirror } as never, { onConflict: "user_id" });
       if (mirrorError) throw new Error(mirrorError.message);
     }
 
-    // Any pair reasoning built on the old understanding is now stale.
-    await supabase
+    // Any pair reasoning built on the old understanding is now stale. This is
+    // a cross-member write (the row belongs to a pair, not to this member), so
+    // it must run on the service path — a member-scoped update is rejected by
+    // RLS and would silently leave stale reasoning in place. Errors surface.
+    const { error: staleError } = await supabaseAdmin
       .from("pair_reasoning")
       .update({ is_stale: true, stale_reason: "member revised their understanding" })
       .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+    if (staleError) throw new Error(staleError.message);
 
     const label = FACET_LABELS[data.facet_key as FacetKey] ?? data.facet_key;
     return { ok: true as const, message: revisionAcknowledgement(data.kind, label) };
