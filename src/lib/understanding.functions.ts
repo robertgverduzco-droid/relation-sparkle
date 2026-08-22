@@ -93,13 +93,17 @@ export const getMyUnderstanding = createServerFn({ method: "GET" })
 export const markUnderstandingReviewed = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await supabase
+    const { userId } = context;
+    // `user_intelligence` is an Athena-derived store: members hold no write
+    // privilege on it. The write runs server-side, scoped to the caller.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("user_intelligence")
       .upsert(
         { user_id: userId, understanding_reviewed_at: new Date().toISOString() } as never,
         { onConflict: "user_id" },
       );
+    if (error) throw new Error(error.message);
     return { ok: true as const };
   });
 
