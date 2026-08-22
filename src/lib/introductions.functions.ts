@@ -149,8 +149,8 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
     {
       const { emitOutcomeSignal } = await import("./learning.server");
       const both = {
-        userA: pair.user_low as string,
-        userB: pair.user_high as string,
+        userA: pair.low,
+        userB: pair.high,
       };
       if (data.response === "declined") {
         emitOutcomeSignal({
@@ -174,7 +174,7 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
     // 3-active-cap and cooldown inside runMatchmakingForUser protect against
     // thrash. If mutual acceptance opened a connection, the pair is out of
     // the intro pool and slots may have freed up.
-    const otherId = (isLow ? pair.user_high : pair.user_low) as string;
+    const otherId = isLow ? pair.high : pair.low;
     void runMatchmakingForUser(userId).catch(() => {});
     void runMatchmakingForUser(otherId).catch(() => {});
 
@@ -230,16 +230,17 @@ export const recordAttractionResponse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => attractionInput.parse(v))
   .handler(async ({ data, context }) => {
-    const { counterpartForPresentedPair } = await import("./attraction.server");
-    // Presentation + membership validated first with the member-scoped client.
-    await counterpartForPresentedPair(context.supabase, data.pair_id, context.userId);
+    // Presentation + membership validated with the member-scoped client
+    // inside the governed write path; the row is written with the service
+    // role and pinned to the caller.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("introduction_attraction").upsert(
-      { pair_id: data.pair_id, user_id: context.userId, response: data.response },
-      { onConflict: "pair_id,user_id" },
+    const { recordAttractionFor } = await import("./write-paths.server");
+    return recordAttractionFor(
+      context.supabase,
+      supabaseAdmin as unknown as typeof context.supabase,
+      context.userId,
+      data,
     );
-    if (error) throw new Error(error.message);
-    return { ok: true };
   });
 
 export const getAttractionResponse = createServerFn({ method: "POST" })
