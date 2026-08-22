@@ -3,7 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
-import { askAthena, reflectAthena, completeFoundationalConversation } from "@/lib/athena.functions";
+import {
+  askAthena,
+  reflectAthena,
+  completeFoundationalConversation,
+  saveConversationTranscript,
+} from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,6 +115,8 @@ function AthenaPage() {
   const timeAcknowledgedRef = useRef(false);
   const foundationCompleteRef = useRef(false);
   const closingOfferedRef = useRef(false);
+  // Arrival state is account-scoped, never browser-scoped.
+  const accountIdRef = useRef<string | null>(null);
   // Server-derived readiness. The client never computes it.
   const [introReady, setIntroReady] = useState(false);
   const introReadyRef = useRef(false);
@@ -150,14 +157,15 @@ function AthenaPage() {
     setSpeaking(false);
   }, []);
 
+  // Transcript only. Completion is system-owned and monotonic — the browser
+  // must never be able to send a member who already finished the foundational
+  // conversation back to the beginning.
   const persist = useCallback(async (msgs: Msg[]) => {
-    const { data: userRes } = await supabase.auth.getUser();
-    const uid = userRes.user?.id;
-    if (!uid) return;
-    await supabase.from("interview_sessions").upsert(
-      { user_id: uid, messages: msgs, completed_at: null },
-      { onConflict: "user_id" },
-    );
+    try {
+      await saveConversationTranscript({ data: { messages: msgs } });
+    } catch {
+      /* the transcript is re-sent on the next turn */
+    }
   }, []);
 
   // ---- Live Conversation (speech-to-speech) ----
@@ -239,11 +247,13 @@ function AthenaPage() {
     (async () => {
       const stored = typeof window !== "undefined" ? (localStorage.getItem(VOICE_KEY) as VoiceMode | null) : null;
 
-      const [{ data: session }, { data: profile }] = await Promise.all([
+      const [{ data: auth }, { data: session }, { data: profile }] = await Promise.all([
+        supabase.auth.getUser(),
         supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
         supabase.from("profiles").select("display_name").maybeSingle(),
       ]);
       if (cancelled) return;
+      accountIdRef.current = auth?.user?.id ?? null;
       foundationCompleteRef.current = Boolean(session?.completed_at);
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
@@ -263,8 +273,11 @@ function AthenaPage() {
       setVoiceMode(stored ?? "voice");
 
       const firstName = (profile?.display_name as string | null)?.split(" ")[0] ?? null;
-      const lines = buildIntro(firstName, arrivalDelivered());
-      markArrivalDelivered();
+      // Account-scoped: reading the written welcome during onboarding does not
+      // consume Athena's spoken greeting, and a different account on the same
+      // device still gets its own first arrival.
+      const lines = buildIntro(firstName, arrivalDelivered(accountIdRef.current));
+      markArrivalDelivered(accountIdRef.current);
 
       const accumulated: Msg[] = [];
       await wait(500);
@@ -313,10 +326,11 @@ function AthenaPage() {
   // for a genuinely new session, never for coming back from this screen.
   useEffect(() => {
     if (!hydrated) return;
-    markSessionGreeted();
-    markSeen();
-    const tick = setInterval(() => markSeen(), 60_000);
-    return () => { clearInterval(tick); markSeen(); };
+    const id = accountIdRef.current;
+    markSessionGreeted(id);
+    markSeen(id);
+    const tick = setInterval(() => markSeen(id), 60_000);
+    return () => { clearInterval(tick); markSeen(id); };
   }, [hydrated]);
 
   useEffect(() => {

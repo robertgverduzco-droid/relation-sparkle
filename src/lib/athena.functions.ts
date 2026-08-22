@@ -8,6 +8,7 @@ import {
   askInput,
   askOutput,
   reflectInput,
+  transcriptInput,
   reflectSchema,
   athenaSystemPrompt,
   applyContextBudget,
@@ -483,10 +484,10 @@ ${transcript}`,
     }
 
     // A-07: Athena's private understanding is not member-writable. Members can
-    // read their facets; only this server-side distillation writes them, always
-    // scoped to the authenticated member.
+    // read their facets and topic map; only this server-side distillation
+    // writes them, always scoped to the authenticated member.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (historyInserts.length > 0 || upserts.length > 0) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       if (historyInserts.length > 0) {
         await supabaseAdmin.from("facet_history").insert(historyInserts);
       }
@@ -546,7 +547,9 @@ ${transcript}`,
     });
 
     if (topicUpserts.length > 0) {
-      await supabase.from("topic_map").upsert(topicUpserts, { onConflict: "user_id,topic_key" });
+      await supabaseAdmin
+        .from("topic_map")
+        .upsert(topicUpserts, { onConflict: "user_id,topic_key" });
     }
 
     const byKey = new Map(object.facets.map((f) => [f.key, f]));
@@ -561,7 +564,7 @@ ${transcript}`,
             .slice(0, 7)
         : [];
 
-    await supabase.from("user_intelligence").upsert(
+    await supabaseAdmin.from("user_intelligence").upsert(
       {
         user_id: userId,
         core_values: coreValuesList,
@@ -576,17 +579,18 @@ ${transcript}`,
       { onConflict: "user_id" },
     );
 
-    await supabase
+    // Cross-member rows: never member-scoped, and never silently swallowed.
+    const { error: staleError } = await supabaseAdmin
       .from("pair_reasoning")
       .update({ is_stale: true, stale_reason: "understanding refined" })
       .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+    if (staleError) throw new Error(staleError.message);
 
     // Automatic matchmaking trigger: whenever Athena's understanding
     // materially deepens (facets changed) OR the foundational conversation
     // has just completed, reconsider introductions for this user in the
     // background. Cooldown inside runMatchmakingForUser prevents thrash.
     if (upserts.length > 0) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { evaluateReadiness } = await import("./readiness.server");
       await evaluateReadiness(supabaseAdmin, userId, "living_profile_update").catch(() => {});
       const { runMatchmakingForUser } = await import("./introductions.server");
@@ -647,14 +651,19 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
       return { ok: true, alreadyComplete: false, ready: false };
     }
 
+    // Foundational completion is system-owned state, and it is monotonic:
+    // this is the only path that sets `completed_at`, and it never clears it.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (!alreadyComplete) {
-      await supabase
+      const { error: completeError } = await supabaseAdmin
         .from("interview_sessions")
         .update({ completed_at: now })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .is("completed_at", null);
+      if (completeError) throw new Error(completeError.message);
       // Ensure last_interview_at is set even if reflect hasn't run yet, so
       // the matchmaking eligibility gate opens.
-      await supabase
+      await supabaseAdmin
         .from("user_intelligence")
         .upsert(
           { user_id: userId, last_interview_at: now },
@@ -665,7 +674,6 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
     // Readiness is re-evaluated first so the gate reflects the completed
     // foundational conversation before matchmaking asks the question.
     {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { evaluateReadiness } = await import("./readiness.server");
       await evaluateReadiness(supabaseAdmin, userId, "foundational_conversation_complete");
     }
@@ -676,3 +684,38 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
     return { ok: true, alreadyComplete, ready: true };
   });
 
+
+/**
+ * Persist the foundational transcript.
+ *
+ * The browser used to upsert `interview_sessions` directly, including
+ * `completed_at: null` — which silently regressed a member who had already
+ * finished back into foundational mode on their next conversation. Completion
+ * is monotonic and system-owned: this path writes the transcript only, and
+ * never touches `completed_at`.
+ */
+export const saveConversationTranscript = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => transcriptInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: existing } = await supabaseAdmin
+      .from("interview_sessions")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const messages = data.messages as unknown as Json;
+    const { error } = existing
+      ? await supabaseAdmin
+          .from("interview_sessions")
+          .update({ messages })
+          .eq("user_id", userId)
+      : await supabaseAdmin
+          .from("interview_sessions")
+          .insert({ user_id: userId, messages });
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });

@@ -7,7 +7,7 @@ import { saveOnboardingStep } from "@/lib/onboarding.functions";
 import { MatchPreferenceFields, SelfDescriptionFields } from "@/components/structured-profile-form";
 import { saveStructuredProfile } from "@/lib/structured-profile.functions";
 import { EMPTY_PREFERENCES, EMPTY_SELF } from "@/lib/structured-profile";
-import { ARRIVAL_WELCOME, arrivalDelivered, markArrivalDelivered } from "@/lib/arrival";
+import { ARRIVAL_WELCOME, arrivalShown, markArrivalShown } from "@/lib/arrival";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -28,6 +28,11 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   // Required agreements must be accepted before we gather anything about them.
   const [consentOk, setConsentOk] = useState(false);
+  // The written welcome is remembered per account, not per browser.
+  const [accountId, setAccountId] = useState<string | null>(null);
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => setAccountId(data.user?.id ?? null));
+  }, []);
 
   const [identity, setIdentity] = useState({
     display_name: "",
@@ -136,7 +141,7 @@ function Onboarding() {
       <ProgressBar current={currentIdx} total={STEPS.length - 1} />
 
       <div className="mt-8 flex-1 fade-in-slow" key={step}>
-        {step === "welcome" && <ArrivalWelcome />}
+        {step === "welcome" && accountId && <ArrivalWelcome accountId={accountId} />}
         {step === "welcome" && (
 
           <Section
@@ -361,11 +366,11 @@ function Field({
  * is available. It is delivered once, ever; the first-meeting sequence in
  * /athena drops its duplicate line once this has been shown.
  */
-function ArrivalWelcome() {
-  const [already] = useState(() => arrivalDelivered());
+function ArrivalWelcome({ accountId }: { accountId: string | null }) {
+  const [already] = useState(() => arrivalShown(accountId));
   useEffect(() => {
-    markArrivalDelivered();
-  }, []);
+    markArrivalShown(accountId);
+  }, [accountId]);
   if (already) return null;
   return (
     <div className="mb-8 fade-in-slow" data-testid="onboarding-arrival-welcome">

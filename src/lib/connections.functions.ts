@@ -185,8 +185,26 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => proposalActionInput.parse(v))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const now = new Date().toISOString();
+
+    // Authorization first: the proposal must belong to a connection this
+    // member is part of. The member-scoped read is the proof; the transition
+    // itself is a system-owned write.
+    const { data: proposal } = await supabase
+      .from("meeting_proposals")
+      .select("id, connection_id")
+      .eq("id", data.proposal_id)
+      .maybeSingle();
+    if (!proposal) throw new Error("Not found");
+    const { data: conn } = await supabase
+      .from("connections")
+      .select("id, user_low, user_high, status")
+      .eq("id", proposal.connection_id as string)
+      .maybeSingle();
+    if (!conn) throw new Error("Not found");
+    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
+
     const patch =
       data.action === "confirm"
         ? { status: "confirmed", confirmed_at: now }
@@ -194,7 +212,8 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
           ? { status: "completed", completed_at: now }
           : { status: "canceled" };
 
-    const { data: updated, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: updated, error } = await supabaseAdmin
       .from("meeting_proposals")
       .update(patch)
       .eq("id", data.proposal_id)
@@ -203,16 +222,17 @@ export const updateMeetingProposal = createServerFn({ method: "POST" })
     if (error || !updated) throw new Error(error?.message ?? "Update failed");
 
     if (data.action === "confirm") {
-      await supabase
+      await supabaseAdmin
         .from("connections")
         .update({ status: "meeting_planned" })
         .eq("id", updated.connection_id as string);
     } else if (data.action === "complete") {
-      await supabase
+      await supabaseAdmin
         .from("connections")
         .update({ status: "met" })
         .eq("id", updated.connection_id as string);
     }
+
 
     // Outcome-learning: anonymized signal only. No influence on reasoning.
     if (data.action === "confirm" || data.action === "complete") {
@@ -256,7 +276,11 @@ export const submitPartnerPerception = createServerFn({ method: "POST" })
     if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
     const subjectId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
 
-    const { error } = await supabase
+    // The author is proven above; `author_id` and `subject_id` are derived
+    // here rather than accepted from the client, and the row is written on the
+    // service path so a member can never author a perception of a third party.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("partner_perception")
       .upsert(
         {
@@ -408,6 +432,7 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       REFLECTION_CONCLUDED_NOTICE,
       MUTUAL_YES_NOTICE,
     } = await import("./connections.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const submittedAt = new Date().toISOString();
 
@@ -433,7 +458,10 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       anything_else: data.anything_else ?? null,
     };
 
-    const { data: submission, error: subError } = await supabase
+    // Reflection rows are append-only history and system-owned state: the
+    // member's authorship is proven above, and the write runs on the service
+    // path so `user_id`, `sequence` and `submitted_at` cannot be forged.
+    const { data: submission, error: subError } = await supabaseAdmin
       .from("reflection_submissions")
       .insert({
         connection_id: data.connection_id,
@@ -447,7 +475,7 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     if (subError) throw new Error(subError.message);
 
     // The existing current-state row keeps working exactly as before.
-    const { error } = await supabase.from("post_meeting_reflections").upsert(
+    const { error } = await supabaseAdmin.from("post_meeting_reflections").upsert(
       {
         connection_id: data.connection_id,
         user_id: userId,
@@ -468,7 +496,6 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     // The reflection is complete — that pending notification no longer applies,
     // and readiness may have changed.
     {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { obsoleteNotifications } = await import("./notifications.server");
       const { evaluateReadiness } = await import("./readiness.server");
       await obsoleteNotifications(
@@ -512,13 +539,12 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       /* the static closing copy is a complete, safe fallback */
     }
 
-    await supabase
+    await supabaseAdmin
       .from("post_meeting_reflections")
       .update({ athena_acknowledgement: acknowledgement })
       .eq("connection_id", data.connection_id)
       .eq("user_id", userId);
     if (submission?.id) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin
         .from("reflection_submissions")
         .update({ athena_acknowledgement: acknowledgement })
@@ -532,7 +558,6 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     });
 
     // Cross-member effects are platform actions, not member-scoped writes.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as unknown as typeof supabase;
     const conversationId = await findConversationId(
       admin,

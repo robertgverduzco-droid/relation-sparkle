@@ -9,6 +9,7 @@ import {
   usableFirstName,
 } from "@/lib/arrival";
 import { speak } from "@/lib/athena-speech";
+import { useAuth } from "@/hooks/use-auth";
 
 const VOICE_KEY = "athena-voice-mode";
 
@@ -28,6 +29,8 @@ export function ReturnGreeting({
   displayName: string | null;
   onSpeakingChange?: (speaking: boolean) => void;
 }) {
+  const { user } = useAuth();
+  const accountId = user?.id ?? null;
   const firstName = usableFirstName(displayName);
   const text = returnGreeting(firstName);
   const [speaking, setSpeakingState] = useState(false);
@@ -41,20 +44,20 @@ export function ReturnGreeting({
     const audioEnabled =
       (typeof window !== "undefined" && window.localStorage.getItem(VOICE_KEY)) === "voice";
     const speakIt = shouldSpeakReturn({
-      sessionGreeted: sessionGreeted(),
-      lastSeenAt: readLastSeen(),
+      sessionGreeted: sessionGreeted(accountId),
+      lastSeenAt: readLastSeen(accountId),
       now: Date.now(),
       busy: false,
       audioEnabled,
     });
-    markSessionGreeted();
-    markSeen();
+    markSessionGreeted(accountId);
+    markSeen(accountId);
     if (!speakIt) return;
     const abort = new AbortController();
     abortRef.current = abort;
     void speak(text, abort.signal, setSpeaking);
     return () => abort.abort();
-  }, [text]);
+  }, [text, accountId]);
 
   return (
     <div className="mt-3">

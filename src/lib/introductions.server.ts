@@ -16,6 +16,14 @@ import {
   type SelfDescription,
   type StructuredEvaluation,
 } from "./structured-profile";
+import {
+  combineTri,
+  geographicFeasibility,
+  intentCompatibility,
+  seekingGenderState,
+  type Place,
+  type Tri,
+} from "./match-semantics";
 
 
 // Understanding thresholds. Athena needs enough understanding of each person
@@ -53,12 +61,18 @@ export type ProfileRow = {
   religions?: string[] | null;
   religion_self_describe?: string | null;
   smoking?: string | null;
+  // Location participates in feasibility only. Coordinates are read here and
+  // never returned to any client surface.
+  region?: string | null;
+  country?: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
 };
 
 const PROFILE_COLUMNS =
-  "id, display_name, birth_date, gender, city, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
+  "id, display_name, birth_date, gender, city, region, country, location_lat, location_lng, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
 const PREFS_COLUMNS =
-  "user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
+  "user_id, seeking_genders, age_min, age_max, max_distance_km, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
 
 /** Structured party view used by the tri-state constraint evaluation. */
 export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
@@ -161,6 +175,7 @@ export type PrefsRow = {
   seeking_genders: string[] | null;
   age_min: number | null;
   age_max: number | null;
+  max_distance_km?: number | null;
   relationship_intent: string | null;
   wants_children: string | null;
   ethnicity_openness?: string | null;
@@ -189,36 +204,68 @@ export function ageFromDob(dob: string | null): number | null {
   return a;
 }
 
-export function mutuallyEligible(
+/**
+ * Mutual eligibility as a tri-state question.
+ *
+ * Three dimensions are now answered semantically rather than by raw equality
+ * or silent optimism — seeking gender, geography, and relationship intent.
+ * Anything unresolved blocks presentation without being treated as a
+ * rejection of the person: Athena resolves it in conversation instead.
+ */
+export function mutualEligibilityState(
   a: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
   b: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
-): boolean {
-  if (a.profile.is_paused || b.profile.is_paused) return false;
+): Tri {
+  if (a.profile.is_paused || b.profile.is_paused) return "incompatible";
+
+  const placeOf = (p: ProfileRow): Place => ({
+    lat: p.location_lat ?? null,
+    lng: p.location_lng ?? null,
+    city: p.city ?? null,
+    region: p.region ?? null,
+    country: p.country ?? null,
+  });
 
   const checkOne = (
     self: { profile: ProfileRow; prefs: PrefsRow | null },
     other: { profile: ProfileRow; ageA: number | null },
-  ) => {
+  ): Tri => {
     const p = self.prefs;
-    if (!p) return true;
-    if (p.seeking_genders && p.seeking_genders.length > 0 && other.profile.gender) {
-      if (!p.seeking_genders.includes(other.profile.gender)) return false;
-    }
+    if (!p) return "compatible";
+
+    const states: Tri[] = [
+      // Never infer gender. A stated requirement plus an unstated gender is
+      // unresolved, not a match and not a rejection.
+      seekingGenderState(p.seeking_genders, other.profile.gender),
+      geographicFeasibility(p.max_distance_km ?? null, placeOf(self.profile), placeOf(other.profile)),
+    ];
+
     if (other.ageA != null) {
-      if (p.age_min != null && other.ageA < p.age_min) return false;
-      if (p.age_max != null && other.ageA > p.age_max) return false;
+      if (p.age_min != null && other.ageA < p.age_min) states.push("incompatible");
+      if (p.age_max != null && other.ageA > p.age_max) states.push("incompatible");
+    } else if (p.age_min != null || p.age_max != null) {
+      states.push("unknown");
     }
-    return true;
+
+    return combineTri(states);
   };
 
-  if (!checkOne(a, b)) return false;
-  if (!checkOne(b, a)) return false;
+  return combineTri([
+    checkOne(a, b),
+    checkOne(b, a),
+    intentCompatibility(a.prefs?.relationship_intent, b.prefs?.relationship_intent),
+  ]);
+}
 
-  const ia = a.prefs?.relationship_intent ?? null;
-  const ib = b.prefs?.relationship_intent ?? null;
-  if (ia && ib && ia !== ib) return false;
-
-  return true;
+/**
+ * Presentation gate. Only a fully resolved, compatible pair may be presented:
+ * `unknown` holds the pair back rather than passing it through.
+ */
+export function mutuallyEligible(
+  a: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
+  b: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
+): boolean {
+  return mutualEligibilityState(a, b) === "compatible";
 }
 
 export function facetAverage(rows: FacetRow[]): number {
@@ -515,7 +562,12 @@ export async function runMatchmakingForUser(
     return { ok: true, considered: 0, reason: "no_eligible" };
   }
 
-  eligible.sort((x, y) => facetAverage(y.otherFacets) - facetAverage(x.otherFacets));
+  // Minimum understanding is an eligibility threshold, applied above. Once a
+  // person is eligible they are not ranked by how much Athena happens to know
+  // about them: depth of profile is a measure of Athena's progress, not of the
+  // person's worth, and someone quieter must not queue behind someone more
+  // verbose. Ordering is deterministic and content-neutral.
+  eligible.sort((x, y) => (x.other.id < y.other.id ? -1 : x.other.id > y.other.id ? 1 : 0));
   const toReason = eligible.slice(0, 6);
 
   let introduced = 0;

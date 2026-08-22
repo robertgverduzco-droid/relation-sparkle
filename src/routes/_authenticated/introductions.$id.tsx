@@ -26,7 +26,6 @@ type Intro = {
   other_area: string | null;
   other_age: number | null;
   presentation: string | null;
-  confidence: number;
   response: string;
   presented_at: string | null;
 };
@@ -160,9 +159,6 @@ function IntroductionDetailPage() {
               <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/90">
                 {intro.presentation}
               </p>
-              <p className="mt-4 text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
-                {confidenceLabel(intro.confidence)}
-              </p>
             </section>
           )}
 
@@ -214,8 +210,3 @@ function IntroductionDetailPage() {
   );
 }
 
-function confidenceLabel(c: number): string {
-  if (c >= 0.75) return "Athena feels sure";
-  if (c >= 0.55) return "Athena feels drawn";
-  return "Athena is curious";
-}

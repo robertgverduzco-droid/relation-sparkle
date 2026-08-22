@@ -44,6 +44,10 @@ const COPY = {
     "There are still a few parts of your life, and of what you're looking for, that I don't understand well enough yet. I'd rather keep talking than introduce you to someone on a guess.",
   A_paused:
     "You've paused introductions. Nothing changes until you tell me otherwise.",
+  A_photo_needed:
+    "Before I introduce you to anyone, I'd like at least one photograph of you on your profile. Attraction is real, and it's fairer to both people if it's part of the picture from the start.",
+  A_photo_pending:
+    "Your photograph is still being reviewed. Nothing is wrong — I'll begin looking as soon as it's cleared.",
   A_safety:
     "There's something on your account I need to resolve before I bring anyone to you.",
   A_hold_rest:
@@ -160,6 +164,28 @@ export async function evaluateReadiness(
       hold_kind: null,
       hold_until: null,
     });
+  }
+
+  // At least one approved photograph is required before anyone is introduced.
+  // The hold is truthful and free of pressure: it distinguishes "none yet"
+  // from "still in review", and never implies the member did something wrong.
+  {
+    const { data: photos } = await supabase
+      .from("user_photos")
+      .select("moderation")
+      .eq("user_id", userId);
+    const rows = photos ?? [];
+    const approved = rows.some((p) => p.moderation === "approved");
+    if (!approved) {
+      const pending = rows.some((p) => p.moderation === "pending");
+      return persist({
+        state: "A",
+        reason_code: pending ? "photo_pending" : "photo_required",
+        reason_text: pending ? COPY.A_photo_pending : COPY.A_photo_needed,
+        hold_kind: pending ? "photo_review" : "photo",
+        hold_until: null,
+      });
+    }
   }
 
   {

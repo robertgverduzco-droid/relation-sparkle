@@ -98,7 +98,8 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         presentation: isLow
           ? (sideMap.get(p.id as string)?.a ?? null)
           : (sideMap.get(p.id as string)?.b ?? null),
-        confidence: Number(p.confidence ?? 0),
+        // Pair confidence is internal. It is not returned to the member as a
+        // number, and not as an ordinal label standing in for one.
         response: respMap.get(p.id as string) ?? "pending",
         presented_at: (isLow ? p.presented_to_a_at : p.presented_to_b_at) as string | null,
       };

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { saveLivingProfileCorrections } from "@/lib/understanding.functions";
 
 export const Route = createFileRoute("/_authenticated/profile/review")({
   head: () => ({
@@ -69,35 +70,28 @@ function ReviewPage() {
 
   async function save() {
     setSaving(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-    if (!userId) {
-      toast.error("Please sign in again.");
-      setSaving(false);
-      return;
-    }
     const values = valuesText
       .split(",")
       .map((v) => v.trim().toLowerCase())
       .filter(Boolean);
-    const { error } = await supabase.from("user_intelligence").upsert(
-      {
-        user_id: userId,
-        core_values: values,
-        life_direction: draft.life_direction.trim() || null,
-        self_understanding: draft.self_understanding.trim() || null,
-        communication_style: draft.communication_style.trim() || null,
-        conflict_style: draft.conflict_style.trim() || null,
-        partnership_vision: draft.partnership_vision.trim() || null,
-        readiness_summary: draft.readiness_summary.trim() || null,
-      },
-      { onConflict: "user_id" },
-    );
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
+    try {
+      await saveLivingProfileCorrections({
+        data: {
+          core_values: values,
+          life_direction: draft.life_direction.trim() || null,
+          self_understanding: draft.self_understanding.trim() || null,
+          communication_style: draft.communication_style.trim() || null,
+          conflict_style: draft.conflict_style.trim() || null,
+          partnership_vision: draft.partnership_vision.trim() || null,
+          readiness_summary: draft.readiness_summary.trim() || null,
+        },
+      });
+    } catch (e) {
+      setSaving(false);
+      toast.error(e instanceof Error ? e.message : "That didn't save.");
       return;
     }
+    setSaving(false);
     toast("Athena will hold this in mind.");
     navigate({ to: "/profile" });
   }

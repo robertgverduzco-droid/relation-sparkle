@@ -124,10 +124,17 @@ export const sendMessage = createServerFn({ method: "POST" })
       metadata: {},
     });
     if (error) throw new Error(error.message);
-    await supabase
-      .from("conversations")
-      .update({ last_message_at: new Date().toISOString() })
-      .eq("id", data.conversation_id);
+    // `last_message_at` is system-owned: participants may not rewrite
+    // conversation state, only hide the thread. The insert above already
+    // proved membership through RLS.
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("conversations")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", data.conversation_id);
+    }
+
 
     // Notify the recipient (preferences, pause, block and account state are
     // enforced server-side inside notify()).
@@ -177,12 +184,16 @@ export const blockUser = createServerFn({ method: "POST" })
       reason: data.reason ?? null,
     });
     if (error && !error.message.includes("duplicate")) throw new Error(error.message);
-    await supabase
-      .from("connections")
-      .update({ status: "closed", closed_at: new Date().toISOString(), close_reason: "blocked" })
-      .or(
-        `and(user_low.eq.${userId},user_high.eq.${data.user_id}),and(user_low.eq.${data.user_id},user_high.eq.${userId})`,
-      );
+    // Connection status is system-owned; the block above is the member action.
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("connections")
+        .update({ status: "closed", closed_at: new Date().toISOString(), close_reason: "blocked" })
+        .or(
+          `and(user_low.eq.${userId},user_high.eq.${data.user_id}),and(user_low.eq.${data.user_id},user_high.eq.${userId})`,
+        );
+    }
     // Closing a connection frees an active-intro slot for both parties.
     const { runMatchmakingForUser } = await import("./introductions.server");
     void runMatchmakingForUser(userId).catch(() => {});
