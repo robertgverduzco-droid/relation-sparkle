@@ -111,7 +111,7 @@ describe("privacy and accessibility of counterpart photography", () => {
   });
 
   it("excludes rejected imagery and never exceeds the maximum", () => {
-    expect(server).toContain('.neq("moderation", "rejected")');
+    expect(server).toContain('.eq("moderation", "approved")');
     expect(server).toContain(".limit(MAX_PHOTOS)");
   });
 
