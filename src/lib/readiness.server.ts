@@ -166,6 +166,28 @@ export async function evaluateReadiness(
     });
   }
 
+  // At least one approved photograph is required before anyone is introduced.
+  // The hold is truthful and free of pressure: it distinguishes "none yet"
+  // from "still in review", and never implies the member did something wrong.
+  {
+    const { data: photos } = await supabase
+      .from("user_photos")
+      .select("moderation")
+      .eq("user_id", userId);
+    const rows = photos ?? [];
+    const approved = rows.some((p) => p.moderation === "approved");
+    if (!approved) {
+      const pending = rows.some((p) => p.moderation === "pending");
+      return persist({
+        state: "A",
+        reason_code: pending ? "photo_pending" : "photo_required",
+        reason_text: pending ? COPY.A_photo_pending : COPY.A_photo_needed,
+        hold_kind: pending ? "photo_review" : "photo",
+        hold_until: null,
+      });
+    }
+  }
+
   {
     const { REQUIRED_REFLECTION_GRACE_DAYS } = await import("./connections.server");
     const graceCutoff = new Date(Date.now() - REQUIRED_REFLECTION_GRACE_DAYS * 864e5).toISOString();
