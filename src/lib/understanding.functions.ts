@@ -203,3 +203,61 @@ export const reviseUnderstanding = createServerFn({ method: "POST" })
     const label = FACET_LABELS[data.facet_key as FacetKey] ?? data.facet_key;
     return { ok: true as const, message: revisionAcknowledgement(data.kind, label) };
   });
+
+/**
+ * Member corrections to the Living Profile mirror shown on /profile.
+ *
+ * `user_intelligence` is an Athena-derived store — members hold no PostgREST
+ * write privilege on it. Correction remains a member right, but it travels
+ * through this governed path: only these narrative fields are writable, the
+ * row is always the caller's own, and any pair reasoning built on the old
+ * understanding is marked stale so no introduction rests on it.
+ */
+const livingProfileCorrectionInput = z.object({
+  core_values: z.array(z.string().max(60)).max(12).default([]),
+  life_direction: z.string().max(4000).nullable().default(null),
+  self_understanding: z.string().max(4000).nullable().default(null),
+  communication_style: z.string().max(4000).nullable().default(null),
+  conflict_style: z.string().max(4000).nullable().default(null),
+  partnership_vision: z.string().max(4000).nullable().default(null),
+  readiness_summary: z.string().max(4000).nullable().default(null),
+});
+
+export const saveLivingProfileCorrections = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => livingProfileCorrectionInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const clean = (s: string | null) => {
+      const t = (s ?? "").trim();
+      return t.length > 0 ? t : null;
+    };
+
+    const { error } = await supabaseAdmin.from("user_intelligence").upsert(
+      {
+        user_id: userId,
+        core_values: data.core_values
+          .map((v) => v.trim().toLowerCase())
+          .filter(Boolean)
+          .slice(0, 12),
+        life_direction: clean(data.life_direction),
+        self_understanding: clean(data.self_understanding),
+        communication_style: clean(data.communication_style),
+        conflict_style: clean(data.conflict_style),
+        partnership_vision: clean(data.partnership_vision),
+        readiness_summary: clean(data.readiness_summary),
+      } as never,
+      { onConflict: "user_id" },
+    );
+    if (error) throw new Error(error.message);
+
+    const { error: staleError } = await supabaseAdmin
+      .from("pair_reasoning")
+      .update({ is_stale: true, stale_reason: "member revised their understanding" })
+      .or(`user_low.eq.${userId},user_high.eq.${userId}`);
+    if (staleError) throw new Error(staleError.message);
+
+    return { ok: true as const };
+  });
