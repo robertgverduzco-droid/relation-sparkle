@@ -683,3 +683,38 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
     return { ok: true, alreadyComplete, ready: true };
   });
 
+
+/**
+ * Persist the foundational transcript.
+ *
+ * The browser used to upsert `interview_sessions` directly, including
+ * `completed_at: null` — which silently regressed a member who had already
+ * finished back into foundational mode on their next conversation. Completion
+ * is monotonic and system-owned: this path writes the transcript only, and
+ * never touches `completed_at`.
+ */
+export const saveConversationTranscript = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => transcriptInput.parse(v))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: existing } = await supabaseAdmin
+      .from("interview_sessions")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const messages = data.messages as unknown as Json;
+    const { error } = existing
+      ? await supabaseAdmin
+          .from("interview_sessions")
+          .update({ messages })
+          .eq("user_id", userId)
+      : await supabaseAdmin
+          .from("interview_sessions")
+          .insert({ user_id: userId, messages });
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
