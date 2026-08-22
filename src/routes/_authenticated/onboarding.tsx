@@ -28,6 +28,11 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   // Required agreements must be accepted before we gather anything about them.
   const [consentOk, setConsentOk] = useState(false);
+  // The written welcome is remembered per account, not per browser.
+  const [accountId, setAccountId] = useState<string | null>(null);
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => setAccountId(data.user?.id ?? null));
+  }, []);
 
   const [identity, setIdentity] = useState({
     display_name: "",
@@ -136,7 +141,7 @@ function Onboarding() {
       <ProgressBar current={currentIdx} total={STEPS.length - 1} />
 
       <div className="mt-8 flex-1 fade-in-slow" key={step}>
-        {step === "welcome" && <ArrivalWelcome />}
+        {step === "welcome" && accountId && <ArrivalWelcome accountId={accountId} />}
         {step === "welcome" && (
 
           <Section

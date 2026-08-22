@@ -115,6 +115,8 @@ function AthenaPage() {
   const timeAcknowledgedRef = useRef(false);
   const foundationCompleteRef = useRef(false);
   const closingOfferedRef = useRef(false);
+  // Arrival state is account-scoped, never browser-scoped.
+  const accountIdRef = useRef<string | null>(null);
   // Server-derived readiness. The client never computes it.
   const [introReady, setIntroReady] = useState(false);
   const introReadyRef = useRef(false);
@@ -245,11 +247,13 @@ function AthenaPage() {
     (async () => {
       const stored = typeof window !== "undefined" ? (localStorage.getItem(VOICE_KEY) as VoiceMode | null) : null;
 
-      const [{ data: session }, { data: profile }] = await Promise.all([
+      const [{ data: auth }, { data: session }, { data: profile }] = await Promise.all([
+        supabase.auth.getUser(),
         supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
         supabase.from("profiles").select("display_name").maybeSingle(),
       ]);
       if (cancelled) return;
+      accountIdRef.current = auth?.user?.id ?? null;
       foundationCompleteRef.current = Boolean(session?.completed_at);
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
