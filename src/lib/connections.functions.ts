@@ -556,7 +556,6 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     });
 
     // Cross-member effects are platform actions, not member-scoped writes.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as unknown as typeof supabase;
     const conversationId = await findConversationId(
       admin,
