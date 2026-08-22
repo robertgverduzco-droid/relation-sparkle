@@ -483,10 +483,10 @@ ${transcript}`,
     }
 
     // A-07: Athena's private understanding is not member-writable. Members can
-    // read their facets; only this server-side distillation writes them, always
-    // scoped to the authenticated member.
+    // read their facets and topic map; only this server-side distillation
+    // writes them, always scoped to the authenticated member.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (historyInserts.length > 0 || upserts.length > 0) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       if (historyInserts.length > 0) {
         await supabaseAdmin.from("facet_history").insert(historyInserts);
       }
@@ -546,7 +546,9 @@ ${transcript}`,
     });
 
     if (topicUpserts.length > 0) {
-      await supabase.from("topic_map").upsert(topicUpserts, { onConflict: "user_id,topic_key" });
+      await supabaseAdmin
+        .from("topic_map")
+        .upsert(topicUpserts, { onConflict: "user_id,topic_key" });
     }
 
     const byKey = new Map(object.facets.map((f) => [f.key, f]));
