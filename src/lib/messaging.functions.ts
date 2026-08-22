@@ -124,10 +124,17 @@ export const sendMessage = createServerFn({ method: "POST" })
       metadata: {},
     });
     if (error) throw new Error(error.message);
-    await supabase
-      .from("conversations")
-      .update({ last_message_at: new Date().toISOString() })
-      .eq("id", data.conversation_id);
+    // `last_message_at` is system-owned: participants may not rewrite
+    // conversation state, only hide the thread. The insert above already
+    // proved membership through RLS.
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("conversations")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", data.conversation_id);
+    }
+
 
     // Notify the recipient (preferences, pause, block and account state are
     // enforced server-side inside notify()).
