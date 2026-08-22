@@ -53,12 +53,18 @@ export type ProfileRow = {
   religions?: string[] | null;
   religion_self_describe?: string | null;
   smoking?: string | null;
+  // Location participates in feasibility only. Coordinates are read here and
+  // never returned to any client surface.
+  region?: string | null;
+  country?: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
 };
 
 const PROFILE_COLUMNS =
-  "id, display_name, birth_date, gender, city, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
+  "id, display_name, birth_date, gender, city, region, country, location_lat, location_lng, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
 const PREFS_COLUMNS =
-  "user_id, seeking_genders, age_min, age_max, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
+  "user_id, seeking_genders, age_min, age_max, max_distance_km, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
 
 /** Structured party view used by the tri-state constraint evaluation. */
 export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
