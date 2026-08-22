@@ -16,6 +16,14 @@ import {
   type SelfDescription,
   type StructuredEvaluation,
 } from "./structured-profile";
+import {
+  combineTri,
+  geographicFeasibility,
+  intentCompatibility,
+  seekingGenderState,
+  type Place,
+  type Tri,
+} from "./match-semantics";
 
 
 // Understanding thresholds. Athena needs enough understanding of each person
