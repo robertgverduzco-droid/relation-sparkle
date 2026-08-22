@@ -150,14 +150,15 @@ function AthenaPage() {
     setSpeaking(false);
   }, []);
 
+  // Transcript only. Completion is system-owned and monotonic — the browser
+  // must never be able to send a member who already finished the foundational
+  // conversation back to the beginning.
   const persist = useCallback(async (msgs: Msg[]) => {
-    const { data: userRes } = await supabase.auth.getUser();
-    const uid = userRes.user?.id;
-    if (!uid) return;
-    await supabase.from("interview_sessions").upsert(
-      { user_id: uid, messages: msgs, completed_at: null },
-      { onConflict: "user_id" },
-    );
+    try {
+      await saveConversationTranscript({ data: { messages: msgs } });
+    } catch {
+      /* the transcript is re-sent on the next turn */
+    }
   }, []);
 
   // ---- Live Conversation (speech-to-speech) ----
