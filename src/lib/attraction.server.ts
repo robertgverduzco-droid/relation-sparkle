@@ -106,7 +106,9 @@ export async function loadCounterpartPhotos(
     .from("user_photos")
     .select("id, storage_path, position, is_primary, alt_text, moderation")
     .eq("user_id", otherId)
-    .neq("moderation", "rejected")
+    // Only approved imagery may cross to a counterpart. `pending` stays
+    // private to the uploader and moderation; `rejected` never leaves at all.
+    .eq("moderation", "approved")
     .order("is_primary", { ascending: false })
     .order("position", { ascending: true })
     .limit(MAX_PHOTOS);
