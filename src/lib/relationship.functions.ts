@@ -144,82 +144,38 @@ export const optIntoFocus = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => focusInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { getFocusRow, FOCUS_STARTED_NOTICE, FOCUS_WAITING_COPY } = await import(
-      "./relationship.server"
-    );
-
-    const { data: conn } = await supabase
-      .from("connections")
-      .select("id, user_low, user_high, status")
-      .eq("id", data.connection_id)
-      .maybeSingle();
-    if (!conn) throw new Error("Not found");
-    if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
-    if (conn.status !== "mutual_interest") throw new Error("Not available yet");
-
-    const isLow = conn.user_low === userId;
-    const nowIso = new Date().toISOString();
-
-    // Participation and eligibility are proven above with the member-scoped
-    // client. `relationship_focus` is SELECT-only for `authenticated`, so the
-    // opt-in itself is a narrow privileged write — and only ever to this
-    // member's own side of the row. Mutual opt-in semantics are unchanged.
+    const { FOCUS_STARTED_NOTICE, FOCUS_WAITING_COPY } = await import("./relationship.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const writer = supabaseAdmin as unknown as typeof supabase;
+    const admin = supabaseAdmin as unknown as typeof supabase;
+    const { optIntoFocusFor } = await import("./write-paths.server");
 
-    let row = await getFocusRow(supabase, data.connection_id);
-    if (!row) {
-      const { error } = await writer.from("relationship_focus").insert({
-        connection_id: data.connection_id,
-        user_low: conn.user_low as string,
-        user_high: conn.user_high as string,
-        low_opted_in_at: isLow ? nowIso : null,
-        high_opted_in_at: isLow ? null : nowIso,
-      });
-      if (error) throw new Error(error.message);
-      row = await getFocusRow(supabase, data.connection_id);
-    } else if (!(isLow ? row.low_opted_in_at : row.high_opted_in_at)) {
-      const { error } = await writer
-        .from("relationship_focus")
-        .update(isLow ? { low_opted_in_at: nowIso } : { high_opted_in_at: nowIso })
-        .eq("id", row.id as string);
-      if (error) throw new Error(error.message);
-      row = await getFocusRow(supabase, data.connection_id);
-    }
+    // Participation, eligibility and the mutual opt-in rule live in the
+    // governed write path: proven with the member-scoped client, written with
+    // the service role, and only ever to this member's own side of the row.
+    const result = await optIntoFocusFor(supabase, admin, userId, data.connection_id);
 
-
-    const both = Boolean(row?.low_opted_in_at && row?.high_opted_in_at);
-    if (both && row && !row.started_at) {
-      const admin = writer;
-      await admin
-        .from("relationship_focus")
-        .update({ started_at: nowIso })
-        .eq("id", row.id as string);
-
+    if (result.started) {
       // Athena's role changes here, and she says so once — to both of them.
       const { postSystemMessage, findConversationId } = await import("./connections.server");
-      const conversationId = await findConversationId(
-        admin,
-        conn.user_low as string,
-        conn.user_high as string,
-      );
+      const conversationId = await findConversationId(admin, result.low, result.high);
       if (conversationId) await postSystemMessage(admin, conversationId, FOCUS_STARTED_NOTICE);
 
       // Outcome-learning (recording only): the strongest sanctioned signal.
       const { emitOutcomeSignal } = await import("./learning.server");
       emitOutcomeSignal({
-        userA: conn.user_low as string,
-        userB: conn.user_high as string,
+        userA: result.low,
+        userB: result.high,
         kind: "focus_started",
         dedupeKey: data.connection_id,
       });
     }
 
     return {
-      active: both,
-      message: both ? FOCUS_STARTED_NOTICE : FOCUS_WAITING_COPY,
+      active: result.active,
+      message: result.active ? FOCUS_STARTED_NOTICE : FOCUS_WAITING_COPY,
     };
   });
+
 
 /** Leave Relationship Focus. Athena offers each member the three paths after. */
 export const endFocus = createServerFn({ method: "POST" })
