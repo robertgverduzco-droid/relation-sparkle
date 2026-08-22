@@ -135,18 +135,27 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
       throw new Error("Introduction has not been presented to you");
     }
 
-    await supabase.from("introduction_responses").upsert(
+    // Membership in this pair and presentation to this side are proven above
+    // with the member-scoped client. `introduction_responses` and
+    // `introduction_feedback` are SELECT-only for `authenticated`, so the
+    // response is written with the service-role client — always keyed to the
+    // caller's own user_id, never on behalf of the counterpart.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error: respErr } = await supabaseAdmin.from("introduction_responses").upsert(
       { pair_id: data.pair_id, user_id: userId, response: data.response, note: data.note ?? null },
       { onConflict: "pair_id,user_id" },
     );
+    if (respErr) throw new Error(respErr.message);
 
-    await supabase.from("introduction_feedback").insert({
+    const { error: fbErr } = await supabaseAdmin.from("introduction_feedback").insert({
       pair_id: data.pair_id,
       user_id: userId,
       kind: data.response,
       perspective: data.note ?? null,
       signals: {},
     });
+    if (fbErr) throw new Error(fbErr.message);
 
     let connectionId: string | null = null;
     if (data.response === "accepted") {
@@ -241,11 +250,14 @@ export const recordAttractionResponse = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => attractionInput.parse(v))
   .handler(async ({ data, context }) => {
     const { counterpartForPresentedPair } = await import("./attraction.server");
+    // Presentation + membership validated first with the member-scoped client.
     await counterpartForPresentedPair(context.supabase, data.pair_id, context.userId);
-    await context.supabase.from("introduction_attraction").upsert(
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("introduction_attraction").upsert(
       { pair_id: data.pair_id, user_id: context.userId, response: data.response },
       { onConflict: "pair_id,user_id" },
     );
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
