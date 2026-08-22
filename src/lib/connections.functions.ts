@@ -536,13 +536,12 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       /* the static closing copy is a complete, safe fallback */
     }
 
-    await supabase
+    await supabaseAdmin
       .from("post_meeting_reflections")
       .update({ athena_acknowledgement: acknowledgement })
       .eq("connection_id", data.connection_id)
       .eq("user_id", userId);
     if (submission?.id) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin
         .from("reflection_submissions")
         .update({ athena_acknowledgement: acknowledgement })
