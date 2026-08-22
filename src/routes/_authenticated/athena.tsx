@@ -3,7 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
-import { askAthena, reflectAthena, completeFoundationalConversation } from "@/lib/athena.functions";
+import {
+  askAthena,
+  reflectAthena,
+  completeFoundationalConversation,
+  saveConversationTranscript,
+} from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
