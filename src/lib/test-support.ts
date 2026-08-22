@@ -188,12 +188,12 @@ export class Db {
     this.tables = seed;
   }
   /** RLS-as-the-member client: subject to the live `authenticated` grants. */
-  member() {
-    return this.clientFor("member");
+  member(): SupabaseLike {
+    return this.clientFor("member") as SupabaseLike;
   }
   /** Service-role client: the only sanctioned writer for system-owned tables. */
-  admin() {
-    return this.clientFor("admin");
+  admin(): SupabaseLike {
+    return this.clientFor("admin") as SupabaseLike;
   }
   private clientFor(role: "member" | "admin"): FakeClient {
     const db = this;
@@ -223,3 +223,11 @@ export class Db {
 export type AnyBuilder = any;
 
 export type FakeClient = { role: "member" | "admin"; from(table: string): AnyBuilder };
+
+/**
+ * Call sites expect a real `SupabaseClient`. The harness satisfies only the
+ * query surface, so it is handed over under a permissive alias rather than
+ * casting at every call site.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SupabaseLike = any;

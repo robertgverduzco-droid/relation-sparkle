@@ -43,7 +43,7 @@ describe("Athena's own writes still land under the tightened grants", () => {
     db = new Db({ messages: [] });
 
     const { postSystemMessage } = await import("./connections.server");
-    await postSystemMessage(db.member() as never, CONV, "Athena speaks once.");
+    await postSystemMessage(db.member(), CONV, "Athena speaks once.");
     expect(db.rows("messages")).toHaveLength(1);
     expect(db.rows("messages")[0]!["sender_id"]).toBeNull();
     expect(db.rows("messages")[0]!["kind"]).toBe("system");
@@ -58,12 +58,12 @@ describe("Athena's own writes still land under the tightened grants", () => {
     expect(denied.error?.message).toMatch(/permission denied/i);
 
     const { openEndingChoice } = await import("./relationship.server");
-    await openEndingChoice(db.member() as never, { userId: A, connectionId: CONN });
+    await openEndingChoice(db.member(), { userId: A, connectionId: CONN });
     expect(db.rows("member_transitions")).toHaveLength(1);
     expect(db.rows("member_transitions")[0]!["user_id"]).toBe(A);
 
     // Idempotent: one open choice per member, never a second.
-    await openEndingChoice(db.member() as never, { userId: A, connectionId: CONN });
+    await openEndingChoice(db.member(), { userId: A, connectionId: CONN });
     expect(db.rows("member_transitions")).toHaveLength(1);
   });
 
@@ -77,7 +77,7 @@ describe("Athena's own writes still land under the tightened grants", () => {
     expect(denied.error?.message).toMatch(/permission denied/i);
 
     const { notify } = await import("./notifications.server");
-    const res = await notify(db.member() as never, {
+    const res = await notify(db.member(), {
       userId: A,
       category: "introductions",
       eventType: "introduction_new",
@@ -94,7 +94,7 @@ describe("Athena's own writes still land under the tightened grants", () => {
   it("declines to deliver to a deleted account", async () => {
     db = new Db({ profiles: [], notifications: [] });
     const { notify } = await import("./notifications.server");
-    const res = await notify(db.member() as never, {
+    const res = await notify(db.member(), {
       userId: B,
       category: "introductions",
       eventType: "introduction_new",
@@ -116,7 +116,7 @@ describe("Athena's own writes still land under the tightened grants", () => {
     expect(denied.error?.message).toMatch(/permission denied/i);
 
     const { markReflectionRequired } = await import("./connections.server");
-    await markReflectionRequired(db.member() as never, { connectionId: CONN, userId: A });
+    await markReflectionRequired(db.member(), { connectionId: CONN, userId: A });
     const row = db.one("post_meeting_reflections", { user_id: A });
     expect(row).toBeTruthy();
     expect(row!["reflection_required"]).toBe(true);
