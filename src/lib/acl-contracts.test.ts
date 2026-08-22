@@ -28,7 +28,14 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-type Write = { file: string; line: number; receiver: string; table: string; op: string };
+type Write = {
+  file: string;
+  line: number;
+  receiver: string;
+  table: string;
+  op: string;
+  privileged: boolean;
+};
 
 const WRITE_RE = /(\w+)\s*\n?\s*\.from\("([a-z_]+)"\)\s*\n?\s*\.(insert|update|upsert|delete)\b/g;
 
@@ -43,6 +50,7 @@ function collectWrites(): Write[] {
         receiver: m[1]!,
         table: m[2]!,
         op: m[3]!,
+        privileged: isPrivileged(m[1]!, text),
       });
     }
   }
@@ -50,7 +58,24 @@ function collectWrites(): Write[] {
 }
 
 /** A privileged writer: the service-role client, or a local alias of it. */
-const PRIVILEGED = /admin|writer|service/i;
+const PRIVILEGED_NAME = /admin|writer|service/i;
+
+/**
+ * Server helpers commonly narrow the service-role client into a local name
+ * (`const supabase = supabaseAdmin as SupabaseClient`). Resolve those aliases
+ * per file so the scanner judges the actual privilege, not the variable name.
+ */
+function privilegedNames(text: string): Set<string> {
+  const names = new Set<string>();
+  for (const m of text.matchAll(/const\s+(\w+)\s*=\s*(?:await\s+)?supabaseAdmin\b/g)) {
+    names.add(m[1]!);
+  }
+  return names;
+}
+
+function isPrivileged(receiver: string, text: string): boolean {
+  return PRIVILEGED_NAME.test(receiver) || privilegedNames(text).has(receiver);
+}
 
 const writes = collectWrites();
 
@@ -61,7 +86,7 @@ describe("ACL contract: the code cannot write what the grants forbid", () => {
 
   it("never issues a member-scoped write against a table the member cannot write", () => {
     const violations = writes
-      .filter((w) => !PRIVILEGED.test(w.receiver))
+      .filter((w) => !w.privileged)
       .filter((w) => {
         const op = w.op === "upsert" ? "insert" : w.op;
         return !memberMayWrite(w.table, op as "insert" | "update" | "delete");
@@ -132,7 +157,7 @@ describe("ACL contract: member-scoped writes stay inside their granted columns",
       const text = readFileSync(file, "utf8");
       for (const m of text.matchAll(OBJ_WRITE)) {
         const [, receiver, table, op, body] = m as unknown as string[];
-        if (PRIVILEGED.test(receiver!)) continue;
+        if (isPrivileged(receiver!, text)) continue;
         const acl = AUTHENTICATED_ACL[table!];
         if (!acl) continue;
         const granted = op === "update" ? acl.update : acl.insert;
