@@ -432,6 +432,7 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       REFLECTION_CONCLUDED_NOTICE,
       MUTUAL_YES_NOTICE,
     } = await import("./connections.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const submittedAt = new Date().toISOString();
 
