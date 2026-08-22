@@ -121,47 +121,28 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    const { data: pair } = await supabase
-      .from("pair_reasoning")
-      .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at")
-      .eq("id", data.pair_id)
-      .maybeSingle();
-
-    if (!pair) throw new Error("Introduction not found");
-    const isLow = pair.user_low === userId;
-    const isHigh = pair.user_high === userId;
-    if (!isLow && !isHigh) throw new Error("Not your introduction");
-    if ((isLow && !pair.presented_to_a_at) || (isHigh && !pair.presented_to_b_at)) {
-      throw new Error("Introduction has not been presented to you");
-    }
-
-    // Membership in this pair and presentation to this side are proven above
-    // with the member-scoped client. `introduction_responses` and
+    // Membership in this pair and presentation to this side are proven with
+    // the member-scoped client. `introduction_responses` and
     // `introduction_feedback` are SELECT-only for `authenticated`, so the
     // response is written with the service-role client — always keyed to the
     // caller's own user_id, never on behalf of the counterpart.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { error: respErr } = await supabaseAdmin.from("introduction_responses").upsert(
-      { pair_id: data.pair_id, user_id: userId, response: data.response, note: data.note ?? null },
-      { onConflict: "pair_id,user_id" },
+    const { recordIntroductionResponse } = await import("./write-paths.server");
+    const pair = await recordIntroductionResponse(
+      supabase,
+      supabaseAdmin as unknown as typeof supabase,
+      userId,
+      data,
     );
-    if (respErr) throw new Error(respErr.message);
-
-    const { error: fbErr } = await supabaseAdmin.from("introduction_feedback").insert({
-      pair_id: data.pair_id,
-      user_id: userId,
-      kind: data.response,
-      perspective: data.note ?? null,
-      signals: {},
-    });
-    if (fbErr) throw new Error(fbErr.message);
+    const isLow = pair.isLow;
 
     let connectionId: string | null = null;
     if (data.response === "accepted") {
       const { openConnectionIfMutual } = await import("./connections.server");
       connectionId = await openConnectionIfMutual(supabase, data.pair_id);
     }
+
+
 
     // Outcome-learning (recording only): categorical, anonymized, no influence
     // on this or any future introduction decision.
