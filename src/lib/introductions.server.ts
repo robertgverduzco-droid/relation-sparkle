@@ -167,6 +167,7 @@ export type PrefsRow = {
   seeking_genders: string[] | null;
   age_min: number | null;
   age_max: number | null;
+  max_distance_km?: number | null;
   relationship_intent: string | null;
   wants_children: string | null;
   ethnicity_openness?: string | null;
