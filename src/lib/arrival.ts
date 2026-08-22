@@ -25,25 +25,60 @@ export const LAST_SEEN_KEY = "athena-last-seen";
 export const SESSION_GREETED_KEY = "athena-session-greeted";
 /** Set once the one-time arrival welcome has actually been delivered. */
 export const ARRIVAL_DELIVERED_KEY = "athena-arrival-delivered";
+/** Set once the *written* welcome has appeared during onboarding. */
+export const ARRIVAL_SHOWN_KEY = "athena-arrival-shown";
 
-/** Has this member already received the one-time arrival welcome? */
-export function arrivalDelivered(): boolean {
+/**
+ * Arrival is an account-scoped moment, not a browser-scoped one. Two people
+ * signing in on the same device each deserve their own first welcome, and the
+ * same person must never receive a second one. Every key below is therefore
+ * namespaced by account id; an unknown account falls back to the bare key
+ * only so that pre-sign-in surfaces keep working.
+ */
+export function scopedKey(base: string, accountId: string | null | undefined): string {
+  return accountId ? `${base}:${accountId}` : base;
+}
+
+function readFlag(base: string, accountId: string | null | undefined): boolean {
   if (typeof window === "undefined") return true;
   try {
-    return window.localStorage.getItem(ARRIVAL_DELIVERED_KEY) === "1";
+    return window.localStorage.getItem(scopedKey(base, accountId)) === "1";
   } catch {
     return true;
   }
 }
 
-export function markArrivalDelivered(): void {
+function writeFlag(base: string, accountId: string | null | undefined): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(ARRIVAL_DELIVERED_KEY, "1");
+    window.localStorage.setItem(scopedKey(base, accountId), "1");
   } catch {
     /* ignore */
   }
 }
+
+/** Has this account already received the one-time *spoken* arrival welcome? */
+export function arrivalDelivered(accountId?: string | null): boolean {
+  return readFlag(ARRIVAL_DELIVERED_KEY, accountId);
+}
+
+export function markArrivalDelivered(accountId?: string | null): void {
+  writeFlag(ARRIVAL_DELIVERED_KEY, accountId);
+}
+
+/**
+ * The written welcome shown during onboarding is a separate record. Reading
+ * the words on screen must never consume Athena's spoken first greeting: she
+ * still says them herself when the member reaches her.
+ */
+export function arrivalShown(accountId?: string | null): boolean {
+  return readFlag(ARRIVAL_SHOWN_KEY, accountId);
+}
+
+export function markArrivalShown(accountId?: string | null): void {
+  writeFlag(ARRIVAL_SHOWN_KEY, accountId);
+}
+
 
 
 /**
