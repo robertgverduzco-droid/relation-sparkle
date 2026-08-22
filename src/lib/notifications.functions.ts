@@ -34,11 +34,15 @@ export const markNotificationRead = createServerFn({ method: "POST" })
     if (!row) return { ok: false };
     // Retiring the dedupe key lets the next genuine occurrence of the same
     // event notify again, while the same unread event never repeats.
-    await context.supabase
+    // Notification state is system-owned; the member's own read receipt is
+    // applied server-side after ownership has already been proven above.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("notifications")
       .update({ read_at: new Date().toISOString(), dedupe_key: `${row.dedupe_key as string}:${row.id as string}` })
       .eq("id", data.id)
       .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
