@@ -3,9 +3,23 @@
 // directly (the column grant was revoked); every advance runs through here,
 // where the ordering and the minimum required information are enforced
 // server-side for the authenticated member only.
+//
+// V1 stabilization adds two authoritative preconditions to that same path,
+// because a disabled button is not enforcement:
+//   - 18+ : a real, past, adult date of birth before onboarding can complete;
+//   - consent: every REQUIRED agreement held at its CURRENT version before the
+//     member may progress past `welcome`.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { onboardingStepInput, nextStage, type OnboardingStage } from "./onboarding.server";
+import {
+  onboardingStepInput,
+  nextStage,
+  assertAdult,
+  outstandingRequiredConsents,
+  CONSENT_REQUIRED_COPY,
+  type OnboardingStage,
+} from "./onboarding.server";
+import { REQUIRED_CONSENTS } from "./policy-versions";
 
 export const saveOnboardingStep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -16,16 +30,35 @@ export const saveOnboardingStep = createServerFn({ method: "POST" })
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_stage, display_name")
+      .select("onboarding_stage, display_name, birth_date")
       .eq("id", userId)
       .maybeSingle();
 
     const current = ((profile?.onboarding_stage as string) ?? "welcome") as OnboardingStage;
     const next = nextStage(current, data.step);
 
+    // --- Required consent, verified server-side on every advance -----------
+    if (next !== "welcome") {
+      const { data: consents, error: consentError } = await supabase
+        .from("member_consents")
+        .select("consent_key, version, granted, created_at")
+        .eq("user_id", userId);
+      if (consentError) throw new Error(consentError.message);
+      const outstanding = outstandingRequiredConsents(
+        (consents ?? []) as never,
+        REQUIRED_CONSENTS.map((c) => ({ key: c.key, version: c.version })),
+      );
+      if (outstanding.length > 0) throw new Error(CONSENT_REQUIRED_COPY);
+    }
+
     if (data.step === "identity") {
       const name = (data.identity?.display_name ?? "").trim();
       if (!name) throw new Error("Athena will need a name to call you by.");
+      // Authoritative 18+ check. A future date, an unparseable date, an absent
+      // date, or an age under eighteen all stop here.
+      const adult = assertAdult(data.identity?.birth_date ?? null);
+      if (!adult.ok) throw new Error(adult.message);
+
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -55,12 +88,14 @@ export const saveOnboardingStep = createServerFn({ method: "POST" })
     if (next === "complete") {
       const { data: check } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, birth_date")
         .eq("id", userId)
         .maybeSingle();
       if (!((check?.display_name as string | null) ?? "").trim()) {
         throw new Error("Athena will need a name to call you by.");
       }
+      const adult = assertAdult((check?.birth_date as string | null) ?? null);
+      if (!adult.ok) throw new Error(adult.message);
     }
 
     const { error: stageError } = await supabaseAdmin
