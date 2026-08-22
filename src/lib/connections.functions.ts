@@ -276,7 +276,11 @@ export const submitPartnerPerception = createServerFn({ method: "POST" })
     if (conn.user_low !== userId && conn.user_high !== userId) throw new Error("Not yours");
     const subjectId = (conn.user_low === userId ? conn.user_high : conn.user_low) as string;
 
-    const { error } = await supabase
+    // The author is proven above; `author_id` and `subject_id` are derived
+    // here rather than accepted from the client, and the row is written on the
+    // service path so a member can never author a perception of a third party.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("partner_perception")
       .upsert(
         {
