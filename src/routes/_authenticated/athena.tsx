@@ -269,8 +269,11 @@ function AthenaPage() {
       setVoiceMode(stored ?? "voice");
 
       const firstName = (profile?.display_name as string | null)?.split(" ")[0] ?? null;
-      const lines = buildIntro(firstName, arrivalDelivered());
-      markArrivalDelivered();
+      // Account-scoped: reading the written welcome during onboarding does not
+      // consume Athena's spoken greeting, and a different account on the same
+      // device still gets its own first arrival.
+      const lines = buildIntro(firstName, arrivalDelivered(accountIdRef.current));
+      markArrivalDelivered(accountIdRef.current);
 
       const accumulated: Msg[] = [];
       await wait(500);
@@ -319,10 +322,11 @@ function AthenaPage() {
   // for a genuinely new session, never for coming back from this screen.
   useEffect(() => {
     if (!hydrated) return;
-    markSessionGreeted();
-    markSeen();
-    const tick = setInterval(() => markSeen(), 60_000);
-    return () => { clearInterval(tick); markSeen(); };
+    const id = accountIdRef.current;
+    markSessionGreeted(id);
+    markSeen(id);
+    const tick = setInterval(() => markSeen(id), 60_000);
+    return () => { clearInterval(tick); markSeen(id); };
   }, [hydrated]);
 
   useEffect(() => {

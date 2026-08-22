@@ -7,7 +7,7 @@ import { saveOnboardingStep } from "@/lib/onboarding.functions";
 import { MatchPreferenceFields, SelfDescriptionFields } from "@/components/structured-profile-form";
 import { saveStructuredProfile } from "@/lib/structured-profile.functions";
 import { EMPTY_PREFERENCES, EMPTY_SELF } from "@/lib/structured-profile";
-import { ARRIVAL_WELCOME, arrivalDelivered, markArrivalDelivered } from "@/lib/arrival";
+import { ARRIVAL_WELCOME, arrivalShown, markArrivalShown } from "@/lib/arrival";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -361,11 +361,11 @@ function Field({
  * is available. It is delivered once, ever; the first-meeting sequence in
  * /athena drops its duplicate line once this has been shown.
  */
-function ArrivalWelcome() {
-  const [already] = useState(() => arrivalDelivered());
+function ArrivalWelcome({ accountId }: { accountId: string | null }) {
+  const [already] = useState(() => arrivalShown(accountId));
   useEffect(() => {
-    markArrivalDelivered();
-  }, []);
+    markArrivalShown(accountId);
+  }, [accountId]);
   if (already) return null;
   return (
     <div className="mb-8 fade-in-slow" data-testid="onboarding-arrival-welcome">
