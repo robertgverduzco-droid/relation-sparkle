@@ -196,36 +196,68 @@ export function ageFromDob(dob: string | null): number | null {
   return a;
 }
 
-export function mutuallyEligible(
+/**
+ * Mutual eligibility as a tri-state question.
+ *
+ * Three dimensions are now answered semantically rather than by raw equality
+ * or silent optimism — seeking gender, geography, and relationship intent.
+ * Anything unresolved blocks presentation without being treated as a
+ * rejection of the person: Athena resolves it in conversation instead.
+ */
+export function mutualEligibilityState(
   a: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
   b: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
-): boolean {
-  if (a.profile.is_paused || b.profile.is_paused) return false;
+): Tri {
+  if (a.profile.is_paused || b.profile.is_paused) return "incompatible";
+
+  const placeOf = (p: ProfileRow): Place => ({
+    lat: p.location_lat ?? null,
+    lng: p.location_lng ?? null,
+    city: p.city ?? null,
+    region: p.region ?? null,
+    country: p.country ?? null,
+  });
 
   const checkOne = (
     self: { profile: ProfileRow; prefs: PrefsRow | null },
     other: { profile: ProfileRow; ageA: number | null },
-  ) => {
+  ): Tri => {
     const p = self.prefs;
-    if (!p) return true;
-    if (p.seeking_genders && p.seeking_genders.length > 0 && other.profile.gender) {
-      if (!p.seeking_genders.includes(other.profile.gender)) return false;
-    }
+    if (!p) return "compatible";
+
+    const states: Tri[] = [
+      // Never infer gender. A stated requirement plus an unstated gender is
+      // unresolved, not a match and not a rejection.
+      seekingGenderState(p.seeking_genders, other.profile.gender),
+      geographicFeasibility(p.max_distance_km ?? null, placeOf(self.profile), placeOf(other.profile)),
+    ];
+
     if (other.ageA != null) {
-      if (p.age_min != null && other.ageA < p.age_min) return false;
-      if (p.age_max != null && other.ageA > p.age_max) return false;
+      if (p.age_min != null && other.ageA < p.age_min) states.push("incompatible");
+      if (p.age_max != null && other.ageA > p.age_max) states.push("incompatible");
+    } else if (p.age_min != null || p.age_max != null) {
+      states.push("unknown");
     }
-    return true;
+
+    return combineTri(states);
   };
 
-  if (!checkOne(a, b)) return false;
-  if (!checkOne(b, a)) return false;
+  return combineTri([
+    checkOne(a, b),
+    checkOne(b, a),
+    intentCompatibility(a.prefs?.relationship_intent, b.prefs?.relationship_intent),
+  ]);
+}
 
-  const ia = a.prefs?.relationship_intent ?? null;
-  const ib = b.prefs?.relationship_intent ?? null;
-  if (ia && ib && ia !== ib) return false;
-
-  return true;
+/**
+ * Presentation gate. Only a fully resolved, compatible pair may be presented:
+ * `unknown` holds the pair back rather than passing it through.
+ */
+export function mutuallyEligible(
+  a: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
+  b: { profile: ProfileRow; prefs: PrefsRow | null; ageA: number | null },
+): boolean {
+  return mutualEligibilityState(a, b) === "compatible";
 }
 
 export function facetAverage(rows: FacetRow[]): number {
