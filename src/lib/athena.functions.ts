@@ -650,14 +650,19 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
       return { ok: true, alreadyComplete: false, ready: false };
     }
 
+    // Foundational completion is system-owned state, and it is monotonic:
+    // this is the only path that sets `completed_at`, and it never clears it.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (!alreadyComplete) {
-      await supabase
+      const { error: completeError } = await supabaseAdmin
         .from("interview_sessions")
         .update({ completed_at: now })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .is("completed_at", null);
+      if (completeError) throw new Error(completeError.message);
       // Ensure last_interview_at is set even if reflect hasn't run yet, so
       // the matchmaking eligibility gate opens.
-      await supabase
+      await supabaseAdmin
         .from("user_intelligence")
         .upsert(
           { user_id: userId, last_interview_at: now },
@@ -668,7 +673,6 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
     // Readiness is re-evaluated first so the gate reflects the completed
     // foundational conversation before matchmaking asks the question.
     {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { evaluateReadiness } = await import("./readiness.server");
       await evaluateReadiness(supabaseAdmin, userId, "foundational_conversation_complete");
     }
