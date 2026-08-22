@@ -457,7 +457,10 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
       anything_else: data.anything_else ?? null,
     };
 
-    const { data: submission, error: subError } = await supabase
+    // Reflection rows are append-only history and system-owned state: the
+    // member's authorship is proven above, and the write runs on the service
+    // path so `user_id`, `sequence` and `submitted_at` cannot be forged.
+    const { data: submission, error: subError } = await supabaseAdmin
       .from("reflection_submissions")
       .insert({
         connection_id: data.connection_id,
@@ -471,7 +474,7 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     if (subError) throw new Error(subError.message);
 
     // The existing current-state row keeps working exactly as before.
-    const { error } = await supabase.from("post_meeting_reflections").upsert(
+    const { error } = await supabaseAdmin.from("post_meeting_reflections").upsert(
       {
         connection_id: data.connection_id,
         user_id: userId,
@@ -492,7 +495,6 @@ export const submitGuidedReflection = createServerFn({ method: "POST" })
     // The reflection is complete — that pending notification no longer applies,
     // and readiness may have changed.
     {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { obsoleteNotifications } = await import("./notifications.server");
       const { evaluateReadiness } = await import("./readiness.server");
       await obsoleteNotifications(
