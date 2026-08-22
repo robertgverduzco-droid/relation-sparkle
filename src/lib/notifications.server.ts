@@ -50,6 +50,11 @@ export async function notify(
   input: NotifyInput,
 ): Promise<{ created: boolean; reason?: string }> {
   try {
+    // ACL contract: `notifications` is SELECT-only for `authenticated`.
+    // Creation is a platform action, so the row is always written with the
+    // service-role client regardless of which client the caller passed.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const writer = supabaseAdmin as unknown as SupabaseClient;
     const { featureEnabled } = await import("./security.server");
     if (!(await featureEnabled("notifications"))) return { created: false, reason: "paused" };
     const essential = ESSENTIAL.includes(input.category);
@@ -92,7 +97,7 @@ export async function notify(
       }
     }
 
-    const { error } = await supabase.from("notifications").insert({
+    const { error } = await writer.from("notifications").insert({
       user_id: input.userId,
       category: input.category,
       event_type: input.eventType,
@@ -122,7 +127,10 @@ export async function obsoleteNotifications(
   eventTypes: string[],
   matchPathPrefix?: string,
 ): Promise<void> {
-  let q = supabase
+  // ACL contract: system-owned column, privileged write only.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  void supabase;
+  let q = (supabaseAdmin as unknown as SupabaseClient)
     .from("notifications")
     .update({ obsolete_at: new Date().toISOString() })
     .eq("user_id", userId)

@@ -98,7 +98,9 @@ export async function openEndingChoice(
 ): Promise<void> {
   const existing = await getOpenTransition(supabase, args.userId);
   if (existing) return;
-  await supabase.from("member_transitions").insert({
+  // ACL contract: `member_transitions` is SELECT-only for `authenticated`.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await (supabaseAdmin as unknown as Client).from("member_transitions").insert({
     user_id: args.userId,
     connection_id: args.connectionId,
   });
