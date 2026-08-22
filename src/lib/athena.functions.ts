@@ -586,7 +586,6 @@ ${transcript}`,
     // has just completed, reconsider introductions for this user in the
     // background. Cooldown inside runMatchmakingForUser prevents thrash.
     if (upserts.length > 0) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { evaluateReadiness } = await import("./readiness.server");
       await evaluateReadiness(supabaseAdmin, userId, "living_profile_update").catch(() => {});
       const { runMatchmakingForUser } = await import("./introductions.server");
