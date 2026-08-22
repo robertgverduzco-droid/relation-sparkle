@@ -12,6 +12,23 @@ export const messageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
   content: z.string(),
 });
+
+/**
+ * Transcript persistence input. Deliberately carries the transcript and
+ * nothing else: completion state is system-owned and monotonic, so the client
+ * has no vocabulary for it here.
+ */
+export const transcriptInput = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["system", "user", "assistant"]),
+        content: z.string().max(20000),
+        ts: z.string().optional(),
+      }),
+    )
+    .max(500),
+});
 export const askInput = z.object({
   messages: z.array(messageSchema),
   elapsedMinutes: z.number().min(0).max(600).optional(),
