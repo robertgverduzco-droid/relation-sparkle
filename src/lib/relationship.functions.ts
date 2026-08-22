@@ -62,8 +62,21 @@ export const chooseEndingPath = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { ENDING_ACKNOWLEDGEMENTS, REST_HOLD_DAYS } = await import("./relationship.server");
 
+    // Ownership is proven with the member-scoped client (RLS applies) BEFORE
+    // any privileged write. `member_transitions` is SELECT-only for
+    // `authenticated`, so the governed transition itself is written with the
+    // service-role client, narrowly, for this member's own row.
+    const { data: owned } = await supabase
+      .from("member_transitions")
+      .select("id, resolved_at")
+      .eq("id", data.transition_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!owned) throw new Error("Not your transition");
+
     const now = new Date();
-    const { error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("member_transitions")
       .update({
         choice: data.choice,
