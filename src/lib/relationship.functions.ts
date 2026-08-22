@@ -212,8 +212,7 @@ export const optIntoFocus = createServerFn({ method: "POST" })
 
     const both = Boolean(row?.low_opted_in_at && row?.high_opted_in_at);
     if (both && row && !row.started_at) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const admin = supabaseAdmin as unknown as typeof supabase;
+      const admin = writer;
       await admin
         .from("relationship_focus")
         .update({ started_at: nowIso })
