@@ -68,11 +68,13 @@ vi.mock("./connections.server", () => ({
   openConnectionIfMutual: vi.fn(async () => {}),
 }));
 
+const T1 = "f1111111-0000-4000-8000-000000000011";
+const T2 = "f2222222-0000-4000-8000-000000000022";
 const A = "aaaaaaaa-0000-4000-8000-000000000001";
 const B = "bbbbbbbb-0000-4000-8000-000000000002";
 const C = "cccccccc-0000-4000-8000-000000000003";
-const CONN = "cccc0000-0000-4000-8000-00000000000c";
-const PAIR = "pppp0000-0000-4000-8000-00000000000p".replace("p", "0");
+const CONN = "dddddddd-0000-4000-8000-00000000000c";
+const PAIR = "eeeeeeee-0000-4000-8000-00000000000e";
 
 function boot(seed: Record<string, Record<string, unknown>[]>) {
   db = new Db(seed);
@@ -88,8 +90,8 @@ beforeEach(() => {
 describe("ending choice (member_transitions)", () => {
   const seedTransition = () => ({
     member_transitions: [
-      { id: "t1", user_id: A, connection_id: CONN, choice: null, hold_until: null, resolved_at: null },
-      { id: "t2", user_id: B, connection_id: CONN, choice: null, hold_until: null, resolved_at: null },
+      { id: "f1111111-0000-4000-8000-000000000011", user_id: A, connection_id: CONN, choice: null, hold_until: null, resolved_at: null },
+      { id: "f2222222-0000-4000-8000-000000000022", user_id: B, connection_id: CONN, choice: null, hold_until: null, resolved_at: null },
     ],
     connections: [{ id: CONN, user_low: A, user_high: B, status: "closed" }],
     profiles: [{ id: B, display_name: "Bea" }],
@@ -101,17 +103,17 @@ describe("ending choice (member_transitions)", () => {
       .member()
       .from("member_transitions")
       .update({ choice: "resume" })
-      .eq("id", "t1");
+      .eq("id", T1);
     expect(error?.message).toMatch(/permission denied/i);
-    expect(db.one("member_transitions", { id: "t1" })!["choice"]).toBeNull();
+    expect(db.one("member_transitions", { id: T1 })!["choice"]).toBeNull();
   });
 
   it("ALLOWS the governed server function to record the choice", async () => {
     boot(seedTransition());
     const { chooseEndingPath } = await import("./relationship.functions");
-    const res = await chooseEndingPath({ data: { transition_id: "t1", choice: "rest" } });
+    const res = await chooseEndingPath({ data: { transition_id: T1, choice: "rest" } });
     expect(res.ok).toBe(true);
-    const row = db.one("member_transitions", { id: "t1" })!;
+    const row = db.one("member_transitions", { id: T1 })!;
     expect(row["choice"]).toBe("rest");
     expect(row["hold_until"]).toBeTruthy();
   });
@@ -120,9 +122,9 @@ describe("ending choice (member_transitions)", () => {
     boot(seedTransition());
     const { chooseEndingPath } = await import("./relationship.functions");
     await expect(
-      chooseEndingPath({ data: { transition_id: "t2", choice: "resume" } }),
+      chooseEndingPath({ data: { transition_id: T2, choice: "resume" } }),
     ).rejects.toThrow();
-    expect(db.one("member_transitions", { id: "t2" })!["choice"]).toBeNull();
+    expect(db.one("member_transitions", { id: T2 })!["choice"]).toBeNull();
   });
 });
 
@@ -208,9 +210,9 @@ describe("introduction response and attraction", () => {
   it("ALLOWS the caller's own response and pins it to the caller", async () => {
     boot(seedPair());
     const { respondToIntroduction } = await import("./introductions.functions");
-    await respondToIntroduction({ data: { pair_id: PAIR, response: "yes" } });
+    await respondToIntroduction({ data: { pair_id: PAIR, response: "accepted" } });
 
-    expect(db.one("introduction_responses", { user_id: A })!["response"]).toBe("yes");
+    expect(db.one("introduction_responses", { user_id: A })!["response"]).toBe("accepted");
     // The counterpart's row is untouched — no member speaks for another.
     expect(db.one("introduction_responses", { user_id: B })!["response"]).toBe("pending");
     expect(db.rows("introduction_feedback")).toHaveLength(1);
@@ -222,7 +224,7 @@ describe("introduction response and attraction", () => {
     ctx = { supabase: db.member(), userId: C };
     const { respondToIntroduction } = await import("./introductions.functions");
     await expect(
-      respondToIntroduction({ data: { pair_id: PAIR, response: "yes" } }),
+      respondToIntroduction({ data: { pair_id: PAIR, response: "accepted" } }),
     ).rejects.toThrow();
     expect(db.rows("introduction_feedback")).toHaveLength(0);
   });

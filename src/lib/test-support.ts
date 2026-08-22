@@ -42,22 +42,24 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
     private role: "member" | "admin",
   ) {}
 
-  private acl(op: "insert" | "update" | "delete", payload?: Row) {
-    if (this.role === "admin") return;
+  private denied: string | null = null;
+
+  /** Mirrors a PostgREST 42501: recorded, then surfaced as `{ error }`. */
+  private acl(op: "insert" | "update" | "delete", payload?: Row): boolean {
+    if (this.role === "admin") return true;
     const acl = AUTHENTICATED_ACL[this.table];
     const granted = !acl ? [] : op === "delete" ? (acl.delete ? ["*"] : []) : acl[op];
     if (granted.length === 0) {
-      throw new PostgrestDenied(
-        `permission denied for table ${this.table} (no ${op.toUpperCase()} grant for authenticated)`,
-      );
+      this.denied = `permission denied for table ${this.table} (no ${op.toUpperCase()} grant for authenticated)`;
+      return false;
     }
     for (const col of Object.keys(payload ?? {})) {
       if (op !== "delete" && !granted.includes(col)) {
-        throw new PostgrestDenied(
-          `permission denied for column "${col}" of table ${this.table}`,
-        );
+        this.denied = `permission denied for column "${col}" of table ${this.table}`;
+        return false;
       }
     }
+    return true;
   }
 
   private rows() {
@@ -106,6 +108,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
   insert(payload: Row | Row[]) {
     const list = Array.isArray(payload) ? payload : [payload];
     for (const p of list) this.acl("insert", p);
+    if (this.denied) return this;
     const created = list.map((p) => ({ id: nextId(), created_at: new Date().toISOString(), ...p }));
     this.rows().push(...created);
     this.pending = { kind: "mutate", rows: created };
@@ -117,7 +120,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
     const keys = (opts?.onConflict ?? "id").split(",").map((k) => k.trim());
     const out: Row[] = [];
     for (const p of list) {
-      this.acl("insert", p);
+      if (!this.acl("insert", p)) return this;
       const found = this.rows().find((r) => keys.every((k) => String(r[k]) === String(p[k])));
       if (found) {
         Object.assign(found, p);
@@ -133,7 +136,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
   }
 
   update(payload: Row) {
-    this.acl("update", payload);
+    if (!this.acl("update", payload)) return this;
     this.pending = { kind: "mutate", rows: [] };
     this.deferred = () => {
       const hit = this.rows().filter((r) => this.filters.every((f) => f(r)));
@@ -144,7 +147,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
   }
 
   delete() {
-    this.acl("delete");
+    if (!this.acl("delete")) return this;
     this.pending = { kind: "mutate", rows: [] };
     this.deferred = () => {
       const keep: Row[] = [];
@@ -159,6 +162,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
   private deferred: (() => Row[]) | null = null;
 
   private resolve() {
+    if (this.denied) return { data: null, error: { message: this.denied } };
     let data: Row[];
     if (this.deferred) data = this.deferred();
     else if (this.pending.kind === "mutate") data = this.pending.rows;
@@ -174,22 +178,9 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
       | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
-    try {
-      return Promise.resolve(this.resolve()).then(onfulfilled, onrejected);
-    } catch (err) {
-      if (err instanceof PostgrestDenied) {
-        return Promise.resolve({ data: null, error: { message: err.message } }).then(
-          onfulfilled as never,
-          onrejected,
-        );
-      }
-      return Promise.reject(err).then(onfulfilled, onrejected);
-    }
+    return Promise.resolve(this.resolve()).then(onfulfilled as never, onrejected);
   }
 }
-
-/** Mirrors a PostgREST 42501: surfaced as `{ error }`, never a thrown fault. */
-export class PostgrestDenied extends Error {}
 
 export class Db {
   tables: Tables;
