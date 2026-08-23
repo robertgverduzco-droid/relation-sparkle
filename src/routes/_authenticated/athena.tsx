@@ -8,6 +8,7 @@ import {
   reflectAthena,
   completeFoundationalConversation,
   saveConversationTranscript,
+  markFoundationalMilestone,
 } from "@/lib/athena.functions";
 import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
@@ -17,6 +18,7 @@ import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
+import { mayOfferFoundationalClose } from "@/lib/foundational-milestone";
 import { assessBoundary, boundaryGuidance } from "@/lib/boundaries";
 import { earlyExitGuidance, wantsToFinishFoundational } from "@/lib/early-exit";
 import {
@@ -95,6 +97,7 @@ function AthenaPage() {
   const complete = useServerFn(completeFoundationalConversation);
   const logUsageFn = useServerFn(logUsage);
   const readMembership = useServerFn(getMyMembership);
+  const markMilestone = useServerFn(markFoundationalMilestone);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -116,6 +119,9 @@ function AthenaPage() {
   const timeAcknowledgedRef = useRef(false);
   const foundationCompleteRef = useRef(false);
   const closingOfferedRef = useRef(false);
+  // Server-backed, once-ever: the foundational pause/closing opportunity has
+  // already been delivered to this member. Readiness alone never revives it.
+  const foundationalSessionRef = useRef(true);
   // Arrival state is account-scoped, never browser-scoped.
   const accountIdRef = useRef<string | null>(null);
   // Server-derived readiness. The client never computes it.
@@ -251,12 +257,18 @@ function AthenaPage() {
 
       const [{ data: auth }, { data: session }, { data: profile }] = await Promise.all([
         supabase.auth.getUser(),
-        supabase.from("interview_sessions").select("messages, completed_at").maybeSingle(),
+        supabase
+          .from("interview_sessions")
+          .select("messages, completed_at, foundational_milestone_at")
+          .maybeSingle(),
         supabase.from("profiles").select("display_name").maybeSingle(),
       ]);
       if (cancelled) return;
       accountIdRef.current = auth?.user?.id ?? null;
       foundationCompleteRef.current = Boolean(session?.completed_at);
+      // A returning member whose milestone already happened opens straight
+      // into ordinary continuing conversation — no intake framing, no sheet.
+      foundationalSessionRef.current = !session?.completed_at && !session?.foundational_milestone_at;
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
         setMessages(priorMessages);
@@ -452,6 +464,7 @@ function AthenaPage() {
         return;
       }
       foundationCompleteRef.current = true;
+      foundationalSessionRef.current = false;
       toast("Athena has what she needs for now. She'll begin reflecting.");
       // 4. Membership is offered only after the foundation exists — never before.
       let entitled = false;
@@ -554,16 +567,30 @@ function AthenaPage() {
       // this foundational conversation gracefully. Shown at most once per
       // conversation: if the member chooses "Keep talking", the offer is not
       // repeated on later turns.
-      if (
-        res.pacing === "offer_return" &&
+      // The foundational conversation is a milestone, never a recurring gate.
+      // The server tells us whether this is still that first conversation;
+      // readiness on its own can never bring the pause sheet back.
+      if (res.foundationalSession === false) foundationalSessionRef.current = false;
+      const stillFoundational =
+        foundationalSessionRef.current &&
         !foundationCompleteRef.current &&
-        !closingOfferedRef.current
-      ) {
+        res.foundationalSession !== false;
+      const ready = res.readiness?.ready ?? introReady;
+
+      if (res.pacing === "offer_return" && stillFoundational && !closingOfferedRef.current) {
         closingOfferedRef.current = true;
         // Readiness decides which experience appears. Before readiness there
-        // is no "finish" — only an explanation and the freedom to leave.
-        if (res.readiness?.ready ?? introReady) setShowClosingCard(true);
-        else setShowReadinessSheet(true);
+        // is no "finish" — only an explanation and the freedom to leave, and
+        // that early-exit path deliberately does NOT consume the milestone.
+        if (mayOfferFoundationalClose({ foundationalSession: true, readinessMet: ready, offeredThisConversation: false })) {
+          setShowClosingCard(true);
+          // Once-ever, account-scoped: reloads, other devices and later
+          // sessions never see this again.
+          foundationalSessionRef.current = false;
+          void markMilestone({}).catch(() => { /* non-fatal */ });
+        } else {
+          setShowReadinessSheet(true);
+        }
       }
 
     } finally {
