@@ -390,6 +390,7 @@ function AthenaPage() {
     timeAcknowledged?: boolean;
     notice?: Notice;
     readiness?: { ready: boolean };
+    foundationalSession?: boolean;
     readinessNotice?: ReadinessNoticeT;
     readinessShortfallSignature?: string | null;
   } | null> {
