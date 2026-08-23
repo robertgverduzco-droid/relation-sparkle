@@ -193,10 +193,10 @@ Use this memory to:
 
     const basePacing =
       elapsed >= 22 || (elapsed >= 20 && userTurns >= 12)
-        ? "You have now been speaking for around twenty minutes — the length this foundational conversation is designed for. If a natural resting place is near, warmly offer to continue another day. Do not cut them off; let the closing feel like a graceful pause, not an ending."
-        : elapsed >= 18
-          ? "You are approaching the natural length of this foundational conversation. Let it breathe. If a good pause presents itself, you may gently note it."
-          : "Stay curious. There is time — the foundational conversation is designed to last approximately twenty minutes.";
+        ? "You have been speaking for a good while now. If a natural resting place is near, warmly offer to continue another day. Do not cut them off, do not imply they are finished, and let any closing feel like a graceful pause. If they want to keep going, stay with them."
+        : elapsed >= RESPECT_TIME_MINUTES
+          ? "You are past the point where you owe them an acknowledgement of their time. Let the conversation breathe. How much longer it runs is theirs to decide, not the clock's and not yours."
+          : "Stay curious. There is time. This is a conversation, not an intake: no section announcements, no stock transitions, no repeated framing sentences.";
 
     // Completion is breadth plus initial understanding, never exhaustive
     // depth: if the clock is running out while whole areas of their life are
