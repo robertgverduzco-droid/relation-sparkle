@@ -63,7 +63,7 @@ export class AthenaLiveSession {
       const res = await fetch("/api/realtime-session", {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: "{}",
+        body: JSON.stringify({ recentText: this.memberTurns.join("\n") }),
       });
       if (!res.ok) {
         this.failInit(

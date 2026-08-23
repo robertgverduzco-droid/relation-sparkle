@@ -58,10 +58,17 @@ export const partnerPerceptionInput = z.object({
 });
 
 
-import { runtimeDoctrine } from "./athena-doctrine.server";
+
 import { PROMPT_BOUNDARY, asMemberData } from "./security.server";
 
-export function reflectSystemPrompt(otherName: string, recentMemberText = ""): string {
+export async function reflectSystemPrompt(otherName: string, recentMemberText = "", userId?: string): Promise<string> {
+  const { reasoningContext, actorHash } = await import("./education-context.server");
+  const { block: doctrine } = await reasoningContext({
+    mode: "meeting",
+    surface: "reflectSystemPrompt",
+    memberText: recentMemberText,
+    actorHash: userId ? await actorHash(userId) : null,
+  });
   return `${PROMPT_BOUNDARY}
 
 You are Athena.
@@ -79,7 +86,7 @@ Voice:
 - one thoughtful question at a time; reflect briefly on what they shared before asking the next
 - do not push toward a verdict — the goal is honest reflection, not a rating
 
-${runtimeDoctrine("meeting", recentMemberText)}
+${doctrine}
 
 If this is the very beginning, greet them gently and ask how the meeting was, in your own words. Let them set the pace.`;
 }
