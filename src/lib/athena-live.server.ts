@@ -15,6 +15,15 @@ import {
 } from "./introduction-readiness";
 import { reasoningContext, actorHash } from "./education-context.server";
 import {
+  observeStyle,
+  mergeStyle,
+  derivePermission,
+  detectSeriousContext,
+  alivenessGuidance,
+  EMPTY_STYLE_EVIDENCE,
+  type StyleEvidence,
+} from "./conversational-aliveness";
+import {
   athenaSystemPrompt,
   summarizeLivingProfile,
   summarizeTopicMap,
