@@ -417,7 +417,7 @@ export const reflectAthena = createServerFn({ method: "POST" })
       await Promise.all([
         supabase
           .from("understanding_facets")
-          .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at"),
+          .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at, contradiction_count, first_observed_at"),
         supabase
           .from("topic_map")
           .select("topic_key, status, confidence, observations, open_questions"),
@@ -484,7 +484,7 @@ Return two things:
 - understanding: your standing synthesis of this facet — NOT a summary of today alone. Carry forward what still holds from PRIOR FACETS, fold in what today adds, and say plainly what has shifted. Length is governed per facet by the 'synthesis licence' shown in PRIOR FACETS; for a facet you have never held before, one or two careful sentences.
 - reasoning: 1–2 sentences explaining why you currently hold this view
 - evidence: 1–5 short direct quotes / near-quotes from THEY, each under 200 chars
-- basis: 'stated' ONLY when THEY explicitly expressed this understanding in their own words; 'inferred' whenever you arrived at it by interpretation, pattern, tone, or implication — even if you can quote them. Never mark an interpretation as stated.
+- basis: where this sits on the evidence ladder, and never a rung higher than the evidence supports. 'self_report' — they described themselves this way (this is the correct rung for almost everything said once, and it stays self_report however often they repeat it); 'observed' — you saw it in how they actually engaged, not in what they claimed; 'repeated_pattern' — the same behaviour has shown up across separate occasions; 'inferred' — your interpretation, plausible but not established; 'hypothesis' — something you are actively testing. "I always put other people first" is a self_report about generosity, not evidence of it. "I hate drama" is not conflict-avoidance. "I communicate really well" is not communication skill.
 - confidence: 0.1–0.9 (never 1.0; be conservative)
 - contradictsPrior: true ONLY if today's signal materially conflicts with the prior understanding you already had
 - clarificationNote: if contradictsPrior, one sentence naming what to gently clarify next time
@@ -511,7 +511,7 @@ DEPTH (Living Profile depth model):
 - Never re-summarise a standing understanding into something shorter or vaguer than it already is. Only revise it when today gives you reason to deepen, qualify, contextualise, contradict or replace it.
 - Where the licence allows more: distinguish context-dependent behaviour ("with people they trust… with strangers…"), name what has held over time versus what has changed, and name tension you cannot yet resolve rather than smoothing it over.
 - Integration across lenses: where an observation in one facet genuinely illuminates another (communication and autonomy; conflict and attachment; attraction and pacing), draw that connection once, in the facet where it is most load-bearing. Do not restate the same observation in every facet.
-- Mark a facet's basis honestly per revision: a synthesis you built across conversations is 'inferred' even when it quotes them.
+- Mark the rung honestly on every revision: a synthesis you built by interpretation is 'inferred' even when it quotes them, and a claim about who someone is stays self_report until you have watched them be it. Never write a characterisation you could not point to specific evidence for, and never resolve a conflict between what they say and what you observed in their favour — record both and lower what you claim.
 
 - For physical_attraction_preferences specifically: write it in prose, in their terms, and make clear for anything they named whether it is a preference (something they generally like), a strong preference (meaningfully shapes attraction but leaves room), or a constraint (they indicate romantic attraction is unlikely or unavailable outside it). "Appearance matters little to me" and "attraction grows once I know someone" are complete, valid understandings — record them as such. Never rate, rank, score or judge anyone's appearance or their preferences, and never record a specification list of physical characteristics.
 
@@ -534,7 +534,7 @@ ${transcript}`,
     const { data: existingFacets } = facetKeys.length
       ? await supabase
           .from("understanding_facets")
-          .select("facet_key, understanding, reasoning, evidence, confidence")
+          .select("facet_key, understanding, reasoning, evidence, confidence, contradiction_count, first_observed_at")
           .eq("user_id", userId)
           .in("facet_key", facetKeys)
       : { data: [] as FacetRow[] };
@@ -544,6 +544,8 @@ ${transcript}`,
       reasoning: string | null;
       evidence: Json;
       confidence: number;
+      contradiction_count: number;
+      first_observed_at: string | null;
     }>();
     for (const r of existingFacets ?? []) {
       existing.set(r.facet_key as string, {
@@ -551,8 +553,14 @@ ${transcript}`,
         reasoning: (r.reasoning as string | null) ?? null,
         evidence: (r.evidence as Json) ?? [],
         confidence: Number(r.confidence ?? 0),
+        contradiction_count: Number(
+          (r as { contradiction_count?: number | null }).contradiction_count ?? 0,
+        ),
+        first_observed_at:
+          ((r as { first_observed_at?: string | null }).first_observed_at as string | null) ?? null,
       });
     }
+
 
     const upserts: Array<{
       user_id: string;
@@ -560,7 +568,10 @@ ${transcript}`,
       understanding: string;
       reasoning: string;
       evidence: Json;
-      basis: "stated" | "inferred";
+      basis: "self_report" | "observed" | "repeated_pattern" | "inferred" | "hypothesis";
+      contradiction_count: number;
+      first_observed_at: string;
+
       confidence: number;
       needs_clarification: boolean;
       clarification_note: string | null;
@@ -614,8 +625,16 @@ ${transcript}`,
         clarification_note: contradicts
           ? (f.clarificationNote ?? `New signal today conflicts with prior understanding: "${f.understanding}"`)
           : null,
+        // Contradiction is cumulative and never resets itself: a facet that has
+        // been contradicted is something Athena is testing, not something she
+        // knows (see deriveRung in evidentiary-discipline.ts).
+        contradiction_count: (prev?.contradiction_count ?? 0) + (contradicts ? 1 : 0),
+        // The observation window, so "repeated across conversations" can mean
+        // something other than "said twice in one sitting".
+        first_observed_at: prev?.first_observed_at ?? now,
         refined_at: now,
       });
+
     }
 
     // A-07: Athena's private understanding is not member-writable. Members can

@@ -2413,9 +2413,11 @@ export type Database = {
           basis: string | null
           clarification_note: string | null
           confidence: number
+          contradiction_count: number
           created_at: string
           evidence: Json
           facet_key: string
+          first_observed_at: string | null
           id: string
           needs_clarification: boolean
           reasoning: string | null
@@ -2428,9 +2430,11 @@ export type Database = {
           basis?: string | null
           clarification_note?: string | null
           confidence?: number
+          contradiction_count?: number
           created_at?: string
           evidence?: Json
           facet_key: string
+          first_observed_at?: string | null
           id?: string
           needs_clarification?: boolean
           reasoning?: string | null
@@ -2443,9 +2447,11 @@ export type Database = {
           basis?: string | null
           clarification_note?: string | null
           confidence?: number
+          contradiction_count?: number
           created_at?: string
           evidence?: Json
           facet_key?: string
+          first_observed_at?: string | null
           id?: string
           needs_clarification?: boolean
           reasoning?: string | null

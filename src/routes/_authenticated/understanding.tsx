@@ -2,7 +2,7 @@
 // Depth model: understanding is grouped by specialist lens, deepens as
 // evidence accumulates, and quietly marks what has evolved since you last
 // read it. No counts, no scores, no completeness meters.
-import { BASIS_LABEL } from "@/lib/facets";
+import { BASIS_LABEL, type FacetBasis } from "@/lib/facets";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -39,7 +39,7 @@ type Facet = {
   label: string;
   understanding: string;
   held: string;
-  basis: "stated" | "inferred" | "unestablished";
+  basis: FacetBasis;
   last_updated: string | null;
   revised: boolean;
   lens: string;

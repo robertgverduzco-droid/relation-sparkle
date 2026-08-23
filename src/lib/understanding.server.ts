@@ -59,10 +59,26 @@ export type FacetView = {
  * BR01-04 — provenance is read from the canonical `basis` column only.
  * The presence of evidence quotes never implies the member authored the
  * understanding; an inference can quote them and still be an inference.
+ * Legacy `stated` rows are self-reports, which is what they always were.
  */
 export function resolveBasis(basis: unknown): FacetBasis {
-  return basis === "stated" ? "stated" : basis === "inferred" ? "inferred" : "unestablished";
+  switch (basis) {
+    case "self_report":
+    case "stated":
+      return "self_report";
+    case "observed":
+      return "observed";
+    case "repeated_pattern":
+      return "repeated_pattern";
+    case "inferred":
+      return "inferred";
+    case "hypothesis":
+      return "hypothesis";
+    default:
+      return "unestablished";
+  }
 }
+
 
 type FacetRecord = {
   facet_key: string;
@@ -203,7 +219,7 @@ export function revisionPatch(
         "The member told me directly that this has changed. Earlier understanding is kept as history, not as present truth.",
       confidence: statement ? 0.6 : 0.2,
       evidence: statement ? [statement] : [],
-      basis: "stated",
+      basis: "self_report",
       needs_clarification: false,
       clarification_note: null,
       refined_at: now,
@@ -216,7 +232,7 @@ export function revisionPatch(
         "I had misunderstood this. The member corrected me; the correction is authoritative for what it corrects, and I should be slower to infer in this area.",
       confidence: statement ? 0.5 : 0.15,
       evidence: statement ? [statement] : [],
-      basis: "stated",
+      basis: "self_report",
       needs_clarification: false,
       clarification_note: null,
       refined_at: now,

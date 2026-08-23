@@ -5,6 +5,8 @@
 // Athena chooses for them.
 
 import { ANALYTICAL_REGISTER_GUARD } from "./conversational-aliveness";
+import { deriveRung, RUNG_MARKER } from "./evidentiary-discipline";
+
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -46,7 +48,12 @@ export type FacetRow = {
   understanding: string | null;
   reasoning: string | null;
   confidence: number;
+  /** Evidence-ladder provenance; absent on legacy rows. */
+  basis?: unknown;
+  evidence?: unknown;
+  contradiction_count?: number | null;
 };
+
 
 export type ProfileRow = {
   id: string;
@@ -299,12 +306,22 @@ export const reasoningSchema = z.object({
 export function summarizeFacets(rows: FacetRow[]): string {
   return rows
     .filter((r) => r.understanding)
-    .map(
-      (r) =>
-        `- ${r.facet_key} [confidence ${Number(r.confidence).toFixed(2)}]: ${r.understanding}`,
-    )
+    .map((r) => {
+      // Evidence quality travels with the understanding into the decision.
+      // Without the rung, "I'm a great communicator" and demonstrated skill
+      // would weigh the same in a pairing.
+      const rung = deriveRung({
+        basis: r.basis,
+        evidenceCount: Array.isArray(r.evidence) ? r.evidence.length : 0,
+        historyCount: 0,
+        contradictionCount: r.contradiction_count ?? 0,
+        confidence: Number(r.confidence),
+      });
+      return `- ${r.facet_key} [confidence ${Number(r.confidence).toFixed(2)}; ${RUNG_MARKER[rung]}]: ${r.understanding}`;
+    })
     .join("\n");
 }
+
 
 export async function reasonPair(args: {
   a: { name: string; facets: FacetRow[] };
@@ -341,7 +358,7 @@ ${learned}
 ${ANALYTICAL_REGISTER_GUARD}
 
 HOW YOU DECIDE (governed by L6c Matchmaking Intelligence — never narrated as rules)
-- You are not looking for a perfect match. You are looking for a meaningful possibility. An introduction is an invitation, never a prediction.
+- You are looking for a meaningful possibility, not an ideal. An introduction is an invitation, never a prediction.
 - Understanding precedes matching. If you do not understand one of them well enough to explain why they should meet, wait.
 - Never introduce because someone merely satisfies filters. Every introduction must have a thoughtful reason you could say out loud.
 - Character carries the greatest weight — integrity, kindness, respect, emotional responsibility, curiosity, humility, generosity, accountability outweigh superficial similarity.
@@ -395,7 +412,7 @@ export async function runMatchmakingForUser(
     await Promise.all([
       supabase.from("profiles").select(PROFILE_COLUMNS).eq("id", userId).maybeSingle(),
       supabase.from("user_preferences").select(PREFS_COLUMNS).eq("user_id", userId).maybeSingle(),
-      supabase.from("understanding_facets").select("facet_key, understanding, reasoning, confidence").eq("user_id", userId),
+      supabase.from("understanding_facets").select("facet_key, understanding, reasoning, confidence, basis, evidence, contradiction_count").eq("user_id", userId),
       supabase.from("user_intelligence").select("last_interview_at, last_matchmaking_at").eq("user_id", userId).maybeSingle(),
     ]);
 
@@ -530,7 +547,7 @@ export async function runMatchmakingForUser(
   const [{ data: otherPrefs }, { data: otherFacets }, { data: blocks }, { data: existingPairs }] =
     await Promise.all([
       supabase.from("user_preferences").select(PREFS_COLUMNS).in("user_id", otherIds),
-      supabase.from("understanding_facets").select("user_id, facet_key, understanding, reasoning, confidence").in("user_id", otherIds),
+      supabase.from("understanding_facets").select("user_id, facet_key, understanding, reasoning, confidence, basis, evidence, contradiction_count").in("user_id", otherIds),
       supabase.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`),
       supabase.from("pair_reasoning").select("user_low, user_high, status").or(`user_low.eq.${userId},user_high.eq.${userId}`),
     ]);
@@ -755,7 +772,7 @@ export async function refreshStalePairsForUser(userId: string): Promise<{ refres
   );
   const [{ data: profs }, { data: allFacets }] = await Promise.all([
     supabase.from("profiles").select("id, display_name").in("id", [userId, ...otherIds]),
-    supabase.from("understanding_facets").select("user_id, facet_key, understanding, reasoning, confidence").in("user_id", [userId, ...otherIds]),
+    supabase.from("understanding_facets").select("user_id, facet_key, understanding, reasoning, confidence, basis, evidence, contradiction_count").in("user_id", [userId, ...otherIds]),
   ]);
   const nameOf = new Map<string, string>();
   for (const p of profs ?? []) nameOf.set(p.id as string, (p.display_name as string | null) ?? "them");
