@@ -57,45 +57,37 @@ describe("permission is earned, cumulative and conservative", () => {
     expect(p.directness).toBe(false);
   });
 
-  it("does not grant profanity from a single instance", () => {
-    const e: StyleEvidence = { ...EMPTY_STYLE_EVIDENCE, profanityTurns: 1, memberTurns: 12 };
-    expect(derivePermission(e).profanity).toBe(false);
-  });
-
-  it("grants profanity only after repeated use in a real conversation", () => {
+  // V2 mechanical fix: register unlocks from real evidence, not from
+  // conversation length. Ordinary member profanity is not abuse and does not
+  // require a long apprenticeship before Athena stops sounding corporate.
+  it("grants the relaxed language register from genuine member profanity", () => {
     expect(
-      derivePermission({ ...EMPTY_STYLE_EVIDENCE, profanityTurns: 3, memberTurns: 8 }).profanity,
+      derivePermission({ ...EMPTY_STYLE_EVIDENCE, profanityTurns: 1, memberTurns: 2 }).profanity,
     ).toBe(true);
-    expect(
-      derivePermission({ ...EMPTY_STYLE_EVIDENCE, profanityTurns: 3, memberTurns: 4 }).profanity,
-    ).toBe(false);
+    expect(derivePermission(EMPTY_STYLE_EVIDENCE).profanity).toBe(false);
   });
 
-  it("moves humour through reserved → natural → playful", () => {
-    expect(derivePermission({ ...EMPTY_STYLE_EVIDENCE, humorTurns: 1, memberTurns: 4 }).humor).toBe(
-      "reserved",
-    );
-    expect(derivePermission({ ...EMPTY_STYLE_EVIDENCE, humorTurns: 2, memberTurns: 4 }).humor).toBe(
+  it("moves humour through reserved -> natural -> playful on evidence alone", () => {
+    expect(derivePermission(EMPTY_STYLE_EVIDENCE).humor).toBe("reserved");
+    expect(derivePermission({ ...EMPTY_STYLE_EVIDENCE, humorTurns: 1, memberTurns: 2 }).humor).toBe(
       "natural",
     );
-    expect(
-      derivePermission({ ...EMPTY_STYLE_EVIDENCE, humorTurns: 5, memberTurns: 12 }).humor,
-    ).toBe("playful");
+    expect(derivePermission({ ...EMPTY_STYLE_EVIDENCE, humorTurns: 3, memberTurns: 4 }).humor).toBe(
+      "playful",
+    );
   });
 
-  it("requires established playfulness before teasing", () => {
+  it("still requires an invitation before teasing", () => {
     expect(
-      derivePermission({ ...EMPTY_STYLE_EVIDENCE, teasingTurns: 3, humorTurns: 1, memberTurns: 12 })
-        .teasing,
+      derivePermission({ ...EMPTY_STYLE_EVIDENCE, humorTurns: 3, memberTurns: 6 }).teasing,
     ).toBe(false);
     expect(
-      derivePermission({ ...EMPTY_STYLE_EVIDENCE, teasingTurns: 2, humorTurns: 5, memberTurns: 12 })
-        .teasing,
+      derivePermission({ ...EMPTY_STYLE_EVIDENCE, teasingTurns: 1, memberTurns: 4 }).teasing,
     ).toBe(true);
   });
 
   it("is cumulative across sessions, not per-session", () => {
-    const prior: StyleEvidence = { ...EMPTY_STYLE_EVIDENCE, humorTurns: 4, memberTurns: 9 };
+    const prior: StyleEvidence = { ...EMPTY_STYLE_EVIDENCE, humorTurns: 2, memberTurns: 9 };
     const now = observeStyle([user("haha stop")]);
     expect(derivePermission(mergeStyle(prior, now)).humor).toBe("playful");
   });
