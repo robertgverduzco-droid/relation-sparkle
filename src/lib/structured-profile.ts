@@ -233,7 +233,8 @@ export type ConstraintField =
   | "religion"
   | "age"
   | "children"
-  | "smoking";
+  | "smoking"
+  | "drinking";
 
 export type ConstraintOutcome = {
   /** Which constraint this is. */
