@@ -2788,6 +2788,10 @@ export type Database = {
         Returns: boolean
       }
       ops_db_stats: { Args: never; Returns: Json }
+      purge_predictions_for_tokens: {
+        Args: { _tokens: string[] }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "founder"
