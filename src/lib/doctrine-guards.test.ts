@@ -20,7 +20,7 @@ describe("A-06 — every AI call site carries the security boundary", () => {
       const callsModel = /generateText\(|generateObject\(|streamText\(/.test(src);
       if (!callsModel) continue;
       const carriesBoundary =
-        /PROMPT_BOUNDARY|asMemberData|athenaSystemPrompt|acknowledgementPrompt|selfEvaluationPrompt|runtimeDoctrine|founderSystemPrompt/.test(
+        /PROMPT_BOUNDARY|asMemberData|athenaSystemPrompt|acknowledgementPrompt|selfEvaluationPrompt|runtimeDoctrine|reasoningContext|founderSystemPrompt/.test(
           src,
         );
       if (!carriesBoundary) offenders.push(file);
