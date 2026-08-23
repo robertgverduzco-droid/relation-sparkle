@@ -649,7 +649,8 @@ function AthenaPage() {
       recorder.start();
       setRecording(true);
     } catch {
-      toast("Microphone permission is needed to speak with Athena.");
+      // The microphone opened, so this is a recording failure, not permission.
+      toast(micFailureMessage("init-failed", "Your microphone is fine — recording didn't start. You can try again, or type."));
       stopStream();
     }
   }, [recording, transcribing, busy, stopStream]);
