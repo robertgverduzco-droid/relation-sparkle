@@ -290,6 +290,38 @@ Use this memory to:
       seed: userTurns + Math.trunc(elapsed) + context.userId.charCodeAt(0),
     });
 
+    // Conversational Aliveness: register is earned per member and cumulative
+    // across conversations, never reset to zero at the start of a session.
+    // Expression only — it cannot loosen boundaries, epistemics or safety.
+    let priorStyle: StyleEvidence = EMPTY_STYLE_EVIDENCE;
+    try {
+      const { data: styleRow } = await supabase
+        .from("member_interaction_style")
+        .select(
+          "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
+        )
+        .maybeSingle();
+      if (styleRow) {
+        priorStyle = {
+          profanityTurns: Number(styleRow.profanity_turns ?? 0),
+          humorTurns: Number(styleRow.humor_turns ?? 0),
+          teasingTurns: Number(styleRow.teasing_turns ?? 0),
+          selfDeprecationTurns: Number(styleRow.self_deprecation_turns ?? 0),
+          directnessTurns: Number(styleRow.directness_turns ?? 0),
+          memberTurns: Number(styleRow.member_turns ?? 0),
+        };
+      }
+    } catch {
+      // Style personalisation is an enhancement; conservative default stands.
+    }
+    // Serious material, or any live boundary situation, overrides accumulated
+    // playfulness for this turn regardless of rapport.
+    const seriousMoment = detectSeriousContext(lastMemberText) || Boolean(boundary);
+    const alivenessHint = alivenessGuidance({
+      permission: derivePermission(mergeStyle(priorStyle, observeStyle(data.messages)), seriousMoment),
+      isFoundational,
+    });
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
