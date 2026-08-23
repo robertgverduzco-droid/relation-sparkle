@@ -680,6 +680,23 @@ export async function runMatchmakingForUser(
 
     if (wantsIntroduction) {
       introduced += 1;
+
+      // Freeze what Athena expected, before the world answers. Categorical
+      // factors only — no member text ever enters the learning ledger.
+      const { emitPrediction } = await import("./intelligence.server");
+      emitPrediction({
+        userA: low,
+        userB: high,
+        status,
+        confidence: object.confidence,
+        factors: [
+          ...object.alignments.map((x) => `alignment:${String(x).slice(0, 48)}`),
+          ...object.complementary.map((x) => `complementary:${String(x).slice(0, 48)}`),
+        ].slice(0, 12),
+        knownUnknowns: object.frictions.map((x) => `friction:${String(x).slice(0, 48)}`),
+        expectation: object.reasoning,
+      });
+
       await supabase.from("introduction_responses").upsert(
         [
           { pair_id: upserted.id, user_id: low, response: "pending" },

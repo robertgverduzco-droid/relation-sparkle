@@ -209,6 +209,23 @@ export async function recordOutcomeSignal(
       { onConflict: "pair_token,signal_kind,dedupe_key", ignoreDuplicates: true },
     );
     if (error) return { recorded: false, reason: error.message };
+
+    // Close the loop: attach this outcome to whatever Athena predicted for
+    // this pair, so divergence is measurable rather than asserted.
+    try {
+      const { linkOutcomeToPrediction } = await import("./intelligence.server");
+      await linkOutcomeToPrediction({
+        pairToken: pairToken(args.userA, args.userB),
+        signalKind: args.kind,
+        valence: spec.valence,
+        strength: spec.strength,
+        reasonCategory: toReasonCategory(args.reason),
+        occurredAt: args.occurredAt ?? new Date().toISOString(),
+      });
+    } catch {
+      // Learning linkage never affects the member path.
+    }
+
     return { recorded: true };
   } catch (e) {
     return { recorded: false, reason: e instanceof Error ? e.message : "error" };
