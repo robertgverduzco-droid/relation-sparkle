@@ -87,8 +87,14 @@ export const askAthena = createServerFn({ method: "POST" })
 
     const facets = (facetRows ?? []) as FacetRow[];
     const topics = (topicRows ?? []) as TopicRow[];
-    const isFoundational =
-      !sessionRow?.completed_at && data.foundational !== false;
+    // Foundational mode ends at the milestone, not at readiness. A returning
+    // member whose foundation already happened is in ordinary continuing
+    // conversation, so no pause/closing opportunity can be recreated.
+    const isFoundational = isFoundationalSession({
+      completedAt: sessionRow?.completed_at ?? null,
+      milestoneAt: (sessionRow as { foundational_milestone_at?: string | null } | null)?.foundational_milestone_at ?? null,
+      clientFoundational: data.foundational,
+    });
 
 
     const profileSummary = summarizeLivingProfile(facets);
