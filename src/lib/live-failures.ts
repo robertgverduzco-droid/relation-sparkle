@@ -16,6 +16,8 @@ export type LiveFailure =
   | "provider-unavailable"
   /** Provider quota or rate limit reached. */
   | "rate-limited"
+  /** The provider account has no credit/quota left — billing, not traffic. */
+  | "quota-exhausted"
   /** The SDP exchange or peer connection failed to establish. */
   | "connection-failed"
   /** The request never reached anything — offline, DNS, blocked. */
@@ -34,6 +36,8 @@ const MESSAGES: Record<LiveFailure, string> = {
     "Your microphone is fine — the live conversation service isn't responding right now. Please try again in a moment, or type here.",
   "rate-limited":
     "Your microphone is fine — we've opened a lot of live conversations in a short time. Give it a minute, or type here.",
+  "quota-exhausted":
+    "Your microphone is fine — live conversation is temporarily unavailable. You can type here, and I'll answer aloud.",
   "connection-failed":
     "Your microphone is fine — the live connection couldn't be established, often a network or firewall restriction. You can try again, or type here.",
   "network-failed":

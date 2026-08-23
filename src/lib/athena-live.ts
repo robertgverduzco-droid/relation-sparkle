@@ -156,7 +156,13 @@ export class AthenaLiveSession {
       if (!answer.ok) {
         const detail = (await answer.text().catch(() => "")).slice(0, 200);
         this.failLive(
-          answer.status === 429 ? "rate-limited" : answer.status >= 500 ? "provider-unavailable" : "connection-failed",
+          answer.status === 429
+            ? detail.includes("insufficient_quota")
+              ? "quota-exhausted"
+              : "rate-limited"
+            : answer.status >= 500
+              ? "provider-unavailable"
+              : "connection-failed",
           `realtime calls ${answer.status}: ${detail}`,
         );
         return;
