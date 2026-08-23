@@ -234,8 +234,7 @@ function lexicalScores(queryTerms: string[]): Float64Array {
       scores[i] += w * idf * ((f * (k1 + 1)) / denom);
     }
   }
-  // Squash to 0..1 so lexical and dense signals are commensurable.
-  for (let i = 0; i < N; i++) scores[i] = scores[i] / (scores[i] + 12);
+  // Raw BM25. Normalisation happens at fusion time.
   return scores;
 }
 
