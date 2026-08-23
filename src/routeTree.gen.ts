@@ -21,6 +21,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
 import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-education'
+import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnostic'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -99,6 +100,11 @@ const ApiRealtimeSessionRoute = ApiRealtimeSessionRouteImport.update({
 const ApiRealtimeEducationRoute = ApiRealtimeEducationRouteImport.update({
   id: '/api/realtime-education',
   path: '/api/realtime-education',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLiveDiagnosticRoute = ApiLiveDiagnosticRouteImport.update({
+  id: '/api/live-diagnostic',
+  path: '/api/live-diagnostic',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUnderstandingRoute =
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -337,6 +346,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/understanding'
+    | '/api/live-diagnostic'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -370,6 +380,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/understanding'
+    | '/api/live-diagnostic'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/understanding'
+    | '/api/live-diagnostic'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -425,6 +437,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiLiveDiagnosticRoute: typeof ApiLiveDiagnosticRoute
   ApiRealtimeEducationRoute: typeof ApiRealtimeEducationRoute
   ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
   ApiSttRoute: typeof ApiSttRoute
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       path: '/api/realtime-education'
       fullPath: '/api/realtime-education'
       preLoaderRoute: typeof ApiRealtimeEducationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/live-diagnostic': {
+      id: '/api/live-diagnostic'
+      path: '/api/live-diagnostic'
+      fullPath: '/api/live-diagnostic'
+      preLoaderRoute: typeof ApiLiveDiagnosticRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/understanding': {
@@ -760,6 +780,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiLiveDiagnosticRoute: ApiLiveDiagnosticRoute,
   ApiRealtimeEducationRoute: ApiRealtimeEducationRoute,
   ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
   ApiSttRoute: ApiSttRoute,
