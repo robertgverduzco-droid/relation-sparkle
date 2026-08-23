@@ -105,7 +105,7 @@ function fakeMic(ok: boolean, name = "NotAllowedError") {
 
 beforeEach(() => {
   stopped.length = 0;
-  (globalThis as Record<string, unknown>).RTCPeerConnection = class {
+  const FakeRTC = class {
     connectionState = "new";
     onconnectionstatechange: (() => void) | null = null;
     ontrack: ((e: unknown) => void) | null = null;
@@ -120,6 +120,8 @@ beforeEach(() => {
     async setRemoteDescription() {}
     close() {}
   };
+  (globalThis as Record<string, unknown>).RTCPeerConnection = FakeRTC;
+  vi.stubGlobal("window", { RTCPeerConnection: FakeRTC });
   (globalThis as Record<string, unknown>).document = {
     createElement: () => ({ autoplay: false, srcObject: null }),
   };
