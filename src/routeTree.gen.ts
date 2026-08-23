@@ -41,6 +41,7 @@ import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/o
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
 import { Route as AuthenticatedIntroductionsIdRouteImport } from './routes/_authenticated/introductions.$id'
+import { Route as AuthenticatedFounderIntelligenceRouteImport } from './routes/_authenticated/founder.intelligence'
 import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -211,6 +212,12 @@ const AuthenticatedIntroductionsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedIntroductionsRoute,
   } as any)
+const AuthenticatedFounderIntelligenceRoute =
+  AuthenticatedFounderIntelligenceRouteImport.update({
+    id: '/intelligence',
+    path: '/intelligence',
+    getParentRoute: () => AuthenticatedFounderRoute,
+  } as any)
 const AuthenticatedConnectionsIdRoute =
   AuthenticatedConnectionsIdRouteImport.update({
     id: '/$id',
@@ -230,7 +237,7 @@ export interface FileRoutesByFullPath {
   '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
-  '/founder': typeof AuthenticatedFounderRoute
+  '/founder': typeof AuthenticatedFounderRouteWithChildren
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/membership': typeof AuthenticatedMembershipRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
@@ -264,7 +272,7 @@ export interface FileRoutesByTo {
   '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
-  '/founder': typeof AuthenticatedFounderRoute
+  '/founder': typeof AuthenticatedFounderRouteWithChildren
   '/home': typeof AuthenticatedHomeRoute
   '/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/membership': typeof AuthenticatedMembershipRoute
@@ -280,6 +288,7 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
@@ -300,7 +309,7 @@ export interface FileRoutesById {
   '/_authenticated/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
-  '/_authenticated/founder': typeof AuthenticatedFounderRoute
+  '/_authenticated/founder': typeof AuthenticatedFounderRouteWithChildren
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/introductions': typeof AuthenticatedIntroductionsRouteWithChildren
   '/_authenticated/membership': typeof AuthenticatedMembershipRoute
@@ -316,6 +325,7 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/_authenticated/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/_authenticated/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
+    | '/founder/intelligence'
     | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/connections/$id'
+    | '/founder/intelligence'
     | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
@@ -421,6 +433,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/connections/$id'
+    | '/_authenticated/founder/intelligence'
     | '/_authenticated/introductions/$id'
     | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
@@ -672,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIntroductionsIdRouteImport
       parentRoute: typeof AuthenticatedIntroductionsRoute
     }
+    '/_authenticated/founder/intelligence': {
+      id: '/_authenticated/founder/intelligence'
+      path: '/intelligence'
+      fullPath: '/founder/intelligence'
+      preLoaderRoute: typeof AuthenticatedFounderIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedFounderRoute
+    }
     '/_authenticated/connections/$id': {
       id: '/_authenticated/connections/$id'
       path: '/$id'
@@ -695,6 +715,17 @@ const AuthenticatedConnectionsRouteWithChildren =
   AuthenticatedConnectionsRoute._addFileChildren(
     AuthenticatedConnectionsRouteChildren,
   )
+
+interface AuthenticatedFounderRouteChildren {
+  AuthenticatedFounderIntelligenceRoute: typeof AuthenticatedFounderIntelligenceRoute
+}
+
+const AuthenticatedFounderRouteChildren: AuthenticatedFounderRouteChildren = {
+  AuthenticatedFounderIntelligenceRoute: AuthenticatedFounderIntelligenceRoute,
+}
+
+const AuthenticatedFounderRouteWithChildren =
+  AuthenticatedFounderRoute._addFileChildren(AuthenticatedFounderRouteChildren)
 
 interface AuthenticatedIntroductionsRouteChildren {
   AuthenticatedIntroductionsIdRoute: typeof AuthenticatedIntroductionsIdRoute
@@ -739,7 +770,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBetaAccountsRoute: typeof AuthenticatedBetaAccountsRoute
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
-  AuthenticatedFounderRoute: typeof AuthenticatedFounderRoute
+  AuthenticatedFounderRoute: typeof AuthenticatedFounderRouteWithChildren
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedIntroductionsRoute: typeof AuthenticatedIntroductionsRouteWithChildren
   AuthenticatedMembershipRoute: typeof AuthenticatedMembershipRoute
@@ -756,7 +787,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBetaAccountsRoute: AuthenticatedBetaAccountsRoute,
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
-  AuthenticatedFounderRoute: AuthenticatedFounderRoute,
+  AuthenticatedFounderRoute: AuthenticatedFounderRouteWithChildren,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedIntroductionsRoute: AuthenticatedIntroductionsRouteWithChildren,
   AuthenticatedMembershipRoute: AuthenticatedMembershipRoute,

@@ -102,6 +102,12 @@ function FounderDialogueScreen() {
         <p className="mt-1 text-xs text-muted-foreground">
           System governance. No member information is reachable here.
         </p>
+        <a
+          href="/founder/intelligence"
+          className="mt-2 inline-block text-xs text-primary underline-offset-4 hover:underline"
+        >
+          What I have learned →
+        </a>
       </header>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6">

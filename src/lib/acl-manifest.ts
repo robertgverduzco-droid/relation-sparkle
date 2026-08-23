@@ -36,6 +36,13 @@ const all = (cols: readonly string[], del = false): TableAcl => ({
 export const AUTHENTICATED_ACL: Record<string, TableAcl> = {
   admin_audit_log: none,
   athena_outcome_signals: none,
+  athena_predictions: none,
+  athena_prediction_outcomes: none,
+  athena_hypotheses: none,
+  athena_hypothesis_evidence: none,
+  athena_hypothesis_reviews: none,
+  athena_experiments: none,
+  athena_intelligence_versions: none,
   athena_self_evaluations: none,
   athena_usage_log: {
     insert: [
