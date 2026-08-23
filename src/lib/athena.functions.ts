@@ -718,46 +718,10 @@ ${transcript}`,
     // writes them, always scoped to the authenticated member.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Interaction style accumulates once per conversation, here — never per
-    // turn, so a single transcript can never be counted repeatedly. It records
-    // how this member converses, nothing about who they are, and it never
-    // influences readiness, ranking, or compatibility.
-    try {
-      const session = observeStyle(data.messages);
-      const { data: styleRow } = await supabaseAdmin
-        .from("member_interaction_style")
-        .select(
-          "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
-        )
-        .eq("user_id", userId)
-        .maybeSingle();
-      const prior: StyleEvidence = styleRow
-        ? {
-            profanityTurns: Number(styleRow.profanity_turns ?? 0),
-            humorTurns: Number(styleRow.humor_turns ?? 0),
-            teasingTurns: Number(styleRow.teasing_turns ?? 0),
-            selfDeprecationTurns: Number(styleRow.self_deprecation_turns ?? 0),
-            directnessTurns: Number(styleRow.directness_turns ?? 0),
-            memberTurns: Number(styleRow.member_turns ?? 0),
-          }
-        : EMPTY_STYLE_EVIDENCE;
-      const merged = mergeStyle(prior, session);
-      await supabaseAdmin.from("member_interaction_style").upsert(
-        {
-          user_id: userId,
-          profanity_turns: merged.profanityTurns,
-          humor_turns: merged.humorTurns,
-          teasing_turns: merged.teasingTurns,
-          self_deprecation_turns: merged.selfDeprecationTurns,
-          directness_turns: merged.directnessTurns,
-          member_turns: merged.memberTurns,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" },
-      );
-    } catch {
-      // Non-fatal: style personalisation degrades to conservative defaults.
-    }
+    // Interaction style is now recorded per turn in askAthena, so it survives
+    // short sessions that never reach reflection. Accumulating the transcript
+    // again here would double-count the same conversation.
+
 
     if (historyInserts.length > 0 || upserts.length > 0) {
       if (historyInserts.length > 0) {
