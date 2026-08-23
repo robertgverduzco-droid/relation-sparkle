@@ -41,6 +41,7 @@ import {
 import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
+import { isFoundationalSession } from "./foundational-milestone";
 
 
 export const askAthena = createServerFn({ method: "POST" })
