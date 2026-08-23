@@ -131,6 +131,12 @@ export type SelfDescription = {
   religion_self_describe: string | null;
   /** Member-stated smoking. Never inferred from photographs or anything else. */
   smoking: string | null;
+  /** Member-stated drinking. Never inferred, never a judgement. */
+  drinking: string | null;
+  /** Chosen interests. Evidence about a person, never a matching key. */
+  hobbies: string[];
+  /** Interests in the member's own words, where no chip fits. */
+  hobbies_note: string | null;
   /** Derived from the member's own stated birth date; null when not supplied. */
   age: number | null;
   /** The member's own stance on children (their statement about themselves). */
@@ -154,6 +160,8 @@ export type MatchPreferences = {
   children_strength: Strength;
   smoking_openness: Openness;
   preferred_smoking: string[];
+  drinking_openness: Openness;
+  preferred_drinking: string[];
 };
 
 export const EMPTY_SELF: SelfDescription = {
@@ -163,6 +171,9 @@ export const EMPTY_SELF: SelfDescription = {
   religions: [],
   religion_self_describe: null,
   smoking: null,
+  drinking: null,
+  hobbies: [],
+  hobbies_note: null,
   age: null,
   wants_children: null,
 };
@@ -183,7 +194,10 @@ export const EMPTY_PREFERENCES: MatchPreferences = {
   children_strength: "preference",
   smoking_openness: "open",
   preferred_smoking: [],
+  drinking_openness: "open",
+  preferred_drinking: [],
 };
+
 
 
 export function labelFor(
