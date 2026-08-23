@@ -308,6 +308,10 @@ Use this memory to:
       timeAcknowledged: shouldAcknowledgeTime,
       ...(notice ? { notice } : {}),
       readiness: { ready: readyNow },
+      // Conversation-lifecycle state, deliberately separate from readiness:
+      // false means this is an ordinary continuing conversation and no
+      // foundational pause/closing experience may appear.
+      foundationalSession: isFoundational,
       readinessShortfallSignature: claim.shortfallSignature,
       // The notice is a reply to a question, never an interruption. It appears
       // only when the member actually asks about readiness or asks to be
