@@ -118,14 +118,18 @@ export class AthenaLiveSession {
         body: offer.sdp ?? "",
       });
       if (!answer.ok) {
-        this.fail("I couldn't open a live conversation just now. Please try again.");
+        this.failInit(
+          "Your microphone is fine — I couldn't open the continuous conversation. Please try again, or type here.",
+        );
         return;
       }
       const sdp = await answer.text();
       if (this.closed) return this.cleanup();
       await pc.setRemoteDescription({ type: "answer", sdp });
     } catch {
-      this.fail("Microphone access is needed for a live conversation.");
+      // The microphone was already granted and open, so this can only be an
+      // initialization failure. It is never reported as a permission problem.
+      this.failInit();
     }
   }
 
