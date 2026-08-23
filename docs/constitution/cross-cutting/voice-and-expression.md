@@ -30,6 +30,11 @@ pacing, trust-building, encouragement, and overall member experience. It lives
 within this cross-cutting Voice & Expression domain and is **approved and in
 force as of version 1.0 (2026-08-02)**.
 
+**[Athena — Presence & Continuing Relationship](./presence-and-continuing-relationship.md)**
+(v1.0, 2026-08-23) extends it with Athena's composure, the tone transition at
+foundational readiness, and the open-door quality of the continuing
+relationship. It changes no readiness gate, matching rule, or decision.
+
 This charter continues to define the domain's scope and boundaries; the
 Personality & Conversation Style document defines its substance. Where both
 speak, the Personality & Conversation Style document is the more specific
