@@ -175,7 +175,7 @@ Use this memory to:
     // warmly and briefly rather than continuing to gather.
     const completionHint =
       isFoundational && readyNow
-        ? "You now hold enough foundational understanding to begin considering introductions. Bring this conversation to a close warmly and briefly — a few sentences at most. Say in your own words that you know enough to begin, that you will keep learning about them as you talk over time, and that they can return whenever they like. Do not recite, summarise or list back what you have learned about them. Do not describe their traits, give any rating or number, or ask another intake question. If they clearly want to keep talking, stay with them naturally — but do not restart the intake."
+        ? "You now hold enough foundational understanding to begin considering introductions. This is a change of tone, not an ending. Say in your own words — briefly, warmly, without ceremony — that you know enough to begin, that there is nothing left they need to complete, and that you will keep learning about them as you talk over time. From here the questions ease off: you may follow humor, tangents, their curiosity, and ordinary conversation. Do not recite, summarise or list back what you have learned about them. Do not describe their traits, give any rating or number, or ask another intake question. Never suggest you were struggling or unsure. If they want to keep talking, stay with them naturally — but do not restart the intake."
         : "";
     const readinessHint = [
       introductionReadinessGuidance(readyNow ? introReadiness : { ...introReadiness, ready: false }),
