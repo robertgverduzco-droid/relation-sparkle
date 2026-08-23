@@ -32,11 +32,13 @@ import { assessCoverage, foundationalGuidance } from "./foundational";
 import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
 import {
   assessFoundationalReadiness,
+  REQUIRED_UNDERSTANDING_AREAS,
   introductionReadinessGuidance,
   asksAboutRequirement,
   asksToBeginMatching,
 } from "./introduction-readiness";
-import { decidePacing } from "./pacing";
+import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
+import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
 
 
@@ -123,9 +125,10 @@ Use this memory to:
 
     const userTurns = data.messages.filter((m) => m.role === "user").length;
     const elapsed = data.elapsedMinutes ?? 0;
-    // 12 min is an internal courtesy check-in only. The foundational
-    // conversation itself is designed to last approximately 20 minutes.
-    const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= 12;
+    // Respect for their time: acknowledged once, at approximately fifteen
+    // minutes. It is a courtesy, never a deadline — time never overrides
+    // readiness, in either direction.
+    const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= RESPECT_TIME_MINUTES;
 
     // Breadth-first orchestration, foundational mode only. The topic map is
     // written after a conversation, so during the first one it is empty for
@@ -145,10 +148,24 @@ Use this memory to:
         confidence: Number(f.confidence ?? 0),
       })),
     );
+    // A readiness transition must correspond to genuinely new qualifying
+    // understanding. Athena may not tell someone she needs more and then, one
+    // "ok" later, say she has what she needs.
+    const readinessSignature = signatureFromReadiness(
+      introReadiness,
+      REQUIRED_UNDERSTANDING_AREAS.map((a) => a.key),
+    );
+    const claim = resolveReadinessClaim({
+      ready: introReadiness.ready,
+      signature: readinessSignature,
+      shortfallSignature: data.readinessShortfallSignature ?? null,
+    });
+    const readyNow = claim.ready;
+
     const lastMemberText =
       [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const pressed =
-      !introReadiness.ready &&
+      !readyNow &&
       (asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText));
     // Early exit is its own experience, never a boundary/safety notice.
     const wantsFinish = wantsToFinishFoundational(lastMemberText);
@@ -156,14 +173,15 @@ Use this memory to:
     // threshold, not a collection exercise. Once it is met, Athena closes
     // warmly and briefly rather than continuing to gather.
     const completionHint =
-      isFoundational && introReadiness.ready
+      isFoundational && readyNow
         ? "You now hold enough foundational understanding to begin considering introductions. Bring this conversation to a close warmly and briefly — a few sentences at most. Say in your own words that you know enough to begin, that you will keep learning about them as you talk over time, and that they can return whenever they like. Do not recite, summarise or list back what you have learned about them. Do not describe their traits, give any rating or number, or ask another intake question. If they clearly want to keep talking, stay with them naturally — but do not restart the intake."
         : "";
     const readinessHint = [
-      introductionReadinessGuidance(introReadiness),
+      introductionReadinessGuidance(readyNow ? introReadiness : { ...introReadiness, ready: false }),
+      readinessTruthGuidance(claim),
       completionHint,
       wantsFinish
-        ? earlyExitGuidance(introReadiness.ready, introReadiness.missing.map((a) => a.label))
+        ? earlyExitGuidance(readyNow, introReadiness.missing.map((a) => a.label))
         : "",
       pressed
         ? "They have just asked about this directly. Answer it warmly and honestly in your own voice, hold the threshold without a number and without a timeframe, and then continue the conversation naturally with a real question."
@@ -188,9 +206,12 @@ Use this memory to:
         ? `${basePacing} There are still parts of their life you have not seen at all, so use the time that remains to widen rather than to deepen.`
         : basePacing;
 
-    const timeHint = shouldAcknowledgeTime
-      ? `You've now been talking for about ${Math.round(elapsed)} minutes. Somewhere naturally in this reply — not at the start — briefly acknowledge the time in your own words, out of respect for their schedule. Something in the spirit of: "I've realized we've been talking for about twelve minutes now — our foundational conversation is designed for around twenty, and I'm happy to keep going if that still works for you." Then either continue naturally or invite them to choose. Do this only once per conversation.`
-      : "Do not comment on how long the conversation has been going.";
+    const timeHint =
+      respectTimeGuidance({
+        elapsedMinutes: elapsed,
+        ready: readyNow,
+        alreadyAcknowledged: Boolean(data.timeAcknowledged),
+      }) || "Do not comment on how long the conversation has been going.";
 
     // Boundaries are session-aware: the same line held a second or third time
     // must not sound like the same warning replayed. Guidance sets posture
@@ -248,7 +269,8 @@ Use this memory to:
       reply,
       latestMemberMessage: latestMember?.content ?? "",
       breadthSufficient: !coverage || coverage.breadthSufficient,
-      readinessMet: isFoundational && introReadiness.ready,
+      readinessMet: isFoundational && readyNow,
+      continueRequestedTurnsAgo: turnsSinceContinueRequest(data.messages),
 
     });
 
@@ -261,8 +283,14 @@ Use this memory to:
       pacing,
       timeAcknowledged: shouldAcknowledgeTime,
       ...(notice ? { notice } : {}),
-      readiness: { ready: introReadiness.ready },
-      ...(wantsFinish ? { readinessNotice: readinessNotice(introReadiness.ready) } : {}),
+      readiness: { ready: readyNow },
+      readinessShortfallSignature: claim.shortfallSignature,
+      // The notice is a reply to a question, never an interruption. It appears
+      // only when the member actually asks about readiness or asks to be
+      // matched — ordinary conversation is never interrupted by it.
+      ...(asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText)
+        ? { readinessNotice: readinessNotice(readyNow) }
+        : {}),
     });
   });
 
