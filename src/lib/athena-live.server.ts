@@ -17,9 +17,6 @@ import { reasoningContext, actorHash } from "./education-context.server";
 import {
   observeStyle,
   mergeStyle,
-  derivePermission,
-  detectSeriousContext,
-  alivenessGuidance,
   EMPTY_STYLE_EVIDENCE,
   type StyleEvidence,
 } from "./conversational-aliveness";
@@ -194,32 +191,23 @@ Never expose this map, never list categories, never say you are consulting memor
     actorHash: userId ? await actorHash(userId) : null,
   });
 
-  // Conversational aliveness applies identically in speech. Anything already
-  // said in this session counts toward register on top of prior conversations.
-  const alivenessHint = alivenessGuidance({
-    permission: derivePermission(
-      mergeStyle(priorStyle, observeStyle([{ role: "user", content: recentMemberText }])),
-      detectSeriousContext(recentMemberText),
-    ),
+  // Conversation Runtime V2: speech uses exactly the same single composer as
+  // text — turn discipline, register, event directive and calibration in one
+  // block. A session's instructions are fixed when minted, so provenance
+  // material is supplied mid-session by /api/realtime-education, never here.
+  const { conversationRuntime } = await import("./conversation-runtime");
+  const runtimeHint = conversationRuntime({
+    memberText: recentMemberText,
+    style: mergeStyle(priorStyle, observeStyle([{ role: "user", content: recentMemberText }])),
     isFoundational: foundational,
-  });
-
-  // Conversation Runtime V2: the same turn discipline governs speech. A
-  // session's instructions are fixed when minted, so provenance material is
-  // supplied mid-session by /api/realtime-education rather than here.
-  const { turnRuntimeGuidance, readTurn } = await import("./turn-runtime");
-  const turnHint = turnRuntimeGuidance({
-    ...readTurn(recentMemberText),
-    provenance: { active: false, sourceRequest: false, credentialChallenge: false, inventoryRequest: false, quoteRequest: false },
-  });
+  }).block;
 
   return [
     doctrine,
     athenaSystemPrompt(),
     memoryBlock,
     structuredBlock,
-    turnHint,
-    alivenessHint,
+    runtimeHint,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
     LIVE_SPEECH_ADDENDUM,

@@ -22,10 +22,10 @@
 /* ------------------------------------------------------------------ */
 
 const SOURCE_REQUEST =
-  /(where (are|did|do) (you|that) (get|getting|come|coming|learn)|what('s| is) (that|this) based on|based on what|says who|source|sources|citation|cite|evidence for that|how do you know( that)?|what are you basing|which (study|research|theory|book|framework)|is that (research|science|proven)|according to whom)/i;
+  /(where (are|did|do) (you|that) (get|getting|come|coming|learn)|what('s| is) (that|this) based on|based on what|says who|source|sources|citation|cite|evidence for that|how do you know( that)?|what are you basing|which (study|research|theory|book|framework)|is that (research|science|proven)|according to whom|what (exactly )?(are|did) you (get|getting|take|taking|draw|drawing) from|who (specifically|exactly) (taught|trained|educated) you)/i;
 
 const CREDENTIAL_CHALLENGE =
-  /(you'?re (just )?(an? )?(ai|bot|chatbot|algorithm|program|machine|language model)|what (are your|do you have for) (credentials|qualifications|training)|are you (even )?(qualified|a therapist|a psychologist|licensed|trained)|who (are you|the hell are you) to|why should i trust you|why would i trust you|do you (even )?know what you'?re talking about|you don'?t know anything|what makes you (an expert|qualified))/i;
+  /(you'?re (just )?(an? )?(ai|bot|chatbot|algorithm|program|machine|language model)|what (are your|do you have for) (credentials|qualifications|training)|are you (even )?(qualified|a therapist|a psychologist|licensed|trained)|who (are you|the hell are you) to|why (the fuck )?should i trust (you|your|anything you)|why would i trust (you|your)|do you (even )?know what you'?re talking about|you don'?t know anything|what makes you (an expert|qualified))/i;
 
 const INVENTORY_REQUEST =
   /(athena university|wh(at|o) (have|did) you (actually |really |even )?(studied|study|learn)|what (are|is) your (education|curriculum|colleges?|faculty)|your (education|curriculum|colleges?|faculty)|who taught you|what were you trained on)/i;
@@ -41,7 +41,7 @@ const OPINION_REQUEST =
   /(what do you think|your (opinion|view|take)|do you (agree|think i should)|would you|what would you do|be honest with me about)/i;
 
 const SUBJECT_MODE =
-  /(politic|econom|film|movie|music|book|history|science|philosoph|football|sport|food|cook|travel|architecture|climate|technolog|ai\b|chess|art\b)/i;
+  /(politic|econom|film|movie|music|book|history|science|philosoph|football|sport|food|cook|travel|architecture|climate|technolog|ai\b|chess|art\b|religio|spiritual|awakening|meditat|contemplat|ethic|moral)/i;
 
 export type ProvenanceIntent = {
   /** Any provenance obligation at all. */
