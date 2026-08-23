@@ -490,6 +490,20 @@ export function structuredContextBlock(self: SelfDescription, prefs: MatchPrefer
   } else if (prefs.preferred_smoking.length > 0) {
     lines.push(`- Preference about a partner and smoking: ${prefs.preferred_smoking.map((v) => labelFor(v, SMOKING_OPTIONS)).join(", ")}.`);
   }
+  if (self.drinking) {
+    lines.push(`- On drinking, they said about themselves: ${labelFor(self.drinking, DRINKING_OPTIONS)}.`);
+  }
+  if (prefs.drinking_openness === "requirement" && (prefs.preferred_drinking ?? []).length > 0) {
+    lines.push(`- Stated non-negotiable about a partner and drinking: ${prefs.preferred_drinking.map((v) => labelFor(v, DRINKING_OPTIONS)).join(", ")}.`);
+  } else if ((prefs.preferred_drinking ?? []).length > 0) {
+    lines.push(`- Preference about a partner and drinking: ${prefs.preferred_drinking.map((v) => labelFor(v, DRINKING_OPTIONS)).join(", ")}.`);
+  }
+  if ((self.hobbies ?? []).length > 0) {
+    lines.push(`- Interests they chose for themselves: ${self.hobbies.map((v) => labelFor(v, HOBBY_OPTIONS)).join(", ")}. Read these as evidence about the person, never as things to match on.`);
+  }
+  if (self.hobbies_note && self.hobbies_note.trim()) {
+    lines.push(`- Interests in their own words: ${self.hobbies_note.trim()}`);
+  }
   if (prefs.age_strength === "requirement" && (prefs.age_min != null || prefs.age_max != null)) {
     lines.push(`- They marked their age range a genuine non-negotiable: ${prefs.age_min ?? "any"} to ${prefs.age_max ?? "any"}.`);
   }
