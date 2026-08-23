@@ -70,6 +70,9 @@ export async function buildLiveInstructions(
   let readinessHint = "";
   let structuredBlock = "";
   let foundational = true;
+  // Same cumulative, account-scoped register the text path uses: spoken mode
+  // is a transport change, never a personality change.
+  let priorStyle: StyleEvidence = EMPTY_STYLE_EVIDENCE;
 
 
   if (url && key) {
