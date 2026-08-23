@@ -121,6 +121,27 @@ export async function buildLiveInstructions(
         // Structured context is an enhancement, never a precondition.
       }
 
+      try {
+        const { data: styleRow } = await supabase
+          .from("member_interaction_style")
+          .select(
+            "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
+          )
+          .maybeSingle();
+        if (styleRow) {
+          priorStyle = {
+            profanityTurns: Number(styleRow.profanity_turns ?? 0),
+            humorTurns: Number(styleRow.humor_turns ?? 0),
+            teasingTurns: Number(styleRow.teasing_turns ?? 0),
+            selfDeprecationTurns: Number(styleRow.self_deprecation_turns ?? 0),
+            directnessTurns: Number(styleRow.directness_turns ?? 0),
+            memberTurns: Number(styleRow.member_turns ?? 0),
+          };
+        }
+      } catch {
+        // Conservative default register stands.
+      }
+
       const facets = (facetRows ?? []) as FacetRow[];
       const topics = (topicRows ?? []) as TopicRow[];
       const topicSummary = summarizeTopicMap(topics);
