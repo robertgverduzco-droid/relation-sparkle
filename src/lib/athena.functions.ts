@@ -42,6 +42,16 @@ import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_T
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
+import {
+  observeStyle,
+  mergeStyle,
+  derivePermission,
+  detectSeriousContext,
+  alivenessGuidance,
+  ANALYTICAL_REGISTER_GUARD,
+  EMPTY_STYLE_EVIDENCE,
+  type StyleEvidence,
+} from "./conversational-aliveness";
 
 
 export const askAthena = createServerFn({ method: "POST" })
