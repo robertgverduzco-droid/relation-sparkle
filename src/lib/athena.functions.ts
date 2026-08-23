@@ -475,6 +475,8 @@ export const reflectAthena = createServerFn({ method: "POST" })
 
 ${reflectionDoctrine}
 
+${ANALYTICAL_REGISTER_GUARD}
+
 Return two things:
 
 1) FACETS — for any facet where the conversation offers genuine, non-speculative signal:
