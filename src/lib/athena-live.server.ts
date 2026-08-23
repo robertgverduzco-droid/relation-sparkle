@@ -12,7 +12,7 @@ import {
   assessFoundationalReadiness,
   introductionReadinessGuidance,
 } from "./introduction-readiness";
-import { runtimeDoctrine } from "./athena-doctrine.server";
+import { reasoningContext, actorHash } from "./education-context.server";
 import {
   athenaSystemPrompt,
   summarizeLivingProfile,
@@ -46,7 +46,11 @@ export type LiveSessionInstructions = { instructions: string };
  * member. The member's own access token is used so RLS decides what may be
  * read — the realtime session never sees another member's material.
  */
-export async function buildLiveInstructions(accessToken: string): Promise<string> {
+export async function buildLiveInstructions(
+  accessToken: string,
+  recentMemberText = "",
+  userId?: string,
+): Promise<string> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
 
@@ -140,8 +144,18 @@ Never expose this map, never list categories, never say you are consulting memor
     }
   }
 
+  // Spoken mode is a transport change, not a doctrine change — and no longer a
+  // depth change either: the same educational retrieval runs here, on a
+  // tighter budget suited to speech.
+  const { block: doctrine } = await reasoningContext({
+    mode: "voice",
+    surface: "liveSession",
+    memberText: recentMemberText,
+    actorHash: userId ? await actorHash(userId) : null,
+  });
+
   return [
-    runtimeDoctrine("conversation"),
+    doctrine,
     athenaSystemPrompt(),
     memoryBlock,
     structuredBlock,
