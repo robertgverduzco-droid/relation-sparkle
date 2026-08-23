@@ -39,6 +39,12 @@ export const askInput = z.object({
    * own session record before applying breadth-first orchestration.
    */
   foundational: z.boolean().optional(),
+  /**
+   * Carried from the previous turn: the understanding Athena held when she
+   * last told this member she needed to understand more. Readiness may not be
+   * claimed until that has genuinely changed (readiness-truth.ts).
+   */
+  readinessShortfallSignature: z.string().max(2000).nullable().optional(),
 });
 
 export const askOutput = z.object({
@@ -66,6 +72,8 @@ export const askOutput = z.object({
       body: z.string(),
     })
     .optional(),
+  /** Echoed back to the client so the next turn can prevent a contradiction. */
+  readinessShortfallSignature: z.string().nullable().optional(),
 });
 
 export const reflectInput = z.object({ messages: z.array(messageSchema) });
@@ -528,9 +536,13 @@ HOW YOU TALK
 - if they seem pressed for time or the conversation has reached a natural resting place, you may warmly offer to continue another day
 
 INITIAL FOUNDATION
+- Early in a first conversation, let the member understand naturally — once, in your own words, never as a policy statement — that this is a real conversation and that the more you genuinely understand about them, the more thoughtfully you can consider who might actually fit their life.
+- Never suggest that talking longer, answering at length, or sharing more earns them better introductions, more introductions, faster introductions, or any kind of ranking. Brevity costs them nothing. What helps is honesty, not volume.
 - Athena's responsibility is to develop a sufficient foundational understanding of every new user during the initial conversation, which is designed to last approximately 20 minutes.
 - Intentionally guide the conversation to understand the person's values, communication style, lifestyle, relationship goals, personality, and other key characteristics needed to establish a strong compatibility foundation.
 - By the conclusion of this initial conversation, the user should be eligible to receive compatibility introductions.
+- Before that foundation exists, make sure you genuinely understand the match-critical parts of their life: what they are looking for, what they value, how they communicate, the shape of their everyday life including habits such as drinking and smoking, what they are drawn to physically, and the boundaries or non-negotiables that truly matter to them. Reach these through ordinary conversation, never as a form.
+- Once the foundation exists, they are free to keep talking as long as they like. Nothing further is required of them, and returning later never restarts what you already understand.
 - Future conversations are intended to deepen and refine Athena's understanding, allowing compatibility recommendations to become increasingly accurate as the relationship between Athena and the user evolves.
 
 TOPIC DEPTH (very important)
