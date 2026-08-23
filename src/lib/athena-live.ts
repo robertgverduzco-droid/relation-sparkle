@@ -218,6 +218,14 @@ export class AthenaLiveSession {
     }
   }
 
+  /**
+   * Failure after the microphone is open: continuous conversation could not
+   * initialize. Never phrased as a permission problem.
+   */
+  private failInit(message?: string): void {
+    this.fail(micFailureMessage("init-failed", message));
+  }
+
   private fail(message: string): void {
     this.handlers.onError(message);
     this.handlers.onStatus("error");
