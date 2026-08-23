@@ -38,6 +38,20 @@ export class AthenaLiveSession {
 
   async start(authHeaders: Record<string, string>, priorTurns: LiveTurn[] = []): Promise<void> {
     this.handlers.onStatus("connecting");
+
+    // Audio comes first, so a permission problem is never confused with an
+    // initialization problem. Once the microphone is open, nothing below may
+    // ask the member to enable microphone access.
+    const mic = await acquireMicrophone({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    if (!mic.ok) {
+      this.fail(micFailureMessage(mic.reason));
+      return;
+    }
+    this.stream = mic.stream;
+    if (this.closed) return this.cleanup();
+
     try {
       const res = await fetch("/api/realtime-session", {
         method: "POST",
@@ -45,18 +59,14 @@ export class AthenaLiveSession {
         body: "{}",
       });
       if (!res.ok) {
-        this.fail(
+        this.failInit(
           res.status === 503
-            ? "Live conversation isn't available right now. You can still speak or type here."
-            : "I couldn't open a live conversation just now. Please try again.",
+            ? "Your microphone is fine — continuous conversation isn't available right now. You can still speak a message or type here."
+            : "Your microphone is fine — I couldn't open the continuous conversation. Please try again, or type here.",
         );
         return;
       }
       const { clientSecret } = (await res.json()) as { clientSecret: string };
-
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
       if (this.closed) return this.cleanup();
 
       const pc = new RTCPeerConnection();
