@@ -14,13 +14,13 @@ export const getStructuredProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: prefs }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking")
+        .select("height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking, drinking, hobbies, hobbies_note")
         .eq("id", userId)
         .maybeSingle(),
       supabase
         .from("user_preferences")
         .select(
-          "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking",
+          "ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking, drinking_openness, preferred_drinking",
         )
         .eq("user_id", userId)
         .maybeSingle(),
@@ -48,6 +48,9 @@ export const saveStructuredProfile = createServerFn({ method: "POST" })
           religions: data.self.religions ?? [],
           religion_self_describe: data.self.religion_self_describe?.trim() || null,
           smoking: data.self.smoking ?? null,
+          drinking: data.self.drinking ?? null,
+          hobbies: data.self.hobbies ?? [],
+          hobbies_note: data.self.hobbies_note?.trim() || null,
         })
         .eq("id", userId);
       if (error) throw new Error(error.message);
@@ -77,6 +80,11 @@ export const saveStructuredProfile = createServerFn({ method: "POST" })
             !p.smoking_openness || p.smoking_openness === "open" || p.smoking_openness === "discuss_with_athena"
               ? []
               : (p.preferred_smoking ?? []),
+          drinking_openness: p.drinking_openness ?? "open",
+          preferred_drinking:
+            !p.drinking_openness || p.drinking_openness === "open" || p.drinking_openness === "discuss_with_athena"
+              ? []
+              : (p.preferred_drinking ?? []),
         },
         { onConflict: "user_id" },
       );

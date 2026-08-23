@@ -16,6 +16,9 @@ export const selfDescriptionInput = z.object({
   religions: z.array(z.string().max(40)).max(12).optional(),
   religion_self_describe: z.string().max(160).nullable().optional(),
   smoking: z.enum(["no", "occasionally", "yes", "prefer_not_to_say"]).nullable().optional(),
+  drinking: z.enum(["no", "rarely", "socially", "regularly", "prefer_not_to_say"]).nullable().optional(),
+  hobbies: z.array(z.string().max(40)).max(40).optional(),
+  hobbies_note: z.string().max(600).nullable().optional(),
 });
 
 export const matchPreferencesInput = z.object({
@@ -33,6 +36,8 @@ export const matchPreferencesInput = z.object({
   children_strength: strength.optional(),
   smoking_openness: openness.optional(),
   preferred_smoking: z.array(z.enum(["no", "occasionally", "yes"])).max(3).optional(),
+  drinking_openness: openness.optional(),
+  preferred_drinking: z.array(z.enum(["no", "rarely", "socially", "regularly"])).max(4).optional(),
 });
 
 

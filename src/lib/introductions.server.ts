@@ -61,6 +61,9 @@ export type ProfileRow = {
   religions?: string[] | null;
   religion_self_describe?: string | null;
   smoking?: string | null;
+  drinking?: string | null;
+  hobbies?: string[] | null;
+  hobbies_note?: string | null;
   // Location participates in feasibility only. Coordinates are read here and
   // never returned to any client surface.
   region?: string | null;
@@ -70,9 +73,9 @@ export type ProfileRow = {
 };
 
 const PROFILE_COLUMNS =
-  "id, display_name, birth_date, gender, city, region, country, location_lat, location_lng, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking";
+  "id, display_name, birth_date, gender, city, region, country, location_lat, location_lng, is_paused, is_synthetic, height_cm, ethnicities, ethnicity_self_describe, religions, religion_self_describe, smoking, drinking, hobbies, hobbies_note";
 const PREFS_COLUMNS =
-  "user_id, seeking_genders, age_min, age_max, max_distance_km, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking";
+  "user_id, seeking_genders, age_min, age_max, max_distance_km, relationship_intent, wants_children, ethnicity_openness, preferred_ethnicities, religion_openness, preferred_religions, height_min_cm, height_max_cm, height_strength, additional_notes, age_strength, children_strength, smoking_openness, preferred_smoking, drinking_openness, preferred_drinking";
 
 /** Structured party view used by the tri-state constraint evaluation. */
 export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
@@ -84,6 +87,9 @@ export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
     religions: profile.religions ?? [],
     religion_self_describe: profile.religion_self_describe ?? null,
     smoking: profile.smoking ?? null,
+    drinking: profile.drinking ?? null,
+    hobbies: profile.hobbies ?? [],
+    hobbies_note: profile.hobbies_note ?? null,
     age: ageFromDob(profile.birth_date ?? null),
     wants_children: prefs?.wants_children ?? null,
   };
@@ -104,6 +110,8 @@ export function structuredParty(profile: ProfileRow, prefs: PrefsRow | null) {
     children_strength: (prefs?.children_strength as MatchPreferences["children_strength"]) ?? "preference",
     smoking_openness: (prefs?.smoking_openness as MatchPreferences["smoking_openness"]) ?? "open",
     preferred_smoking: prefs?.preferred_smoking ?? [],
+    drinking_openness: (prefs?.drinking_openness as MatchPreferences["drinking_openness"]) ?? "open",
+    preferred_drinking: prefs?.preferred_drinking ?? [],
   };
   return { id: profile.id, self, prefs: p };
 }
@@ -190,6 +198,8 @@ export type PrefsRow = {
   children_strength?: string | null;
   smoking_openness?: string | null;
   preferred_smoking?: string[] | null;
+  drinking_openness?: string | null;
+  preferred_drinking?: string[] | null;
 };
 
 
