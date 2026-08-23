@@ -199,6 +199,7 @@ export const AUTHENTICATED_ACL: Record<string, TableAcl> = {
     update: ["resolution_note", "resolved_at", "resolved_by", "status"],
     delete: false,
   },
+  member_interaction_style: none,
   restore_reconciliations: none,
   safety_flags: none,
   security_kill_switches: none,

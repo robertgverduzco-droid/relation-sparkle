@@ -29,6 +29,7 @@ const MEMBER_KEYED_TABLES: Array<[table: string, columns: string[]]> = [
   ["understanding_facets", ["user_id"]],
   ["facet_history", ["user_id"]],
   ["topic_map", ["user_id"]],
+  ["member_interaction_style", ["user_id"]],
   ["interview_sessions", ["user_id"]],
   ["athena_self_evaluations", ["user_id"]],
   ["athena_usage_log", ["user_id"]],

@@ -15,6 +15,15 @@ import {
 } from "./introduction-readiness";
 import { reasoningContext, actorHash } from "./education-context.server";
 import {
+  observeStyle,
+  mergeStyle,
+  derivePermission,
+  detectSeriousContext,
+  alivenessGuidance,
+  EMPTY_STYLE_EVIDENCE,
+  type StyleEvidence,
+} from "./conversational-aliveness";
+import {
   athenaSystemPrompt,
   summarizeLivingProfile,
   summarizeTopicMap,
@@ -61,6 +70,9 @@ export async function buildLiveInstructions(
   let readinessHint = "";
   let structuredBlock = "";
   let foundational = true;
+  // Same cumulative, account-scoped register the text path uses: spoken mode
+  // is a transport change, never a personality change.
+  let priorStyle: StyleEvidence = EMPTY_STYLE_EVIDENCE;
 
 
   if (url && key) {
@@ -107,6 +119,27 @@ export async function buildLiveInstructions(
         );
       } catch {
         // Structured context is an enhancement, never a precondition.
+      }
+
+      try {
+        const { data: styleRow } = await supabase
+          .from("member_interaction_style")
+          .select(
+            "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
+          )
+          .maybeSingle();
+        if (styleRow) {
+          priorStyle = {
+            profanityTurns: Number(styleRow.profanity_turns ?? 0),
+            humorTurns: Number(styleRow.humor_turns ?? 0),
+            teasingTurns: Number(styleRow.teasing_turns ?? 0),
+            selfDeprecationTurns: Number(styleRow.self_deprecation_turns ?? 0),
+            directnessTurns: Number(styleRow.directness_turns ?? 0),
+            memberTurns: Number(styleRow.member_turns ?? 0),
+          };
+        }
+      } catch {
+        // Conservative default register stands.
       }
 
       const facets = (facetRows ?? []) as FacetRow[];
@@ -161,11 +194,22 @@ Never expose this map, never list categories, never say you are consulting memor
     actorHash: userId ? await actorHash(userId) : null,
   });
 
+  // Conversational aliveness applies identically in speech. Anything already
+  // said in this session counts toward register on top of prior conversations.
+  const alivenessHint = alivenessGuidance({
+    permission: derivePermission(
+      mergeStyle(priorStyle, observeStyle([{ role: "user", content: recentMemberText }])),
+      detectSeriousContext(recentMemberText),
+    ),
+    isFoundational: foundational,
+  });
+
   return [
     doctrine,
     athenaSystemPrompt(),
     memoryBlock,
     structuredBlock,
+    alivenessHint,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
     LIVE_SPEECH_ADDENDUM,

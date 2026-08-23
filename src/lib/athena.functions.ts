@@ -42,6 +42,16 @@ import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_T
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
+import {
+  observeStyle,
+  mergeStyle,
+  derivePermission,
+  detectSeriousContext,
+  alivenessGuidance,
+  ANALYTICAL_REGISTER_GUARD,
+  EMPTY_STYLE_EVIDENCE,
+  type StyleEvidence,
+} from "./conversational-aliveness";
 
 
 export const askAthena = createServerFn({ method: "POST" })
@@ -280,6 +290,38 @@ Use this memory to:
       seed: userTurns + Math.trunc(elapsed) + context.userId.charCodeAt(0),
     });
 
+    // Conversational Aliveness: register is earned per member and cumulative
+    // across conversations, never reset to zero at the start of a session.
+    // Expression only — it cannot loosen boundaries, epistemics or safety.
+    let priorStyle: StyleEvidence = EMPTY_STYLE_EVIDENCE;
+    try {
+      const { data: styleRow } = await supabase
+        .from("member_interaction_style")
+        .select(
+          "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
+        )
+        .maybeSingle();
+      if (styleRow) {
+        priorStyle = {
+          profanityTurns: Number(styleRow.profanity_turns ?? 0),
+          humorTurns: Number(styleRow.humor_turns ?? 0),
+          teasingTurns: Number(styleRow.teasing_turns ?? 0),
+          selfDeprecationTurns: Number(styleRow.self_deprecation_turns ?? 0),
+          directnessTurns: Number(styleRow.directness_turns ?? 0),
+          memberTurns: Number(styleRow.member_turns ?? 0),
+        };
+      }
+    } catch {
+      // Style personalisation is an enhancement; conservative default stands.
+    }
+    // Serious material, or any live boundary situation, overrides accumulated
+    // playfulness for this turn regardless of rapport.
+    const seriousMoment = detectSeriousContext(lastMemberText) || Boolean(boundary);
+    const alivenessHint = alivenessGuidance({
+      permission: derivePermission(mergeStyle(priorStyle, observeStyle(data.messages)), seriousMoment),
+      isFoundational,
+    });
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -288,7 +330,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, presenceHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, presenceHint, alivenessHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
@@ -432,6 +474,8 @@ export const reflectAthena = createServerFn({ method: "POST" })
       prompt: `You are Athena, quietly refining your understanding of this person from the conversation so far.
 
 ${reflectionDoctrine}
+
+${ANALYTICAL_REGISTER_GUARD}
 
 Return two things:
 
@@ -578,6 +622,48 @@ ${transcript}`,
     // read their facets and topic map; only this server-side distillation
     // writes them, always scoped to the authenticated member.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Interaction style accumulates once per conversation, here — never per
+    // turn, so a single transcript can never be counted repeatedly. It records
+    // how this member converses, nothing about who they are, and it never
+    // influences readiness, ranking, or compatibility.
+    try {
+      const session = observeStyle(data.messages);
+      const { data: styleRow } = await supabaseAdmin
+        .from("member_interaction_style")
+        .select(
+          "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
+        )
+        .eq("user_id", userId)
+        .maybeSingle();
+      const prior: StyleEvidence = styleRow
+        ? {
+            profanityTurns: Number(styleRow.profanity_turns ?? 0),
+            humorTurns: Number(styleRow.humor_turns ?? 0),
+            teasingTurns: Number(styleRow.teasing_turns ?? 0),
+            selfDeprecationTurns: Number(styleRow.self_deprecation_turns ?? 0),
+            directnessTurns: Number(styleRow.directness_turns ?? 0),
+            memberTurns: Number(styleRow.member_turns ?? 0),
+          }
+        : EMPTY_STYLE_EVIDENCE;
+      const merged = mergeStyle(prior, session);
+      await supabaseAdmin.from("member_interaction_style").upsert(
+        {
+          user_id: userId,
+          profanity_turns: merged.profanityTurns,
+          humor_turns: merged.humorTurns,
+          teasing_turns: merged.teasingTurns,
+          self_deprecation_turns: merged.selfDeprecationTurns,
+          directness_turns: merged.directnessTurns,
+          member_turns: merged.memberTurns,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+    } catch {
+      // Non-fatal: style personalisation degrades to conservative defaults.
+    }
+
     if (historyInserts.length > 0 || upserts.length > 0) {
       if (historyInserts.length > 0) {
         await supabaseAdmin.from("facet_history").insert(historyInserts);

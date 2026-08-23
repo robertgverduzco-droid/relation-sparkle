@@ -846,6 +846,39 @@ export type Database = {
         }
         Relationships: []
       }
+      member_interaction_style: {
+        Row: {
+          directness_turns: number
+          humor_turns: number
+          member_turns: number
+          profanity_turns: number
+          self_deprecation_turns: number
+          teasing_turns: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          directness_turns?: number
+          humor_turns?: number
+          member_turns?: number
+          profanity_turns?: number
+          self_deprecation_turns?: number
+          teasing_turns?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          directness_turns?: number
+          humor_turns?: number
+          member_turns?: number
+          profanity_turns?: number
+          self_deprecation_turns?: number
+          teasing_turns?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       member_readiness: {
         Row: {
           created_at: string
