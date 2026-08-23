@@ -4,6 +4,7 @@
 // facets; nothing is returned to the caller other than the presentation
 // Athena chooses for them.
 
+import { ANALYTICAL_REGISTER_GUARD } from "./conversational-aliveness";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -329,6 +330,8 @@ export async function reasonPair(args: {
     prompt: `You are Athena. Consider whether these two people might be worth introducing.
 
 ${doctrine}
+
+${ANALYTICAL_REGISTER_GUARD}
 
 HOW YOU DECIDE (governed by L6c Matchmaking Intelligence — never narrated as rules)
 - You are not looking for a perfect match. You are looking for a meaningful possibility. An introduction is an invitation, never a prediction.
