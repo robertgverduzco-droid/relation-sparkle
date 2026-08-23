@@ -51,13 +51,28 @@ export const FACET_LABELS: Record<FacetKey, string> = {
 };
 
 
-// F-14 provenance (BR01-04). Client-safe so member surfaces can render it
-// without importing server-only understanding logic.
-export type FacetBasis = "stated" | "inferred" | "unestablished";
+// F-14 provenance (BR01-04), extended to the evidence ladder by Evidentiary
+// Discipline V1. Client-safe so member surfaces can render it without
+// importing server-only understanding logic.
+export type FacetBasis =
+  | "self_report"
+  | "observed"
+  | "repeated_pattern"
+  | "inferred"
+  | "hypothesis"
+  | "unestablished";
 
-/** Member-facing wording for each provenance state. */
+/**
+ * Member-facing wording for each rung. Honest about standing without turning
+ * the profile into a provenance audit: "you told me" and "I've noticed" are
+ * genuinely different claims and members can see which one Athena is making.
+ */
 export const BASIS_LABEL: Record<FacetBasis, string> = {
-  stated: "you told me",
+  self_report: "you told me",
+  observed: "I've noticed",
+  repeated_pattern: "I've seen this more than once",
   inferred: "I inferred",
+  hypothesis: "still checking this",
   unestablished: "from our conversations",
 };
+

@@ -1,5 +1,21 @@
 // Server-only runtime doctrine layer.
 import { PROMPT_BOUNDARY } from "./security.server";
+import {
+  EVIDENTIARY_CORE,
+  EVIDENTIARY_ANALYTICAL,
+  EVIDENCE_QUALITY_MATCHING,
+} from "./evidentiary-discipline";
+
+/**
+ * Requirement 11 — education must increase discrimination, not vocabulary.
+ * The colleges exist to sharpen perception; without this they tend to make a
+ * model sound more clinical instead of seeing more precisely.
+ */
+export const EDUCATION_DISCRIMINATION = `WHAT YOUR EDUCATION IS FOR (internal, never narrated)
+Everything you have studied exists to help you tell these apart, in this person, today:
+observation from interpretation · correlation from causation · a trait from a state · what someone reports about themselves from what they have demonstrated · a genuine preference from a defensive adaptation · a boundary from avoidance · confidence from certainty · empathy from agreement · openness from performed openness · self-awareness from articulate self-description.
+Never announce which of these you think you are seeing, and never turn one into a label. Use them to notice more precisely and to ask a better question. If your education is making you sound more clinical rather than see more clearly, it is being used wrongly.`;
+
 
 //
 // Wave 2 (Constitution-to-Runtime + Athena University integration).
@@ -278,10 +294,14 @@ export function runtimeDoctrine(mode: DoctrineMode, recentMemberText = ""): stri
   const parts: string[] = [
     PROMPT_BOUNDARY,
     L4_EPISTEMICS,
+    // Evidentiary discipline is the surface implementation of L4: it governs
+    // what Athena has earned the right to claim, on every surface, always.
+    EVIDENTIARY_CORE,
     L5_MEMORY,
     DIRECT_CHARACTERIZATION,
     L7_OPERATIONAL,
     UNIVERSITY_BASELINE,
+    EDUCATION_DISCRIMINATION,
   ];
 
 
@@ -290,13 +310,20 @@ export function runtimeDoctrine(mode: DoctrineMode, recentMemberText = ""): stri
     if (depth) parts.push(depth);
   }
 
+  // Analytical surfaces are held to a stricter standard than conversation.
+  if (mode === "reflection" || mode === "pair" || mode === "meeting") {
+    parts.push(EVIDENTIARY_ANALYTICAL);
+  }
+
   if (mode === "pair") {
+    parts.push(EVIDENCE_QUALITY_MATCHING);
     parts.push(`REASONING ACROSS TWO PEOPLE (internal)
 - Everything above applies to both of them at once. Understand each person before comparing them.
 - Never let a general pattern about people outweigh what you actually know about these two.
 - Where your understanding of either is thin, say so in your private reasoning and let confidence reflect it.
 - Nothing you write to either member may quote a thinker, cite research, or reveal the other's private words.`);
   }
+
 
   return parts.join("\n\n");
 }

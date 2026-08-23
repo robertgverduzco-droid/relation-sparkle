@@ -140,7 +140,7 @@ describe("member-facing facet view", () => {
     );
     expect(v.stage).toBe("early");
     expect(v.held).toBe("held lightly");
-    expect(v.basis).toBe("stated");
+    expect(v.basis).toBe("self_report");
   });
 
   it("shows a corrected facet as revised and preserves stated provenance", () => {
@@ -148,6 +148,6 @@ describe("member-facing facet view", () => {
       historyCount: 1,
     });
     expect(v.revised).toBe(true);
-    expect(v.basis).toBe("stated");
+    expect(v.basis).toBe("self_report");
   });
 });
