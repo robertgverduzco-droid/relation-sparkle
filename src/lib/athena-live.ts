@@ -6,6 +6,13 @@
 // everything typed before or after it.
 
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
+import {
+  classifySessionStatus,
+  classifyThrown,
+  liveFailureMessage,
+  webrtcSupported,
+  type LiveFailure,
+} from "@/lib/live-failures";
 
 export type LiveTurn = { role: "user" | "assistant"; content: string };
 
@@ -34,6 +41,7 @@ export class AthenaLiveSession {
   private stream: MediaStream | null = null;
   private audio: HTMLAudioElement | null = null;
   private closed = false;
+  private started = false;
   private assistantBuffer = "";
   private authHeaders: Record<string, string> = {};
   private memberTurns: string[] = [];
@@ -42,9 +50,18 @@ export class AthenaLiveSession {
   constructor(private readonly handlers: LiveHandlers) {}
 
   async start(authHeaders: Record<string, string>, priorTurns: LiveTurn[] = []): Promise<void> {
+    // One session per instance, always: a second press can never open a second
+    // microphone channel or a second Athena voice.
+    if (this.started) return;
+    this.started = true;
     this.handlers.onStatus("connecting");
     this.authHeaders = authHeaders;
     this.memberTurns = priorTurns.filter((t) => t.role === "user").slice(-3).map((t) => t.content);
+
+    if (!webrtcSupported()) {
+      this.failLive("unsupported-browser", "no RTCPeerConnection");
+      return;
+    }
 
     // Audio comes first, so a permission problem is never confused with an
     // initialization problem. Once the microphone is open, nothing below may
@@ -66,23 +83,47 @@ export class AthenaLiveSession {
         body: JSON.stringify({ recentText: this.memberTurns.join("\n") }),
       });
       if (!res.ok) {
-        this.failInit(
-          res.status === 503
-            ? "Your microphone is fine — continuous conversation isn't available right now. You can still speak a message or type here."
-            : "Your microphone is fine — I couldn't open the continuous conversation. Please try again, or type here.",
-        );
+        this.failLive(classifySessionStatus(res.status), `session endpoint ${res.status}`);
         return;
       }
-      const { clientSecret } = (await res.json()) as { clientSecret: string };
+      let clientSecret = "";
+      try {
+        ({ clientSecret } = (await res.json()) as { clientSecret: string });
+      } catch (error) {
+        this.failLive("session-failed", `unreadable session response: ${String(error)}`);
+        return;
+      }
+      if (!clientSecret) {
+        this.failLive("session-failed", "session response carried no client secret");
+        return;
+      }
       if (this.closed) return this.cleanup();
 
       const pc = new RTCPeerConnection();
       this.pc = pc;
+      pc.onconnectionstatechange = () => {
+        if (this.closed) return;
+        if (pc.connectionState === "failed") {
+          this.failLive("connection-failed", "peer connection failed");
+        } else if (pc.connectionState === "disconnected") {
+          this.failLive("disconnected", "peer connection disconnected");
+        }
+      };
 
+      // iOS Safari will not play a remote stream from a detached element, and
+      // needs playsInline; the element is attached, silent to the eye, and
+      // removed again on cleanup.
       this.audio = document.createElement("audio");
       this.audio.autoplay = true;
+      this.audio.setAttribute?.("playsinline", "");
+      this.audio.style?.setProperty?.("display", "none");
+      document.body?.appendChild?.(this.audio);
       pc.ontrack = (e) => {
-        if (this.audio) this.audio.srcObject = e.streams[0] ?? null;
+        if (!this.audio) return;
+        this.audio.srcObject = e.streams[0] ?? null;
+        // The member pressed a button to get here, so this play() is inside a
+        // gesture-initiated flow; a rejection is not fatal to the session.
+        void this.audio.play?.()?.catch?.(() => {});
       };
       const stream = this.stream;
       if (!stream) return this.cleanup();
@@ -123,18 +164,26 @@ export class AthenaLiveSession {
         body: offer.sdp ?? "",
       });
       if (!answer.ok) {
-        this.failInit(
-          "Your microphone is fine — I couldn't open the continuous conversation. Please try again, or type here.",
+        const detail = (await answer.text().catch(() => "")).slice(0, 200);
+        this.failLive(
+          answer.status === 429
+            ? detail.includes("insufficient_quota")
+              ? "quota-exhausted"
+              : "rate-limited"
+            : answer.status >= 500
+              ? "provider-unavailable"
+              : "connection-failed",
+          `realtime calls ${answer.status}: ${detail}`,
         );
         return;
       }
       const sdp = await answer.text();
       if (this.closed) return this.cleanup();
       await pc.setRemoteDescription({ type: "answer", sdp });
-    } catch {
+    } catch (error) {
       // The microphone was already granted and open, so this can only be an
       // initialization failure. It is never reported as a permission problem.
-      this.failInit();
+      this.failLive(classifyThrown(error), String((error as Error)?.message ?? error));
     }
   }
 
@@ -254,13 +303,30 @@ export class AthenaLiveSession {
 
   /**
    * Failure after the microphone is open: continuous conversation could not
-   * initialize. Never phrased as a permission problem.
+   * initialize or could not stay open. Never phrased as a permission problem;
+   * the precise technical cause goes to the server, not to the member.
    */
-  private failInit(message?: string): void {
-    this.fail(micFailureMessage("init-failed", message));
+  private failLive(reason: LiveFailure, detail: string, stage = "start"): void {
+    if (this.closed) return;
+    void this.report(reason, detail, stage);
+    this.fail(liveFailureMessage(reason));
+  }
+
+  private async report(reason: string, detail: string, stage: string): Promise<void> {
+    try {
+      await fetch("/api/live-diagnostic", {
+        method: "POST",
+        headers: { ...this.authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ reason, detail, stage }),
+        keepalive: true,
+      });
+    } catch {
+      /* diagnostics never affect what the member sees */
+    }
   }
 
   private fail(message: string): void {
+    this.closed = true;
     this.handlers.onError(message);
     this.handlers.onStatus("error");
     this.cleanup();
@@ -276,6 +342,7 @@ export class AthenaLiveSession {
     this.stream?.getTracks().forEach((t) => t.stop());
     if (this.audio) {
       this.audio.srcObject = null;
+      this.audio.remove?.();
       this.audio = null;
     }
     this.dc = null;
