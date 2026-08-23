@@ -107,7 +107,7 @@ export function safeLog(event: string, detail?: Record<string, unknown>): void {
 export type AuditEntry = {
   /** Who performed the action. Null for automated/system jobs. */
   actorId?: string | null;
-  actorRole?: "member" | "moderator" | "admin" | "service";
+  actorRole?: "member" | "moderator" | "admin" | "founder" | "service";
   /** Verb, e.g. "moderation.reports.list", "account.delete". */
   action: string;
   /** Which member the action concerned. */
