@@ -755,6 +755,44 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
 
 
 /**
+ * Record — once, ever — that the foundational pause/closing opportunity has
+ * been delivered to this member.
+ *
+ * This is conversation-lifecycle state, not eligibility: it never touches
+ * readiness, `completed_at`, or matchmaking. After it exists, returning
+ * sessions, reloads, other devices and later turns never recreate the
+ * foundational closing sheet. It is monotonic and account-scoped, and is only
+ * ever written for the caller's own row.
+ */
+export const markFoundationalMilestone = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const now = new Date().toISOString();
+
+    const { data: existing } = await supabaseAdmin
+      .from("interview_sessions")
+      .select("user_id, foundational_milestone_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!existing) return { ok: true as const, milestoneAt: null };
+    const already = (existing as { foundational_milestone_at?: string | null }).foundational_milestone_at;
+    if (already) return { ok: true as const, milestoneAt: already };
+
+    const { error } = await supabaseAdmin
+      .from("interview_sessions")
+      .update({ foundational_milestone_at: now })
+      .eq("user_id", userId)
+      .is("foundational_milestone_at", null);
+    if (error) throw new Error(error.message);
+    return { ok: true as const, milestoneAt: now };
+  });
+
+
+
+/**
  * Persist the foundational transcript.
  *
  * The browser used to upsert `interview_sessions` directly, including
