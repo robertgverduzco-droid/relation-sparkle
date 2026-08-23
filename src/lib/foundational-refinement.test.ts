@@ -21,7 +21,7 @@ import {
   EMPTY_PREFERENCES,
   EMPTY_SELF,
   HOBBY_OPTIONS,
-  evaluateConstraints,
+  evaluateStructuredConstraints,
   structuredContextBlock,
 } from "./structured-profile";
 
@@ -98,7 +98,7 @@ describe("respect for their time never overrides readiness", () => {
     const g = respectTimeGuidance({ elapsedMinutes: 40, ready: false, alreadyAcknowledged: false });
     expect(g).toMatch(/WITHOUT CLAIMING READINESS/);
     expect(g).toMatch(/return whenever they like/);
-    expect(g).not.toMatch(/promise a timeframe\.$/i.source ? /never-matching-sentinel/ : /x/);
+    expect(g).not.toMatch(/introduce you to someone soon/i);
   });
 
   it("reaching the time point does not close a conversation on its own", () => {
