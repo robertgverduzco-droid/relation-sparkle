@@ -112,6 +112,18 @@ export async function purgeMemberAndDeleteAuthUser(userId: string): Promise<{
       .in("pair_token", tokens)
       .select("id");
     outcomeRemoved = data?.length ?? 0;
+
+    // Prediction ledger, linked outcomes, and hypothesis evidence are keyed by
+    // the same recomputable token, so they are equally attributable and are
+    // removed by the same standard. Aggregate counts survive; this member's
+    // contribution to them does not.
+    try {
+      await (admin as unknown as {
+        rpc: (fn: string, args: Record<string, unknown>) => Promise<unknown>;
+      }).rpc("purge_predictions_for_tokens", { _tokens: tokens });
+    } catch {
+      // Reported by the residual sweep rather than stranding the deletion.
+    }
   }
 
   // --- 2. Private storage objects ------------------------------------------
