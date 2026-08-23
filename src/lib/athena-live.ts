@@ -35,11 +35,16 @@ export class AthenaLiveSession {
   private audio: HTMLAudioElement | null = null;
   private closed = false;
   private assistantBuffer = "";
+  private authHeaders: Record<string, string> = {};
+  private memberTurns: string[] = [];
+  private educationInFlight = false;
 
   constructor(private readonly handlers: LiveHandlers) {}
 
   async start(authHeaders: Record<string, string>, priorTurns: LiveTurn[] = []): Promise<void> {
     this.handlers.onStatus("connecting");
+    this.authHeaders = authHeaders;
+    this.memberTurns = priorTurns.filter((t) => t.role === "user").slice(-3).map((t) => t.content);
 
     // Audio comes first, so a permission problem is never confused with an
     // initialization problem. Once the microphone is open, nothing below may
@@ -150,6 +155,31 @@ export class AthenaLiveSession {
     });
   }
 
+  /**
+   * Draw the educational material that bears on what the member just said.
+   * A spoken session's instructions are fixed when it opens, so depth for
+   * anything said afterwards has to arrive as an internal system item. Silent
+   * by design: if nothing relevant is found, nothing is sent.
+   */
+  private async refreshEducation(): Promise<void> {
+    if (this.closed || this.educationInFlight) return;
+    this.educationInFlight = true;
+    try {
+      const res = await fetch("/api/realtime-education", {
+        method: "POST",
+        headers: { ...this.authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: this.memberTurns.join("\n") }),
+      });
+      if (!res.ok) return;
+      const { block } = (await res.json()) as { block?: string };
+      if (block && !this.closed) this.guide(block);
+    } catch {
+      // Depth is an enhancement; a live conversation continues without it.
+    } finally {
+      this.educationInFlight = false;
+    }
+  }
+
   /** Athena yields the floor immediately when the member takes it. */
   interrupt(): void {
     this.send({ type: "response.cancel" });
@@ -207,7 +237,11 @@ export class AthenaLiveSession {
         break;
       case "conversation.item.input_audio_transcription.completed": {
         const text = (evt.transcript ?? "").trim();
-        if (text) this.handlers.onTurn({ role: "user", content: text });
+        if (text) {
+          this.handlers.onTurn({ role: "user", content: text });
+          this.memberTurns = [...this.memberTurns, text].slice(-3);
+          void this.refreshEducation();
+        }
         break;
       }
       case "error":
