@@ -5,6 +5,8 @@
 // and a running transcript so the conversation record stays continuous with
 // everything typed before or after it.
 
+import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
+
 export type LiveTurn = { role: "user" | "assistant"; content: string };
 
 export type LiveStatus =
@@ -38,6 +40,20 @@ export class AthenaLiveSession {
 
   async start(authHeaders: Record<string, string>, priorTurns: LiveTurn[] = []): Promise<void> {
     this.handlers.onStatus("connecting");
+
+    // Audio comes first, so a permission problem is never confused with an
+    // initialization problem. Once the microphone is open, nothing below may
+    // ask the member to enable microphone access.
+    const mic = await acquireMicrophone({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    if (!mic.ok) {
+      this.fail(micFailureMessage(mic.reason));
+      return;
+    }
+    this.stream = mic.stream;
+    if (this.closed) return this.cleanup();
+
     try {
       const res = await fetch("/api/realtime-session", {
         method: "POST",
@@ -45,18 +61,14 @@ export class AthenaLiveSession {
         body: "{}",
       });
       if (!res.ok) {
-        this.fail(
+        this.failInit(
           res.status === 503
-            ? "Live conversation isn't available right now. You can still speak or type here."
-            : "I couldn't open a live conversation just now. Please try again.",
+            ? "Your microphone is fine — continuous conversation isn't available right now. You can still speak a message or type here."
+            : "Your microphone is fine — I couldn't open the continuous conversation. Please try again, or type here.",
         );
         return;
       }
       const { clientSecret } = (await res.json()) as { clientSecret: string };
-
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
       if (this.closed) return this.cleanup();
 
       const pc = new RTCPeerConnection();
@@ -67,7 +79,9 @@ export class AthenaLiveSession {
       pc.ontrack = (e) => {
         if (this.audio) this.audio.srcObject = e.streams[0] ?? null;
       };
-      this.stream.getTracks().forEach((t) => pc.addTrack(t, this.stream!));
+      const stream = this.stream;
+      if (!stream) return this.cleanup();
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       const dc = pc.createDataChannel("oai-events");
       this.dc = dc;
@@ -104,14 +118,18 @@ export class AthenaLiveSession {
         body: offer.sdp ?? "",
       });
       if (!answer.ok) {
-        this.fail("I couldn't open a live conversation just now. Please try again.");
+        this.failInit(
+          "Your microphone is fine — I couldn't open the continuous conversation. Please try again, or type here.",
+        );
         return;
       }
       const sdp = await answer.text();
       if (this.closed) return this.cleanup();
       await pc.setRemoteDescription({ type: "answer", sdp });
     } catch {
-      this.fail("Microphone access is needed for a live conversation.");
+      // The microphone was already granted and open, so this can only be an
+      // initialization failure. It is never reported as a permission problem.
+      this.failInit();
     }
   }
 
@@ -198,6 +216,14 @@ export class AthenaLiveSession {
       default:
         break;
     }
+  }
+
+  /**
+   * Failure after the microphone is open: continuous conversation could not
+   * initialize. Never phrased as a permission problem.
+   */
+  private failInit(message?: string): void {
+    this.fail(micFailureMessage("init-failed", message));
   }
 
   private fail(message: string): void {
