@@ -81,7 +81,7 @@ export async function buildLiveInstructions(
           .select(
             "topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at",
           ),
-        supabase.from("interview_sessions").select("completed_at, foundational_milestone_at").maybeSingle(),
+        supabase.from("interview_sessions").select("completed_at, foundational_milestone_at, created_at").maybeSingle(),
       ]);
 
       // Structured intake context, so Athena never asks a member to repeat
@@ -109,24 +109,26 @@ export async function buildLiveInstructions(
         // Structured context is an enhancement, never a precondition.
       }
 
+      const facets = (facetRows ?? []) as FacetRow[];
+      const topics = (topicRows ?? []) as TopicRow[];
+      const topicSummary = summarizeTopicMap(topics);
+      const liveReadiness = assessFoundationalReadiness(
+        facets.map((f) => ({
+          facet_key: f.facet_key as string,
+          understanding: f.understanding ?? null,
+          confidence: Number(f.confidence ?? 0),
+        })),
+      );
+      // Same canonical rule as the text path, including the legacy
+      // pre-marker members whose milestone already happened.
       foundational = isFoundationalSession({
         completedAt: sessionRow?.completed_at ?? null,
         milestoneAt:
           (sessionRow as { foundational_milestone_at?: string | null } | null)?.foundational_milestone_at ?? null,
+        sessionCreatedAt: (sessionRow as { created_at?: string | null } | null)?.created_at ?? null,
+        memberAlreadyReady: liveReadiness.ready,
       });
-
-      const facets = (facetRows ?? []) as FacetRow[];
-      const topics = (topicRows ?? []) as TopicRow[];
-      const topicSummary = summarizeTopicMap(topics);
-      readinessHint = introductionReadinessGuidance(
-        assessFoundationalReadiness(
-          facets.map((f) => ({
-            facet_key: f.facet_key as string,
-            understanding: f.understanding ?? null,
-            confidence: Number(f.confidence ?? 0),
-          })),
-        ),
-      );
+      readinessHint = introductionReadinessGuidance(liveReadiness);
 
       memoryBlock = clampMemoryBlock(`WHAT YOU ALREADY UNDERSTAND ABOUT THIS PERSON (your Living Profile — internal, never quote back verbatim):
 ${summarizeLivingProfile(facets)}

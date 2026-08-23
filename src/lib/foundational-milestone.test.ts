@@ -5,7 +5,12 @@
 // ordinary continuing conversation — never in a pause/finish sheet.
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { isFoundationalSession, mayOfferFoundationalClose } from "./foundational-milestone";
+import {
+  isFoundationalSession,
+  isLegacyCrossedFoundation,
+  mayOfferFoundationalClose,
+  MILESTONE_ARCHITECTURE_AT,
+} from "./foundational-milestone";
 import { decidePacing } from "./pacing";
 import { assessFoundationalReadiness } from "./introduction-readiness";
 
@@ -99,7 +104,7 @@ describe("C/E/F. returning, reloading, and other devices never recreate the shee
 
   it("the state is server-backed on the member's own row, never localStorage", () => {
     expect(server).toMatch(/foundational_milestone_at/);
-    expect(route).toMatch(/select\("messages, completed_at, foundational_milestone_at"\)/);
+    expect(route).toMatch(/select\("messages, completed_at, foundational_milestone_at, created_at"\)/);
     expect(route).not.toMatch(/localStorage[\s\S]{0,80}milestone/i);
   });
 });
@@ -133,7 +138,8 @@ describe("G. accounts are independent", () => {
   });
 
   it("the client re-reads it per account on hydration", () => {
-    expect(route).toMatch(/foundationalSessionRef\.current = !session\?\.completed_at && !session\?\.foundational_milestone_at/);
+    expect(route).toMatch(/foundationalSessionRef\.current = isFoundationalSession\(\{/);
+    expect(route).toMatch(/sessionCreatedAt: session\?\.created_at/);
   });
 });
 
@@ -187,5 +193,102 @@ describe("J. members who are not ready keep the early-exit experience", () => {
         readinessMet: false,
       }),
     ).toBe("continue");
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// LIVE REGRESSION — legacy accounts that reached readiness BEFORE the
+// `foundational_milestone_at` column existed were left NULL by the migration,
+// so their first return after deployment re-delivered the once-ever sheet.
+// ---------------------------------------------------------------------------
+const legacyCreatedAt = new Date(MILESTONE_ARCHITECTURE_AT - 5 * 864e5).toISOString();
+const newCreatedAt = new Date(MILESTONE_ARCHITECTURE_AT + 60_000).toISOString();
+
+describe("K. legacy member: ready before the marker existed", () => {
+  const legacyRow = {
+    completedAt: null,
+    milestoneAt: null,
+    sessionCreatedAt: legacyCreatedAt,
+    memberAlreadyReady: true,
+  };
+
+  it("is recognised as having already crossed the foundation", () => {
+    expect(isLegacyCrossedFoundation(legacyRow)).toBe(true);
+  });
+
+  it("returning after the migration is an ordinary continuing conversation", () => {
+    expect(isFoundationalSession(legacyRow)).toBe(false);
+  });
+
+  it("the closing sheet can never be offered to them, however ready", () => {
+    expect(
+      mayOfferFoundationalClose({
+        foundationalSession: isFoundationalSession(legacyRow),
+        readinessMet: true,
+        offeredThisConversation: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("the server self-heals the marker instead of relying on the backfill alone", () => {
+    expect(server).toMatch(/isLegacyCrossedFoundation\(\{/);
+    const heal = server.slice(server.indexOf("const legacyCrossed"));
+    expect(heal).toMatch(/foundational_milestone_at: new Date\(\)\.toISOString\(\)/);
+    expect(heal.slice(0, 1200)).toMatch(/\.is\("foundational_milestone_at", null\)/);
+  });
+
+  it("nothing in the legacy path resets readiness, completion or intake", () => {
+    const heal = server.slice(server.indexOf("const legacyCrossed"), server.indexOf("Breadth-first orchestration"));
+    expect(heal).not.toMatch(/completed_at/);
+    expect(heal).not.toMatch(/evaluateReadiness|runMatchmakingForUser|messages:/);
+  });
+});
+
+describe("L. the legacy rule is narrow", () => {
+  it("a legacy member who never reached readiness still gets their milestone", () => {
+    expect(
+      isFoundationalSession({
+        completedAt: null,
+        milestoneAt: null,
+        sessionCreatedAt: legacyCreatedAt,
+        memberAlreadyReady: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("a genuinely new member is unaffected even once ready", () => {
+    expect(
+      isFoundationalSession({
+        completedAt: null,
+        milestoneAt: null,
+        sessionCreatedAt: newCreatedAt,
+        memberAlreadyReady: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("a new member still experiences the milestone exactly once", () => {
+    expect(
+      mayOfferFoundationalClose({
+        foundationalSession: true,
+        readinessMet: true,
+        offeredThisConversation: false,
+      }),
+    ).toBe(true);
+  });
+});
+
+describe("M. one canonical eligibility rule", () => {
+  it("both the text and voice server paths use it", () => {
+    const live = readFileSync("src/lib/athena-live.server.ts", "utf8");
+    expect(live).toMatch(/isFoundationalSession\(\{/);
+    expect(live).toMatch(/memberAlreadyReady: liveReadiness\.ready/);
+    expect(live).toMatch(/sessionCreatedAt/);
+  });
+
+  it("the sheet has exactly one render trigger, and it consults the rule", () => {
+    expect(route.match(/setShowClosingCard\(true\)/g)?.length).toBe(1);
+    expect(route).toMatch(/mayOfferFoundationalClose\(/);
   });
 });

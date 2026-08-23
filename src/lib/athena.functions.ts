@@ -41,7 +41,7 @@ import {
 import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
-import { isFoundationalSession } from "./foundational-milestone";
+import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
 
 
 export const askAthena = createServerFn({ method: "POST" })
@@ -52,6 +52,7 @@ export const askAthena = createServerFn({ method: "POST" })
     const gateway = createLovableGateway();
 
     const { supabase } = context;
+    const { userId } = context;
 
     const [{ data: facetRows }, { data: topicRows }, { data: sessionRow }] = await Promise.all([
       supabase
@@ -63,7 +64,7 @@ export const askAthena = createServerFn({ method: "POST" })
         .select("topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at"),
       // Foundational mode is decided by the member's own record, never by the
       // caller: the client's flag may only ever narrow it, not grant it.
-      supabase.from("interview_sessions").select("completed_at, foundational_milestone_at").maybeSingle(),
+      supabase.from("interview_sessions").select("completed_at, foundational_milestone_at, created_at").maybeSingle(),
     ]);
 
     // Structured intake (member-stated) is context, not a replacement for her
@@ -91,11 +92,15 @@ export const askAthena = createServerFn({ method: "POST" })
     // Foundational mode ends at the milestone, not at readiness. A returning
     // member whose foundation already happened is in ordinary continuing
     // conversation, so no pause/closing opportunity can be recreated.
-    const isFoundational = isFoundationalSession({
+    // (Resolved below, once readiness is known, so legacy pre-marker members
+    // are recognised as having already crossed the transition.)
+    const sessionState = {
       completedAt: sessionRow?.completed_at ?? null,
       milestoneAt: (sessionRow as { foundational_milestone_at?: string | null } | null)?.foundational_milestone_at ?? null,
+      sessionCreatedAt: (sessionRow as { created_at?: string | null } | null)?.created_at ?? null,
       clientFoundational: data.foundational,
-    });
+    };
+
 
 
     const profileSummary = summarizeLivingProfile(facets);
@@ -143,12 +148,6 @@ Use this memory to:
     // readiness, in either direction.
     const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= RESPECT_TIME_MINUTES;
 
-    // Breadth-first orchestration, foundational mode only. The topic map is
-    // written after a conversation, so during the first one it is empty for
-    // the whole session; this recovers live coverage from the transcript.
-    const coverage = isFoundational ? assessCoverage(data.messages) : null;
-    const breadthHint = coverage ? foundationalGuidance(coverage) : "";
-
     // Matchmaking readiness is decided by persisted understanding, never by
     // the member's patience. Athena is told the truth about what she does and
     // does not yet understand so she cannot promise an introduction she is
@@ -174,6 +173,29 @@ Use this memory to:
       shortfallSignature: data.readinessShortfallSignature ?? null,
     });
     const readyNow = claim.ready;
+
+    // Legacy members reached readiness before the marker existed; their
+    // milestone is historical fact. Recognise it and record it once, so the
+    // marker is self-healing and the sheet can never recur for them.
+    const legacyCrossed = isLegacyCrossedFoundation({ ...sessionState, memberAlreadyReady: readyNow });
+    const isFoundational = isFoundationalSession({ ...sessionState, memberAlreadyReady: readyNow });
+    if (legacyCrossed) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin
+          .from("interview_sessions")
+          .update({ foundational_milestone_at: new Date().toISOString() })
+          .eq("user_id", userId)
+          .is("foundational_milestone_at", null);
+      } catch { /* non-fatal: the rule above already holds for this turn */ }
+    }
+
+    // Breadth-first orchestration, foundational mode only. The topic map is
+    // written after a conversation, so during the first one it is empty for
+    // the whole session; this recovers live coverage from the transcript.
+    const coverage = isFoundational ? assessCoverage(data.messages) : null;
+    const breadthHint = coverage ? foundationalGuidance(coverage) : "";
+
 
     const lastMemberText =
       [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";

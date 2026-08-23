@@ -26,6 +26,18 @@
  * Both markers are monotonic: nothing here ever un-completes a foundation.
  */
 
+/**
+ * When `foundational_milestone_at` came into existence. Any session row that
+ * was created before this instant belongs to a member whose foundational
+ * transition, if it happened at all, happened without the marker being
+ * writable. Those members must never be shown the once-ever pause again.
+ *
+ * A one-off migration backfilled the marker for them; this constant makes the
+ * rule structural rather than dependent on that data fix having reached every
+ * row (a legacy row can be recreated by restore, replay, or import).
+ */
+export const MILESTONE_ARCHITECTURE_AT = Date.parse("2026-08-23T20:00:00Z");
+
 export type FoundationalSessionState = {
   /** `interview_sessions.completed_at` — the member finished the session. */
   completedAt?: string | null;
@@ -34,6 +46,14 @@ export type FoundationalSessionState = {
    * pause/closing opportunity has already been delivered and handled.
    */
   milestoneAt?: string | null;
+  /** `interview_sessions.created_at` — used only for the legacy rule below. */
+  sessionCreatedAt?: string | null;
+  /**
+   * Whether the member currently satisfies foundational matchmaking readiness.
+   * Combined with a pre-architecture session, this proves the transition
+   * already happened before the marker could be recorded.
+   */
+  memberAlreadyReady?: boolean | undefined;
   /**
    * The client's own `foundational` flag. It may only ever NARROW the mode
    * (e.g. an explicitly non-foundational surface); it can never grant it.
@@ -42,16 +62,30 @@ export type FoundationalSessionState = {
 };
 
 /**
+ * A member who reached readiness before the marker existed. Their milestone is
+ * historical fact, not something still owed to them.
+ */
+export function isLegacyCrossedFoundation(state: FoundationalSessionState): boolean {
+  if (state.milestoneAt) return false;
+  if (!state.memberAlreadyReady) return false;
+  const created = state.sessionCreatedAt ? Date.parse(state.sessionCreatedAt) : NaN;
+  return Number.isFinite(created) && created < MILESTONE_ARCHITECTURE_AT;
+}
+
+/**
  * True only while the member is genuinely inside the first foundational
- * conversation. Once completed, or once the milestone has been delivered,
- * every later Athena session is an ordinary continuing conversation.
+ * conversation. Once completed, once the milestone has been delivered, or once
+ * a pre-architecture member is known to have already crossed it, every later
+ * Athena session is an ordinary continuing conversation.
  */
 export function isFoundationalSession(state: FoundationalSessionState): boolean {
   if (state.clientFoundational === false) return false;
   if (state.completedAt) return false;
   if (state.milestoneAt) return false;
+  if (isLegacyCrossedFoundation(state)) return false;
   return true;
 }
+
 
 /**
  * Whether the once-ever foundational pause/closing opportunity may be offered

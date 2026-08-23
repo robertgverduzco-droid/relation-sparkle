@@ -18,7 +18,7 @@ import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
-import { mayOfferFoundationalClose } from "@/lib/foundational-milestone";
+import { mayOfferFoundationalClose, isFoundationalSession } from "@/lib/foundational-milestone";
 import { assessBoundary, boundaryGuidance } from "@/lib/boundaries";
 import { earlyExitGuidance, wantsToFinishFoundational } from "@/lib/early-exit";
 import {
@@ -259,7 +259,7 @@ function AthenaPage() {
         supabase.auth.getUser(),
         supabase
           .from("interview_sessions")
-          .select("messages, completed_at, foundational_milestone_at")
+          .select("messages, completed_at, foundational_milestone_at, created_at")
           .maybeSingle(),
         supabase.from("profiles").select("display_name").maybeSingle(),
       ]);
@@ -268,7 +268,12 @@ function AthenaPage() {
       foundationCompleteRef.current = Boolean(session?.completed_at);
       // A returning member whose milestone already happened opens straight
       // into ordinary continuing conversation — no intake framing, no sheet.
-      foundationalSessionRef.current = !session?.completed_at && !session?.foundational_milestone_at;
+      foundationalSessionRef.current = isFoundationalSession({
+        completedAt: session?.completed_at ?? null,
+        milestoneAt: session?.foundational_milestone_at ?? null,
+        sessionCreatedAt: session?.created_at ?? null,
+        memberAlreadyReady: introReadyRef.current,
+      });
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
         setMessages(priorMessages);
