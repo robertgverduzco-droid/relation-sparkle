@@ -17,7 +17,7 @@ describe("F-13 revision patches", () => {
     // BR01-05: Athena never speaks as the member.
     expect(p.understanding).toBe("You moved to Chicago last spring.");
     expect(p.evidence).toEqual(["I moved to Chicago last spring."]);
-    expect(p.basis).toBe("stated");
+    expect(p.basis).toBe("self_report");
   });
 
   it("correction supersedes the wrong understanding and lowers confidence", () => {
@@ -110,7 +110,7 @@ describe("stated vs inferred survives revision (F-14)", () => {
       },
       new Set(["self_understanding"]),
     );
-    expect(view.basis).toBe("stated");
+    expect(view.basis).toBe("self_report");
     expect(view.revised).toBe(true);
     // BR01-04: provenance comes from the stored basis, never from evidence.
     expect(

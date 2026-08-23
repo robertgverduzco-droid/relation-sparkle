@@ -101,7 +101,7 @@ describe("BR01-03 — sign-in cannot fall through to a native submit", () => {
 
 describe("BR01-04 — provenance comes from the record, not from evidence", () => {
   it("only an explicit basis claims the member stated it", () => {
-    expect(resolveBasis("stated")).toBe("stated");
+    expect(resolveBasis("stated")).toBe("self_report");
     expect(resolveBasis("inferred")).toBe("inferred");
     expect(resolveBasis(null)).toBe("unestablished");
     expect(resolveBasis(undefined)).toBe("unestablished");
@@ -109,7 +109,9 @@ describe("BR01-04 — provenance comes from the record, not from evidence", () =
   });
 
   it("the reflection step must record provenance for each facet", () => {
-    expect(read("src/lib/athena.server.ts")).toContain('basis: z.enum(["stated", "inferred"])');
+    expect(read("src/lib/athena.server.ts")).toContain(
+      'basis: z.enum(["self_report", "observed", "repeated_pattern", "inferred", "hypothesis"])',
+    );
     expect(read("src/lib/athena.functions.ts")).toContain("basis: f.basis");
   });
 });

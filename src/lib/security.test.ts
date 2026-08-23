@@ -114,7 +114,7 @@ describe("living profile revision (F-13)", () => {
   it("change keeps the member's statement as authoritative and stated", () => {
     const patch = revisionPatch("change", "I moved cities last spring.");
     expect(patch.understanding).toBe("You moved cities last spring.");
-    expect(patch.basis).toBe("stated");
+    expect(patch.basis).toBe("self_report");
     expect(patch.evidence.length).toBe(1);
   });
 
