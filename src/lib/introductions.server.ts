@@ -323,6 +323,11 @@ export async function reasonPair(args: {
     memberText: `${summarizeFacets(args.a.facets)}\n${summarizeFacets(args.b.facets)}`,
   });
 
+  // Learned intelligence, if any has been promoted by a founder. Empty
+  // otherwise — Athena does not act on her own hypotheses.
+  const { canonicalIntelligenceBlock } = await import("./intelligence.server");
+  const learned = await canonicalIntelligenceBlock();
+
   const { object } = await generateObject({
     model: gateway("openai/gpt-5.5"),
     schema: reasoningSchema,
@@ -330,6 +335,8 @@ export async function reasonPair(args: {
     prompt: `You are Athena. Consider whether these two people might be worth introducing.
 
 ${doctrine}
+
+${learned}
 
 ${ANALYTICAL_REGISTER_GUARD}
 
