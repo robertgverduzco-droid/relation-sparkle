@@ -187,7 +187,7 @@ export const RUNG_MARKER: Record<EvidenceRung, string> = {
  * expressed, then praise them for not holding it.
  */
 const MANUFACTURED_CONTRAST =
-  /(you\s?('?re| are)? ?(don'?t|do not|aren'?t|are not|never|not)\s+(need|needing|expect|expecting|require|requiring|demand|demanding|ask(ing)?|want(ing)?|looking for)\b[^.!?]*\b(perfect\w*|mirror|clone|mind|carbon copy|flawless|everything)\b)|(that'?s (a )?(much )?(more|less) (health(y|ier)|mature|realistic|reasonable|grounded|generous)\b)|(unlike (someone|people) who)|(this (is|makes it) less about [^.!?]* and more about)|(that'?s not [^.!?]*, that'?s)|(rather than (demanding|requiring|needing) (someone|her|him|them) (to )?\w+ you (perfectly|completely))/i;
+  /(you\s?('?re| are)? ?(don'?t|do not|aren'?t|are not|never|not)\s+(need|needing|expect|expecting|require|requiring|demand|demanding|ask(ing)?|want(ing)?|looking for)\b[^.!?]*\b(perfect\w*|mirror|clone|mind|carbon copy|flawless|everything)\b)|(that'?s (a )?(much |far |way )?(more |less )?(health(y|ier)|mature|realistic|reasonable|grounded)( way| approach| mindset| place)?\b)|(unlike (someone|people) who)|(this (is|makes it) less about [^.!?]* and more about)|(that'?s not [^.!?]*, that'?s)|(rather than (demanding|requiring|needing) (someone|her|him|them) (to )?\w+ you (perfectly|completely))/i;
 
 export function detectManufacturedContrast(text: string): boolean {
   return MANUFACTURED_CONTRAST.test(text ?? "");
