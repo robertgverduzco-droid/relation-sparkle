@@ -45,7 +45,7 @@ export const Route = createFileRoute("/api/realtime-education")({
 
         // Doctrine is already in the live session's standing instructions; only
         // the situational educational layer is sent mid-conversation.
-        const marker = "EDUCATIONAL DEPTH";
+        const marker = "DEPTH FROM YOUR EDUCATION";
         const idx = block.indexOf(marker);
         return Response.json(
           { block: idx >= 0 ? block.slice(idx) : "" },
