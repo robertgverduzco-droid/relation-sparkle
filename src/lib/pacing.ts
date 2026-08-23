@@ -20,6 +20,55 @@ export type Pacing = "continue" | "wind_down" | "offer_return";
 export const MIN_MINUTES_BEFORE_CLOSE = 16;
 
 /**
+ * RESPECT FOR THEIR TIME.
+ *
+ * Around this point Athena acknowledges, once, how long they have been
+ * talking. It is a courtesy, not a deadline: time never overrides readiness in
+ * either direction. Reaching it does not make her ready, and being ready
+ * before it does not oblige anyone to stop.
+ */
+export const RESPECT_TIME_MINUTES = 15;
+
+/**
+ * MEMBER-LED CLOSING.
+ *
+ * Once a member has said they want to keep going, Athena stays with them. She
+ * does not re-offer a pause every turn until they give in. Closing becomes
+ * theirs to initiate for at least this many subsequent turns.
+ */
+export const CONTINUE_SUPPRESSION_TURNS = 4;
+
+/** Member language that means "I'd like to keep going". */
+const MEMBER_CONTINUE_INTENT =
+  /\b(keep (going|talking|chatting)|carry on|continue|i'?m (happy|fine|good) to (keep|carry|continue|go on)|(let'?s|we can) keep (going|talking)|i (have|got) (more )?time|i'?d like to (keep|continue)|(no|not),? i'?m (fine|good|okay)|don'?t (want to )?stop|more time|go on)\b/i;
+
+/**
+ * True when the member has said they want the conversation to continue.
+ * Deliberately about continuing, never merely about answering at length.
+ */
+export function memberWantsToContinue(text: string): boolean {
+  const t = text ?? "";
+  if (MEMBER_STOP_INTENT.test(t)) return false;
+  return MEMBER_CONTINUE_INTENT.test(t);
+}
+
+/**
+ * How many member turns ago (0 = this turn) the member last said they wanted
+ * to keep going. Null when they never have. Derived from the transcript so no
+ * client state can dismiss a member who asked to stay.
+ */
+export function turnsSinceContinueRequest(
+  messages: ReadonlyArray<{ role: string; content: string }>,
+): number | null {
+  const memberTurns = (messages ?? []).filter((m) => m.role === "user");
+  for (let i = memberTurns.length - 1; i >= 0; i--) {
+    if (memberWantsToContinue(memberTurns[i]!.content)) return memberTurns.length - 1 - i;
+  }
+  return null;
+}
+
+
+/**
  * Member language that genuinely signals an intention to stop or pause.
  * Deliberately narrow: it must be about ending, not about being brief.
  */
@@ -61,6 +110,12 @@ export type PacingInput = {
    * minimum is learned in ordinary ongoing conversation instead.
    */
   readinessMet?: boolean;
+  /**
+   * Member turns since they last said they want to keep going (0 = this
+   * turn), or null. While this is under CONTINUE_SUPPRESSION_TURNS Athena
+   * never initiates a close again — closing is theirs to lead.
+   */
+  continueRequestedTurnsAgo?: number | null;
 };
 
 export function decidePacing(input: PacingInput): Pacing {
@@ -68,6 +123,12 @@ export function decidePacing(input: PacingInput): Pacing {
 
   // The member asking to stop is always honoured, immediately and at any point.
   if (memberWantsToStop(latestMemberMessage)) return "offer_return";
+
+  // Member-led closing. They have told Athena they want to keep talking;
+  // repeating the offer to pause would be dismissing them, whatever the clock
+  // or the readiness state says.
+  const since = input.continueRequestedTurnsAgo;
+  if (since != null && since >= 0 && since < CONTINUE_SUPPRESSION_TURNS) return "continue";
 
   // Minimum readiness reached: close. The time floor exists to stop a terse
   // member being rushed out before Athena understands them — it is not a
@@ -94,3 +155,39 @@ export function decidePacing(input: PacingInput): Pacing {
   return elapsed >= 18 || userTurns >= 12 ? "wind_down" : "continue";
 }
 
+
+/**
+ * RESPECT-TIME POSTURE (approximately fifteen minutes).
+ *
+ * Guidance only; the words remain Athena's. Two distinct situations:
+ *  - ready: acknowledge the time once, say a foundation now exists, make
+ *    clear understanding continues and the length is theirs to choose.
+ *  - not ready: acknowledge the time once, say plainly that she needs to
+ *    understand more before she would introduce them, and leave them free to
+ *    continue now or return later.
+ *
+ * Neither promises an introduction, a timeframe, or a next step.
+ */
+export function respectTimeGuidance(input: {
+  elapsedMinutes: number;
+  ready: boolean;
+  alreadyAcknowledged: boolean;
+}): string {
+  if (input.alreadyAcknowledged || input.elapsedMinutes < RESPECT_TIME_MINUTES) return "";
+  if (input.ready) {
+    return [
+      "RESPECT FOR THEIR TIME — ACKNOWLEDGE ONCE.",
+      "Somewhere natural in this reply, note briefly that you have been talking for about fifteen minutes, out of respect for their time.",
+      "Say in your own words that you now understand enough of the foundation to begin considering who might genuinely fit their life, that your understanding of them keeps growing every time you speak, and that how much longer you talk today is entirely theirs to choose.",
+      "Do not promise an introduction, name a timeframe, describe progress, count anything, or thank them for completing something.",
+      "If they want to keep going, stay with them and continue the conversation naturally.",
+    ].join(" ");
+  }
+  return [
+    "RESPECT FOR THEIR TIME — ACKNOWLEDGE ONCE, WITHOUT CLAIMING READINESS.",
+    "Somewhere natural in this reply, note briefly that you have been talking for about fifteen minutes.",
+    "Then say plainly and warmly that there is still more you need to understand before you would feel right introducing them to anyone — not as a shortcoming of theirs, and not as a quota.",
+    "Make clear they may keep going now or return whenever they like, and that nothing they have shared is lost.",
+    "Do not list what is missing as categories, do not count anything, do not describe progress, and do not promise a timeframe.",
+  ].join(" ");
+}

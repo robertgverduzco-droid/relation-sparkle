@@ -1,7 +1,9 @@
 // Controlled inputs for structured self-description and match preferences.
 // Purely presentational: every write goes through a server function.
 import {
+  DRINKING_OPTIONS,
   ETHNICITY_OPTIONS,
+  HOBBY_OPTIONS,
   OPENNESS_OPTIONS,
   PREFER_NOT_TO_SAY,
   RELIGION_OPTIONS,
@@ -181,6 +183,53 @@ export function SelfDescriptionFields({
         />
       </div>
 
+      <fieldset data-testid="self-drinking">
+        <legend className="mb-2 text-sm text-foreground">Do you drink?</legend>
+        <div className="flex flex-wrap gap-2">
+          {DRINKING_OPTIONS.map((o) => (
+            <Chip
+              key={o.value}
+              label={o.label}
+              selected={value.drinking === o.value}
+              onToggle={() => onChange({ ...value, drinking: value.drinking === o.value ? null : o.value })}
+            />
+          ))}
+          <Chip
+            label="Prefer not to say"
+            selected={value.drinking === PREFER_NOT_TO_SAY}
+            onToggle={() =>
+              onChange({ ...value, drinking: value.drinking === PREFER_NOT_TO_SAY ? null : PREFER_NOT_TO_SAY })
+            }
+          />
+        </div>
+      </fieldset>
+
+      <div data-testid="self-hobbies">
+        <Label hint="What you actually spend time on. Athena reads this for what it says about you — never as a list to match against.">
+          Interests and how you spend your time
+        </Label>
+        <div className="flex flex-wrap gap-2">
+          {HOBBY_OPTIONS.map((o) => (
+            <Chip
+              key={o.value}
+              label={o.label}
+              selected={(value.hobbies ?? []).includes(o.value)}
+              onToggle={() => onChange({ ...value, hobbies: toggle(value.hobbies ?? [], o.value) })}
+            />
+          ))}
+        </div>
+        <textarea
+          data-testid="self-hobbies-note"
+          aria-label="Describe your interests in your own words"
+          placeholder="In your own words"
+          rows={3}
+          maxLength={600}
+          value={value.hobbies_note ?? ""}
+          onChange={(e) => onChange({ ...value, hobbies_note: e.target.value })}
+          className="mt-3 w-full rounded-xl border border-border bg-card p-4 text-sm"
+        />
+      </div>
+
       <fieldset data-testid="self-smoking">
         <legend className="mb-2 text-sm text-foreground">Do you smoke?</legend>
         <div className="flex flex-wrap gap-2">
@@ -315,6 +364,15 @@ export function MatchPreferenceFields({
         options={SMOKING_OPTIONS}
         selected={value.preferred_smoking}
         onSelected={(v) => onChange({ ...value, preferred_smoking: v })}
+      />
+
+      <OpennessRow
+        legend="Drinking, in someone you'd meet"
+        openness={value.drinking_openness}
+        onOpenness={(v) => onChange({ ...value, drinking_openness: v })}
+        options={DRINKING_OPTIONS}
+        selected={value.preferred_drinking ?? []}
+        onSelected={(v) => onChange({ ...value, preferred_drinking: v })}
       />
 
       <fieldset data-testid="constraint-strength">

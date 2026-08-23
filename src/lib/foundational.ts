@@ -28,6 +28,7 @@ export type DomainKey =
   | "conflict"
   | "independence_closeness"
   | "lifestyle"
+  | "lifestyle_habits"
   | "social_life"
   | "family"
   | "work_ambition"
@@ -86,6 +87,11 @@ export const FOUNDATIONAL_DOMAINS: Domain[] = [
     key: "lifestyle",
     label: "the shape of their daily life",
     cues: /\b(routine|schedule|morning|weekend|daily|habits?|sleep|exercis|gym|health|eat|cook|home|where I live|city)\b/i,
+  },
+  {
+    key: "lifestyle_habits",
+    label: "everyday habits such as drinking and smoking",
+    cues: /\b(drink(s|ing)?|alcohol|wine|beer|sober|sobriety|smoke(s|r|ing)?|cigarette|vap(e|ing)|weed|teetotal|don'?t drink)\b/i,
   },
   {
     key: "social_life",

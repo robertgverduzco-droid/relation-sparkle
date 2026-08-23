@@ -122,6 +122,7 @@ function AthenaPage() {
   const introReadyRef = useRef(false);
   const [showReadinessSheet, setShowReadinessSheet] = useState(false);
   const readinessNoticeShownRef = useRef<Record<string, boolean>>({});
+  const readinessShortfallRef = useRef<string | null>(null);
 
   const flushingRef = useRef(false);
   const messagesRef = useRef<Msg[]>([]);
@@ -369,6 +370,7 @@ function AthenaPage() {
     messages: Msg[];
     elapsedMinutes: number;
     timeAcknowledged: boolean;
+    readinessShortfallSignature: string | null;
   }): Promise<{
     reply: string;
     pacing?: string;
@@ -376,6 +378,7 @@ function AthenaPage() {
     notice?: Notice;
     readiness?: { ready: boolean };
     readinessNotice?: ReadinessNoticeT;
+    readinessShortfallSignature?: string | null;
   } | null> {
     try {
       return await ask({ data: payload });
@@ -490,6 +493,7 @@ function AthenaPage() {
         messages: next,
         elapsedMinutes,
         timeAcknowledged: timeAcknowledgedRef.current,
+        readinessShortfallSignature: readinessShortfallRef.current,
       });
       if (!res) {
         void persist(next);
@@ -497,6 +501,9 @@ function AthenaPage() {
         return;
       }
       if (res.timeAcknowledged) timeAcknowledgedRef.current = true;
+      // Carries what Athena held when she last said she needed more, so she
+      // cannot contradict herself on a later turn.
+      readinessShortfallRef.current = res.readinessShortfallSignature ?? null;
       if (res.readiness) {
         setIntroReady(res.readiness.ready);
         introReadyRef.current = res.readiness.ready;

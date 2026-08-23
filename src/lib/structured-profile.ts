@@ -63,6 +63,55 @@ export const SMOKING_OPTIONS = [
   { value: "yes", label: "I smoke" },
 ] as const;
 
+/**
+ * Drinking. Deliberately member-friendly and few: enough for a genuine
+ * lifestyle constraint (someone in recovery, someone whose faith forbids it,
+ * someone who wants a partner who drinks with them) without pretending to
+ * measure anyone. It is never a desirability signal.
+ */
+export const DRINKING_OPTIONS = [
+  { value: "no", label: "I don't drink" },
+  { value: "rarely", label: "Rarely" },
+  { value: "socially", label: "Socially" },
+  { value: "regularly", label: "Regularly" },
+] as const;
+
+/**
+ * Hobbies and interests. The list is a convenience, never a taxonomy: the
+ * member's own words carry the same weight, and Athena reads any of it as
+ * evidence about the person (what it reveals), never as an activity to match
+ * on and never as a score.
+ */
+export const HOBBY_OPTIONS = [
+  { value: "reading", label: "Reading" },
+  { value: "writing", label: "Writing" },
+  { value: "music_listening", label: "Music" },
+  { value: "music_playing", label: "Playing an instrument" },
+  { value: "art", label: "Art & making things" },
+  { value: "photography", label: "Photography" },
+  { value: "film", label: "Film & television" },
+  { value: "cooking", label: "Cooking" },
+  { value: "food_dining", label: "Food & dining out" },
+  { value: "fitness", label: "Fitness & training" },
+  { value: "running", label: "Running" },
+  { value: "yoga", label: "Yoga & movement" },
+  { value: "hiking", label: "Hiking & the outdoors" },
+  { value: "water", label: "Water & the ocean" },
+  { value: "travel", label: "Travel" },
+  { value: "sports_watching", label: "Following sport" },
+  { value: "sports_playing", label: "Playing sport" },
+  { value: "games", label: "Games" },
+  { value: "technology", label: "Technology & building" },
+  { value: "gardening", label: "Gardening & plants" },
+  { value: "animals", label: "Animals" },
+  { value: "volunteering", label: "Volunteering" },
+  { value: "faith_practice", label: "Faith & practice" },
+  { value: "learning", label: "Learning & courses" },
+  { value: "nightlife", label: "Nightlife & live events" },
+  { value: "quiet_time", label: "Quiet time at home" },
+] as const;
+
+
 export const OPENNESS_OPTIONS: Array<{ value: Openness; label: string; help: string }> = [
   { value: "open", label: "Open to anyone", help: "No preference here." },
   { value: "preference", label: "I have a preference", help: "Athena will weigh it, gently." },
@@ -82,6 +131,12 @@ export type SelfDescription = {
   religion_self_describe: string | null;
   /** Member-stated smoking. Never inferred from photographs or anything else. */
   smoking: string | null;
+  /** Member-stated drinking. Never inferred, never a judgement. */
+  drinking: string | null;
+  /** Chosen interests. Evidence about a person, never a matching key. */
+  hobbies: string[];
+  /** Interests in the member's own words, where no chip fits. */
+  hobbies_note: string | null;
   /** Derived from the member's own stated birth date; null when not supplied. */
   age: number | null;
   /** The member's own stance on children (their statement about themselves). */
@@ -105,6 +160,8 @@ export type MatchPreferences = {
   children_strength: Strength;
   smoking_openness: Openness;
   preferred_smoking: string[];
+  drinking_openness: Openness;
+  preferred_drinking: string[];
 };
 
 export const EMPTY_SELF: SelfDescription = {
@@ -114,6 +171,9 @@ export const EMPTY_SELF: SelfDescription = {
   religions: [],
   religion_self_describe: null,
   smoking: null,
+  drinking: null,
+  hobbies: [],
+  hobbies_note: null,
   age: null,
   wants_children: null,
 };
@@ -134,7 +194,10 @@ export const EMPTY_PREFERENCES: MatchPreferences = {
   children_strength: "preference",
   smoking_openness: "open",
   preferred_smoking: [],
+  drinking_openness: "open",
+  preferred_drinking: [],
 };
+
 
 
 export function labelFor(
@@ -170,7 +233,8 @@ export type ConstraintField =
   | "religion"
   | "age"
   | "children"
-  | "smoking";
+  | "smoking"
+  | "drinking";
 
 export type ConstraintOutcome = {
   /** Which constraint this is. */
@@ -293,6 +357,15 @@ function evaluateOneDirection(holder: Party, counterpart: Party, side: "self" | 
     counterpart.self.smoking ? [counterpart.self.smoking] : [],
     null,
   );
+  categorical(
+    "drinking",
+    holder.prefs.drinking_openness,
+    holder.prefs.preferred_drinking,
+    counterpart.self.drinking ? [counterpart.self.drinking] : [],
+    null,
+  );
+
+
 
   // Age. The stated range is an ordinary preference unless the member marked it
   // a non-negotiable. A missing birth date is UNKNOWN, never a mismatch.
@@ -416,6 +489,20 @@ export function structuredContextBlock(self: SelfDescription, prefs: MatchPrefer
     lines.push(`- Stated non-negotiable about a partner and smoking: ${prefs.preferred_smoking.map((v) => labelFor(v, SMOKING_OPTIONS)).join(", ")}.`);
   } else if (prefs.preferred_smoking.length > 0) {
     lines.push(`- Preference about a partner and smoking: ${prefs.preferred_smoking.map((v) => labelFor(v, SMOKING_OPTIONS)).join(", ")}.`);
+  }
+  if (self.drinking) {
+    lines.push(`- On drinking, they said about themselves: ${labelFor(self.drinking, DRINKING_OPTIONS)}.`);
+  }
+  if (prefs.drinking_openness === "requirement" && (prefs.preferred_drinking ?? []).length > 0) {
+    lines.push(`- Stated non-negotiable about a partner and drinking: ${prefs.preferred_drinking.map((v) => labelFor(v, DRINKING_OPTIONS)).join(", ")}.`);
+  } else if ((prefs.preferred_drinking ?? []).length > 0) {
+    lines.push(`- Preference about a partner and drinking: ${prefs.preferred_drinking.map((v) => labelFor(v, DRINKING_OPTIONS)).join(", ")}.`);
+  }
+  if ((self.hobbies ?? []).length > 0) {
+    lines.push(`- Interests they chose for themselves: ${self.hobbies.map((v) => labelFor(v, HOBBY_OPTIONS)).join(", ")}. Read these as evidence about the person, never as things to match on.`);
+  }
+  if (self.hobbies_note && self.hobbies_note.trim()) {
+    lines.push(`- Interests in their own words: ${self.hobbies_note.trim()}`);
   }
   if (prefs.age_strength === "requirement" && (prefs.age_min != null || prefs.age_max != null)) {
     lines.push(`- They marked their age range a genuine non-negotiable: ${prefs.age_min ?? "any"} to ${prefs.age_max ?? "any"}.`);
