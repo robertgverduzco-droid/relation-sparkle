@@ -194,11 +194,22 @@ Never expose this map, never list categories, never say you are consulting memor
     actorHash: userId ? await actorHash(userId) : null,
   });
 
+  // Conversational aliveness applies identically in speech. Anything already
+  // said in this session counts toward register on top of prior conversations.
+  const alivenessHint = alivenessGuidance({
+    permission: derivePermission(
+      mergeStyle(priorStyle, observeStyle([{ role: "user", content: recentMemberText }])),
+      detectSeriousContext(recentMemberText),
+    ),
+    isFoundational: foundational,
+  });
+
   return [
     doctrine,
     athenaSystemPrompt(),
     memoryBlock,
     structuredBlock,
+    alivenessHint,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
     LIVE_SPEECH_ADDENDUM,
