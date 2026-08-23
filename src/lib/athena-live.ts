@@ -287,13 +287,30 @@ export class AthenaLiveSession {
 
   /**
    * Failure after the microphone is open: continuous conversation could not
-   * initialize. Never phrased as a permission problem.
+   * initialize or could not stay open. Never phrased as a permission problem;
+   * the precise technical cause goes to the server, not to the member.
    */
-  private failInit(message?: string): void {
-    this.fail(micFailureMessage("init-failed", message));
+  private failLive(reason: LiveFailure, detail: string, stage = "start"): void {
+    if (this.closed) return;
+    void this.report(reason, detail, stage);
+    this.fail(liveFailureMessage(reason));
+  }
+
+  private async report(reason: string, detail: string, stage: string): Promise<void> {
+    try {
+      await fetch("/api/live-diagnostic", {
+        method: "POST",
+        headers: { ...this.authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ reason, detail, stage }),
+        keepalive: true,
+      });
+    } catch {
+      /* diagnostics never affect what the member sees */
+    }
   }
 
   private fail(message: string): void {
+    this.closed = true;
     this.handlers.onError(message);
     this.handlers.onStatus("error");
     this.cleanup();
