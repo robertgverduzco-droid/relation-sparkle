@@ -63,6 +63,12 @@ export const askOutput = z.object({
   // Server-derived matchmaking readiness. The client renders from this only —
   // it never computes readiness itself.
   readiness: z.object({ ready: z.boolean() }).optional(),
+  /**
+   * True only while the member is still inside the first foundational
+   * conversation. Matchmaking readiness never implies this: once the
+   * foundational milestone exists, returning conversations are ordinary.
+   */
+  foundationalSession: z.boolean().optional(),
   // Early-exit experience: separate from `notice` (Trust & Safety) by type.
   readinessNotice: z
     .object({

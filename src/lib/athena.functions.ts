@@ -41,6 +41,7 @@ import {
 import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
+import { isFoundationalSession } from "./foundational-milestone";
 
 
 export const askAthena = createServerFn({ method: "POST" })
@@ -62,7 +63,7 @@ export const askAthena = createServerFn({ method: "POST" })
         .select("topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at"),
       // Foundational mode is decided by the member's own record, never by the
       // caller: the client's flag may only ever narrow it, not grant it.
-      supabase.from("interview_sessions").select("completed_at").maybeSingle(),
+      supabase.from("interview_sessions").select("completed_at, foundational_milestone_at").maybeSingle(),
     ]);
 
     // Structured intake (member-stated) is context, not a replacement for her
@@ -87,8 +88,14 @@ export const askAthena = createServerFn({ method: "POST" })
 
     const facets = (facetRows ?? []) as FacetRow[];
     const topics = (topicRows ?? []) as TopicRow[];
-    const isFoundational =
-      !sessionRow?.completed_at && data.foundational !== false;
+    // Foundational mode ends at the milestone, not at readiness. A returning
+    // member whose foundation already happened is in ordinary continuing
+    // conversation, so no pause/closing opportunity can be recreated.
+    const isFoundational = isFoundationalSession({
+      completedAt: sessionRow?.completed_at ?? null,
+      milestoneAt: (sessionRow as { foundational_milestone_at?: string | null } | null)?.foundational_milestone_at ?? null,
+      clientFoundational: data.foundational,
+    });
 
 
     const profileSummary = summarizeLivingProfile(facets);
@@ -301,6 +308,10 @@ Use this memory to:
       timeAcknowledged: shouldAcknowledgeTime,
       ...(notice ? { notice } : {}),
       readiness: { ready: readyNow },
+      // Conversation-lifecycle state, deliberately separate from readiness:
+      // false means this is an ordinary continuing conversation and no
+      // foundational pause/closing experience may appear.
+      foundationalSession: isFoundational,
       readinessShortfallSignature: claim.shortfallSignature,
       // The notice is a reply to a question, never an interruption. It appears
       // only when the member actually asks about readiness or asks to be
@@ -741,6 +752,44 @@ export const completeFoundationalConversation = createServerFn({ method: "POST" 
 
     return { ok: true, alreadyComplete, ready: true };
   });
+
+
+/**
+ * Record — once, ever — that the foundational pause/closing opportunity has
+ * been delivered to this member.
+ *
+ * This is conversation-lifecycle state, not eligibility: it never touches
+ * readiness, `completed_at`, or matchmaking. After it exists, returning
+ * sessions, reloads, other devices and later turns never recreate the
+ * foundational closing sheet. It is monotonic and account-scoped, and is only
+ * ever written for the caller's own row.
+ */
+export const markFoundationalMilestone = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const now = new Date().toISOString();
+
+    const { data: existing } = await supabaseAdmin
+      .from("interview_sessions")
+      .select("user_id, foundational_milestone_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!existing) return { ok: true as const, milestoneAt: null };
+    const already = (existing as { foundational_milestone_at?: string | null }).foundational_milestone_at;
+    if (already) return { ok: true as const, milestoneAt: already };
+
+    const { error } = await supabaseAdmin
+      .from("interview_sessions")
+      .update({ foundational_milestone_at: now })
+      .eq("user_id", userId)
+      .is("foundational_milestone_at", null);
+    if (error) throw new Error(error.message);
+    return { ok: true as const, milestoneAt: now };
+  });
+
 
 
 /**

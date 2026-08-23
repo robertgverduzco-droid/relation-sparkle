@@ -8,6 +8,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { assessCoverage, foundationalGuidance } from "./foundational";
+import { isFoundationalSession } from "./foundational-milestone";
 import {
   assessFoundationalReadiness,
   introductionReadinessGuidance,
@@ -80,7 +81,7 @@ export async function buildLiveInstructions(
           .select(
             "topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at",
           ),
-        supabase.from("interview_sessions").select("completed_at").maybeSingle(),
+        supabase.from("interview_sessions").select("completed_at, foundational_milestone_at").maybeSingle(),
       ]);
 
       // Structured intake context, so Athena never asks a member to repeat
@@ -108,7 +109,11 @@ export async function buildLiveInstructions(
         // Structured context is an enhancement, never a precondition.
       }
 
-      foundational = !sessionRow?.completed_at;
+      foundational = isFoundationalSession({
+        completedAt: sessionRow?.completed_at ?? null,
+        milestoneAt:
+          (sessionRow as { foundational_milestone_at?: string | null } | null)?.foundational_milestone_at ?? null,
+      });
 
       const facets = (facetRows ?? []) as FacetRow[];
       const topics = (topicRows ?? []) as TopicRow[];

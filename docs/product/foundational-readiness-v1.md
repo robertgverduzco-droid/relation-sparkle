@@ -77,3 +77,26 @@ no warning colour, no alert semantics. Trust & Safety notices are unchanged.
 - Single source of truth: readiness is returned by the server on every turn
   (`askAthena.readiness.ready`) from the same `assessFoundationalReadiness`
   the matchmaking gate uses. The client never computes it.
+
+## Foundational Milestone vs Matchmaking Readiness (V1.2)
+
+Readiness is **eligibility**; the foundational conversation is a **milestone**.
+They are now separate states.
+
+- `interview_sessions.foundational_milestone_at` records — once, ever, server-side
+  and account-scoped — that the "a natural place to pause" closing opportunity has
+  been delivered. It is monotonic and never cleared.
+- `isFoundationalSession()` (`src/lib/foundational-milestone.ts`) is the single
+  source of truth for whether Athena is still inside the first foundational
+  conversation: `!completed_at && !foundational_milestone_at` (the client's
+  `foundational` flag may only narrow it). Both `askAthena` and the live spoken
+  path derive from it, and `askAthena` returns `foundationalSession` so the UI
+  never infers the lifecycle from readiness.
+- Consequence: a returning member whose foundation already happened opens
+  straight into ordinary continuing conversation — no closing sheet on reload,
+  on another device, or after "Keep talking".
+- Unchanged: readiness criteria, the state-A gate, matchmaking eligibility, and
+  the early-exit experience for members who have **not** reached readiness (that
+  path deliberately does not consume the milestone).
+
+Regression coverage: `src/lib/foundational-milestone.test.ts`.
