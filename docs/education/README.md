@@ -31,10 +31,21 @@ scope is defined by its faculty profiles and its Closing Integration.
 
 ## Curriculum in the runtime
 
-The curriculum reaches Athena's live reasoning through
-`src/lib/athena-doctrine.server.ts`, which carries a compact synthesis of all
-seven colleges and selectively retrieves at most two college depth modules per
-turn. See [`docs/technical/RUNTIME-DOCTRINE.md`](../technical/RUNTIME-DOCTRINE.md).
+Two layers carry the curriculum into Athena's live reasoning:
+
+1. A compact always-present synthesis of all seven colleges in
+   `src/lib/athena-doctrine.server.ts`.
+2. Situational retrieval over the **entire** corpus in this directory —
+   indexed by `bun run education:index`, retrieved by
+   `src/lib/education-retrieval.server.ts`, and composed with doctrine in
+   `src/lib/education-context.server.ts` for text, voice, reflection, pair
+   reasoning, and post-meeting conversation.
+
+See [`docs/technical/RUNTIME-DOCTRINE.md`](../technical/RUNTIME-DOCTRINE.md) and
+[`docs/technical/EDUCATION-RETRIEVAL.md`](../technical/EDUCATION-RETRIEVAL.md).
+
+Editing any document here requires re-running the indexer before the change
+reaches runtime.
 
 Athena never quotes, cites, or imitates a faculty member to a member. She
 reasons from her education and speaks in her own voice.

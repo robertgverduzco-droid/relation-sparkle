@@ -21,16 +21,23 @@ never a source of truth; the Constitution and the Canonical Curriculum are.
 
 Baseline on every surface: L4 + L5 + L7 + the University synthesis.
 
-Selective retrieval (`conversation` and `meeting` modes only): at most two
-college depth modules, chosen deterministically from cues in the member's own
-recent turns. The full curriculum is never injected; no faculty roster, quote,
-or citation ever reaches the model as material to reproduce.
+The compact college depth modules in this file are now the *baseline* layer
+only. Situational educational depth is retrieved from the full indexed corpus by
+`src/lib/education-retrieval.server.ts`, and doctrine plus retrieval are
+composed in exactly one place —
+`src/lib/education-context.server.ts` (`reasoningContext()`), which every
+reasoning surface calls. See
+[`EDUCATION-RETRIEVAL.md`](./EDUCATION-RETRIEVAL.md).
+
+No faculty roster, quote, document name, or citation ever reaches the model as
+material to reproduce, on either layer.
 
 ## Surfaces
 
 | Surface | Mode | Call site |
 |---|---|---|
 | Live member conversation | `conversation` | `src/lib/athena.functions.ts` — `askAthena` |
+| Live spoken conversation | `voice` | `src/lib/athena-live.server.ts` — `buildLiveInstructions`, plus `src/routes/api/realtime-education.ts` mid-session |
 | Conversation reflection (Living Profile refinement) | `reflection` | `src/lib/athena.functions.ts` — `reflectAthena` |
 | Pair compatibility reasoning | `pair` | `src/lib/introductions.server.ts` — `reasonPair` |
 | Post-meeting reflection with a member | `meeting` | `src/lib/connections.server.ts` — `reflectSystemPrompt` |
