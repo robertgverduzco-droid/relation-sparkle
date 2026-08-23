@@ -20,6 +20,55 @@ export type Pacing = "continue" | "wind_down" | "offer_return";
 export const MIN_MINUTES_BEFORE_CLOSE = 16;
 
 /**
+ * RESPECT FOR THEIR TIME.
+ *
+ * Around this point Athena acknowledges, once, how long they have been
+ * talking. It is a courtesy, not a deadline: time never overrides readiness in
+ * either direction. Reaching it does not make her ready, and being ready
+ * before it does not oblige anyone to stop.
+ */
+export const RESPECT_TIME_MINUTES = 15;
+
+/**
+ * MEMBER-LED CLOSING.
+ *
+ * Once a member has said they want to keep going, Athena stays with them. She
+ * does not re-offer a pause every turn until they give in. Closing becomes
+ * theirs to initiate for at least this many subsequent turns.
+ */
+export const CONTINUE_SUPPRESSION_TURNS = 4;
+
+/** Member language that means "I'd like to keep going". */
+const MEMBER_CONTINUE_INTENT =
+  /\b(keep (going|talking|chatting)|carry on|continue|i'?m (happy|fine|good) to (keep|carry|continue|go on)|(let'?s|we can) keep (going|talking)|i (have|got) (more )?time|i'?d like to (keep|continue)|(no|not),? i'?m (fine|good|okay)|don'?t (want to )?stop|more time|go on)\b/i;
+
+/**
+ * True when the member has said they want the conversation to continue.
+ * Deliberately about continuing, never merely about answering at length.
+ */
+export function memberWantsToContinue(text: string): boolean {
+  const t = text ?? "";
+  if (MEMBER_STOP_INTENT.test(t)) return false;
+  return MEMBER_CONTINUE_INTENT.test(t);
+}
+
+/**
+ * How many member turns ago (0 = this turn) the member last said they wanted
+ * to keep going. Null when they never have. Derived from the transcript so no
+ * client state can dismiss a member who asked to stay.
+ */
+export function turnsSinceContinueRequest(
+  messages: ReadonlyArray<{ role: string; content: string }>,
+): number | null {
+  const memberTurns = (messages ?? []).filter((m) => m.role === "user");
+  for (let i = memberTurns.length - 1; i >= 0; i--) {
+    if (memberWantsToContinue(memberTurns[i]!.content)) return memberTurns.length - 1 - i;
+  }
+  return null;
+}
+
+
+/**
  * Member language that genuinely signals an intention to stop or pause.
  * Deliberately narrow: it must be about ending, not about being brief.
  */
