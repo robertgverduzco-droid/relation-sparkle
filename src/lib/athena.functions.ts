@@ -41,7 +41,7 @@ import {
 import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
-import { isFoundationalSession } from "./foundational-milestone";
+import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
 
 
 export const askAthena = createServerFn({ method: "POST" })
@@ -52,6 +52,7 @@ export const askAthena = createServerFn({ method: "POST" })
     const gateway = createLovableGateway();
 
     const { supabase } = context;
+    const { userId } = context;
 
     const [{ data: facetRows }, { data: topicRows }, { data: sessionRow }] = await Promise.all([
       supabase
