@@ -18,7 +18,7 @@ import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
-import { mayOfferFoundationalClose } from "@/lib/foundational-milestone";
+import { mayOfferFoundationalClose, isFoundationalSession } from "@/lib/foundational-milestone";
 import { assessBoundary, boundaryGuidance } from "@/lib/boundaries";
 import { earlyExitGuidance, wantsToFinishFoundational } from "@/lib/early-exit";
 import {
