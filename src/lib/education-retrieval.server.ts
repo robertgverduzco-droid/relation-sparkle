@@ -71,11 +71,11 @@ type ModePolicy = { maxChunks: number; charBudget: number; floor: number };
  * Profile material. These caps keep it from ever dominating a prompt.
  */
 export const MODE_POLICY: Record<RetrievalMode, ModePolicy> = {
-  conversation: { maxChunks: 4, charBudget: 3600, floor: 0.34 },
-  voice: { maxChunks: 3, charBudget: 2400, floor: 0.36 },
-  reflection: { maxChunks: 3, charBudget: 3000, floor: 0.34 },
-  pair: { maxChunks: 5, charBudget: 4500, floor: 0.32 },
-  meeting: { maxChunks: 3, charBudget: 2800, floor: 0.34 },
+  conversation: { maxChunks: 4, charBudget: 3600, floor: 0.55 },
+  voice: { maxChunks: 3, charBudget: 2400, floor: 0.58 },
+  reflection: { maxChunks: 3, charBudget: 3000, floor: 0.55 },
+  pair: { maxChunks: 5, charBudget: 4500, floor: 0.52 },
+  meeting: { maxChunks: 3, charBudget: 2800, floor: 0.55 },
 };
 
 /* ------------------------------------------------------------------ */
