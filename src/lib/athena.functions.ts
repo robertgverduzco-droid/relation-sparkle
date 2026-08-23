@@ -29,6 +29,7 @@ import { runtimeDoctrine } from "./athena-doctrine.server";
 import { LENS_LABELS, depthLicence, depthStage, lensForFacet, mergeEvidence } from "./profile-depth";
 
 import { assessCoverage, foundationalGuidance } from "./foundational";
+import { presenceGuidance } from "./presence-doctrine";
 import { assessBoundary, boundaryGuidance, boundaryNotice } from "./boundaries";
 import {
   assessFoundationalReadiness,
