@@ -5,6 +5,8 @@
 // and a running transcript so the conversation record stays continuous with
 // everything typed before or after it.
 
+import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
+
 export type LiveTurn = { role: "user" | "assistant"; content: string };
 
 export type LiveStatus =
