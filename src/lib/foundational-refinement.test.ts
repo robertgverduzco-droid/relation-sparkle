@@ -46,25 +46,27 @@ describe("hobbies and drinking are understanding, never scoring", () => {
     expect(block).toMatch(/Hiking & the outdoors/);
     expect(block).toMatch(/restore old bicycles/);
     expect(block).toMatch(/never as things to match on/i);
-    expect(block).not.toMatch(/score|rank|rating/i);
+    expect(block).toMatch(/never turn any of this into a score/i);
   });
 
   it("treats a stated drinking requirement as a genuine constraint, and silence as unknown", () => {
     const holder = {
+      id: "a",
       self: EMPTY_SELF,
       prefs: { ...EMPTY_PREFERENCES, drinking_openness: "requirement" as const, preferred_drinking: ["no"] },
     };
-    const teetotal = evaluateConstraints(holder, { self: { ...EMPTY_SELF, drinking: "no" }, prefs: EMPTY_PREFERENCES });
-    const drinker = evaluateConstraints(holder, {
-      self: { ...EMPTY_SELF, drinking: "regularly" },
-      prefs: EMPTY_PREFERENCES,
-    });
-    const unstated = evaluateConstraints(holder, { self: EMPTY_SELF, prefs: EMPTY_PREFERENCES });
+    const verdictFor = (drinking: string | null) =>
+      evaluateStructuredConstraints(holder, {
+        id: "b",
+        self: { ...EMPTY_SELF, drinking },
+        prefs: EMPTY_PREFERENCES,
+      }).outcomes.find((o) => o.field === "drinking" && o.holder === "self")?.verdict;
 
-    expect(teetotal.outcomes.find((o) => o.field === "drinking")?.state).toBe("compatible");
-    expect(drinker.outcomes.find((o) => o.field === "drinking")?.state).toBe("incompatible");
-    expect(unstated.outcomes.find((o) => o.field === "drinking")?.state ?? "unknown").not.toBe("incompatible");
+    expect(verdictFor("no")).toBe("compatible");
+    expect(verdictFor("regularly")).toBe("incompatible");
+    expect(verdictFor(null)).toBe("unknown");
   });
+
 
   it("offers members real options for both", () => {
     expect(DRINKING_OPTIONS.map((o) => o.value)).toContain("socially");
