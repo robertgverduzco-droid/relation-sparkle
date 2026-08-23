@@ -351,6 +351,60 @@ export type Database = {
         }
         Relationships: []
       }
+      education_retrieval_events: {
+        Row: {
+          actor_hash: string | null
+          candidate_count: number
+          chunk_ids: string[]
+          concepts: string[]
+          created_at: string
+          dense: boolean
+          id: string
+          injected_chars: number
+          is_empty: boolean
+          mode: string
+          query_chars: number
+          retrieved_count: number
+          scores: number[]
+          source_docs: string[]
+          surface: string
+        }
+        Insert: {
+          actor_hash?: string | null
+          candidate_count?: number
+          chunk_ids?: string[]
+          concepts?: string[]
+          created_at?: string
+          dense?: boolean
+          id?: string
+          injected_chars?: number
+          is_empty?: boolean
+          mode: string
+          query_chars?: number
+          retrieved_count?: number
+          scores?: number[]
+          source_docs?: string[]
+          surface: string
+        }
+        Update: {
+          actor_hash?: string | null
+          candidate_count?: number
+          chunk_ids?: string[]
+          concepts?: string[]
+          created_at?: string
+          dense?: boolean
+          id?: string
+          injected_chars?: number
+          is_empty?: boolean
+          mode?: string
+          query_chars?: number
+          retrieved_count?: number
+          scores?: number[]
+          source_docs?: string[]
+          surface?: string
+        }
+        Relationships: []
+      }
       enforcement_actions: {
         Row: {
           action: string

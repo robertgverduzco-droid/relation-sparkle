@@ -25,7 +25,7 @@ import {
   type TopicKey,
   type Json,
 } from "./athena.server";
-import { runtimeDoctrine } from "./athena-doctrine.server";
+import { reasoningContext, actorHash } from "./education-context.server";
 import { LENS_LABELS, depthLicence, depthStage, lensForFacet, mergeEvidence } from "./profile-depth";
 
 import { assessCoverage, foundationalGuidance } from "./foundational";
@@ -122,7 +122,12 @@ Use this memory to:
       .slice(-6)
       .map((m) => m.content)
       .join("\n");
-    const doctrine = runtimeDoctrine("conversation", recentMemberText);
+    const { block: doctrine } = await reasoningContext({
+      mode: "conversation",
+      surface: "askAthena",
+      memberText: recentMemberText,
+      actorHash: await actorHash(context.userId),
+    });
 
     const userTurns = data.messages.filter((m) => m.role === "user").length;
     const elapsed = data.elapsedMinutes ?? 0;
@@ -315,6 +320,19 @@ export const reflectAthena = createServerFn({ method: "POST" })
 
     const { supabase, userId } = context;
 
+    // Reflection reasons about the whole conversation, so it retrieves against
+    // the member's own words from it rather than a single turn.
+    const { block: reflectionDoctrine } = await reasoningContext({
+      mode: "reflection",
+      surface: "reflectAthena",
+      memberText: data.messages
+        .filter((m) => m.role === "user")
+        .slice(-12)
+        .map((m) => m.content)
+        .join("\n"),
+      actorHash: await actorHash(userId),
+    });
+
     const transcript = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => `${m.role === "user" ? "THEY" : "ATHENA"}: ${m.content}`)
@@ -380,7 +398,7 @@ export const reflectAthena = createServerFn({ method: "POST" })
       providerOptions: { lovable: { reasoningEffort: "none" } },
       prompt: `You are Athena, quietly refining your understanding of this person from the conversation so far.
 
-${runtimeDoctrine("reflection")}
+${reflectionDoctrine}
 
 Return two things:
 

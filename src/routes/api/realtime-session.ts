@@ -26,7 +26,16 @@ export const Route = createFileRoute("/api/realtime-session")({
           "@/lib/athena-live.server"
         );
         const accessToken = (request.headers.get("authorization") ?? "").slice(7);
-        const instructions = await buildLiveInstructions(accessToken);
+        // Anything already said today shapes which educational material the
+        // session opens with; the live client supplements it turn by turn.
+        let recentText = "";
+        try {
+          const body = (await request.json()) as { recentText?: unknown };
+          recentText = typeof body.recentText === "string" ? body.recentText.slice(0, 4000) : "";
+        } catch {
+          recentText = "";
+        }
+        const instructions = await buildLiveInstructions(accessToken, recentText, caller.userId);
 
         const res = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
           method: "POST",
