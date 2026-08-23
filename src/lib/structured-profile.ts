@@ -357,6 +357,15 @@ function evaluateOneDirection(holder: Party, counterpart: Party, side: "self" | 
     counterpart.self.smoking ? [counterpart.self.smoking] : [],
     null,
   );
+  categorical(
+    "drinking",
+    holder.prefs.drinking_openness,
+    holder.prefs.preferred_drinking,
+    counterpart.self.drinking ? [counterpart.self.drinking] : [],
+    null,
+  );
+
+
 
   // Age. The stated range is an ordinary preference unless the member marked it
   // a non-negotiable. A missing birth date is UNKNOWN, never a mismatch.
