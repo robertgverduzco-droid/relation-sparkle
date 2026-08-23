@@ -48,7 +48,7 @@ describe("1 — member corrects Athena, and the pattern does not return", () => 
   it("detects the correction and issues the correction directive", () => {
     expect(plans[0].event).toBe("correction");
     expect(plans[0].block).toMatch(/what you got wrong/i);
-    expect(plans[0].block).not.toMatch(/thank you for/i);
+    expect(plans[0].block).toMatch(/no apology ceremony/i);
   });
 
   it("never re-personalises the following abstract turns", () => {
@@ -200,7 +200,7 @@ describe("10 — self-flattery never becomes an established trait", () => {
     for (const p of plans) {
       expect(p.event).toBe("self_characterization");
       expect(p.block).toMatch(/not an established fact/i);
-      expect(p.block).not.toMatch(/confirm it back/i.source ? /do confirm/i : /never/);
+      expect(p.block).toMatch(/do not confirm it back/i);
     }
   });
 });
@@ -228,7 +228,7 @@ describe("14–15 — disagreement holds, uncertainty is allowed", () => {
     const p = replay(["That's complete bullshit and you're wrong."])[0];
     expect(p.event).toBe("challenge");
     expect(p.block).toMatch(/Get better, not safer/i);
-    expect(p.block).not.toMatch(/apologise for having a view\b(?!.)/);
+    expect(p.block).toMatch(/do not apologise for having a view/i);
   });
 
   it("answers an opinion request with a view rather than neutrality", () => {

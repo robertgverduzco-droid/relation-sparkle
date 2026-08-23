@@ -53,7 +53,7 @@ const SELF_CHARACTERIZATION =
   /\bi'?m (extremely|very|really|pretty|incredibly|super|quite|highly) [a-z-]+|\bi'?m (a|an) (great|amazing|excellent|really good|natural) [a-z-]+|\bi (always|never) (put|do|say|listen|handle)|\bi'?m the kind of (person|guy|man|woman|girl) who/i;
 
 const FIGURATIVE =
-  /(give a (shit|damn|fuck) about me|do you (even )?care|are (we|you) (friends|my friend)|you (like|get) me|did you (piss|annoy) (her|him|them) off|are you (mad|upset) at me|you and .* have a personal problem)/i;
+  /(gives? a (shit|damn|fuck) about me|do you (even )?care|are (we|you) (friends|my friend)|you (like|get) me|did you (piss|annoy) (her|him|them) off|are you (mad|upset) at me|you and .* have a personal problem)/i;
 
 const ABSURD_CATASTROPHE =
   /(obviously (she|he|they)|probably (moved|left|died|blocked)|clearly (she|he|they) (hates?|lost interest)|(she|he|they) (must|has to) have (lost interest|hated)|it'?s (definitely )?over)/i;
@@ -140,7 +140,7 @@ const EVENT_TAGS: Record<ConversationEvent, ExemplarTag[]> = {
   provenance: ["provenance", "source"],
   challenge: ["challenge", "correction"],
   self_characterization: ["self_characterization"],
-  joke: ["humor", "brief"],
+  joke: ["brief", "humor"],
   figurative: ["figurative", "humor"],
   subject_matter: ["intellectual"],
   opinion_request: ["disagreement", "uncertainty"],
