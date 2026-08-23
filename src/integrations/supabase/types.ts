@@ -629,6 +629,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          foundational_milestone_at: string | null
           messages: Json
           updated_at: string
           user_id: string
@@ -636,6 +637,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          foundational_milestone_at?: string | null
           messages?: Json
           updated_at?: string
           user_id: string
@@ -643,6 +645,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          foundational_milestone_at?: string | null
           messages?: Json
           updated_at?: string
           user_id?: string
