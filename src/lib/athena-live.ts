@@ -110,10 +110,20 @@ export class AthenaLiveSession {
         }
       };
 
+      // iOS Safari will not play a remote stream from a detached element, and
+      // needs playsInline; the element is attached, silent to the eye, and
+      // removed again on cleanup.
       this.audio = document.createElement("audio");
       this.audio.autoplay = true;
+      this.audio.setAttribute?.("playsinline", "");
+      this.audio.style?.setProperty?.("display", "none");
+      document.body?.appendChild?.(this.audio);
       pc.ontrack = (e) => {
-        if (this.audio) this.audio.srcObject = e.streams[0] ?? null;
+        if (!this.audio) return;
+        this.audio.srcObject = e.streams[0] ?? null;
+        // The member pressed a button to get here, so this play() is inside a
+        // gesture-initiated flow; a rejection is not fatal to the session.
+        void this.audio.play?.()?.catch?.(() => {});
       };
       const stream = this.stream;
       if (!stream) return this.cleanup();
@@ -332,6 +342,7 @@ export class AthenaLiveSession {
     this.stream?.getTracks().forEach((t) => t.stop());
     if (this.audio) {
       this.audio.srcObject = null;
+      this.audio.remove?.();
       this.audio = null;
     }
     this.dc = null;
