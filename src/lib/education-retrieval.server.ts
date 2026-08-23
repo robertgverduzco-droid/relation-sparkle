@@ -71,11 +71,11 @@ type ModePolicy = { maxChunks: number; charBudget: number; floor: number };
  * Profile material. These caps keep it from ever dominating a prompt.
  */
 export const MODE_POLICY: Record<RetrievalMode, ModePolicy> = {
-  conversation: { maxChunks: 4, charBudget: 3600, floor: 0.55 },
-  voice: { maxChunks: 3, charBudget: 2400, floor: 0.58 },
-  reflection: { maxChunks: 3, charBudget: 3000, floor: 0.55 },
-  pair: { maxChunks: 5, charBudget: 4500, floor: 0.52 },
-  meeting: { maxChunks: 3, charBudget: 2800, floor: 0.55 },
+  conversation: { maxChunks: 4, charBudget: 3600, floor: 0.45 },
+  voice: { maxChunks: 3, charBudget: 2400, floor: 0.47 },
+  reflection: { maxChunks: 3, charBudget: 3000, floor: 0.45 },
+  pair: { maxChunks: 5, charBudget: 4500, floor: 0.42 },
+  meeting: { maxChunks: 3, charBudget: 2800, floor: 0.45 },
 };
 
 /* ------------------------------------------------------------------ */
@@ -363,7 +363,16 @@ export async function retrieveEducation(input: RetrievalInput): Promise<Retrieva
     // both grounds it and stands alone when the provider is unreachable.
     // Both are mapped onto one 0..1 relevance scale so a single per-mode floor
     // means the same thing on either path — below it, nothing is retrieved.
-    const score = d === null ? lexRel : 0.7 * clamp(d / 0.6) + 0.3 * lexRel;
+    // Observed similarity for this corpus sits in a narrow band, so dense
+    // cosine is rescaled before fusion. Fusion is agreement-weighted rather
+    // than fixed-weight: either signal may carry a turn on its own (grief
+    // language is lexically obvious and densely subtle; "we never talk about
+    // sex anymore" is the reverse), and agreement raises confidence.
+    const denseRel = d === null ? null : clamp((d - 0.12) / 0.25);
+    const score =
+      denseRel === null
+        ? lexRel
+        : 0.75 * Math.max(denseRel, lexRel) + 0.25 * Math.min(denseRel, lexRel);
     fused.push({ i, score, dense: d, lexical: Number(lexRel.toFixed(4)) });
   }
   fused.sort((a, b) => b.score - a.score);
