@@ -139,8 +139,13 @@ function packParagraphs(body: string): string[] {
 export function chunkDocument(path: string, src: string): RawChunk[] {
   const rel = relative(ROOT, path).replace(/\\/g, "/");
   const kind = classify(rel);
+  const fm = frontmatter(src);
   const clean = stripFrontmatter(src);
   const docTitle = titleOf(clean, rel.split("/").pop()!.replace(/\.md$/, ""));
+  // A faculty document's `name` is "Carl Jung — Faculty Profile"; the scholar
+  // is the part before the dash.
+  const scholar =
+    kind === "faculty" ? (fm.name ?? docTitle).split(/[—–-]/)[0].trim() : undefined;
   const chunks: RawChunk[] = [];
 
   for (const s of sections(clean)) {
@@ -158,11 +163,15 @@ export function chunkDocument(path: string, src: string): RawChunk[] {
         kind,
         heading: s.heading,
         text: piece,
+        ...(fm.college ? { college: fm.college } : {}),
+        ...(scholar ? { scholar } : {}),
+        ...(fm.role ? { role: fm.role } : {}),
       });
     }
   }
   return chunks.filter((c) => c.text.length >= 120);
 }
+
 
 function collect(): RawChunk[] {
   const files = [
