@@ -147,12 +147,6 @@ Use this memory to:
     // readiness, in either direction.
     const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= RESPECT_TIME_MINUTES;
 
-    // Breadth-first orchestration, foundational mode only. The topic map is
-    // written after a conversation, so during the first one it is empty for
-    // the whole session; this recovers live coverage from the transcript.
-    const coverage = isFoundational ? assessCoverage(data.messages) : null;
-    const breadthHint = coverage ? foundationalGuidance(coverage) : "";
-
     // Matchmaking readiness is decided by persisted understanding, never by
     // the member's patience. Athena is told the truth about what she does and
     // does not yet understand so she cannot promise an introduction she is
@@ -178,6 +172,29 @@ Use this memory to:
       shortfallSignature: data.readinessShortfallSignature ?? null,
     });
     const readyNow = claim.ready;
+
+    // Legacy members reached readiness before the marker existed; their
+    // milestone is historical fact. Recognise it and record it once, so the
+    // marker is self-healing and the sheet can never recur for them.
+    const legacyCrossed = isLegacyCrossedFoundation({ ...sessionState, memberAlreadyReady: readyNow });
+    const isFoundational = isFoundationalSession({ ...sessionState, memberAlreadyReady: readyNow });
+    if (legacyCrossed) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin
+          .from("interview_sessions")
+          .update({ foundational_milestone_at: new Date().toISOString() })
+          .eq("user_id", userId)
+          .is("foundational_milestone_at", null);
+      } catch { /* non-fatal: the rule above already holds for this turn */ }
+    }
+
+    // Breadth-first orchestration, foundational mode only. The topic map is
+    // written after a conversation, so during the first one it is empty for
+    // the whole session; this recovers live coverage from the transcript.
+    const coverage = isFoundational ? assessCoverage(data.messages) : null;
+    const breadthHint = coverage ? foundationalGuidance(coverage) : "";
+
 
     const lastMemberText =
       [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
