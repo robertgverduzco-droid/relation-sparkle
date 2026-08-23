@@ -193,18 +193,18 @@ function AthenaPage() {
         const boundary = assessBoundary(next);
         if (boundary) {
           liveRef.current?.guide(
-            boundaryGuidance(boundary, !foundationCompleteRef.current),
+            boundaryGuidance(boundary, foundationalSessionRef.current),
           );
         }
         // Early exit is handled as its own experience in spoken mode too.
         // Readiness comes from the last server response, never from the client.
-        if (!foundationCompleteRef.current && wantsToFinishFoundational(turn.content)) {
+        if (foundationalSessionRef.current && wantsToFinishFoundational(turn.content)) {
           liveRef.current?.guide(earlyExitGuidance(introReadyRef.current, []));
         }
       }
       // Live sessions carry fixed instructions, so breadth-first correction
       // during the foundational conversation is delivered turn by turn.
-      if (turn.role === "assistant" && !foundationCompleteRef.current) {
+      if (turn.role === "assistant" && foundationalSessionRef.current) {
         const nudge = breadthNudge(assessCoverage(next));
         if (nudge) liveRef.current?.guide(nudge);
       }
