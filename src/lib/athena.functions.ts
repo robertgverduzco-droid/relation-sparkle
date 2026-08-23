@@ -314,20 +314,14 @@ Use this memory to:
     } catch {
       // Style personalisation is an enhancement; conservative default stands.
     }
-    // Serious material, or any live boundary situation, overrides accumulated
-    // playfulness for this turn regardless of rapport.
-    const seriousMoment = detectSeriousContext(lastMemberText) || Boolean(boundary);
-    const alivenessHint = alivenessGuidance({
-      permission: derivePermission(mergeStyle(priorStyle, observeStyle(data.messages)), seriousMoment),
-      isFoundational,
-    });
-
-    // Conversation Runtime V2: read the turn before composing it, and answer
-    // provenance questions with real provenance. Attribution metadata reaches
-    // the prompt only on turns where the member actually asked for it.
-    const { readTurn, turnRuntimeGuidance } = await import("./turn-runtime");
+    // Conversation Runtime V2 — ONE member-facing conversational runtime.
+    // Turn discipline, register, the single event directive, calibration
+    // exemplars and (only when invited) provenance are composed together in
+    // one fixed order by ./conversation-runtime, so no two behavioural blocks
+    // can argue with each other inside a single reply.
+    const { readTurn } = await import("./turn-runtime");
+    const { conversationRuntime } = await import("./conversation-runtime");
     const signals = readTurn(lastMemberText);
-    const turnHint = turnRuntimeGuidance(signals);
     let provenanceBlock = "";
     if (signals.provenance.active) {
       try {
@@ -342,6 +336,17 @@ Use this memory to:
         // Provenance deepens the answer; it never blocks the conversation.
       }
     }
+    const liveStyle = mergeStyle(priorStyle, observeStyle(data.messages));
+    const plan = conversationRuntime({
+      memberText: lastMemberText,
+      style: liveStyle,
+      isFoundational,
+      // Any live boundary situation forces the serious register regardless of
+      // accumulated rapport.
+      seriousOverride: Boolean(boundary),
+      provenanceBlock,
+    });
+    const runtimeHint = plan.block;
 
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
@@ -351,7 +356,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, turnHint, provenanceBlock, presenceHint, alivenessHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, presenceHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
@@ -360,11 +365,14 @@ Use this memory to:
 
 
 
+    // The member-facing turn must reconcile event, evidence, register,
+    // provenance, boundaries, memory and objective in one pass, so it runs
+    // with low reasoning rather than none. Analytical surfaces are unchanged.
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
       system: budgeted.system,
       messages: budgeted.messages as ModelMessage[],
-      providerOptions: { lovable: { reasoningEffort: "none" } },
+      providerOptions: { lovable: { reasoningEffort: "low" } },
     });
 
 
@@ -387,6 +395,52 @@ Use this memory to:
 
 
     const notice = boundary ? boundaryNotice(boundary) : null;
+
+    // Interaction-style evidence persists per turn, not only at reflection:
+    // a member who leaves before reflection runs must not be socially
+    // forgotten. Only the newest member turn is counted here, so a transcript
+    // can never be tallied twice.
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const delta = observeStyle([{ role: "user", content: lastMemberText }]);
+      if (delta.memberTurns > 0) {
+        const { data: row } = await supabaseAdmin
+          .from("member_interaction_style")
+          .select(
+            "profanity_turns, humor_turns, teasing_turns, self_deprecation_turns, directness_turns, member_turns",
+          )
+          .eq("user_id", userId)
+          .maybeSingle();
+        const merged = mergeStyle(
+          row
+            ? {
+                profanityTurns: Number(row.profanity_turns ?? 0),
+                humorTurns: Number(row.humor_turns ?? 0),
+                teasingTurns: Number(row.teasing_turns ?? 0),
+                selfDeprecationTurns: Number(row.self_deprecation_turns ?? 0),
+                directnessTurns: Number(row.directness_turns ?? 0),
+                memberTurns: Number(row.member_turns ?? 0),
+              }
+            : EMPTY_STYLE_EVIDENCE,
+          delta,
+        );
+        await supabaseAdmin.from("member_interaction_style").upsert(
+          {
+            user_id: userId,
+            profanity_turns: merged.profanityTurns,
+            humor_turns: merged.humorTurns,
+            teasing_turns: merged.teasingTurns,
+            self_deprecation_turns: merged.selfDeprecationTurns,
+            directness_turns: merged.directnessTurns,
+            member_turns: merged.memberTurns,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+      }
+    } catch {
+      // Style personalisation is an enhancement; never fail a reply for it.
+    }
 
     return askOutput.parse({
       reply,
