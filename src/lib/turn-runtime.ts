@@ -28,7 +28,8 @@ const CREDENTIAL_CHALLENGE =
   /(you'?re (just )?(an? )?(ai|bot|chatbot|algorithm|program|machine|language model)|what (are your|do you have for) (credentials|qualifications|training)|are you (even )?(qualified|a therapist|a psychologist|licensed|trained)|who (are you|the hell are you) to|why should i trust you|why would i trust you|do you (even )?know what you'?re talking about|you don'?t know anything|what makes you (an expert|qualified))/i;
 
 const INVENTORY_REQUEST =
-  /(athena university|what (have|did) you (studied|study|learn)|who (did|have) you (studied|study)|what (are|is) your (education|curriculum|colleges?|faculty)|your (education|curriculum|colleges?|faculty)|who taught you|what were you trained on)/i;
+  /(athena university|wh(at|o) (have|did) you (actually |really |even )?(studied|study|learn)|what (are|is) your (education|curriculum|colleges?|faculty)|your (education|curriculum|colleges?|faculty)|who taught you|what were you trained on)/i;
+
 
 const QUOTE_REQUEST =
   /(quote|exact words|verbatim|what exactly did (he|she|they) say|word for word)/i;
