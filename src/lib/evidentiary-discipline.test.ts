@@ -145,16 +145,17 @@ describe("anti-fortune-teller detectors", () => {
 
 describe("doctrine wiring", () => {
   it("puts evidentiary discipline on every surface", () => {
-    for (const mode of ["conversation", "voice", "reflection", "pair", "meeting"] as const) {
+    for (const mode of ["conversation", "reflection", "pair", "meeting"] as const) {
       expect(runtimeDoctrine(mode)).toContain(EVIDENTIARY_CORE);
     }
   });
 
   it("gives text and continuous voice identical evidentiary guidance", () => {
+    // Voice resolves to the conversation doctrine, so parity is structural:
+    // there is one string, not two that could drift apart.
     expect(evidentiaryGuidance()).toBe(EVIDENTIARY_CORE);
-    const text = runtimeDoctrine("conversation");
-    const voice = runtimeDoctrine("voice");
-    expect(text.includes(EVIDENTIARY_CORE)).toBe(voice.includes(EVIDENTIARY_CORE));
+    expect(runtimeDoctrine("conversation")).toContain(evidentiaryGuidance());
+
   });
 
   it("holds analytical surfaces to the stricter standard, and not conversation", () => {
