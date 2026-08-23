@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
+import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-education'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -93,6 +94,11 @@ const ApiSttRoute = ApiSttRouteImport.update({
 const ApiRealtimeSessionRoute = ApiRealtimeSessionRouteImport.update({
   id: '/api/realtime-session',
   path: '/api/realtime-session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRealtimeEducationRoute = ApiRealtimeEducationRouteImport.update({
+  id: '/api/realtime-education',
+  path: '/api/realtime-education',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUnderstandingRoute =
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/understanding'
+    | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/understanding'
+    | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/understanding'
+    | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
@@ -413,6 +425,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiRealtimeEducationRoute: typeof ApiRealtimeEducationRoute
   ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -497,6 +510,13 @@ declare module '@tanstack/react-router' {
       path: '/api/realtime-session'
       fullPath: '/api/realtime-session'
       preLoaderRoute: typeof ApiRealtimeSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/realtime-education': {
+      id: '/api/realtime-education'
+      path: '/api/realtime-education'
+      fullPath: '/api/realtime-education'
+      preLoaderRoute: typeof ApiRealtimeEducationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/understanding': {
@@ -740,6 +760,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiRealtimeEducationRoute: ApiRealtimeEducationRoute,
   ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
