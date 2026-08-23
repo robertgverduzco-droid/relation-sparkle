@@ -204,17 +204,28 @@ Never expose this map, never list categories, never say you are consulting memor
     isFoundational: foundational,
   });
 
+  // Conversation Runtime V2: the same turn discipline governs speech. A
+  // session's instructions are fixed when minted, so provenance material is
+  // supplied mid-session by /api/realtime-education rather than here.
+  const { turnRuntimeGuidance, readTurn } = await import("./turn-runtime");
+  const turnHint = turnRuntimeGuidance({
+    ...readTurn(recentMemberText),
+    provenance: { active: false, sourceRequest: false, credentialChallenge: false, inventoryRequest: false, quoteRequest: false },
+  });
+
   return [
     doctrine,
     athenaSystemPrompt(),
     memoryBlock,
     structuredBlock,
+    turnHint,
     alivenessHint,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
     LIVE_SPEECH_ADDENDUM,
   ].filter(Boolean).join("\n\n");
 }
+
 
 /** Realtime session configuration sent when minting the ephemeral secret. */
 export function liveSessionConfig(instructions: string) {
