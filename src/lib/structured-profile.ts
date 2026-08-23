@@ -63,6 +63,55 @@ export const SMOKING_OPTIONS = [
   { value: "yes", label: "I smoke" },
 ] as const;
 
+/**
+ * Drinking. Deliberately member-friendly and few: enough for a genuine
+ * lifestyle constraint (someone in recovery, someone whose faith forbids it,
+ * someone who wants a partner who drinks with them) without pretending to
+ * measure anyone. It is never a desirability signal.
+ */
+export const DRINKING_OPTIONS = [
+  { value: "no", label: "I don't drink" },
+  { value: "rarely", label: "Rarely" },
+  { value: "socially", label: "Socially" },
+  { value: "regularly", label: "Regularly" },
+] as const;
+
+/**
+ * Hobbies and interests. The list is a convenience, never a taxonomy: the
+ * member's own words carry the same weight, and Athena reads any of it as
+ * evidence about the person (what it reveals), never as an activity to match
+ * on and never as a score.
+ */
+export const HOBBY_OPTIONS = [
+  { value: "reading", label: "Reading" },
+  { value: "writing", label: "Writing" },
+  { value: "music_listening", label: "Music" },
+  { value: "music_playing", label: "Playing an instrument" },
+  { value: "art", label: "Art & making things" },
+  { value: "photography", label: "Photography" },
+  { value: "film", label: "Film & television" },
+  { value: "cooking", label: "Cooking" },
+  { value: "food_dining", label: "Food & dining out" },
+  { value: "fitness", label: "Fitness & training" },
+  { value: "running", label: "Running" },
+  { value: "yoga", label: "Yoga & movement" },
+  { value: "hiking", label: "Hiking & the outdoors" },
+  { value: "water", label: "Water & the ocean" },
+  { value: "travel", label: "Travel" },
+  { value: "sports_watching", label: "Following sport" },
+  { value: "sports_playing", label: "Playing sport" },
+  { value: "games", label: "Games" },
+  { value: "technology", label: "Technology & building" },
+  { value: "gardening", label: "Gardening & plants" },
+  { value: "animals", label: "Animals" },
+  { value: "volunteering", label: "Volunteering" },
+  { value: "faith_practice", label: "Faith & practice" },
+  { value: "learning", label: "Learning & courses" },
+  { value: "nightlife", label: "Nightlife & live events" },
+  { value: "quiet_time", label: "Quiet time at home" },
+] as const;
+
+
 export const OPENNESS_OPTIONS: Array<{ value: Openness; label: string; help: string }> = [
   { value: "open", label: "Open to anyone", help: "No preference here." },
   { value: "preference", label: "I have a preference", help: "Athena will weigh it, gently." },
