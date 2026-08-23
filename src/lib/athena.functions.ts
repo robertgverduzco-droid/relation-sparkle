@@ -322,6 +322,27 @@ Use this memory to:
       isFoundational,
     });
 
+    // Conversation Runtime V2: read the turn before composing it, and answer
+    // provenance questions with real provenance. Attribution metadata reaches
+    // the prompt only on turns where the member actually asked for it.
+    const { readTurn, turnRuntimeGuidance } = await import("./turn-runtime");
+    const signals = readTurn(lastMemberText);
+    const turnHint = turnRuntimeGuidance(signals);
+    let provenanceBlock = "";
+    if (signals.provenance.active) {
+      try {
+        const { provenanceContext } = await import("./provenance.server");
+        provenanceBlock = (
+          await provenanceContext({
+            intent: signals.provenance,
+            memberText: `${lastMemberText}\n${recentMemberText}`,
+          })
+        ).block;
+      } catch {
+        // Provenance deepens the answer; it never blocks the conversation.
+      }
+    }
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -330,11 +351,12 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, presenceHint, alivenessHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, turnHint, provenanceBlock, presenceHint, alivenessHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
     );
+
 
 
 
