@@ -1395,10 +1395,13 @@ export type Database = {
           country: string | null
           created_at: string
           display_name: string | null
+          drinking: string | null
           ethnicities: string[]
           ethnicity_self_describe: string | null
           gender: string | null
           height_cm: number | null
+          hobbies: string[]
+          hobbies_note: string | null
           id: string
           is_paused: boolean
           is_synthetic: boolean
@@ -1421,10 +1424,13 @@ export type Database = {
           country?: string | null
           created_at?: string
           display_name?: string | null
+          drinking?: string | null
           ethnicities?: string[]
           ethnicity_self_describe?: string | null
           gender?: string | null
           height_cm?: number | null
+          hobbies?: string[]
+          hobbies_note?: string | null
           id: string
           is_paused?: boolean
           is_synthetic?: boolean
@@ -1447,10 +1453,13 @@ export type Database = {
           country?: string | null
           created_at?: string
           display_name?: string | null
+          drinking?: string | null
           ethnicities?: string[]
           ethnicity_self_describe?: string | null
           gender?: string | null
           height_cm?: number | null
+          hobbies?: string[]
+          hobbies_note?: string | null
           id?: string
           is_paused?: boolean
           is_synthetic?: boolean
@@ -2147,6 +2156,7 @@ export type Database = {
           children_strength: string
           created_at: string
           deal_breakers: Json
+          drinking_openness: string
           ethnicity_openness: string
           height_max_cm: number | null
           height_min_cm: number | null
@@ -2154,6 +2164,7 @@ export type Database = {
           important_values: Json
           lifestyle_notes: string | null
           max_distance_km: number | null
+          preferred_drinking: string[]
           preferred_ethnicities: string[]
           preferred_religions: string[]
           preferred_smoking: string[]
@@ -2173,6 +2184,7 @@ export type Database = {
           children_strength?: string
           created_at?: string
           deal_breakers?: Json
+          drinking_openness?: string
           ethnicity_openness?: string
           height_max_cm?: number | null
           height_min_cm?: number | null
@@ -2180,6 +2192,7 @@ export type Database = {
           important_values?: Json
           lifestyle_notes?: string | null
           max_distance_km?: number | null
+          preferred_drinking?: string[]
           preferred_ethnicities?: string[]
           preferred_religions?: string[]
           preferred_smoking?: string[]
@@ -2199,6 +2212,7 @@ export type Database = {
           children_strength?: string
           created_at?: string
           deal_breakers?: Json
+          drinking_openness?: string
           ethnicity_openness?: string
           height_max_cm?: number | null
           height_min_cm?: number | null
@@ -2206,6 +2220,7 @@ export type Database = {
           important_values?: Json
           lifestyle_notes?: string | null
           max_distance_km?: number | null
+          preferred_drinking?: string[]
           preferred_ethnicities?: string[]
           preferred_religions?: string[]
           preferred_smoking?: string[]
