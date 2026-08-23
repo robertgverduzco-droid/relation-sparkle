@@ -235,6 +235,17 @@ Use this memory to:
       }
     }
 
+    // Presence & Continuing Relationship doctrine: composure always, and the
+    // tone transition once the foundation exists. Expression only.
+    const presenceHint = presenceGuidance({
+      isFoundational,
+      ready: readyNow,
+      waiting: Boolean(waitingHint),
+      // Varies the open-door phrasing across conversations without ever
+      // repeating a canned reminder.
+      seed: userTurns + Math.trunc(elapsed) + context.userId.charCodeAt(0),
+    });
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -243,7 +254,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, presenceHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
