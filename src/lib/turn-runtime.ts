@@ -22,7 +22,7 @@
 /* ------------------------------------------------------------------ */
 
 const SOURCE_REQUEST =
-  /(where (did|do) (you|that) (get|come|learn)|what('s| is) (that|this) based on|based on what|says who|source|sources|citation|cite|evidence for that|how do you know( that)?|what are you basing|which (study|research|theory|book|framework)|is that (research|science|proven)|according to whom)/i;
+  /(where (are|did|do) (you|that) (get|getting|come|coming|learn)|what('s| is) (that|this) based on|based on what|says who|source|sources|citation|cite|evidence for that|how do you know( that)?|what are you basing|which (study|research|theory|book|framework)|is that (research|science|proven)|according to whom)/i;
 
 const CREDENTIAL_CHALLENGE =
   /(you'?re (just )?(an? )?(ai|bot|chatbot|algorithm|program|machine|language model)|what (are your|do you have for) (credentials|qualifications|training)|are you (even )?(qualified|a therapist|a psychologist|licensed|trained)|who (are you|the hell are you) to|why should i trust you|why would i trust you|do you (even )?know what you'?re talking about|you don'?t know anything|what makes you (an expert|qualified))/i;
@@ -34,7 +34,7 @@ const QUOTE_REQUEST =
   /(quote|exact words|verbatim|what exactly did (he|she|they) say|word for word)/i;
 
 const CHALLENGE =
-  /(that'?s (wrong|not right|nonsense|bullshit|rubbish|a stretch|projection)|you'?re wrong|i disagree|you'?ve (got|gotten) that wrong|no,? (that'?s|it'?s) not|you'?re (over ?reading|reaching|projecting|assuming)|where are you getting that|prove it|i don'?t buy (that|it)|that'?s not what i said)/i;
+  /(that'?s (completely |totally |just |simply |flat )?(wrong|not right|nonsense|bullshit|rubbish|a stretch|projection)|you'?re wrong|i disagree|you'?ve (got|gotten) that wrong|no,? (that'?s|it'?s) not|you'?re (over ?reading|reaching|projecting|assuming)|where are you getting that|prove it|i don'?t buy (that|it)|that'?s not what i said)/i;
 
 const OPINION_REQUEST =
   /(what do you think|your (opinion|view|take)|do you (agree|think i should)|would you|what would you do|be honest with me about)/i;
