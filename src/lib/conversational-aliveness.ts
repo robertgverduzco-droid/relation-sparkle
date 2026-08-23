@@ -126,18 +126,16 @@ export function derivePermission(
   evidence: StyleEvidence,
   seriousMoment = false,
 ): RegisterPermission {
+  // V2 mechanical fix: register unlocks from real evidence, not from
+  // conversation length. One genuine humour opening is enough to stop
+  // sounding like a stranger; repetition earns the fully playful register.
+  const light = evidence.humorTurns + evidence.selfDeprecationTurns;
   const humor: HumorLevel =
-    evidence.humorTurns + evidence.selfDeprecationTurns >= 5 && evidence.memberTurns >= 10
-      ? "playful"
-      : evidence.humorTurns + evidence.selfDeprecationTurns >= 2
-        ? "natural"
-        : "reserved";
+    light >= 3 ? "playful" : light >= 1 ? "natural" : "reserved";
 
-  const profanity = evidence.profanityTurns >= 3 && evidence.memberTurns >= 6;
+  const profanity = evidence.profanityTurns >= 1;
   const teasing =
-    evidence.teasingTurns >= 2 &&
-    humor === "playful" &&
-    evidence.memberTurns >= 10;
+    evidence.teasingTurns >= 1 || (light >= 3 && evidence.selfDeprecationTurns >= 1);
 
   return {
     humor: seriousMoment ? "reserved" : humor,

@@ -55,7 +55,11 @@ const RULES: Rule[] = [
   {
     category: "abusive_language",
     severity: "graduated",
-    cues: /\b(you'?re (a )?(stupid|useless|worthless|dumb|pathetic)|shut the fuck up|fuck you|bitch|cunt|retard)\b/i,
+    // V2 mechanical fix: ordinary conversational profanity is NOT abuse.
+    // Only language actually aimed at Athena (or at a person) counts. "this
+    // fucking app is frustrating" must never be handled as "fuck you, Athena".
+    cues:
+      /(\byou'?re (a |an |such a )?(stupid|useless|worthless|dumb|pathetic|fucking useless|piece of shit)|\bshut the fuck up\b|\bfuck (you|off)\b|\byou (fucking )?(bitch|cunt|idiot|moron|retard)\b|\b(bitch|cunt|retard),? (you|athena)\b|\bathena,? you'?re (a |an )?(bitch|cunt|stupid|useless|worthless))/i,
     subject: "language aimed at her rather than at the conversation",
   },
   {
