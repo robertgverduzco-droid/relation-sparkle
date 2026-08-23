@@ -104,7 +104,7 @@ describe("C/E/F. returning, reloading, and other devices never recreate the shee
 
   it("the state is server-backed on the member's own row, never localStorage", () => {
     expect(server).toMatch(/foundational_milestone_at/);
-    expect(route).toMatch(/select\("messages, completed_at, foundational_milestone_at"\)/);
+    expect(route).toMatch(/select\("messages, completed_at, foundational_milestone_at, created_at"\)/);
     expect(route).not.toMatch(/localStorage[\s\S]{0,80}milestone/i);
   });
 });
