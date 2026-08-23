@@ -3,7 +3,7 @@
 // keeping user privacy: only Athena's server code ever sees other users'
 // facets; nothing is returned to the caller other than the presentation
 // Athena chooses for them.
-import { runtimeDoctrine } from "./athena-doctrine.server";
+
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -311,13 +311,24 @@ export async function reasonPair(args: {
 }) {
   const { createLovableGateway } = await import("./ai-gateway.server");
   const gateway = createLovableGateway();
+
+  // Pair reasoning retrieves against what Athena understands about both
+  // people, so the material that reaches the decision is the material that
+  // bears on this specific pairing.
+  const { reasoningContext } = await import("./education-context.server");
+  const { block: doctrine } = await reasoningContext({
+    mode: "pair",
+    surface: "reasonPair",
+    memberText: `${summarizeFacets(args.a.facets)}\n${summarizeFacets(args.b.facets)}`,
+  });
+
   const { object } = await generateObject({
     model: gateway("openai/gpt-5.5"),
     schema: reasoningSchema,
     providerOptions: { lovable: { reasoningEffort: "none" } },
     prompt: `You are Athena. Consider whether these two people might be worth introducing.
 
-${runtimeDoctrine("pair")}
+${doctrine}
 
 HOW YOU DECIDE (governed by L6c Matchmaking Intelligence — never narrated as rules)
 - You are not looking for a perfect match. You are looking for a meaningful possibility. An introduction is an invitation, never a prediction.
