@@ -47,10 +47,24 @@ export const Route = createFileRoute("/api/realtime-education")({
         // the situational educational layer is sent mid-conversation.
         const marker = "DEPTH FROM YOUR EDUCATION";
         const idx = block.indexOf(marker);
+        const depth = idx >= 0 ? block.slice(idx) : "";
+
+        // Provenance is member-triggered and turn-scoped: a spoken session
+        // only receives attribution metadata when someone actually asks.
+        const { detectProvenanceIntent, PROVENANCE_POSTURE } = await import("@/lib/turn-runtime");
+        const intent = detectProvenanceIntent(text);
+        let provenance = "";
+        if (intent.active) {
+          const { provenanceContext } = await import("@/lib/provenance.server");
+          const result = await provenanceContext({ intent, memberText: text });
+          provenance = result.block ? `${PROVENANCE_POSTURE}\n\n${result.block}` : PROVENANCE_POSTURE;
+        }
+
         return Response.json(
-          { block: idx >= 0 ? block.slice(idx) : "" },
+          { block: [depth, provenance].filter(Boolean).join("\n\n") },
           { headers: { "Cache-Control": "no-store" } },
         );
+
       },
     },
   },

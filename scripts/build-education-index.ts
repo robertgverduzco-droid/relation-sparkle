@@ -36,6 +36,10 @@ export type RawChunk = {
   kind: Kind;
   heading: string;
   text: string;
+  /** Provenance metadata — withheld from ordinary prompts, used on demand. */
+  college?: string;
+  scholar?: string;
+  role?: string;
 };
 
 function listMarkdown(dir: string): string[] {
@@ -53,6 +57,18 @@ function classify(path: string): Kind {
   return "university";
 }
 
+function frontmatter(src: string): Record<string, string> {
+  if (!src.startsWith("---")) return {};
+  const end = src.indexOf("\n---", 3);
+  if (end === -1) return {};
+  const out: Record<string, string> = {};
+  for (const line of src.slice(3, end).split("\n")) {
+    const m = line.match(/^([a-z_]+):\s*(.+)$/i);
+    if (m) out[m[1].trim().toLowerCase()] = m[2].trim();
+  }
+  return out;
+}
+
 function stripFrontmatter(src: string): string {
   if (!src.startsWith("---")) return src;
   const end = src.indexOf("\n---", 3);
@@ -63,6 +79,7 @@ function titleOf(src: string, fallback: string): string {
   const m = src.match(/^#\s+(.+)$/m);
   return m ? m[1].trim() : fallback;
 }
+
 
 /** Split a document into (heading-path, body) sections at ## / ### boundaries. */
 function sections(src: string): { heading: string; body: string }[] {
@@ -122,8 +139,13 @@ function packParagraphs(body: string): string[] {
 export function chunkDocument(path: string, src: string): RawChunk[] {
   const rel = relative(ROOT, path).replace(/\\/g, "/");
   const kind = classify(rel);
+  const fm = frontmatter(src);
   const clean = stripFrontmatter(src);
   const docTitle = titleOf(clean, rel.split("/").pop()!.replace(/\.md$/, ""));
+  // A faculty document's `name` is "Carl Jung — Faculty Profile"; the scholar
+  // is the part before the dash.
+  const scholar =
+    kind === "faculty" ? (fm.name ?? docTitle).split(/[—–-]/)[0].trim() : undefined;
   const chunks: RawChunk[] = [];
 
   for (const s of sections(clean)) {
@@ -141,11 +163,15 @@ export function chunkDocument(path: string, src: string): RawChunk[] {
         kind,
         heading: s.heading,
         text: piece,
+        ...(fm.college ? { college: fm.college } : {}),
+        ...(scholar ? { scholar } : {}),
+        ...(fm.role ? { role: fm.role } : {}),
       });
     }
   }
   return chunks.filter((c) => c.text.length >= 120);
 }
+
 
 function collect(): RawChunk[] {
   const files = [
