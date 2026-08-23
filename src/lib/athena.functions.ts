@@ -63,7 +63,7 @@ export const askAthena = createServerFn({ method: "POST" })
         .select("topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at"),
       // Foundational mode is decided by the member's own record, never by the
       // caller: the client's flag may only ever narrow it, not grant it.
-      supabase.from("interview_sessions").select("completed_at, foundational_milestone_at").maybeSingle(),
+      supabase.from("interview_sessions").select("completed_at, foundational_milestone_at, created_at").maybeSingle(),
     ]);
 
     // Structured intake (member-stated) is context, not a replacement for her
