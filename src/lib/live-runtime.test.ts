@@ -142,7 +142,7 @@ function mockFetch(handler: (url: string) => Response | Promise<Response>) {
 
 describe("session initialization", () => {
   it("opens successfully end to end", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("navigator", fakeMic(true));
     mockFetch((url) =>
       url.includes("/api/realtime-session")
         ? Response.json({ clientSecret: "ek_test" })
@@ -155,7 +155,7 @@ describe("session initialization", () => {
   });
 
   it("reports a provider/session failure, never a permission failure, when the mic is granted", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("navigator", fakeMic(true));
     mockFetch((url) =>
       url.includes("/api/realtime-session")
         ? new Response("Live conversation is unavailable right now", { status: 502 })
@@ -170,7 +170,7 @@ describe("session initialization", () => {
   });
 
   it("preserves the real technical cause server-side", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("navigator", fakeMic(true));
     const calls = mockFetch((url) =>
       url.includes("/api/realtime-session")
         ? new Response("nope", { status: 500 })
@@ -181,7 +181,7 @@ describe("session initialization", () => {
   });
 
   it("reports a network failure when the request never lands", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("navigator", fakeMic(true));
     vi.stubGlobal("fetch", async (input: string) => {
       if (String(input).includes("/api/live-diagnostic")) return new Response(null, { status: 204 });
       throw new TypeError("Failed to fetch");
@@ -192,7 +192,7 @@ describe("session initialization", () => {
   });
 
   it("still reports a denied microphone as a permission problem", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(false);
+    vi.stubGlobal("navigator", fakeMic(false));
     mockFetch(() => new Response(null, { status: 204 }));
     const h = harness();
     await h.session.start({});
@@ -200,12 +200,12 @@ describe("session initialization", () => {
   });
 
   it("reports a missing device plainly", async () => {
-    (globalThis as Record<string, unknown>).navigator = {
+    vi.stubGlobal("navigator", {
       mediaDevices: {
         enumerateDevices: async () => [],
         getUserMedia: async () => ({ getTracks: () => [] }),
       },
-    };
+    });
     mockFetch(() => new Response(null, { status: 204 }));
     const h = harness();
     await h.session.start({});
@@ -213,7 +213,7 @@ describe("session initialization", () => {
   });
 
   it("refuses to open a second session from the same instance", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("navigator", fakeMic(true));
     const calls = mockFetch((url) =>
       url.includes("/api/realtime-session")
         ? Response.json({ clientSecret: "ek_test" })
@@ -226,7 +226,7 @@ describe("session initialization", () => {
   });
 
   it("releases the microphone when the conversation ends", async () => {
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("navigator", fakeMic(true));
     mockFetch((url) =>
       url.includes("/api/realtime-session")
         ? Response.json({ clientSecret: "ek_test" })
@@ -241,13 +241,12 @@ describe("session initialization", () => {
 
   it("declines cleanly on a browser without WebRTC", async () => {
     delete (globalThis as Record<string, unknown>).RTCPeerConnection;
-    (globalThis as Record<string, unknown>).window = {};
-    (globalThis as Record<string, unknown>).navigator = fakeMic(true);
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("navigator", fakeMic(true));
     mockFetch(() => new Response(null, { status: 204 }));
     const h = harness();
     await h.session.start({});
     expect(h.errors[0]).toContain("can't hold a live conversation");
-    delete (globalThis as Record<string, unknown>).window;
   });
 });
 
