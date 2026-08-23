@@ -110,6 +110,12 @@ export type PacingInput = {
    * minimum is learned in ordinary ongoing conversation instead.
    */
   readinessMet?: boolean;
+  /**
+   * Member turns since they last said they want to keep going (0 = this
+   * turn), or null. While this is under CONTINUE_SUPPRESSION_TURNS Athena
+   * never initiates a close again — closing is theirs to lead.
+   */
+  continueRequestedTurnsAgo?: number | null;
 };
 
 export function decidePacing(input: PacingInput): Pacing {
@@ -117,6 +123,12 @@ export function decidePacing(input: PacingInput): Pacing {
 
   // The member asking to stop is always honoured, immediately and at any point.
   if (memberWantsToStop(latestMemberMessage)) return "offer_return";
+
+  // Member-led closing. They have told Athena they want to keep talking;
+  // repeating the offer to pause would be dismissing them, whatever the clock
+  // or the readiness state says.
+  const since = input.continueRequestedTurnsAgo;
+  if (since != null && since >= 0 && since < CONTINUE_SUPPRESSION_TURNS) return "continue";
 
   // Minimum readiness reached: close. The time floor exists to stop a terse
   // member being rushed out before Athena understands them — it is not a
@@ -143,3 +155,39 @@ export function decidePacing(input: PacingInput): Pacing {
   return elapsed >= 18 || userTurns >= 12 ? "wind_down" : "continue";
 }
 
+
+/**
+ * RESPECT-TIME POSTURE (approximately fifteen minutes).
+ *
+ * Guidance only; the words remain Athena's. Two distinct situations:
+ *  - ready: acknowledge the time once, say a foundation now exists, make
+ *    clear understanding continues and the length is theirs to choose.
+ *  - not ready: acknowledge the time once, say plainly that she needs to
+ *    understand more before she would introduce them, and leave them free to
+ *    continue now or return later.
+ *
+ * Neither promises an introduction, a timeframe, or a next step.
+ */
+export function respectTimeGuidance(input: {
+  elapsedMinutes: number;
+  ready: boolean;
+  alreadyAcknowledged: boolean;
+}): string {
+  if (input.alreadyAcknowledged || input.elapsedMinutes < RESPECT_TIME_MINUTES) return "";
+  if (input.ready) {
+    return [
+      "RESPECT FOR THEIR TIME — ACKNOWLEDGE ONCE.",
+      "Somewhere natural in this reply, note briefly that you have been talking for about fifteen minutes, out of respect for their time.",
+      "Say in your own words that you now understand enough of the foundation to begin considering who might genuinely fit their life, that your understanding of them keeps growing every time you speak, and that how much longer you talk today is entirely theirs to choose.",
+      "Do not promise an introduction, name a timeframe, describe progress, count anything, or thank them for completing something.",
+      "If they want to keep going, stay with them and continue the conversation naturally.",
+    ].join(" ");
+  }
+  return [
+    "RESPECT FOR THEIR TIME — ACKNOWLEDGE ONCE, WITHOUT CLAIMING READINESS.",
+    "Somewhere natural in this reply, note briefly that you have been talking for about fifteen minutes.",
+    "Then say plainly and warmly that there is still more you need to understand before you would feel right introducing them to anyone — not as a shortcoming of theirs, and not as a quota.",
+    "Make clear they may keep going now or return whenever they like, and that nothing they have shared is lost.",
+    "Do not list what is missing as categories, do not count anything, do not describe progress, and do not promise a timeframe.",
+  ].join(" ");
+}
