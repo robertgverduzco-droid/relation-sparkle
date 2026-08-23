@@ -53,6 +53,263 @@ export type Database = {
         }
         Relationships: []
       }
+      athena_experiments: {
+        Row: {
+          adverse_effects: string | null
+          baseline: Json
+          ended_at: string | null
+          ended_by: string | null
+          expected_effect: string
+          hypothesis_id: string
+          id: string
+          intelligence_version: string
+          observed: Json
+          started_at: string
+          started_by: string | null
+          status: string
+          surface: string
+        }
+        Insert: {
+          adverse_effects?: string | null
+          baseline?: Json
+          ended_at?: string | null
+          ended_by?: string | null
+          expected_effect: string
+          hypothesis_id: string
+          id?: string
+          intelligence_version: string
+          observed?: Json
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          surface: string
+        }
+        Update: {
+          adverse_effects?: string | null
+          baseline?: Json
+          ended_at?: string | null
+          ended_by?: string | null
+          expected_effect?: string
+          hypothesis_id?: string
+          id?: string
+          intelligence_version?: string
+          observed?: Json
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          surface?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athena_experiments_hypothesis_id_fkey"
+            columns: ["hypothesis_id"]
+            isOneToOne: false
+            referencedRelation: "athena_hypotheses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athena_hypotheses: {
+        Row: {
+          alternative_explanations: Json
+          applicable_cases: number
+          challenges_education: boolean
+          confidence_state: string
+          confounders: Json
+          contexts: Json
+          contradicting_count: number
+          created_at: string
+          dimension: string
+          first_observed_at: string
+          id: string
+          intelligence_version: string
+          is_surprise: boolean
+          last_evaluated_at: string
+          operational_influence: string
+          sensitivity_flag: string
+          sensitivity_reason: string | null
+          slug: string
+          statement: string
+          status: string
+          supporting_count: number
+          university_principles: Json
+        }
+        Insert: {
+          alternative_explanations?: Json
+          applicable_cases?: number
+          challenges_education?: boolean
+          confidence_state?: string
+          confounders?: Json
+          contexts?: Json
+          contradicting_count?: number
+          created_at?: string
+          dimension: string
+          first_observed_at?: string
+          id?: string
+          intelligence_version: string
+          is_surprise?: boolean
+          last_evaluated_at?: string
+          operational_influence?: string
+          sensitivity_flag?: string
+          sensitivity_reason?: string | null
+          slug: string
+          statement: string
+          status?: string
+          supporting_count?: number
+          university_principles?: Json
+        }
+        Update: {
+          alternative_explanations?: Json
+          applicable_cases?: number
+          challenges_education?: boolean
+          confidence_state?: string
+          confounders?: Json
+          contexts?: Json
+          contradicting_count?: number
+          created_at?: string
+          dimension?: string
+          first_observed_at?: string
+          id?: string
+          intelligence_version?: string
+          is_surprise?: boolean
+          last_evaluated_at?: string
+          operational_influence?: string
+          sensitivity_flag?: string
+          sensitivity_reason?: string | null
+          slug?: string
+          statement?: string
+          status?: string
+          supporting_count?: number
+          university_principles?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athena_hypotheses_intelligence_version_fkey"
+            columns: ["intelligence_version"]
+            isOneToOne: false
+            referencedRelation: "athena_intelligence_versions"
+            referencedColumns: ["version"]
+          },
+        ]
+      }
+      athena_hypothesis_evidence: {
+        Row: {
+          created_at: string
+          hypothesis_id: string
+          id: string
+          kind: string
+          occurred_at: string
+          pair_token: string
+          summary: string
+        }
+        Insert: {
+          created_at?: string
+          hypothesis_id: string
+          id?: string
+          kind: string
+          occurred_at?: string
+          pair_token: string
+          summary: string
+        }
+        Update: {
+          created_at?: string
+          hypothesis_id?: string
+          id?: string
+          kind?: string
+          occurred_at?: string
+          pair_token?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athena_hypothesis_evidence_hypothesis_id_fkey"
+            columns: ["hypothesis_id"]
+            isOneToOne: false
+            referencedRelation: "athena_hypotheses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athena_hypothesis_reviews: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          evidence_snapshot: Json
+          from_influence: string | null
+          from_status: string | null
+          hypothesis_id: string
+          id: string
+          intelligence_version: string
+          note: string | null
+          to_influence: string | null
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          evidence_snapshot?: Json
+          from_influence?: string | null
+          from_status?: string | null
+          hypothesis_id: string
+          id?: string
+          intelligence_version: string
+          note?: string | null
+          to_influence?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          evidence_snapshot?: Json
+          from_influence?: string | null
+          from_status?: string | null
+          hypothesis_id?: string
+          id?: string
+          intelligence_version?: string
+          note?: string | null
+          to_influence?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athena_hypothesis_reviews_hypothesis_id_fkey"
+            columns: ["hypothesis_id"]
+            isOneToOne: false
+            referencedRelation: "athena_hypotheses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athena_intelligence_versions: {
+        Row: {
+          activated_at: string
+          activated_by: string | null
+          notes: string
+          previous_version: string | null
+          promoted: Json
+          version: string
+        }
+        Insert: {
+          activated_at?: string
+          activated_by?: string | null
+          notes?: string
+          previous_version?: string | null
+          promoted?: Json
+          version: string
+        }
+        Update: {
+          activated_at?: string
+          activated_by?: string | null
+          notes?: string
+          previous_version?: string | null
+          promoted?: Json
+          version?: string
+        }
+        Relationships: []
+      }
       athena_outcome_signals: {
         Row: {
           created_at: string
@@ -94,6 +351,106 @@ export type Database = {
           valence?: string
         }
         Relationships: []
+      }
+      athena_prediction_outcomes: {
+        Row: {
+          created_at: string
+          divergence: string
+          id: string
+          occurred_at: string
+          pair_token: string
+          prediction_id: string
+          reason_category: string | null
+          signal_kind: string
+          strength: string
+          valence: string
+        }
+        Insert: {
+          created_at?: string
+          divergence?: string
+          id?: string
+          occurred_at?: string
+          pair_token: string
+          prediction_id: string
+          reason_category?: string | null
+          signal_kind: string
+          strength: string
+          valence: string
+        }
+        Update: {
+          created_at?: string
+          divergence?: string
+          id?: string
+          occurred_at?: string
+          pair_token?: string
+          prediction_id?: string
+          reason_category?: string | null
+          signal_kind?: string
+          strength?: string
+          valence?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athena_prediction_outcomes_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "athena_predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athena_predictions: {
+        Row: {
+          confidence_band: string
+          confidence_numeric: number
+          expectation: string | null
+          id: string
+          important_factors: Json
+          intelligence_version: string
+          is_synthetic: boolean
+          known_unknowns: Json
+          learning_eligible: boolean
+          pair_token: string
+          predicted_at: string
+          predicted_status: string
+        }
+        Insert: {
+          confidence_band: string
+          confidence_numeric: number
+          expectation?: string | null
+          id?: string
+          important_factors?: Json
+          intelligence_version: string
+          is_synthetic?: boolean
+          known_unknowns?: Json
+          learning_eligible?: boolean
+          pair_token: string
+          predicted_at?: string
+          predicted_status: string
+        }
+        Update: {
+          confidence_band?: string
+          confidence_numeric?: number
+          expectation?: string | null
+          id?: string
+          important_factors?: Json
+          intelligence_version?: string
+          is_synthetic?: boolean
+          known_unknowns?: Json
+          learning_eligible?: boolean
+          pair_token?: string
+          predicted_at?: string
+          predicted_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athena_predictions_intelligence_version_fkey"
+            columns: ["intelligence_version"]
+            isOneToOne: false
+            referencedRelation: "athena_intelligence_versions"
+            referencedColumns: ["version"]
+          },
+        ]
       }
       athena_self_evaluations: {
         Row: {
