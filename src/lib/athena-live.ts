@@ -79,7 +79,9 @@ export class AthenaLiveSession {
       pc.ontrack = (e) => {
         if (this.audio) this.audio.srcObject = e.streams[0] ?? null;
       };
-      this.stream.getTracks().forEach((t) => pc.addTrack(t, this.stream!));
+      const stream = this.stream;
+      if (!stream) return this.cleanup();
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       const dc = pc.createDataChannel("oai-events");
       this.dc = dc;
