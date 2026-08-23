@@ -354,14 +354,17 @@ export async function retrieveEducation(input: RetrievalInput): Promise<Retrieva
   const queryVector = await embedQuery(text);
   const dense = queryVector && queryVector.length === VECTORS.dims ? denseScores(queryVector) : null;
 
+  const clamp = (x: number) => Math.min(1, Math.max(0, x));
   const fused: { i: number; score: number; dense: number | null; lexical: number }[] = [];
   for (let i = 0; i < EDUCATION_CHUNKS.length; i++) {
-    const l = lex[i];
+    const lexRel = clamp(lex[i] / 40);
     const d = dense ? dense[i] : null;
     // Dense similarity is the primary signal where available; the lexical pass
     // both grounds it and stands alone when the provider is unreachable.
-    const score = d === null ? l * 1.55 : 0.68 * ((d + 1) / 2) * 1.25 + 0.32 * l * 1.55;
-    fused.push({ i, score, dense: d, lexical: l });
+    // Both are mapped onto one 0..1 relevance scale so a single per-mode floor
+    // means the same thing on either path — below it, nothing is retrieved.
+    const score = d === null ? lexRel : 0.7 * clamp(d / 0.6) + 0.3 * lexRel;
+    fused.push({ i, score, dense: d, lexical: Number(lexRel.toFixed(4)) });
   }
   fused.sort((a, b) => b.score - a.score);
 
