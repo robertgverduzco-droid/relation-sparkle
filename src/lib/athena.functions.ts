@@ -45,9 +45,6 @@ import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational
 import {
   observeStyle,
   mergeStyle,
-  derivePermission,
-  detectSeriousContext,
-  alivenessGuidance,
   ANALYTICAL_REGISTER_GUARD,
   EMPTY_STYLE_EVIDENCE,
   type StyleEvidence,
