@@ -580,12 +580,15 @@ function AthenaPage() {
 
   const startRecording = useCallback(async () => {
     if (recording || transcribing || busy) return;
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      toast("Voice input isn't available in this browser.");
+    // Diagnose the audio layer before anything else, so a device or system
+    // problem is never reported as "allow the microphone".
+    const mic = await acquireMicrophone({ audio: true });
+    if (!mic.ok) {
+      toast(micFailureMessage(mic.reason));
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = mic.stream;
       streamRef.current = stream;
       // Pick the best supported mime; Safari uses mp4, others webm.
       const candidates = [
