@@ -93,7 +93,7 @@ function FounderIntelligenceScreen() {
   }
 
   return (
-    <main className="min-h-dvh bg-background px-5 py-8">
+    <section className="min-h-dvh bg-background px-5 py-8">
       <header className="mx-auto max-w-2xl">
         <h1 className="text-lg font-medium text-foreground">What I have learned</h1>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -175,6 +175,6 @@ function FounderIntelligenceScreen() {
           ))}
         </ul>
       </section>
-    </main>
+    </section>
   );
 }
