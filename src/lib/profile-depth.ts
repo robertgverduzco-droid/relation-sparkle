@@ -52,11 +52,22 @@ export const LENS_LABELS: Record<LensKey, string> = {
 /** Every canonical facet belongs to exactly one lens. No facet is orphaned. */
 export const LENS_FACETS: Record<LensKey, FacetKey[]> = {
   what_matters: ["core_values", "purpose_and_ambition"],
-  how_you_connect: ["communication_style", "affection_and_connection", "attachment_tendencies"],
+  how_you_connect: [
+    "communication_style",
+    "affection_and_connection",
+    "attachment_tendencies",
+    // Rebuild Spec Track B — how they are under closeness and inconsistency.
+    "nervous_system_pattern",
+  ],
   friction_and_boundaries: ["conflict_style", "boundaries", "emotional_regulation"],
   attraction: ["physical_attraction_preferences"],
   everyday_life: ["lifestyle", "health_and_wellness", "financial_philosophy", "social_and_family"],
-  mind_and_humor: ["intellectual_fit", "humor_and_temperament"],
+  mind_and_humor: [
+    "intellectual_fit",
+    "humor_and_temperament",
+    // Rebuild Spec Track A — what drives them.
+    "temperament_mode",
+  ],
   where_you_are_going: ["life_direction", "partnership_vision", "relationship_pacing"],
   how_you_have_grown: ["self_understanding", "resilience_and_growth", "readiness"],
 };
