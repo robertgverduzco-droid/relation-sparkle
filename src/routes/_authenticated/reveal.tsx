@@ -70,7 +70,7 @@ function RevealScreen() {
   if (loading) {
     return (
       <main className="px-6 py-10">
-        <AthenaPresence state="thinking" showLabel={false} />
+        <AthenaPresence state="processing" showLabel={false} />
       </main>
     );
   }
