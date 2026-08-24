@@ -246,11 +246,23 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
   const event = detectEvent(text, signals);
   const serious =
     event === "serious_disclosure" ||
+    event === "acute_loss" ||
+    event === "acute_loss_help" ||
     detectSeriousContext(text) ||
     Boolean(input.seriousOverride);
-  const permission = derivePermission(input.style, serious);
+  // Grief does not switch humour off. The member opens that door, not Athena:
+  // where their own turn carries levity, the earned register is restored while
+  // teasing and profanity stay closed.
+  const humorDoorOpen = serious && GRIEF_LEVITY.test(text);
+  const base = derivePermission(input.style, serious);
+  const permission: RegisterPermission = humorDoorOpen
+    ? { ...base, humor: derivePermission(input.style, false).humor }
+    : base;
 
-  const exemplars = selectExemplars(serious ? ["serious"] : EVENT_TAGS[event]);
+  const exemplars = selectExemplars(
+    serious && !humorDoorOpen ? ["serious"] : EVENT_TAGS[event],
+  );
+
   // Inner-experience calibration: at most two entries, only where the
   // member's own words make one genuinely relevant.
   const atlas = selectAtlas(text);
