@@ -162,7 +162,7 @@ function Continuation({
 }: {
   title: string;
   body: string;
-  to: "/profile" | "/introductions" | "/athena" | "/understanding";
+  to: "/profile" | "/introductions" | "/athena" | "/understanding" | "/reveal";
   action: string;
   /** A-28: stable semantic hook for the authenticated journey walkthrough. */
   testId?: string;
