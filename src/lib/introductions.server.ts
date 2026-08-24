@@ -610,13 +610,33 @@ export async function runMatchmakingForUser(
     return { ok: true, considered: 0, reason: "no_eligible" };
   }
 
-  // Minimum understanding is an eligibility threshold, applied above. Once a
-  // person is eligible they are not ranked by how much Athena happens to know
-  // about them: depth of profile is a measure of Athena's progress, not of the
-  // person's worth, and someone quieter must not queue behind someone more
-  // verbose. Ordering is deterministic and content-neutral.
-  eligible.sort((x, y) => (x.other.id < y.other.id ? -1 : x.other.id > y.other.id ? 1 : 0));
-  const toReason = eligible.slice(0, 6);
+  // Depth of profile is Athena's progress, never the person's worth: someone
+  // quieter must never queue behind someone more verbose, and the flat
+  // minimum-understanding floor above already applies equally to everyone.
+  // What CAN reasonably decide who gets Athena's careful reasoning FIRST is
+  // actual relational fit (Rebuild Spec §7) — not how much is known about
+  // someone, but how well what's known lines up. Sorting by database id
+  // meant a large pool could bury a genuinely well-suited candidate at
+  // position #80, never reached; ranking by fit fixes that without
+  // reintroducing a verbosity bias, since the fit score is built from
+  // confidence-aware structured signal, never from evidence volume. Ties
+  // (including "nobody has reached this ground yet, both vectors empty")
+  // fall back to the same content-neutral id order as before.
+  const { loadRelationalVector, loadRelationalVectors } = await import("./relational-signals.server");
+  const { rankByRelationalFit, EMPTY_VECTOR } = await import("./relational-scoring");
+  const [selfVector, otherVectors] = await Promise.all([
+    loadRelationalVector(supabase, userId),
+    loadRelationalVectors(supabase, eligible.map((c) => c.other.id)),
+  ]);
+  const ranked = rankByRelationalFit(
+    selfVector,
+    eligible.map((c) => ({
+      id: c.other.id,
+      vector: otherVectors.get(c.other.id) ?? EMPTY_VECTOR,
+      item: c,
+    })),
+  );
+  const toReason = ranked.slice(0, 6).map((r) => r.item);
 
   let introduced = 0;
   for (const c of toReason) {

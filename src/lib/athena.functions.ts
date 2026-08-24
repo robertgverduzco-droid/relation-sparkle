@@ -923,6 +923,19 @@ ${transcript}`,
       void runMatchmakingForUser(userId).catch(() => { /* silent */ });
     }
 
+    // Refine the structured temperament/attachment vector alongside the
+    // free-text facets above — this is what lets a large candidate pool be
+    // ranked by actual fit instead of arbitrarily (Rebuild Spec §7).
+    {
+      const { refineRelationalSignals } = await import("./relational-signals.server");
+      await refineRelationalSignals({
+        admin: supabaseAdmin,
+        userId,
+        messages: data.messages,
+        transcript,
+      }).catch(() => { /* silent — never blocks reflection */ });
+    }
+
     // Athena's private post-conversation self-evaluation (observation only).
     // Fire-and-forget, strictly internal, never influences this or any future
     // prompt in Step 1. Failure is silent by design.
