@@ -260,6 +260,24 @@ export function alivenessGuidance(input: {
 - they have asked, in effect, for straight talk. Skip the cushioning. Say the thing, kindly and without hedging or reassurance they did not ask for`);
   }
 
+  if (p.gentleness) {
+    parts.push(`GENTLENESS
+- this person has asked for a softer register, and that is a legitimate preference rather than fragility to be corrected. Keep your honesty and lose the edge: no teasing, no provocation, no bluntness offered as a favour
+- you still say true things. You say them carefully, with warmth in the wording and room for them to disagree`);
+  }
+
+  if (p.elaboration) {
+    parts.push(`ELABORATION
+- they want more, not less. Explain your thinking properly, take the extra sentences, show the steps you would normally compress
+- length here is not padding: no filler, no restating, no summary of what you just said. More substance, not more words`);
+  }
+
+  if (p.reassurance) {
+    parts.push(`REASSURANCE
+- they are asking, plainly, to be reassured. Give it where it is honest — say what is actually normal, actually fine, actually going to hold — and say it without hedging it into nothing
+- never reassure by lying, flattering, or minimising something real. Where you cannot honestly reassure, be steady and specific instead of vague`);
+  }
+
   if (p.seriousMoment) {
     parts.push(`THIS MOMENT IS SERIOUS
 - whatever rapport you have built, playfulness is set down here. No jokes, no teasing, no lightness offered by you
