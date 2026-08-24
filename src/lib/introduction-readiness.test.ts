@@ -28,7 +28,11 @@ function readyRows(): UnderstandingRow[] {
     "conflict_style",
     "social_and_family",
     "life_direction",
+    // Rebuild Spec Tracks A and B.
+    "temperament_mode",
+    "nervous_system_pattern",
   ].map((k) => facet(k));
+
 }
 
 describe("foundational readiness for introductions", () => {
