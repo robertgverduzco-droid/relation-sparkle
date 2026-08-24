@@ -6,6 +6,8 @@ import {
   governHypothesis,
   runIntelligencePass,
 } from "@/lib/intelligence.functions";
+import { getClosetAnalytics } from "@/lib/closet.functions";
+
 
 export const Route = createFileRoute("/_authenticated/founder/intelligence")({
   head: () => ({
@@ -175,6 +177,52 @@ function FounderIntelligenceScreen() {
           ))}
         </ul>
       </section>
+
+      <ClosetPanel />
     </section>
   );
 }
+
+const pct = (n: number) => `${Math.round(n * 1000) / 10}%`;
+
+function ClosetPanel() {
+  const load = useServerFn(getClosetAnalytics);
+  const [data, setData] = useState<Awaited<ReturnType<typeof getClosetAnalytics>> | null>(null);
+
+  useEffect(() => {
+    void load({})
+      .then(setData)
+      .catch(() => setData(null));
+  }, [load]);
+
+  if (!data) return null;
+  const m = data.metrics;
+
+  return (
+    <section className="mx-auto mt-12 max-w-2xl">
+      <h2 className="text-sm font-medium text-foreground">The closet (experiment)</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        A joke, not a product. Nothing is optimised toward this.
+      </p>
+      <dl className="mt-4 grid grid-cols-2 gap-3 text-xs text-muted-foreground sm:grid-cols-3">
+        {[
+          ["Seen", `${m.impressions} (${m.uniqueShown} members)`],
+          ["Clicked", `${m.clicks} (${m.uniqueClicked} members)`],
+          ["Click-through", pct(m.clickThroughRate)],
+          ["Clicked more than once", pct(m.repeatClickRate)],
+          ["With rapport", pct(m.rapport.withRapport.clickThroughRate)],
+          ["Without rapport", pct(m.rapport.withoutRapport.clickThroughRate)],
+        ].map(([k, v]) => (
+          <div key={k} className="rounded-xl border border-border/70 bg-card p-3">
+            <dt>{k}</dt>
+            <dd className="mt-1 text-sm text-foreground">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {data.phenomenon && (
+        <p className="mt-3 text-xs text-muted-foreground">{data.phenomenon}</p>
+      )}
+    </section>
+  );
+}
+
