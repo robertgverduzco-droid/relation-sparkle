@@ -183,6 +183,10 @@ const EVENT_DIRECTIVE: Record<ConversationEvent, string> = {
 };
 
 const EVENT_TAGS: Record<ConversationEvent, ExemplarTag[]> = {
+  acute_loss: ["serious"],
+  acute_loss_help: ["serious", "directness"],
+  grief_humor: ["humor", "brief"],
+
   serious_disclosure: ["serious"],
   correction: ["correction", "challenge"],
   paraphrase_stop: ["directness"],
