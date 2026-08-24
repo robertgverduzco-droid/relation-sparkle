@@ -40,7 +40,9 @@ function Onboarding() {
     gender: "",
     pronouns: "",
     city: "",
+    intro_note: "",
   });
+
   // Member-stated structured data (never inferred). Saved alongside each step.
   const [self, setSelf] = useState(EMPTY_SELF);
   const [openness, setOpenness] = useState(EMPTY_PREFERENCES);
@@ -73,7 +75,9 @@ function Onboarding() {
           gender: data.gender ?? "",
           pronouns: data.pronouns ?? "",
           city: data.city ?? "",
+          intro_note: (data as { intro_note?: string | null }).intro_note ?? "",
         }));
+
       }
     })();
   }, []);
@@ -100,6 +104,8 @@ function Onboarding() {
                   gender: identity.gender || undefined,
                   pronouns: identity.pronouns || undefined,
                   city: identity.city || undefined,
+                  intro_note: identity.intro_note || undefined,
+
                 }
               : undefined,
           preferences:
@@ -199,10 +205,24 @@ function Onboarding() {
                 value={identity.city}
                 onChange={(v) => setIdentity({ ...identity, city: v })}
               />
+              <label className="block">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Anything else you'd like to share?
+                </span>
+                <textarea
+                  value={identity.intro_note}
+                  onChange={(e) => setIdentity({ ...identity, intro_note: e.target.value })}
+                  rows={4}
+                  maxLength={2000}
+                  placeholder="Optional. Whatever you'd want Athena to know before you talk."
+                  className="mt-1.5 w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+                />
+              </label>
               <div className="pt-2">
                 <SelfDescriptionFields value={self} onChange={setSelf} />
               </div>
             </div>
+
           </Section>
         )}
         {step === "preferences" && (
@@ -250,17 +270,20 @@ function Onboarding() {
             </div>
           </Section>
         )}
+        {/* Screen 2 — Athena introduces herself and sets expectations for the
+            conversation that follows. Her voice, not a product tour. */}
         {step === "complete" && (
           <Section
-            eyebrow="Ready"
+            eyebrow="Athena"
             title={
               <>
-                Athena is <em className="italic text-primary">waiting</em>.
+                I'm <em className="italic text-primary">Athena</em>.
               </>
             }
-            body="She'd like to introduce herself, and then simply get to know you."
+            body="I find people the right person. Not by comparing faces, but by understanding you well enough to recognise who would actually fit. So we're going to talk — about a quarter of an hour, and I'll ask directly rather than dress questions up as small talk. Some of it may feel like a lot at once. The more I understand now, the better I can search later, and it gets more like an ordinary conversation after this first pass."
           />
         )}
+
       </div>
 
       <div className="mt-8 flex items-center justify-between gap-3">

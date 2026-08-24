@@ -22,6 +22,11 @@ export const FACET_KEYS = [
   "resilience_and_growth",
   "partnership_vision",
   "readiness",
+  // Rebuild Spec §3 — the two intake tracks. Track A is used for
+  // complementary matching, Track B for similarity toward mutual security.
+  "temperament_mode",
+  "nervous_system_pattern",
+
 ] as const;
 
 export type FacetKey = (typeof FACET_KEYS)[number];
@@ -48,7 +53,10 @@ export const FACET_LABELS: Record<FacetKey, string> = {
   resilience_and_growth: "How you meet hard things and change",
   partnership_vision: "What you're building toward with someone",
   readiness: "Where you are right now",
+  temperament_mode: "What drives you",
+  nervous_system_pattern: "How you are under closeness",
 };
+
 
 
 // F-14 provenance (BR01-04), extended to the evidence ladder by Evidentiary

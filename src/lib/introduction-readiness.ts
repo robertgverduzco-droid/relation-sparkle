@@ -77,7 +77,19 @@ export const REQUIRED_UNDERSTANDING_AREAS: RequiredArea[] = [
     label: "what draws them to someone physically",
     facets: ["physical_attraction_preferences"],
   },
+  // Rebuild Spec §3/§4 — the two intake tracks feed readiness directly.
+  {
+    key: "temperament",
+    label: "what actually drives them — novelty, structure, drive or connection",
+    facets: ["temperament_mode", "humor_and_temperament"],
+  },
+  {
+    key: "nervous_system",
+    label: "how they behave under closeness, conflict and inconsistency",
+    facets: ["nervous_system_pattern", "attachment_tendencies"],
+  },
 ];
+
 
 /**
  * Additional breadth beyond the required areas. `foundational.ts` uses ≥8

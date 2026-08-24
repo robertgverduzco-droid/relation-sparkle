@@ -13,7 +13,10 @@ export const onboardingStepInput = z.object({
       gender: z.string().max(40).optional(),
       pronouns: z.string().max(40).optional(),
       city: z.string().max(120).optional(),
+      /** Screen 1 — "Anything else you'd like to share?" Optional, freeform. */
+      intro_note: z.string().max(2000).optional(),
     })
+
     .optional(),
   preferences: z
     .object({
