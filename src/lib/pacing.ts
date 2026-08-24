@@ -91,6 +91,24 @@ export function athenaOffersReturn(text: string): boolean {
   return ATHENA_RETURN_OFFER.test(text ?? "");
 }
 
+/**
+ * The fifteen-minute courtesy, as it appears once said.
+ *
+ * The transcript is the only durable record of whether Athena has already
+ * acknowledged the time; a browser tab's in-memory flag resets on reload or
+ * reconnect, which is how a member ends up hearing the same courtesy three
+ * times in one conversation.
+ */
+export const TIME_ALREADY_ACKNOWLEDGED = /\b(?:fifteen|15)\b(?:\s+or\s+so)?\s+minutes\b/i;
+
+export function transcriptAlreadyAcknowledgesTime(
+  messages: ReadonlyArray<{ role: string; content: string }>,
+): boolean {
+  return (messages ?? []).some(
+    (m) => m.role !== "user" && TIME_ALREADY_ACKNOWLEDGED.test(m.content ?? ""),
+  );
+}
+
 export type PacingInput = {
   elapsedMinutes: number;
   userTurns: number;
