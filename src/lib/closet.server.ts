@@ -17,8 +17,8 @@ export async function recordClosetEvent(input: {
   hadRapport: boolean;
   sessionId?: string | null;
 }): Promise<{ ok: true }> {
-  const db = await admin();
-  await db.from("athena_closet_events").insert({
+  const writer = await admin();
+  await writer.from("athena_closet_events").insert({
     user_id: input.userId,
     kind: input.kind,
     surface: input.surface,
@@ -29,7 +29,7 @@ export async function recordClosetEvent(input: {
 }
 
 export async function closetAnalytics() {
-  const db = await admin();
+  const writer = await admin();
   const { data } = await db
     .from("athena_closet_events")
     .select("user_id, kind, surface, had_rapport, created_at")
