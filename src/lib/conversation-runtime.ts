@@ -74,11 +74,21 @@ export type ConversationEvent =
   | "self_characterization"
   | "venting"
   | "wheel"
+  | "acute_loss"
+  | "acute_loss_help"
+  | "grief_humor"
   | "joke"
   | "figurative"
   | "subject_matter"
   | "opinion_request"
   | "ordinary";
+
+/**
+ * Levity the member themselves brought into a loss: laughter, absurdity, the
+ * family comedy. Athena never opens this door; she only notices it is open.
+ */
+export const GRIEF_LEVITY =
+  /(\bha+(?:ha+)+\b|\blo+l\b|\blmao\b|😂|🤣|would'?ve loved|would have loved|drunk before noon|half the (family|room)|typical (him|her|dad|mum|mom)|of course (he|she) |absurd|ridiculous|comedy|farce|hilarious|funny|laugh\w*)/i;
 
 /**
  * Exactly ONE dominant event per turn, resolved by priority. One event means
@@ -90,6 +100,12 @@ export function detectEvent(text: string, signals: TurnSignals = readTurn(text))
   // Venting outranks seriousness for the MOVE (they have said what they do
   // not want), while the serious register is applied separately below.
   if (signals.venting) return "venting";
+  // Acute loss: presence before management. Only a request for help, or the
+  // member's own levity, changes the move.
+  if (signals.acuteLoss) {
+    if (GRIEF_LEVITY.test(t)) return "grief_humor";
+    return signals.adviceRequested ? "acute_loss_help" : "acute_loss";
+  }
   if (detectSeriousContext(t)) return "serious_disclosure";
   if (PARAPHRASE_STOP.test(t)) return "paraphrase_stop";
   if (MEMBER_CORRECTION.test(t)) return "correction";
@@ -104,6 +120,7 @@ export function detectEvent(text: string, signals: TurnSignals = readTurn(text))
   if (signals.subjectMatter) return "subject_matter";
   return "ordinary";
 }
+
 
 /** One short directive for this moment. Never more than one. */
 const EVENT_DIRECTIVE: Record<ConversationEvent, string> = {
