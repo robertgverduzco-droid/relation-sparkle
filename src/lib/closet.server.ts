@@ -36,7 +36,7 @@ export async function closetAnalytics() {
     .order("created_at", { ascending: false })
     .limit(50000);
 
-  const events = ((data ?? []) as ClosetEvent[]) ?? [];
+  const events = (data ?? []) as ClosetEvent[];
   const metrics = closetMetrics(events);
   return { metrics, phenomenon: closetPhenomenonNote(metrics) };
 }
