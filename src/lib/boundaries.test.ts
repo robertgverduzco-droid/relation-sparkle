@@ -28,6 +28,26 @@ describe("classification", () => {
     expect(hit?.category).toBe("harm_risk");
     expect(hit?.severity).toBe("immediate");
   });
+
+  it("keeps suicide/self-harm language maximally sensitive", () => {
+    expect(classifyBoundary("I want to end my life")?.category).toBe("harm_risk");
+    expect(classifyBoundary("I'm going to kill myself")?.category).toBe("harm_risk");
+    expect(classifyBoundary("I've been feeling suicidal")?.category).toBe("harm_risk");
+  });
+
+  it("does not treat narrated interpersonal harm as an active threat", () => {
+    // Ordinary storytelling about past pain must not trip immediate handling.
+    expect(classifyBoundary("she hurt me so much when she left")).toBeNull();
+    expect(classifyBoundary("he wanted to make me pay for it")).toBeNull();
+    expect(classifyBoundary("my mother used to say she'd make him pay")).toBeNull();
+    expect(classifyBoundary("I'll find you one day, she told him")).toBeNull();
+  });
+
+  it("still catches present/future first-person intent to harm", () => {
+    expect(classifyBoundary("I'm going to hurt him")?.category).toBe("harm_risk");
+    expect(classifyBoundary("I want to hurt myself")?.category).toBe("harm_risk");
+    expect(classifyBoundary("I'll hurt them if I see them")?.category).toBe("harm_risk");
+  });
 });
 
 describe("graduation within a single conversation", () => {
