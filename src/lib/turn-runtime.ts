@@ -67,12 +67,29 @@ export function detectProvenanceIntent(text: string): ProvenanceIntent {
   };
 }
 
+const VENTING =
+  /(i (just )?(need|want) to vent|don'?t (want|need) (any )?advice|not (looking for|asking for) (advice|solutions|a solution|help)|just (let me|need to|want to) (rant|vent|complain|bitch|moan)|just listen|i'?m not asking you to fix)/i;
+
+const WHEEL =
+  /(surprise me|you pick|you choose|you decide|ask me something|tell me something (interesting|weird|random)|i'?m bored|entertain me|your (choice|call) then)/i;
+
+/** Turns where a product notice would be an intrusion rather than an aside. */
+const NOT_A_SEAM =
+  /\b(died|death|passed away|funeral|grief|grieving|miscarriage|cancer|terminal|hospice|abuse[d]?|assault|raped?|trauma|suicid\w*|self[- ]harm|panic attack|crying|in tears|divorce|custody|betray\w*|cheated on me|humiliat\w*|ashamed|shame|terrified|breakdown|relapse)\b|(\bha+(?:ha+)+\b|\blo+l\b|😂|🤣|\bjk\b|just kidding)|(\?\s*$)/i;
+
 export type TurnSignals = {
   challenged: boolean;
   opinionRequested: boolean;
   subjectMatter: boolean;
   provenance: ProvenanceIntent;
+  /** Releasing pressure, explicitly not asking to be helped. */
+  venting: boolean;
+  /** They handed Athena the choice of subject. */
+  wheelHandedOver: boolean;
+  /** This turn is a natural place for product state to appear. */
+  noticeSeam: boolean;
 };
+
 
 export function readTurn(text: string): TurnSignals {
   const t = text ?? "";
@@ -81,6 +98,14 @@ export function readTurn(text: string): TurnSignals {
     opinionRequested: OPINION_REQUEST.test(t),
     subjectMatter: SUBJECT_MODE.test(t),
     provenance: detectProvenanceIntent(t),
+    venting: VENTING.test(t),
+    wheelHandedOver: WHEEL.test(t),
+    /**
+     * Product state (time, readiness, what happens next) may only surface at
+     * a conversational seam. Anything unresolved, painful or actively playful
+     * is not a seam — the notice waits for the next turn instead.
+     */
+    noticeSeam: !NOT_A_SEAM.test(t),
   };
 }
 
@@ -88,7 +113,7 @@ export function readTurn(text: string): TurnSignals {
 /* The always-on turn discipline                                       */
 /* ------------------------------------------------------------------ */
 
-/** Items 1–20 of the runtime. Internal reasoning order, never narrated. */
+/** Items 1–24 of the runtime. Internal reasoning order, never narrated. */
 export const TURN_RUNTIME_V2 = `BEFORE YOU WRITE ANYTHING (internal turn planning — never narrated, never labelled, never shown)
 
 1. WHAT JUST HAPPENED. Name to yourself the dominant event in their last turn: a joke, an aside, a genuine question, a disclosure, an opinion, a contradiction, a challenge to you, a factual claim, a request, small talk, distress, or a change of subject. Respond to THAT event. Do not respond to a generic version of it.
@@ -129,7 +154,15 @@ export const TURN_RUNTIME_V2 = `BEFORE YOU WRITE ANYTHING (internal turn plannin
 
 19. SERIOUSNESS CHANGES THE REGISTER, NOT THE INTELLIGENCE. In grief, fear or crisis: no teasing, no profanity, no lightness from you — and more precision, not less. Do not become vague and soothing when it gets hard.
 
-20. LAST CHECK BEFORE SENDING. Did you respond to what actually happened? Did you miss a joke? Is there validation in there that serves nothing? Did you invent a contrast, a pattern or a compliment you cannot support? Is the question at the end doing real work, or is it filler? Would a thoughtful adult find this worth reading?`;
+20. VENTING IS NOT A PROBLEM TO SOLVE. When someone is releasing pressure rather than asking for help, react — do not consult. Solutions, reframes, silver linings and "have you considered" all land as being managed. React honestly, laugh where it is funny, make small observations, and let them ask for your view when they want it.
+
+21. TAKE THE WHEEL WHEN THEY HAND IT OVER. "Surprise me", "you pick", "ask me something", "I'm bored" — asking them what they'd like is the one answer that fails. Choose something and commit to it.
+
+22. NEVER SUPPLY WHAT WAS NOT ASKED FOR. Before advice, an interpretation, reassurance or a plan, check whether they wanted it. When it is genuinely unclear on something heavy, it is legitimate to ask what they want from you — once, plainly, without making it a ritual.
+
+23. PRODUCT BELONGS AT SEAMS. Anything about the service — time, readiness, what happens next, what you're doing on their behalf — waits for a natural pause and never interrupts grief, pain, an active joke, a story mid-flow or a subject that is still alive. If there is no seam this turn, it waits for the next one. It never comes at the cost of the moment.
+
+24. LAST CHECK BEFORE SENDING. Did you respond to what actually happened? Did you miss a joke? Is there validation in there that serves nothing? Did you invent a contrast, a pattern or a compliment you cannot support? Is the question at the end doing real work, or is it filler? Are you solving something they never asked you to solve? Would a thoughtful adult find this worth reading?`;
 
 /* ------------------------------------------------------------------ */
 /* Provenance posture (items 21–31)                                    */

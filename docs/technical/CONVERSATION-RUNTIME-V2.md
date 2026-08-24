@@ -4,7 +4,40 @@ Status: implementation artifact. Governed by `docs/constitution/L6a-conversation
 and `docs/constitution/cross-cutting/evidentiary-discipline.md`. Does not amend
 identity, epistemics, safety, or matching.
 
-## What changed (consolidation pass)
+## Canonical consolidation pass (current)
+
+This document is the reconciliation point. The piecemeal V2 / personality /
+provenance / exemplar instructions are superseded, not stacked on.
+
+Removed or rewritten in this pass:
+
+| Legacy instruction | Where it lived | Fate |
+|---|---|---|
+| `CONVERSATION STRATEGY` ("invisible guide", "questions that invite reflection", "endings are natural") | `athena.server.ts` base prompt | replaced by `WHY YOU TALK AT ALL` — mission only, no rhythm |
+| `HOW YOU TALK` (coffee-conversation rhythm, "gently invite a little more depth") | `athena.server.ts` | deleted; turn conduct is the runtime's, exclusively |
+| `TOPIC DEPTH` (2–3 questions per topic, then transition) | `athena.server.ts` | replaced by `BREADTH` — movement at natural seams, never on a count |
+| `BALANCE` (question/reflection mixing) | `athena.server.ts` | deleted; superseded by runtime items 5–7 and 16 |
+| `INTERNAL CONVERSATION MAP` | `athena.server.ts` | retained (coverage tracking is not a rhythm) |
+
+The base prompt now carries identity, mission, ethics, understanding and
+memory. It no longer carries a single instruction about how to conduct a turn.
+
+New in this pass:
+
+- **Human Experience Atlas** (`src/lib/atlas.ts`, `docs/product/human-experience-atlas.md`) —
+  inner-experience calibration across 40+ situations, retrieved at most twice
+  per turn.
+- **Venting** and **wheel** events — advice is withheld when it was refused;
+  handing the choice back is never an answer to "surprise me".
+- **Product belongs at seams** — `TurnSignals.noticeSeam` and
+  `ConversationRuntimePlan.noticeSeamOk` defer time, readiness and lifecycle
+  notices out of grief, pain, active humour and open questions. Deferred, never
+  cancelled: the notice surfaces at the next genuine seam.
+- **Runtime observability** (`src/lib/turn-decisions.server.ts`) — de-identified
+  per-turn decisions (event, register, deferral, calibration used) so drift back
+  toward interviewing is visible to the founder. No text, no identity.
+
+## What changed (first consolidation pass)
 
 The first V2 pass added turn planning and provenance, but the member-facing
 prompt still *stacked* independent behavioural blocks — turn runtime, register

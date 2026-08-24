@@ -6,7 +6,7 @@ import {
   governHypothesis,
   runIntelligencePass,
 } from "@/lib/intelligence.functions";
-import { getClosetAnalytics } from "@/lib/closet.functions";
+import { getClosetAnalytics, getRuntimeDecisions } from "@/lib/closet.functions";
 
 
 export const Route = createFileRoute("/_authenticated/founder/intelligence")({
@@ -178,6 +178,7 @@ function FounderIntelligenceScreen() {
         </ul>
       </section>
 
+      <RuntimePanel />
       <ClosetPanel />
     </section>
   );
@@ -226,3 +227,58 @@ function ClosetPanel() {
   );
 }
 
+
+/**
+ * How Athena is conducting conversations, in aggregate. No transcripts, no
+ * members, nothing that could be traced to one person — only the shape of her
+ * own decisions, so a drift back toward interviewing is visible early.
+ */
+function RuntimePanel() {
+  const load = useServerFn(getRuntimeDecisions);
+  const [data, setData] = useState<Awaited<ReturnType<typeof getRuntimeDecisions>> | null>(null);
+
+  useEffect(() => {
+    void load({})
+      .then(setData)
+      .catch(() => setData(null));
+  }, [load]);
+
+  if (!data || data.turns === 0) return null;
+
+  return (
+    <section className="mx-auto mt-12 max-w-2xl">
+      <h2 className="text-sm font-medium text-foreground">How she is conducting conversations</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {data.turns.toLocaleString()} turns. What she decided, never what was said.
+      </p>
+      <dl className="mt-4 grid grid-cols-2 gap-3 text-xs text-muted-foreground sm:grid-cols-3">
+        {[
+          ["Serious moments", pct(data.seriousShare)],
+          ["Notices held back", String(data.noticesDeferred)],
+          [
+            "Warmest register",
+            data.registers[0] ? `${data.registers[0].level} (${pct(data.registers[0].share)})` : "—",
+          ],
+        ].map(([k, v]) => (
+          <div key={k} className="rounded-xl border border-border/70 bg-card p-3">
+            <dt>{k}</dt>
+            <dd className="mt-1 text-sm text-foreground">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <ul className="mt-4 space-y-1 text-xs text-muted-foreground">
+        {data.events.slice(0, 8).map((e) => (
+          <li key={e.event} className="flex justify-between gap-4">
+            <span>{e.event.replace(/_/g, " ")}</span>
+            <span className="text-foreground">{pct(e.share)}</span>
+          </li>
+        ))}
+      </ul>
+      {data.atlasTopics.length > 0 && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Most common human territory: {data.atlasTopics.slice(0, 5).map((t) => t.id.replace(/-/g, " ")).join(", ")}.
+        </p>
+      )}
+    </section>
+  );
+}
