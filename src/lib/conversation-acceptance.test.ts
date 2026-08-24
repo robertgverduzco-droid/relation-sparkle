@@ -274,14 +274,8 @@ describe("one runtime, one move", () => {
 
   it("detects exactly one dominant event even when several cues collide", () => {
     // Joke cue + self-description + serious disclosure in one turn.
-    expect(detectEvent("lol I'm extremely self-aware, but my mum has cancer")).toBe(
+    expect(detectEvent("lol I'm extremely self-aware, but my dad died last year")).toBe(
       "serious_disclosure",
     );
-    // Where the seriousness is a death and the member brought the levity,
-    // the guarded-delta grief posture wins — still exactly one event.
-    expect(detectEvent("lol I'm extremely self-aware, but my dad died last year")).toBe(
-      "grief_humor",
-    );
   });
-
 });

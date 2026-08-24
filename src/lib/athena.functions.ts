@@ -345,36 +345,6 @@ Use this memory to:
     });
     const runtimeHint = plan.block;
 
-    // PRODUCT BELONGS AT SEAMS.
-    // Time, readiness and lifecycle notices are the service talking, not
-    // Athena. They wait for a natural pause and never land in grief, pain, an
-    // active joke, or an open question. When this turn is not a seam the
-    // notice is not cancelled — it simply waits for the next one, so nothing
-    // is lost and nothing is interrupted.
-    const seamOk = plan.noticeSeamOk;
-    const seamedTimeHint = seamOk
-      ? timeHint
-      : "Do not comment on how long the conversation has been going. This moment is not a place for it.";
-    const seamedWaitingHint = seamOk ? waitingHint : "";
-
-    // Runtime observability: what Athena decided, never what was said.
-    try {
-      const { recordTurnDecision } = await import("./turn-decisions.server");
-      await recordTurnDecision({
-        actorHash: await actorHash(context.userId),
-        event: plan.event,
-        surface: "text",
-        humorLevel: plan.permission.humor,
-        seriousMoment: plan.permission.seriousMoment,
-        noticeDeferred: !seamOk && (shouldAcknowledgeTime || Boolean(waitingHint)),
-        atlasIds: plan.atlasIds,
-        exemplarIds: plan.exemplarIds,
-        provenance: plan.signals.provenance.active,
-      });
-    } catch {
-      // Observability never interferes with a conversation.
-    }
-
     // THE CLOSET — experiment instrumentation only. No conversation text, no
     // effect on the reply, and never a reason to steer the conversation.
     if (plan.closetAvailable || plan.closetInvoked) {
@@ -400,7 +370,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, readinessHint, seamedWaitingHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, presenceHint, pacingHint, timeHint, breadthHint, readinessHint, waitingHint, boundaryHint, structuredBlock].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
@@ -439,9 +409,6 @@ Use this memory to:
 
 
     const notice = boundary ? boundaryNotice(boundary) : null;
-
-    // A close is never offered on top of an un-seamed moment.
-    const seamedPacing = seamOk ? pacing : "continue";
 
     // Interaction-style evidence persists per turn, not only at reflection:
     // a member who leaves before reflection runs must not be socially
@@ -491,9 +458,8 @@ Use this memory to:
 
     return askOutput.parse({
       reply,
-      pacing: seamedPacing,
-      // Only recorded as acknowledged when it was actually allowed to surface.
-      timeAcknowledged: shouldAcknowledgeTime && seamOk,
+      pacing,
+      timeAcknowledged: shouldAcknowledgeTime,
       ...(notice ? { notice } : {}),
       readiness: { ready: readyNow },
       // Conversation-lifecycle state, deliberately separate from readiness:

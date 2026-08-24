@@ -530,48 +530,6 @@ export type Database = {
         }
         Relationships: []
       }
-      athena_turn_decisions: {
-        Row: {
-          actor_hash: string
-          atlas_ids: string[]
-          created_at: string
-          event: string
-          exemplar_ids: string[]
-          humor_level: string
-          id: string
-          notice_deferred: boolean
-          provenance: boolean
-          serious_moment: boolean
-          surface: string
-        }
-        Insert: {
-          actor_hash: string
-          atlas_ids?: string[]
-          created_at?: string
-          event: string
-          exemplar_ids?: string[]
-          humor_level: string
-          id?: string
-          notice_deferred?: boolean
-          provenance?: boolean
-          serious_moment?: boolean
-          surface?: string
-        }
-        Update: {
-          actor_hash?: string
-          atlas_ids?: string[]
-          created_at?: string
-          event?: string
-          exemplar_ids?: string[]
-          humor_level?: string
-          id?: string
-          notice_deferred?: boolean
-          provenance?: boolean
-          serious_moment?: boolean
-          surface?: string
-        }
-        Relationships: []
-      }
       athena_usage_log: {
         Row: {
           billed_at: string | null

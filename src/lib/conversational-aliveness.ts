@@ -54,7 +54,7 @@ export const EMPTY_STYLE_EVIDENCE: StyleEvidence = {
 // safe direction.
 const PROFANITY = /\b(fuck\w*|shit\w*|bullshit|damn|goddamn|hell of|crap|ass(hole)?|bitch|piss(ed)?|screwed)\b/i;
 const HUMOR =
-  /(\bha+(?:ha+)+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|\bjoke\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b)/i;
+  /(\bha+ha+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|\bjoke\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b)/i;
 const TEASING =
   /(you'?re (funny|savage|brutal|sassy|cheeky|trouble)|are you (roasting|teasing|making fun)|roast me|give me (shit|a hard time)|don'?t hold back on me|call me out|you can tease|\bsass\b)/i;
 const SELF_DEPRECATION =

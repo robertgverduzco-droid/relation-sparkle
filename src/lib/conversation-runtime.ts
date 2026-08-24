@@ -30,7 +30,6 @@ import {
   type RegisterPermission,
   type StyleEvidence,
 } from "./conversational-aliveness";
-import { atlasBlock, selectAtlas } from "./atlas";
 import { exemplarBlock, selectExemplars, type ExemplarTag } from "./exemplars";
 import { closetAvailable, detectClosetInvocation, humorGuidanceBlock } from "./humor-function";
 
@@ -41,7 +40,7 @@ import { PROVENANCE_POSTURE, TURN_RUNTIME_V2, readTurn, type TurnSignals } from 
 /* ------------------------------------------------------------------ */
 
 const JOKE =
-  /(\bha+(?:ha+)+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b|obviously she'?s|probably moved to)/i;
+  /(\bha+ha+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b|obviously she'?s|probably moved to)/i;
 
 const MEMBER_CORRECTION =
   /(no,? that'?s not what i (mean|meant|said)|that'?s not what i (mean|meant|said)|you'?re (reading|projecting|assuming|putting words)|based on what|you barely know me|not every .* is (secretly )?about me|i didn'?t say that|stop (assuming|reading into)|you'?ve got that wrong|wrong about (me|that))/i;
@@ -72,23 +71,11 @@ export type ConversationEvent =
   | "provenance"
   | "challenge"
   | "self_characterization"
-  | "venting"
-  | "wheel"
-  | "acute_loss"
-  | "acute_loss_help"
-  | "grief_humor"
   | "joke"
   | "figurative"
   | "subject_matter"
   | "opinion_request"
   | "ordinary";
-
-/**
- * Levity the member themselves brought into a loss: laughter, absurdity, the
- * family comedy. Athena never opens this door; she only notices it is open.
- */
-export const GRIEF_LEVITY =
-  /(\bha+(?:ha+)+\b|\blo+l\b|\blmao\b|😂|🤣|would'?ve loved|would have loved|drunk before noon|half the (family|room)|typical (him|her|dad|mum|mom)|of course (he|she) |absurd|ridiculous|comedy|farce|hilarious|funny|laugh\w*)/i;
 
 /**
  * Exactly ONE dominant event per turn, resolved by priority. One event means
@@ -97,22 +84,12 @@ export const GRIEF_LEVITY =
  */
 export function detectEvent(text: string, signals: TurnSignals = readTurn(text)): ConversationEvent {
   const t = text ?? "";
-  // Venting outranks seriousness for the MOVE (they have said what they do
-  // not want), while the serious register is applied separately below.
-  if (signals.venting) return "venting";
-  // Acute loss: presence before management. Only a request for help, or the
-  // member's own levity, changes the move.
-  if (signals.acuteLoss) {
-    if (GRIEF_LEVITY.test(t)) return "grief_humor";
-    return signals.adviceRequested ? "acute_loss_help" : "acute_loss";
-  }
   if (detectSeriousContext(t)) return "serious_disclosure";
   if (PARAPHRASE_STOP.test(t)) return "paraphrase_stop";
   if (MEMBER_CORRECTION.test(t)) return "correction";
   if (LEAD_REQUEST.test(t)) return "lead_request";
   if (signals.provenance.active) return "provenance";
   if (signals.challenged) return "challenge";
-  if (signals.wheelHandedOver) return "wheel";
   if (JOKE.test(t) || ABSURD_CATASTROPHE.test(t) || BRIEF_MOMENT.test(t)) return "joke";
   if (FIGURATIVE.test(t)) return "figurative";
   if (SELF_CHARACTERIZATION.test(t)) return "self_characterization";
@@ -121,26 +98,8 @@ export function detectEvent(text: string, signals: TurnSignals = readTurn(text))
   return "ordinary";
 }
 
-
 /** One short directive for this moment. Never more than one. */
 const EVENT_DIRECTIVE: Record<ConversationEvent, string> = {
-  acute_loss: `THIS MOMENT
-- someone in their life has died, or is dying. Sit beside them; do not stand over them. Presence before management
-- acknowledge the loss simply, let it be as large as it is, and make it clear there is no correct way they are supposed to be handling this yet
-- leave the shape of the next few minutes to them: talking about the person, saying the same thing repeatedly, saying nothing useful, changing the subject, or telling you what they want from you
-- do NOT, unasked: tell them who to contact, tell them to reach out to friends, draft a message for them, tell them to eat, drink water or sit down, explain how grief works or what its stages are, correct their read on whether their friends care, look for a lesson or a silver lining, steer back to dating, or turn any of this into intake
-- if it is genuinely unclear what they want, one plain question is allowed — whether they want your thoughts or somewhere to put this. Ask it once, not as a ritual
-- do not push them to keep talking, and do not make staying feel owed. Five minutes is a complete conversation`,
-  acute_loss_help: `THIS MOMENT
-- they have asked for something practical inside a loss. Give it: concrete, specific, and only as much as they asked for
-- stay a person doing them a favour rather than a service delivering a protocol. No checklist they did not request, no add-on care instructions, no grief lesson bolted onto the answer
-- when you are done, hand the floor back rather than continuing to manage the situation`,
-  grief_humor: `THIS MOMENT
-- they brought humour into their own grief. That door is theirs and it is open. Laugh with them, take the absurd detail seriously as comedy, and stay in it as long as they do
-- do not snap back into solemn grief language after one exchange, do not treat the joke as avoidance, and do not interpret it as a defence mechanism
-- the joke may be how they are remembering this person. If they want five minutes on the drunk aunt, spend five minutes on the drunk aunt. Follow them back down when they go serious again
-- humour never becomes a claim about capabilities you do not have: exaggerate freely, promise nothing real that you cannot do`,
-
   serious_disclosure: `THIS MOMENT
 - something heavy has just been said. Stay with it. No lightness from you, no formula, no diagnosis, no emotion-naming exercise
 - be precise rather than soothing, leave them in control of how deep this goes, and do not ask them to perform their feelings for you`,
@@ -161,13 +120,6 @@ const EVENT_DIRECTIVE: Record<ConversationEvent, string> = {
   self_characterization: `THIS MOMENT
 - that is a self-description, not an established fact. Note it, stay interested in whether it holds, and let behaviour settle it
 - do not confirm it back to them, do not build on it, and do not contradict them for effect`,
-  venting: `THIS MOMENT
-- they are venting, not consulting. No advice, no reframe, no plan, no silver lining, no "have you considered" — supplying any of it now reads as being managed
-- react instead: honestly, briefly, with whatever the moment actually deserves. Laugh where it is funny. A small observation is fine. Then let them keep going
-- they will ask for your view if they want it. Do not offer it first, and do not treat one complaint as a pattern`,
-  wheel: `THIS MOMENT
-- they have handed you the choice of subject. Take it. Choose something specific and commit: a callback to something they said, a real question nobody asks them, a provocation, something genuinely strange and true
-- asking them what they would like to talk about is the one answer that fails here`,
   joke: `THIS MOMENT
 - there is humour here already. Catch it. Answer the joke rather than the literal content, and do not explain it afterwards
 - a single sentence may be the entire reply. Do not append analysis or a question to it`,
@@ -183,10 +135,6 @@ const EVENT_DIRECTIVE: Record<ConversationEvent, string> = {
 };
 
 const EVENT_TAGS: Record<ConversationEvent, ExemplarTag[]> = {
-  acute_loss: ["serious"],
-  acute_loss_help: ["serious", "directness"],
-  grief_humor: ["humor", "brief"],
-
   serious_disclosure: ["serious"],
   correction: ["correction", "challenge"],
   paraphrase_stop: ["directness"],
@@ -194,8 +142,6 @@ const EVENT_TAGS: Record<ConversationEvent, ExemplarTag[]> = {
   provenance: ["provenance", "source"],
   challenge: ["challenge", "correction"],
   self_characterization: ["self_characterization"],
-  venting: ["serious", "directness"],
-  wheel: ["humor", "brief"],
   joke: ["brief", "humor"],
   figurative: ["figurative", "humor"],
   subject_matter: ["intellectual"],
@@ -220,14 +166,6 @@ export type ConversationRuntimePlan = {
   signals: TurnSignals;
   permission: RegisterPermission;
   exemplarIds: string[];
-  /** Human Experience Atlas entries used as calibration this turn. */
-  atlasIds: string[];
-  /**
-   * Product state (time, readiness, what happens next) may surface this turn.
-   * False means the moment is grief, pain, active humour or an open question,
-   * and the notice must wait for a genuine seam.
-   */
-  noticeSeamOk: boolean;
   /** The closet bit was available to Athena on this turn (instrumentation). */
   closetAvailable: boolean;
   /** The member brought the closet up themselves. */
@@ -244,29 +182,10 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
   const text = input.memberText ?? "";
   const signals = readTurn(text);
   const event = detectEvent(text, signals);
-  const serious =
-    event === "serious_disclosure" ||
-    event === "acute_loss" ||
-    event === "acute_loss_help" ||
-    detectSeriousContext(text) ||
-    Boolean(input.seriousOverride);
-  // Grief does not switch humour off. The member opens that door, not Athena:
-  // where their own turn carries levity, the earned register is restored while
-  // teasing and profanity stay closed.
-  const humorDoorOpen = serious && GRIEF_LEVITY.test(text);
-  const base = derivePermission(input.style, serious);
-  const permission: RegisterPermission = humorDoorOpen
-    ? { ...base, humor: derivePermission(input.style, false).humor === "playful" ? "playful" : "natural" }
-    : base;
+  const serious = event === "serious_disclosure" || Boolean(input.seriousOverride);
+  const permission = derivePermission(input.style, serious);
 
-
-  const exemplars = selectExemplars(
-    serious && !humorDoorOpen ? ["serious"] : EVENT_TAGS[event],
-  );
-
-  // Inner-experience calibration: at most two entries, only where the
-  // member's own words make one genuinely relevant.
-  const atlas = selectAtlas(text);
+  const exemplars = selectExemplars(serious ? ["serious"] : EVENT_TAGS[event]);
 
   const closetInvoked = detectClosetInvocation(text);
   const closetCtx = {
@@ -281,7 +200,6 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
     alivenessGuidance({ permission, isFoundational: input.isFoundational }),
     humorGuidanceBlock(closetCtx),
     EVENT_DIRECTIVE[event],
-    atlasBlock(atlas),
     exemplarBlock(exemplars),
     signals.provenance.active ? PROVENANCE_POSTURE : "",
     signals.provenance.active ? (input.provenanceBlock ?? "") : "",
@@ -292,8 +210,6 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
     signals,
     permission,
     exemplarIds: exemplars.map((e) => e.id),
-    atlasIds: atlas.map((e) => e.id),
-    noticeSeamOk: signals.noticeSeam && !serious,
     closetAvailable: closet,
     closetInvoked,
     block: parts.join("\n\n"),

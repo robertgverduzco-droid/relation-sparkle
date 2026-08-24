@@ -40,16 +40,3 @@ export const getClosetAnalytics = createServerFn({ method: "GET" })
     const { closetAnalytics } = await import("./closet.server");
     return closetAnalytics();
   });
-
-/**
- * Runtime observability. What Athena DECIDED, never what anyone said.
- * De-identified aggregates only, founder-gated like everything else here.
- */
-export const getRuntimeDecisions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { isFounder } = await import("./founder-dialogue.server");
-    if (!(await isFounder(context.userId))) throw new Error("Not found");
-    const { decisionAnalytics } = await import("./turn-decisions.server");
-    return decisionAnalytics();
-  });
