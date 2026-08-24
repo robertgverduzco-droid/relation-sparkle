@@ -30,6 +30,7 @@ import {
   type RegisterPermission,
   type StyleEvidence,
 } from "./conversational-aliveness";
+import { atlasBlock, selectAtlas } from "./atlas";
 import { exemplarBlock, selectExemplars, type ExemplarTag } from "./exemplars";
 import { closetAvailable, detectClosetInvocation, humorGuidanceBlock } from "./humor-function";
 
@@ -40,7 +41,7 @@ import { PROVENANCE_POSTURE, TURN_RUNTIME_V2, readTurn, type TurnSignals } from 
 /* ------------------------------------------------------------------ */
 
 const JOKE =
-  /(\bha+ha+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b|obviously she'?s|probably moved to)/i;
+  /(\bha+(?:ha+)+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b|obviously she'?s|probably moved to)/i;
 
 const MEMBER_CORRECTION =
   /(no,? that'?s not what i (mean|meant|said)|that'?s not what i (mean|meant|said)|you'?re (reading|projecting|assuming|putting words)|based on what|you barely know me|not every .* is (secretly )?about me|i didn'?t say that|stop (assuming|reading into)|you'?ve got that wrong|wrong about (me|that))/i;
@@ -71,6 +72,8 @@ export type ConversationEvent =
   | "provenance"
   | "challenge"
   | "self_characterization"
+  | "venting"
+  | "wheel"
   | "joke"
   | "figurative"
   | "subject_matter"
@@ -84,12 +87,16 @@ export type ConversationEvent =
  */
 export function detectEvent(text: string, signals: TurnSignals = readTurn(text)): ConversationEvent {
   const t = text ?? "";
+  // Venting outranks seriousness for the MOVE (they have said what they do
+  // not want), while the serious register is applied separately below.
+  if (signals.venting) return "venting";
   if (detectSeriousContext(t)) return "serious_disclosure";
   if (PARAPHRASE_STOP.test(t)) return "paraphrase_stop";
   if (MEMBER_CORRECTION.test(t)) return "correction";
   if (LEAD_REQUEST.test(t)) return "lead_request";
   if (signals.provenance.active) return "provenance";
   if (signals.challenged) return "challenge";
+  if (signals.wheelHandedOver) return "wheel";
   if (JOKE.test(t) || ABSURD_CATASTROPHE.test(t) || BRIEF_MOMENT.test(t)) return "joke";
   if (FIGURATIVE.test(t)) return "figurative";
   if (SELF_CHARACTERIZATION.test(t)) return "self_characterization";
@@ -120,6 +127,13 @@ const EVENT_DIRECTIVE: Record<ConversationEvent, string> = {
   self_characterization: `THIS MOMENT
 - that is a self-description, not an established fact. Note it, stay interested in whether it holds, and let behaviour settle it
 - do not confirm it back to them, do not build on it, and do not contradict them for effect`,
+  venting: `THIS MOMENT
+- they are venting, not consulting. No advice, no reframe, no plan, no silver lining, no "have you considered" — supplying any of it now reads as being managed
+- react instead: honestly, briefly, with whatever the moment actually deserves. Laugh where it is funny. A small observation is fine. Then let them keep going
+- they will ask for your view if they want it. Do not offer it first, and do not treat one complaint as a pattern`,
+  wheel: `THIS MOMENT
+- they have handed you the choice of subject. Take it. Choose something specific and commit: a callback to something they said, a real question nobody asks them, a provocation, something genuinely strange and true
+- asking them what they would like to talk about is the one answer that fails here`,
   joke: `THIS MOMENT
 - there is humour here already. Catch it. Answer the joke rather than the literal content, and do not explain it afterwards
 - a single sentence may be the entire reply. Do not append analysis or a question to it`,
@@ -142,6 +156,8 @@ const EVENT_TAGS: Record<ConversationEvent, ExemplarTag[]> = {
   provenance: ["provenance", "source"],
   challenge: ["challenge", "correction"],
   self_characterization: ["self_characterization"],
+  venting: ["serious", "directness"],
+  wheel: ["humor", "brief"],
   joke: ["brief", "humor"],
   figurative: ["figurative", "humor"],
   subject_matter: ["intellectual"],
@@ -166,6 +182,14 @@ export type ConversationRuntimePlan = {
   signals: TurnSignals;
   permission: RegisterPermission;
   exemplarIds: string[];
+  /** Human Experience Atlas entries used as calibration this turn. */
+  atlasIds: string[];
+  /**
+   * Product state (time, readiness, what happens next) may surface this turn.
+   * False means the moment is grief, pain, active humour or an open question,
+   * and the notice must wait for a genuine seam.
+   */
+  noticeSeamOk: boolean;
   /** The closet bit was available to Athena on this turn (instrumentation). */
   closetAvailable: boolean;
   /** The member brought the closet up themselves. */
@@ -182,10 +206,16 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
   const text = input.memberText ?? "";
   const signals = readTurn(text);
   const event = detectEvent(text, signals);
-  const serious = event === "serious_disclosure" || Boolean(input.seriousOverride);
+  const serious =
+    event === "serious_disclosure" ||
+    detectSeriousContext(text) ||
+    Boolean(input.seriousOverride);
   const permission = derivePermission(input.style, serious);
 
   const exemplars = selectExemplars(serious ? ["serious"] : EVENT_TAGS[event]);
+  // Inner-experience calibration: at most two entries, only where the
+  // member's own words make one genuinely relevant.
+  const atlas = selectAtlas(text);
 
   const closetInvoked = detectClosetInvocation(text);
   const closetCtx = {
@@ -200,6 +230,7 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
     alivenessGuidance({ permission, isFoundational: input.isFoundational }),
     humorGuidanceBlock(closetCtx),
     EVENT_DIRECTIVE[event],
+    atlasBlock(atlas),
     exemplarBlock(exemplars),
     signals.provenance.active ? PROVENANCE_POSTURE : "",
     signals.provenance.active ? (input.provenanceBlock ?? "") : "",
@@ -210,6 +241,8 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
     signals,
     permission,
     exemplarIds: exemplars.map((e) => e.id),
+    atlasIds: atlas.map((e) => e.id),
+    noticeSeamOk: signals.noticeSeam && !serious,
     closetAvailable: closet,
     closetInvoked,
     block: parts.join("\n\n"),
