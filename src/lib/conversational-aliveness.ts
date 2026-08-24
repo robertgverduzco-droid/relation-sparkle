@@ -106,6 +106,9 @@ export function observeStyle(
     if (TEASING.test(t)) out.teasingTurns += 1;
     if (SELF_DEPRECATION.test(t)) out.selfDeprecationTurns += 1;
     if (DIRECTNESS.test(t)) out.directnessTurns += 1;
+    if (ELABORATION.test(t)) out.elaborationTurns = (out.elaborationTurns ?? 0) + 1;
+    if (GENTLENESS.test(t)) out.gentlenessTurns = (out.gentlenessTurns ?? 0) + 1;
+    if (REASSURANCE.test(t)) out.reassuranceTurns = (out.reassuranceTurns ?? 0) + 1;
   }
   return out;
 }
@@ -117,6 +120,9 @@ export function mergeStyle(a: StyleEvidence, b: StyleEvidence): StyleEvidence {
     teasingTurns: a.teasingTurns + b.teasingTurns,
     selfDeprecationTurns: a.selfDeprecationTurns + b.selfDeprecationTurns,
     directnessTurns: a.directnessTurns + b.directnessTurns,
+    elaborationTurns: (a.elaborationTurns ?? 0) + (b.elaborationTurns ?? 0),
+    gentlenessTurns: (a.gentlenessTurns ?? 0) + (b.gentlenessTurns ?? 0),
+    reassuranceTurns: (a.reassuranceTurns ?? 0) + (b.reassuranceTurns ?? 0),
     memberTurns: a.memberTurns + b.memberTurns,
   };
 }
@@ -131,6 +137,12 @@ export type RegisterPermission = {
   teasing: boolean;
   /** They prefer directness over reassurance. */
   directness: boolean;
+  /** They have asked for fuller explanation rather than compression. */
+  elaboration: boolean;
+  /** They have asked for softer language and less challenge or teasing. */
+  gentleness: boolean;
+  /** They ask for explicit reassurance, and it is honest to give it. */
+  reassurance: boolean;
   /** True when the present moment overrides accumulated playfulness. */
   seriousMoment: boolean;
 };
@@ -139,6 +151,11 @@ export type RegisterPermission = {
  * Permission is cumulative, evidence-based and account-scoped. Early
  * conversations are conservative by construction: a single isolated
  * profanity, or one joke, grants nothing.
+ *
+ * There is no ideal register. Directness and gentleness, brevity and
+ * elaboration are equally legitimate destinations — the evidence decides which
+ * member this is, and where both are present the more recent, stronger signal
+ * wins rather than a default preference for bluntness.
  */
 export function derivePermission(
   evidence: StyleEvidence,
@@ -148,18 +165,30 @@ export function derivePermission(
   // conversation length. One genuine humour opening is enough to stop
   // sounding like a stranger; repetition earns the fully playful register.
   const light = evidence.humorTurns + evidence.selfDeprecationTurns;
-  const humor: HumorLevel =
+  const gentlenessTurns = evidence.gentlenessTurns ?? 0;
+  const elaborationTurns = evidence.elaborationTurns ?? 0;
+  const reassuranceTurns = evidence.reassuranceTurns ?? 0;
+
+  // A request for gentler treatment closes playfulness down the same way a
+  // serious moment does; it is a preference, not a deficiency.
+  const gentleness = gentlenessTurns >= 1 && gentlenessTurns >= evidence.teasingTurns;
+  const humorRaw: HumorLevel =
     light >= 3 ? "playful" : light >= 1 ? "natural" : "reserved";
+  const humor: HumorLevel = gentleness && humorRaw === "playful" ? "natural" : humorRaw;
 
   const profanity = evidence.profanityTurns >= 1;
   const teasing =
-    evidence.teasingTurns >= 1 || (light >= 3 && evidence.selfDeprecationTurns >= 1);
+    !gentleness &&
+    (evidence.teasingTurns >= 1 || (light >= 3 && evidence.selfDeprecationTurns >= 1));
 
   return {
-    humor: seriousMoment ? "reserved" : humor,
+    humor: seriousMoment || gentleness ? (seriousMoment ? "reserved" : humor) : humor,
     profanity: profanity && !seriousMoment,
     teasing: teasing && !seriousMoment,
-    directness: evidence.directnessTurns >= 2,
+    directness: evidence.directnessTurns >= 2 && evidence.directnessTurns > gentlenessTurns,
+    elaboration: elaborationTurns >= 1,
+    gentleness,
+    reassurance: reassuranceTurns >= 1,
     seriousMoment,
   };
 }
