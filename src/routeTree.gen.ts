@@ -23,6 +23,7 @@ import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-se
 import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-education'
 import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnostic'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
+import { Route as AuthenticatedRevealRouteImport } from './routes/_authenticated/reveal'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -115,6 +116,11 @@ const AuthenticatedUnderstandingRoute =
     path: '/understanding',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRevealRoute = AuthenticatedRevealRouteImport.update({
+  id: '/reveal',
+  path: '/reveal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/reveal': typeof AuthenticatedRevealRoute
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
@@ -365,6 +374,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/reveal'
     | '/understanding'
     | '/api/live-diagnostic'
     | '/api/realtime-education'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/reveal'
     | '/understanding'
     | '/api/live-diagnostic'
     | '/api/realtime-education'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/reveal'
     | '/_authenticated/understanding'
     | '/api/live-diagnostic'
     | '/api/realtime-education'
@@ -569,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/understanding'
       fullPath: '/understanding'
       preLoaderRoute: typeof AuthenticatedUnderstandingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reveal': {
+      id: '/_authenticated/reveal'
+      path: '/reveal'
+      fullPath: '/reveal'
+      preLoaderRoute: typeof AuthenticatedRevealRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -799,6 +818,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
+  AuthenticatedRevealRoute: typeof AuthenticatedRevealRoute
   AuthenticatedUnderstandingRoute: typeof AuthenticatedUnderstandingRoute
 }
 
@@ -817,6 +837,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
+  AuthenticatedRevealRoute: AuthenticatedRevealRoute,
   AuthenticatedUnderstandingRoute: AuthenticatedUnderstandingRoute,
 }
 
