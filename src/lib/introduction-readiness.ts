@@ -98,7 +98,11 @@ export const REQUIRED_UNDERSTANDING_AREAS: RequiredArea[] = [
  * Athena wants understanding actually written down across at least this many
  * facets before she reasons about a stranger.
  */
-export const MIN_UNDERSTOOD_FACETS = 9;
+// Raised from 9 with the Rebuild Spec: temperament and nervous-system pattern
+// are now required areas of their own, so the breadth bar must stay above the
+// count of required areas or "every area touched once" would pass as depth.
+export const MIN_UNDERSTOOD_FACETS = 11;
+
 
 /** Below this, Athena has an impression rather than an understanding. */
 export const MIN_AREA_CONFIDENCE = 0.35;
