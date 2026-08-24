@@ -156,3 +156,22 @@ Reviewed against L6a, evidentiary discipline, the Non-Quotation Standard,
 Conversational Aliveness V1 and Presence doctrine. Athena University, member
 memory, Living Profile, matchmaking, readiness, safety, educational retrieval
 and population learning are unchanged.
+
+## Guarded delta — acute loss, grief and human presence
+
+Canonical posture: **sit beside, not stand over. Presence before management.**
+
+| Event | When | Directive |
+|---|---|---|
+| `acute_loss` | a death or imminent death, no request for help | acknowledge simply, remove the obligation to be handling it well, leave the next move to them; no contact lists, drafted messages, food/water instructions, grief lessons, corrections about whether their friends care, or return to intake |
+| `acute_loss_help` | they asked for something practical inside a loss | give it concretely, only as much as asked, then hand the floor back |
+| `grief_humor` | they brought levity into their own loss | follow them, stay in it as long as they do, never read the joke as avoidance |
+
+Priority: venting > acute loss > serious disclosure. Humour is **not** globally
+disabled by a death: where the member's own turn carries levity, the earned
+humour register is restored for that turn while teasing and profanity stay
+closed. Product notices remain suppressed (`noticeSeamOk: false`), education
+stays unspoken unless asked, and existing safety classification is unchanged.
+
+Atlas entries `acute-loss` and `not-wanting-to-burden-friends` supply interior
+calibration. Acceptance: `src/lib/grief-presence.test.ts` (22 multi-turn tests).
