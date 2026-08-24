@@ -41,7 +41,7 @@ import { PROVENANCE_POSTURE, TURN_RUNTIME_V2, readTurn, type TurnSignals } from 
 /* ------------------------------------------------------------------ */
 
 const JOKE =
-  /(\bha+ha+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b|obviously she'?s|probably moved to)/i;
+  /(\bha+(?:ha+)+\b|\blo+l\b|\blmao\b|\brofl\b|😂|🤣|😅|😜|😏|\bjk\b|just kidding|kidding\b|hilarious|ridiculous|absurd|\bironic\b|\/s\b|obviously she'?s|probably moved to)/i;
 
 const MEMBER_CORRECTION =
   /(no,? that'?s not what i (mean|meant|said)|that'?s not what i (mean|meant|said)|you'?re (reading|projecting|assuming|putting words)|based on what|you barely know me|not every .* is (secretly )?about me|i didn'?t say that|stop (assuming|reading into)|you'?ve got that wrong|wrong about (me|that))/i;

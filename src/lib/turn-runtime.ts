@@ -75,7 +75,7 @@ const WHEEL =
 
 /** Turns where a product notice would be an intrusion rather than an aside. */
 const NOT_A_SEAM =
-  /\b(died|death|passed away|funeral|grief|grieving|miscarriage|cancer|terminal|hospice|abuse[d]?|assault|raped?|trauma|suicid\w*|self[- ]harm|panic attack|crying|in tears|divorce|custody|betray\w*|cheated on me|humiliat\w*|ashamed|shame|terrified|breakdown|relapse)\b|(\bha+ha+\b|\blo+l\b|😂|🤣|\bjk\b|just kidding)|(\?\s*$)/i;
+  /\b(died|death|passed away|funeral|grief|grieving|miscarriage|cancer|terminal|hospice|abuse[d]?|assault|raped?|trauma|suicid\w*|self[- ]harm|panic attack|crying|in tears|divorce|custody|betray\w*|cheated on me|humiliat\w*|ashamed|shame|terrified|breakdown|relapse)\b|(\bha+(?:ha+)+\b|\blo+l\b|😂|🤣|\bjk\b|just kidding)|(\?\s*$)/i;
 
 export type TurnSignals = {
   challenged: boolean;
