@@ -157,7 +157,11 @@ Use this memory to:
     // Respect for their time: acknowledged once, at approximately fifteen
     // minutes. It is a courtesy, never a deadline — time never overrides
     // readiness, in either direction.
-    const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= RESPECT_TIME_MINUTES;
+    // The transcript is authoritative: a client flag can silently reset on
+    // reload or reconnect, the conversation itself cannot.
+    const alreadyAcknowledgedTime =
+      Boolean(data.timeAcknowledged) || transcriptAlreadyAcknowledgesTime(data.messages);
+    const shouldAcknowledgeTime = !alreadyAcknowledgedTime && elapsed >= RESPECT_TIME_MINUTES;
 
     // Matchmaking readiness is decided by persisted understanding, never by
     // the member's patience. Athena is told the truth about what she does and
