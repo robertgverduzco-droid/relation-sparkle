@@ -31,6 +31,8 @@ import {
   type StyleEvidence,
 } from "./conversational-aliveness";
 import { exemplarBlock, selectExemplars, type ExemplarTag } from "./exemplars";
+import { closetAvailable, detectClosetInvocation, humorGuidanceBlock } from "./humor-function";
+
 import { PROVENANCE_POSTURE, TURN_RUNTIME_V2, readTurn, type TurnSignals } from "./turn-runtime";
 
 /* ------------------------------------------------------------------ */
@@ -164,6 +166,10 @@ export type ConversationRuntimePlan = {
   signals: TurnSignals;
   permission: RegisterPermission;
   exemplarIds: string[];
+  /** The closet bit was available to Athena on this turn (instrumentation). */
+  closetAvailable: boolean;
+  /** The member brought the closet up themselves. */
+  closetInvoked: boolean;
   /** The single composed block for the system prompt. */
   block: string;
 };
@@ -181,14 +187,32 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
 
   const exemplars = selectExemplars(serious ? ["serious"] : EVENT_TAGS[event]);
 
+  const closetInvoked = detectClosetInvocation(text);
+  const closetCtx = {
+    permission,
+    isFoundational: input.isFoundational,
+    memberInvoked: closetInvoked,
+  };
+  const closet = closetAvailable(closetCtx);
+
   const parts = [
     TURN_RUNTIME_V2,
     alivenessGuidance({ permission, isFoundational: input.isFoundational }),
+    humorGuidanceBlock(closetCtx),
     EVENT_DIRECTIVE[event],
     exemplarBlock(exemplars),
     signals.provenance.active ? PROVENANCE_POSTURE : "",
     signals.provenance.active ? (input.provenanceBlock ?? "") : "",
   ].filter(Boolean);
 
-  return { event, signals, permission, exemplarIds: exemplars.map((e) => e.id), block: parts.join("\n\n") };
+  return {
+    event,
+    signals,
+    permission,
+    exemplarIds: exemplars.map((e) => e.id),
+    closetAvailable: closet,
+    closetInvoked,
+    block: parts.join("\n\n"),
+  };
 }
+
