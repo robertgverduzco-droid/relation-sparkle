@@ -87,13 +87,15 @@ export type ConversationEvent =
  */
 export function detectEvent(text: string, signals: TurnSignals = readTurn(text)): ConversationEvent {
   const t = text ?? "";
+  // Venting outranks seriousness for the MOVE (they have said what they do
+  // not want), while the serious register is applied separately below.
+  if (signals.venting) return "venting";
   if (detectSeriousContext(t)) return "serious_disclosure";
   if (PARAPHRASE_STOP.test(t)) return "paraphrase_stop";
   if (MEMBER_CORRECTION.test(t)) return "correction";
   if (LEAD_REQUEST.test(t)) return "lead_request";
   if (signals.provenance.active) return "provenance";
   if (signals.challenged) return "challenge";
-  if (signals.venting) return "venting";
   if (signals.wheelHandedOver) return "wheel";
   if (JOKE.test(t) || ABSURD_CATASTROPHE.test(t) || BRIEF_MOMENT.test(t)) return "joke";
   if (FIGURATIVE.test(t)) return "figurative";
@@ -204,7 +206,10 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
   const text = input.memberText ?? "";
   const signals = readTurn(text);
   const event = detectEvent(text, signals);
-  const serious = event === "serious_disclosure" || Boolean(input.seriousOverride);
+  const serious =
+    event === "serious_disclosure" ||
+    detectSeriousContext(text) ||
+    Boolean(input.seriousOverride);
   const permission = derivePermission(input.style, serious);
 
   const exemplars = selectExemplars(serious ? ["serious"] : EVENT_TAGS[event]);
