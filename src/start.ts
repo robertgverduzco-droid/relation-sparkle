@@ -1,3 +1,4 @@
+// Build marker: 2026-08-24 — rebuild after backend credentials were re-bound.
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
