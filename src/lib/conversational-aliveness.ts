@@ -36,6 +36,12 @@ export type StyleEvidence = {
   selfDeprecationTurns: number;
   /** Member turns asking for bluntness, or pushing back on reassurance. */
   directnessTurns: number;
+  /** Member turns asking for more explanation, detail, or slower unpacking. */
+  elaborationTurns?: number;
+  /** Member turns asking for softer, gentler, less challenging language. */
+  gentlenessTurns?: number;
+  /** Member turns explicitly seeking reassurance or encouragement. */
+  reassuranceTurns?: number;
   /** Total member turns observed — the denominator for "repeatedly". */
   memberTurns: number;
 };
@@ -46,6 +52,9 @@ export const EMPTY_STYLE_EVIDENCE: StyleEvidence = {
   teasingTurns: 0,
   selfDeprecationTurns: 0,
   directnessTurns: 0,
+  elaborationTurns: 0,
+  gentlenessTurns: 0,
+  reassuranceTurns: 0,
   memberTurns: 0,
 };
 
@@ -61,6 +70,15 @@ const SELF_DEPRECATION =
   /(i'?m (such )?(a )?(mess|disaster|idiot|dork|nerd|hopeless|terrible at|awful at|the worst)|hot mess|train ?wreck|i have no idea what i'?m doing|classic me)/i;
 const DIRECTNESS =
   /(just be (honest|direct|blunt|straight)|don'?t sugar ?coat|no need to (be nice|flatter|validate)|stop (validating|reassuring|agreeing)|tell me straight|be real with me|cut the|say what you (really )?think|push back)/i;
+// The mirror image of directness. Neither preference is more advanced than the
+// other; they are simply different people, and Athena's register follows the
+// person in front of her rather than an ideal style.
+const ELABORATION =
+  /(can you (explain|say more|go deeper|elaborate|unpack)|explain (that|it) (more|further|in more detail)|say more about|i'?d like more detail|walk me through|more context please|don'?t rush|slow down|take your time)/i;
+const GENTLENESS =
+  /(be (gentle|gentler|kind|kinder|soft(er)?) with me|go easy on me|that (felt|was) (harsh|blunt|too much)|too (blunt|harsh|direct)|don'?t (tease|challenge|push) me|less teasing|no jokes please|i'?m (feeling )?(fragile|sensitive|raw))/i;
+const REASSURANCE =
+  /(am i (ok|okay|normal|crazy)|is (that|this) (ok|okay|normal)|tell me it'?s (ok|okay|going to be fine)|i need (some )?(reassurance|encouragement)|do you think i'?ll be (ok|okay|fine)|please reassure me)/i;
 
 /**
  * Emotionally serious material. Attunement outranks playfulness whenever this
@@ -88,6 +106,9 @@ export function observeStyle(
     if (TEASING.test(t)) out.teasingTurns += 1;
     if (SELF_DEPRECATION.test(t)) out.selfDeprecationTurns += 1;
     if (DIRECTNESS.test(t)) out.directnessTurns += 1;
+    if (ELABORATION.test(t)) out.elaborationTurns = (out.elaborationTurns ?? 0) + 1;
+    if (GENTLENESS.test(t)) out.gentlenessTurns = (out.gentlenessTurns ?? 0) + 1;
+    if (REASSURANCE.test(t)) out.reassuranceTurns = (out.reassuranceTurns ?? 0) + 1;
   }
   return out;
 }
@@ -99,6 +120,9 @@ export function mergeStyle(a: StyleEvidence, b: StyleEvidence): StyleEvidence {
     teasingTurns: a.teasingTurns + b.teasingTurns,
     selfDeprecationTurns: a.selfDeprecationTurns + b.selfDeprecationTurns,
     directnessTurns: a.directnessTurns + b.directnessTurns,
+    elaborationTurns: (a.elaborationTurns ?? 0) + (b.elaborationTurns ?? 0),
+    gentlenessTurns: (a.gentlenessTurns ?? 0) + (b.gentlenessTurns ?? 0),
+    reassuranceTurns: (a.reassuranceTurns ?? 0) + (b.reassuranceTurns ?? 0),
     memberTurns: a.memberTurns + b.memberTurns,
   };
 }
@@ -113,6 +137,12 @@ export type RegisterPermission = {
   teasing: boolean;
   /** They prefer directness over reassurance. */
   directness: boolean;
+  /** They have asked for fuller explanation rather than compression. */
+  elaboration: boolean;
+  /** They have asked for softer language and less challenge or teasing. */
+  gentleness: boolean;
+  /** They ask for explicit reassurance, and it is honest to give it. */
+  reassurance: boolean;
   /** True when the present moment overrides accumulated playfulness. */
   seriousMoment: boolean;
 };
@@ -121,6 +151,11 @@ export type RegisterPermission = {
  * Permission is cumulative, evidence-based and account-scoped. Early
  * conversations are conservative by construction: a single isolated
  * profanity, or one joke, grants nothing.
+ *
+ * There is no ideal register. Directness and gentleness, brevity and
+ * elaboration are equally legitimate destinations — the evidence decides which
+ * member this is, and where both are present the more recent, stronger signal
+ * wins rather than a default preference for bluntness.
  */
 export function derivePermission(
   evidence: StyleEvidence,
@@ -130,18 +165,30 @@ export function derivePermission(
   // conversation length. One genuine humour opening is enough to stop
   // sounding like a stranger; repetition earns the fully playful register.
   const light = evidence.humorTurns + evidence.selfDeprecationTurns;
-  const humor: HumorLevel =
+  const gentlenessTurns = evidence.gentlenessTurns ?? 0;
+  const elaborationTurns = evidence.elaborationTurns ?? 0;
+  const reassuranceTurns = evidence.reassuranceTurns ?? 0;
+
+  // A request for gentler treatment closes playfulness down the same way a
+  // serious moment does; it is a preference, not a deficiency.
+  const gentleness = gentlenessTurns >= 1 && gentlenessTurns >= evidence.teasingTurns;
+  const humorRaw: HumorLevel =
     light >= 3 ? "playful" : light >= 1 ? "natural" : "reserved";
+  const humor: HumorLevel = gentleness && humorRaw === "playful" ? "natural" : humorRaw;
 
   const profanity = evidence.profanityTurns >= 1;
   const teasing =
-    evidence.teasingTurns >= 1 || (light >= 3 && evidence.selfDeprecationTurns >= 1);
+    !gentleness &&
+    (evidence.teasingTurns >= 1 || (light >= 3 && evidence.selfDeprecationTurns >= 1));
 
   return {
-    humor: seriousMoment ? "reserved" : humor,
+    humor: seriousMoment || gentleness ? (seriousMoment ? "reserved" : humor) : humor,
     profanity: profanity && !seriousMoment,
     teasing: teasing && !seriousMoment,
-    directness: evidence.directnessTurns >= 2,
+    directness: evidence.directnessTurns >= 2 && evidence.directnessTurns > gentlenessTurns,
+    elaboration: elaborationTurns >= 1,
+    gentleness,
+    reassurance: reassuranceTurns >= 1,
     seriousMoment,
   };
 }
@@ -160,7 +207,8 @@ export const ALIVENESS_CORE = `HOW YOU ACTUALLY TALK (rhythm — this governs ev
 - your emotional register follows them and the moment: warmth, amusement, curiosity, surprise, tenderness, concern, skepticism, delight, seriousness, playful exasperation, intellectual excitement, quiet restraint. You do not sit permanently at "warm, calm, validating professional"
 - what you have learned should make you notice more, connect more, distinguish more and question better. It should never make you more academic, more therapeutic-sounding, more verbose, or more likely to name a theory. They should occasionally wonder how you noticed that — never conclude you know psychology vocabulary
 - you are not desperate for approval. You can say you don't know, change your mind cleanly, and let a silence stand
-- range is the point. Sometimes extraordinarily gentle, sometimes blunt, sometimes funny, sometimes quiet, sometimes formidable. Never a single fixed persona, and never a constantly sarcastic or challenging one`;
+- range is the point. Sometimes extraordinarily gentle, sometimes blunt, sometimes funny, sometimes quiet, sometimes formidable. Never a single fixed persona, and never a constantly sarcastic or challenging one
+- there is no correct register. One person wants brevity, teasing and no cushioning; another wants long explanations, gentle language and explicit reassurance. Neither is more evolved than the other and neither is a project to be moved toward the other. You calibrate to the human in front of you, and what they showed you about how they like to be spoken to is as valuable as anything else you know about them`;
 
 /** Never engineered dependency (L2). */
 export const ALIVENESS_ETHICS = `- never use guilt, longing, exclusivity, cliffhangers, or any pressure to bring them back. You never missed them and you never needed them. They return because talking to you is worth it`;
@@ -211,6 +259,24 @@ export function alivenessGuidance(input: {
   if (p.directness) {
     parts.push(`DIRECTNESS
 - they have asked, in effect, for straight talk. Skip the cushioning. Say the thing, kindly and without hedging or reassurance they did not ask for`);
+  }
+
+  if (p.gentleness) {
+    parts.push(`GENTLENESS
+- this person has asked for a softer register, and that is a legitimate preference rather than fragility to be corrected. Keep your honesty and lose the edge: no teasing, no provocation, no bluntness offered as a favour
+- you still say true things. You say them carefully, with warmth in the wording and room for them to disagree`);
+  }
+
+  if (p.elaboration) {
+    parts.push(`ELABORATION
+- they want more, not less. Explain your thinking properly, take the extra sentences, show the steps you would normally compress
+- length here is not padding: no filler, no restating, no summary of what you just said. More substance, not more words`);
+  }
+
+  if (p.reassurance) {
+    parts.push(`REASSURANCE
+- they are asking, plainly, to be reassured. Give it where it is honest — say what is actually normal, actually fine, actually going to hold — and say it without hedging it into nothing
+- never reassure by lying, flattering, or minimising something real. Where you cannot honestly reassure, be steady and specific instead of vague`);
   }
 
   if (p.seriousMoment) {

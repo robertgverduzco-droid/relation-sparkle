@@ -181,3 +181,36 @@ describe("analytical firewall", () => {
     expect(ANALYTICAL_REGISTER_GUARD).toMatch(/never affects how favourably they are assessed/);
   });
 });
+
+describe("no ideal register — the mirrored member", () => {
+  it("grants gentleness, elaboration and reassurance from the member's own asks", () => {
+    const style = observeStyle([
+      { role: "user", content: "Can you explain that more? I'd like more detail." },
+      { role: "user", content: "That felt harsh — please be gentler with me." },
+      { role: "user", content: "Am I normal for feeling this way?" },
+    ]);
+    const p = derivePermission(style);
+    expect(p.elaboration).toBe(true);
+    expect(p.gentleness).toBe(true);
+    expect(p.reassurance).toBe(true);
+    expect(p.teasing).toBe(false);
+    const block = alivenessGuidance({ permission: p, isFoundational: false });
+    expect(block).toContain("GENTLENESS");
+    expect(block).toContain("ELABORATION");
+    expect(block).toContain("REASSURANCE");
+  });
+
+  it("keeps the blunt member blunt — neither register is the default", () => {
+    const style = observeStyle([
+      { role: "user", content: "Just be blunt with me." },
+      { role: "user", content: "Don't sugarcoat it, tell me straight." },
+      { role: "user", content: "Roast me, honestly." },
+    ]);
+    const p = derivePermission(style);
+    expect(p.directness).toBe(true);
+    expect(p.gentleness).toBe(false);
+    const block = alivenessGuidance({ permission: p, isFoundational: false });
+    expect(block).toContain("DIRECTNESS");
+    expect(block).not.toContain("GENTLENESS");
+  });
+});
