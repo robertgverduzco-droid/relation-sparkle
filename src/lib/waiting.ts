@@ -87,18 +87,21 @@ export function waitingCopy(state: WaitingState): WaitingCopy | null {
   }
 
   const body = state.earlyCommunity
-    ? "I know enough about you to begin considering introductions. You're here early, while I'm still building this community, so I'd rather be patient than quick. When someone comes into my world I believe is genuinely worth your attention, I'll come find you."
-    : "I know enough about you to begin considering introductions. I'll come find you when I've found someone I believe is genuinely worth your attention — not because time has passed.";
+    ? "I know enough about you to begin considering introductions. Some of the best matches take longer to find, and you're here early while I'm still building this community — thank you for your patience with that. When someone comes into my world I believe is genuinely worth your attention, I'll come find you."
+    : "I know enough about you to begin considering introductions. Some of the best matches take longer to find, and I'd rather be patient than quick. I'll come find you when I've found someone I believe is genuinely worth your attention — not because time has passed.";
 
   return {
     headline: "I'm looking.",
     body,
-    note: "The more I understand you, the more clearly I can recognise who might actually fit — and sometimes that lets me see an introduction sooner. There's no need to; I'll keep looking either way.",
+    // The invitation is genuine, and it is genuine because it is true: every
+    // conversation sharpens the matching. It is never framed as a task.
+    note: "In the meantime, talk to me — about anything. A bad day, a good one, something that has nothing to do with dating at all. I like the conversation, and all of it helps me understand you, which is the whole of how I find the right person.",
     invitation: state.deepen
-      ? `Something I'd like to understand better: ${state.deepen.label.toLowerCase()}.`
+      ? `If you'd rather I picked the subject: ${state.deepen.label.toLowerCase()}.`
       : null,
   };
 }
+
 
 /**
  * One meaningful area where more understanding would genuinely improve
@@ -141,7 +144,11 @@ export function waitingGuidance(state: WaitingState): string {
     "If they ask whether anything is happening, be plainly honest: you are considering, you have nothing worth bringing them yet, and you will come to them when you do. Never invent activity, candidates, counts, queues, timeframes, or a sense that something is about to happen.",
     "You may explain truthfully that the more you understand them, the more clearly you can recognise who might fit, and that this can sometimes let you see an introduction sooner. Say it once, without pressure, and make clear more talking guarantees nothing, buys no priority, and that saying more is not the point.",
     "Never imply they are behind, missing out, or need to keep talking to stay considered.",
+    "THE WAIT IS THE PRODUCT, NOT A FAULT. This is slower than a swiping app on purpose. Never apologise for that, never treat it as a delay, and never manufacture urgency to compensate. Say plainly, when it is relevant, that some of the best matches take longer to find and that you appreciate their patience.",
+    "INVITE THE CONVERSATION, AND MEAN IT. They are welcome here for its own sake — a bad day, a good day, an argument with their brother, a film they can't stop thinking about, nothing to do with dating at all. Be someone worth coming home and talking to. If they arrive lonely, be good company, not an intake form.",
+    "Never make the invitation transactional: no 'talk to me so I can match you faster', no homework, no prompts to complete, no streaks, no reason they should have talked to you sooner.",
   ];
+
 
   if (state.candidate === "unresolved_candidate") {
     lines.push(

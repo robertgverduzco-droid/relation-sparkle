@@ -51,6 +51,14 @@ type ReadinessNoticeT = {
   title: string;
   body: string;
 };
+type CrisisNoticeT = {
+  kind: "crisis";
+  title: string;
+  body: string;
+  resource: string;
+  action: string;
+};
+
 type Msg = {
   role: "user" | "assistant";
   content: string;
@@ -61,6 +69,9 @@ type Msg = {
   // Foundational readiness is a separate experience from Trust & Safety: it
   // never borrows safety styling or language.
   readinessNotice?: ReadinessNoticeT;
+  /** The one hard safety rule. Never a warning, never a moderation surface. */
+  crisis?: CrisisNoticeT;
+
 };
 type VoiceMode = "voice" | "text";
 const VOICE_KEY = "athena-voice-mode";
@@ -397,7 +408,9 @@ function AthenaPage() {
     readiness?: { ready: boolean };
     foundationalSession?: boolean;
     readinessNotice?: ReadinessNoticeT;
+    crisis?: CrisisNoticeT;
     readinessShortfallSignature?: string | null;
+
   } | null> {
     try {
       return await ask({ data: payload });
@@ -541,6 +554,10 @@ function AthenaPage() {
           ts: new Date().toISOString(),
           ...(res.notice ? { notice: res.notice as Notice } : {}),
           ...(showReadiness ? { readinessNotice: res.readinessNotice as ReadinessNoticeT } : {}),
+          // Always shown, every time — this one is never suppressed by
+          // "already seen it this session".
+          ...(res.crisis ? { crisis: res.crisis } : {}),
+
         },
       ];
       setMessages(withReply);
@@ -761,6 +778,8 @@ function AthenaPage() {
                 <Bubble role={m.role} content={m.content} />
                 {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
                 {m.readinessNotice ? <ReadinessNotice notice={m.readinessNotice} /> : null}
+                {m.crisis ? <CrisisNotice notice={m.crisis} /> : null}
+
               </div>
             ))}
             {livePartial && (
@@ -1022,6 +1041,33 @@ function ReadinessNotice({ notice }: { notice: ReadinessNoticeT }) {
     </div>
   );
 }
+
+/**
+ * The one hard safety rule. It accompanies Athena's reply and never replaces
+ * it: a quiet, concrete resource, not an alert, not a disclaimer, not a
+ * moderation surface.
+ */
+function CrisisNotice({ notice }: { notice: CrisisNoticeT }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      data-testid="crisis-notice"
+      className="fade-in-slow mt-3 rounded-2xl border border-primary/40 bg-card px-4 py-3 text-[13px] leading-relaxed text-ink-soft"
+    >
+      <p className="font-display text-[15px] text-foreground">{notice.title}</p>
+      <p className="mt-1">{notice.body}</p>
+      <p className="mt-2 text-foreground">{notice.resource}</p>
+      <a
+        href="tel:988"
+        className="mt-2 inline-flex rounded-full border border-primary/50 px-4 py-2 text-[13px] text-foreground"
+      >
+        {notice.action}
+      </a>
+    </div>
+  );
+}
+
 
 /** Shown when a member tries to finish before Athena can stand behind an
  *  introduction. Not a warning, and never a dead end. */

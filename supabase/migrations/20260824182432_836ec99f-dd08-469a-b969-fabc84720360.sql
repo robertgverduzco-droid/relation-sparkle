@@ -1,0 +1,1 @@
+GRANT UPDATE (intro_note) ON public.profiles TO authenticated;

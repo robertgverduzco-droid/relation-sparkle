@@ -41,7 +41,11 @@ import {
 import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
+import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
+import { alreadyFramed, assessTrackCoverage, trackGuidance } from "./intake-tracks";
+import { datingModeGuidance } from "./dating-mode";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
+
 import {
   observeStyle,
   mergeStyle,
@@ -203,9 +207,24 @@ Use this memory to:
     const coverage = isFoundational ? assessCoverage(data.messages) : null;
     const breadthHint = coverage ? foundationalGuidance(coverage) : "";
 
+    // Rebuild Spec §2/§3 — the intake conversation asks directly. Tracks A
+    // (temperament) and B (how they are under closeness) are covered
+    // explicitly during the foundational conversation, and the directness is
+    // framed once, in Athena's own words, before the first real question.
+    const trackCoverage = isFoundational ? assessTrackCoverage(data.messages) : null;
+    const trackHint =
+      trackCoverage && !readyNow
+        ? trackGuidance(trackCoverage, { framed: alreadyFramed(data.messages) })
+        : "";
 
     const lastMemberText =
       [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+
+    // THE ONE HARD RULE (§9). Detected before register, humor or boundaries,
+    // and composed last so it outranks every other block this turn.
+    const crisis = detectCrisis(lastMemberText);
+    const crisisHint = crisisDirective(crisis);
+
     const pressed =
       !readyNow &&
       (asksAboutRequirement(lastMemberText) || asksToBeginMatching(lastMemberText));
@@ -275,6 +294,23 @@ Use this memory to:
         waitingHint = "";
       }
     }
+
+    // DATING MODE (§8). A couple who have chosen each other are paused out of
+    // the pool, and Athena's purpose changes with them: support, reflection
+    // and connection, never assessment. It suppresses waiting and intake.
+    let datingHint = "";
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { hasActiveFocus } = await import("./relationship.server");
+      if (await hasActiveFocus(supabaseAdmin, userId)) {
+        datingHint = datingModeGuidance({ active: true, joint: false });
+        waitingHint = "";
+      }
+    } catch {
+      datingHint = "";
+    }
+
+
 
     // Presence & Continuing Relationship doctrine: composure always, and the
     // tone transition once the foundation exists. Expression only.
@@ -400,7 +436,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, readinessHint, seamedWaitingHint, boundaryHint, structuredBlock].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
@@ -495,6 +531,8 @@ Use this memory to:
       // Only recorded as acknowledged when it was actually allowed to surface.
       timeAcknowledged: shouldAcknowledgeTime && seamOk,
       ...(notice ? { notice } : {}),
+      ...(crisis.active ? { crisis: crisisNotice(crisis) } : {}),
+
       readiness: { ready: readyNow },
       // Conversation-lifecycle state, deliberately separate from readiness:
       // false means this is an ordinary continuing conversation and no

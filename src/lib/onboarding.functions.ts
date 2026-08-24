@@ -67,6 +67,8 @@ export const saveOnboardingStep = createServerFn({ method: "POST" })
           gender: data.identity?.gender || null,
           pronouns: data.identity?.pronouns || null,
           city: data.identity?.city || null,
+          intro_note: (data.identity?.intro_note ?? "").trim() || null,
+
         })
         .eq("id", userId);
       if (error) throw new Error(error.message);

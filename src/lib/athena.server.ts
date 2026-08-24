@@ -80,6 +80,21 @@ export const askOutput = z.object({
       body: z.string(),
     })
     .optional(),
+  /**
+   * The one hard safety rule (crisis.ts). Deliberately a separate field from
+   * `notice` and `readinessNotice`: it is not moderation, not a boundary, and
+   * it must not be styled or handled as either.
+   */
+  crisis: z
+    .object({
+      kind: z.literal("crisis"),
+      title: z.string(),
+      body: z.string(),
+      resource: z.string(),
+      action: z.string(),
+    })
+    .optional(),
+
   /** Echoed back to the client so the next turn can prevent a contradiction. */
   readinessShortfallSignature: z.string().nullable().optional(),
 });

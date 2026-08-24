@@ -28,6 +28,10 @@ const readyFacets = [
   "physical_attraction_preferences",
   "purpose_and_ambition",
   "conflict_style",
+  "social_and_family",
+  "life_direction",
+  "temperament_mode",
+  "nervous_system_pattern",
 ].map((facet_key) => ({
   facet_key,
   understanding: "A substantive paragraph of Athena's own understanding of them.",

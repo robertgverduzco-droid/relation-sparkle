@@ -174,6 +174,9 @@ export const AUTHENTICATED_ACL: Record<string, TableAcl> = {
       "height_cm",
       "hobbies",
       "hobbies_note",
+      // Rebuild Spec §2 Screen 1 — the optional "anything else" note.
+      "intro_note",
+
       "location_lat",
       "location_lng",
       "pronouns",

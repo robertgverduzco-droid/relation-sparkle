@@ -132,6 +132,17 @@ function Home() {
             action="Read"
             testId="today-link-understanding"
           />
+          {/* §5 — the reveal. Reachable once Athena can stand behind it; the
+              screen itself says so plainly when she can't yet. */}
+          <Continuation
+            title="What Athena understands about you"
+            body="Her read of who you are — including one or two things you may not have said out loud."
+            to="/reveal"
+            action="Read"
+            testId="today-link-reveal"
+          />
+
+
 
         </section>
       </div>
@@ -151,7 +162,7 @@ function Continuation({
 }: {
   title: string;
   body: string;
-  to: "/profile" | "/introductions" | "/athena" | "/understanding";
+  to: "/profile" | "/introductions" | "/athena" | "/understanding" | "/reveal";
   action: string;
   /** A-28: stable semantic hook for the authenticated journey walkthrough. */
   testId?: string;

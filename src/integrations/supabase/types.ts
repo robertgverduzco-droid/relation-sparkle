@@ -1922,6 +1922,7 @@ export type Database = {
           hobbies: string[]
           hobbies_note: string | null
           id: string
+          intro_note: string | null
           is_paused: boolean
           is_synthetic: boolean
           learning_opt_out: boolean
@@ -1951,6 +1952,7 @@ export type Database = {
           hobbies?: string[]
           hobbies_note?: string | null
           id: string
+          intro_note?: string | null
           is_paused?: boolean
           is_synthetic?: boolean
           learning_opt_out?: boolean
@@ -1980,6 +1982,7 @@ export type Database = {
           hobbies?: string[]
           hobbies_note?: string | null
           id?: string
+          intro_note?: string | null
           is_paused?: boolean
           is_synthetic?: boolean
           learning_opt_out?: boolean
@@ -2248,6 +2251,42 @@ export type Database = {
           subjects_repurged?: number
           tombstones_checked?: number
           trigger?: string
+        }
+        Relationships: []
+      }
+      reveal_summaries: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          generated_at: string
+          id: string
+          insights: Json
+          member_note: string | null
+          summary: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          insights?: Json
+          member_note?: string | null
+          summary: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          insights?: Json
+          member_note?: string | null
+          summary?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
