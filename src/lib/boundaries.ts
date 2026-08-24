@@ -43,7 +43,23 @@ const RULES: Rule[] = [
   {
     category: "harm_risk",
     severity: "immediate",
-    cues: /\b(kill (myself|you|her|him|them)|hurt (myself|her|him|them)\b|end my life|suicid|i'?ll find (you|her|him)|make (her|him|them) pay|rape|force (her|him|them) to)\b/i,
+    // "kill (myself|you|her|him|them)", "end my life", and "suicid*" are left
+    // exactly as sensitive as they were — never loosened, regardless of
+    // what else changes in this rule.
+    //
+    // The interpersonal-harm phrases below were rewritten after a real
+    // false positive: a member quoting his late mother's own words from
+    // decades ago ("I'm going to make him pay through you") tripped this
+    // as an active threat. This app exists to invite exactly this kind of
+    // deep trauma disclosure, so "hurt her/him/them" and "make ___ pay"
+    // bare — which fire on completely ordinary painful storytelling ("she
+    // hurt me so much", "he wanted to make me pay for it") — are too
+    // promiscuous for a surface this sensitive. "hurt" now requires an
+    // explicit present/future first-person intent lead-in, and the
+    // "make ___ pay" / "I'll find you" phrases (almost always idiomatic
+    // or narrated, rarely a literal current threat) are dropped from
+    // automatic matching entirely.
+    cues: /\b(kill (myself|you|her|him|them)|(want(ed)? to|going to|gonna|i'?ll) hurt (myself|her|him|them)|end my life|suicid\w*|rape|force (her|him|them) to)\b/i,
     subject: "risk of harm to themselves or someone else",
   },
   {
