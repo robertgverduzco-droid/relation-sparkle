@@ -345,6 +345,23 @@ Use this memory to:
     });
     const runtimeHint = plan.block;
 
+    // THE CLOSET — experiment instrumentation only. No conversation text, no
+    // effect on the reply, and never a reason to steer the conversation.
+    if (plan.closetAvailable || plan.closetInvoked) {
+      try {
+        const { recordClosetEvent } = await import("./closet.server");
+        await recordClosetEvent({
+          userId: context.userId,
+          kind: "closet_impression",
+          surface: plan.closetInvoked ? "member_asked" : "conversation",
+          hadRapport: plan.permission.humor === "playful" && plan.permission.teasing,
+        });
+      } catch {
+        // Instrumentation never interferes with a conversation.
+      }
+    }
+
+
     const rawMessages: ModelMessage[] = data.messages
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
