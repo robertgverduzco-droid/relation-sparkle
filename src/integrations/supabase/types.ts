@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      athena_closet_events: {
+        Row: {
+          created_at: string
+          had_rapport: boolean
+          id: string
+          kind: string
+          session_id: string | null
+          surface: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          had_rapport?: boolean
+          id?: string
+          kind: string
+          session_id?: string | null
+          surface?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          had_rapport?: boolean
+          id?: string
+          kind?: string
+          session_id?: string | null
+          surface?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       athena_experiments: {
         Row: {
           adverse_effects: string | null
