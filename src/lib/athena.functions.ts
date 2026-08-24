@@ -38,7 +38,7 @@ import {
   asksAboutRequirement,
   asksToBeginMatching,
 } from "./introduction-readiness";
-import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
+import { decidePacing, respectTimeGuidance, transcriptAlreadyAcknowledgesTime, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
 import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
