@@ -130,7 +130,7 @@ describe("5 — the joking continues for several turns", () => {
   it("never snaps back into solemn grief language", () => {
     for (const p of plans.slice(1)) {
       expect(p.permission.humor).not.toBe("reserved");
-      expect(p.block).not.toMatch(/No lightness from you/i);
+      expect(p.event).not.toBe("serious_disclosure");
     }
   });
 
