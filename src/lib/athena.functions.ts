@@ -473,7 +473,7 @@ Use this memory to:
 
     return askOutput.parse({
       reply,
-      pacing,
+      pacing: seamedPacing,
       // Only recorded as acknowledged when it was actually allowed to surface.
       timeAcknowledged: shouldAcknowledgeTime && seamOk,
       ...(notice ? { notice } : {}),
