@@ -69,25 +69,25 @@ function RevealScreen() {
 
   if (loading) {
     return (
-      <main className="px-6 py-10">
+      <div className="px-6 py-10">
         <AthenaPresence state="processing" showLabel={false} />
-      </main>
+      </div>
     );
   }
 
   if (!ready || !reveal) {
     return (
-      <main>
+      <div>
         <WaitingState
           headline="Not yet."
           body="Athena doesn't have enough of you to say something worth reading. Keep talking to her — she'll bring this to you when she can stand behind it."
         />
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="px-6 py-10" data-testid="reveal-screen">
+    <div className="px-6 py-10" data-testid="reveal-screen">
       <AthenaPresence state="quiet" showLabel={false} />
       <p className="mt-5 text-xs uppercase tracking-[0.18em] text-muted-foreground">
         {REVEAL_COPY.eyebrow}
@@ -143,6 +143,6 @@ function RevealScreen() {
           </button>
         )}
       </div>
-    </main>
+    </div>
   );
 }
