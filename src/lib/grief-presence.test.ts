@@ -165,7 +165,7 @@ describe("8 — member asks for a grief source", () => {
   it("opens provenance with quotation integrity intact", () => {
     const plans = replay([
       OPENING,
-      "Is there anything you've actually studied about grief? Where does that come from?",
+      "Where did you get that from? What have you studied about grief?",
     ]);
     const p = plans[1];
     expect(p.signals.provenance.active).toBe(true);

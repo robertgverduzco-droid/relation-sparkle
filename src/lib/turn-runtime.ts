@@ -79,7 +79,7 @@ const WHEEL =
  * to switch Athena from managing to sitting beside.
  */
 const ACUTE_LOSS =
-  /\b(passed away|passed last|just died|died (last|this|yesterday|today|on)|has died|(someone|somebody|a person|my \w+) (close to me )?(just )?(passed|died)|lost (my|her|his|our|a very close) (dad|mum|mom|father|mother|brother|sister|son|daughter|wife|husband|partner|friend|grandma|grandmother|grandad|grandfather|granddad)|funeral|the wake\b|terminal|hospice|end of life|dying)\b|\b(i (just )?lost (someone|him|her|them))\b/i;
+  /\b(passed away|passed last|just died|died (last|this|yesterday|today|on)|has died|(someone|somebody|a person|my \w+) (close to me )?(just )?(passed|died)|(he|she|they) (just )?(died|passed)|lost (my|her|his|our|a very close) (dad|mum|mom|father|mother|brother|sister|son|daughter|wife|husband|partner|friend|grandma|grandmother|grandad|grandfather|granddad)|funeral|the wake\b|terminal|hospice|end of life|dying)\b|\b(i (just )?lost (someone|him|her|them))\b/i;
 
 /** They are explicitly asking to be helped, advised or given something practical. */
 const ADVICE_REQUEST =
