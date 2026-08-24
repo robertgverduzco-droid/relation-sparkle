@@ -70,6 +70,15 @@ const SELF_DEPRECATION =
   /(i'?m (such )?(a )?(mess|disaster|idiot|dork|nerd|hopeless|terrible at|awful at|the worst)|hot mess|train ?wreck|i have no idea what i'?m doing|classic me)/i;
 const DIRECTNESS =
   /(just be (honest|direct|blunt|straight)|don'?t sugar ?coat|no need to (be nice|flatter|validate)|stop (validating|reassuring|agreeing)|tell me straight|be real with me|cut the|say what you (really )?think|push back)/i;
+// The mirror image of directness. Neither preference is more advanced than the
+// other; they are simply different people, and Athena's register follows the
+// person in front of her rather than an ideal style.
+const ELABORATION =
+  /(can you (explain|say more|go deeper|elaborate|unpack)|explain (that|it) (more|further|in more detail)|say more about|i'?d like more detail|walk me through|more context please|don'?t rush|slow down|take your time)/i;
+const GENTLENESS =
+  /(be (gentle|gentler|kind|kinder|soft(er)?) with me|go easy on me|that (felt|was) (harsh|blunt|too much)|too (blunt|harsh|direct)|don'?t (tease|challenge|push) me|less teasing|no jokes please|i'?m (feeling )?(fragile|sensitive|raw))/i;
+const REASSURANCE =
+  /(am i (ok|okay|normal|crazy)|is (that|this) (ok|okay|normal)|tell me it'?s (ok|okay|going to be fine)|i need (some )?(reassurance|encouragement)|do you think i'?ll be (ok|okay|fine)|please reassure me)/i;
 
 /**
  * Emotionally serious material. Attunement outranks playfulness whenever this
