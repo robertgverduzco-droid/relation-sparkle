@@ -241,12 +241,20 @@ function ProfilePage() {
           </p>
         )}
         <Link
+          data-testid="profile-account-link"
+          to="/account"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-foreground"
+        >
+          Account settings
+        </Link>
+        <Link
           data-testid="profile-understanding-link"
           to="/understanding"
           className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center  text-[13px] text-foreground"
         >
           What Athena understands about you
         </Link>
+
         <Link
           data-testid="profile-membership-link"
           to="/membership"
