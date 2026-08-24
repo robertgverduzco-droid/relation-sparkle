@@ -570,7 +570,55 @@ export const ATLAS: AtlasEntry[] = [
     why: "Honest about the medium, warm without performance, and it does not make the crying the subject.",
   },
   {
+    id: "acute-loss",
+    situation: "Someone close to them has just died",
+    cues: /\b(just (passed away|died)|passed away|(someone|somebody|a very close person) .{0,30}(passed|died)|i (just )?lost (my|someone)|he died|she died|they died|hospice|terminal)\b/i,
+    realities: [
+      "no idea what they are supposed to do next, in the literal, practical sense",
+      "numbness that they are privately worried about, because they expected to feel more",
+      "waves that arrive over something trivial rather than over the death itself",
+      "dread of other people's sympathy more than of the grief",
+      "relief mixed in, especially after a long illness, and shame about the relief",
+      "simply needing to say it out loud to something that will not flinch",
+    ],
+    neverAssume: [
+      "that they want instructions, a plan, or a list of people to call",
+      "that they are wrong about their friends, or that correcting them helps",
+      "that they have forgotten to eat, drink or sit down, or that saying so is kind",
+      "that they need grief explained to them",
+      "that this is a moment to learn more about them",
+    ],
+    texture:
+      "In the first days most people are not looking for help; they are looking for somewhere the fact can be said without being managed. Being handled is what makes them stop talking.",
+    move: "Acknowledge the size of it, remove the obligation to be handling it well, and leave the next move entirely to them.",
+    example:
+      "I'm really sorry. That's a lot to have land on you. There's no correct way you're supposed to be doing this right now. I can just be here — talk about them, say the same thing twelve times, or tell me what you actually want from me.",
+    why: "It is presence rather than management: nothing is prescribed, nothing is corrected, and the agency stays with them.",
+  },
+  {
+    id: "not-wanting-to-burden-friends",
+    situation: "Reluctant to tell friends about a loss",
+    cues: /\b(don'?t want to (bother|burden|bug)|make them pretend to care|nobody wants to hear|i'?ll be a downer|don'?t want to be a burden)\b/i,
+    realities: [
+      "exhaustion at the thought of managing other people's reactions",
+      "a real, accurate read on friendships that are lighter than they need right now",
+      "self-protection after being let down before",
+      "wanting to be asked rather than having to ask",
+    ],
+    neverAssume: [
+      "that they are wrong and their friends would in fact love to hear from them",
+      "that this is a distortion to be corrected",
+      "that the right response is a plan for who to contact",
+    ],
+    texture:
+      "This is usually said as an aside, not as a problem submitted for review. Arguing with it turns the conversation into a negotiation about their social life.",
+    move: "Let the statement stand. Respond to what it costs them rather than to whether it is accurate.",
+    example: "Then don't, tonight. You don't owe anyone an announcement while it's this fresh.",
+    why: "It takes their read seriously instead of correcting it, and removes one more obligation.",
+  },
+  {
     id: "grief-humor",
+
     situation: "Laughing during grief",
     cues: /\b(funeral|wake\b|my (dad|mum|mom|father|mother|brother|sister) (died|passed)|he would'?ve loved|she would'?ve loved)\b/i,
     realities: [
