@@ -73,6 +73,18 @@ const VENTING =
 const WHEEL =
   /(surprise me|you pick|you choose|you decide|ask me something|tell me something (interesting|weird|random)|i'?m bored|entertain me|your (choice|call) then)/i;
 
+/**
+ * Acute loss — a death or an imminent death in this person's life. Narrow on
+ * purpose: general seriousness is already handled elsewhere. This exists only
+ * to switch Athena from managing to sitting beside.
+ */
+const ACUTE_LOSS =
+  /\b(passed away|passed last|just died|died (last|this|yesterday|today|on)|has died|(someone|somebody|a person|my \w+) (close to me )?(just )?(passed|died)|(he|she|they) (just )?(died|passed)|lost (my|her|his|our|a very close) (dad|mum|mom|father|mother|brother|sister|son|daughter|wife|husband|partner|friend|grandma|grandmother|grandad|grandfather|granddad)|funeral|the wake\b|terminal|hospice|end of life|dying)\b|\b(i (just )?lost (someone|him|her|them))\b/i;
+
+/** They are explicitly asking to be helped, advised or given something practical. */
+const ADVICE_REQUEST =
+  /(what should i do|what do i do\b|any advice|do you have (any )?(advice|suggestions|thoughts on what)|tell me what to do|help me (write|draft|figure|plan|decide)|can you help me|what would you (do|suggest)|is there anything (you'?ve|you have) learned|how do (people|you) (usually )?(handle|get through)|walk me through|i need (help|practical|to sort))/i;
+
 /** Turns where a product notice would be an intrusion rather than an aside. */
 const NOT_A_SEAM =
   /\b(died|death|passed away|funeral|grief|grieving|miscarriage|cancer|terminal|hospice|abuse[d]?|assault|raped?|trauma|suicid\w*|self[- ]harm|panic attack|crying|in tears|divorce|custody|betray\w*|cheated on me|humiliat\w*|ashamed|shame|terrified|breakdown|relapse)\b|(\bha+(?:ha+)+\b|\blo+l\b|😂|🤣|\bjk\b|just kidding)|(\?\s*$)/i;
@@ -86,6 +98,10 @@ export type TurnSignals = {
   venting: boolean;
   /** They handed Athena the choice of subject. */
   wheelHandedOver: boolean;
+  /** A death, or an imminent death, in this person's life. */
+  acuteLoss: boolean;
+  /** They have asked for advice, guidance or practical help. */
+  adviceRequested: boolean;
   /** This turn is a natural place for product state to appear. */
   noticeSeam: boolean;
 };
@@ -100,6 +116,8 @@ export function readTurn(text: string): TurnSignals {
     provenance: detectProvenanceIntent(t),
     venting: VENTING.test(t),
     wheelHandedOver: WHEEL.test(t),
+    acuteLoss: ACUTE_LOSS.test(t),
+    adviceRequested: ADVICE_REQUEST.test(t),
     /**
      * Product state (time, readiness, what happens next) may only surface at
      * a conversational seam. Anything unresolved, painful or actively playful
@@ -108,6 +126,7 @@ export function readTurn(text: string): TurnSignals {
     noticeSeam: !NOT_A_SEAM.test(t),
   };
 }
+
 
 /* ------------------------------------------------------------------ */
 /* The always-on turn discipline                                       */
