@@ -38,7 +38,7 @@ import {
   asksAboutRequirement,
   asksToBeginMatching,
 } from "./introduction-readiness";
-import { decidePacing, respectTimeGuidance, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
+import { decidePacing, respectTimeGuidance, transcriptAlreadyAcknowledgesTime, turnsSinceContinueRequest, RESPECT_TIME_MINUTES } from "./pacing";
 import { resolveReadinessClaim, readinessTruthGuidance, signatureFromReadiness } from "./readiness-truth";
 import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from "./early-exit";
 import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
@@ -157,7 +157,11 @@ Use this memory to:
     // Respect for their time: acknowledged once, at approximately fifteen
     // minutes. It is a courtesy, never a deadline — time never overrides
     // readiness, in either direction.
-    const shouldAcknowledgeTime = !data.timeAcknowledged && elapsed >= RESPECT_TIME_MINUTES;
+    // The transcript is authoritative: a client flag can silently reset on
+    // reload or reconnect, the conversation itself cannot.
+    const alreadyAcknowledgedTime =
+      Boolean(data.timeAcknowledged) || transcriptAlreadyAcknowledgesTime(data.messages);
+    const shouldAcknowledgeTime = !alreadyAcknowledgedTime && elapsed >= RESPECT_TIME_MINUTES;
 
     // Matchmaking readiness is decided by persisted understanding, never by
     // the member's patience. Athena is told the truth about what she does and
@@ -271,7 +275,7 @@ Use this memory to:
       respectTimeGuidance({
         elapsedMinutes: elapsed,
         ready: readyNow,
-        alreadyAcknowledged: Boolean(data.timeAcknowledged),
+        alreadyAcknowledged: alreadyAcknowledgedTime,
       }) || "Do not comment on how long the conversation has been going.";
 
     // Boundaries are session-aware: the same line held a second or third time
