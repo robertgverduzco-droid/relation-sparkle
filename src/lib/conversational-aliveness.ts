@@ -37,11 +37,11 @@ export type StyleEvidence = {
   /** Member turns asking for bluntness, or pushing back on reassurance. */
   directnessTurns: number;
   /** Member turns asking for more explanation, detail, or slower unpacking. */
-  elaborationTurns: number;
+  elaborationTurns?: number;
   /** Member turns asking for softer, gentler, less challenging language. */
-  gentlenessTurns: number;
+  gentlenessTurns?: number;
   /** Member turns explicitly seeking reassurance or encouragement. */
-  reassuranceTurns: number;
+  reassuranceTurns?: number;
   /** Total member turns observed — the denominator for "repeatedly". */
   memberTurns: number;
 };
