@@ -63,18 +63,21 @@ export async function loadOrGenerateReveal(
 
   const { createLovableGateway } = await import("./ai-gateway.server");
   const { ANALYTICAL_REGISTER_GUARD } = await import("./conversational-aliveness");
+  const { PROMPT_BOUNDARY, asMemberData } = await import("./security.server");
   const gateway = createLovableGateway();
 
   const { object } = await generateObject({
     model: gateway("openai/gpt-5.5"),
     schema: revealSchema,
     providerOptions: { lovable: { reasoningEffort: "low" } },
-    prompt: `${REVEAL_DIRECTIVE}
+    prompt: `${PROMPT_BOUNDARY}
+
+${REVEAL_DIRECTIVE}
 
 ${ANALYTICAL_REGISTER_GUARD}
 
 WHAT YOU ACTUALLY KNOW ABOUT THEM (each line carries its evidence strength — respect it):
-${material}`,
+${asMemberData(material)}`,
   });
 
   const generatedAt = new Date().toISOString();
