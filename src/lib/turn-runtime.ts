@@ -81,6 +81,14 @@ export function readTurn(text: string): TurnSignals {
     opinionRequested: OPINION_REQUEST.test(t),
     subjectMatter: SUBJECT_MODE.test(t),
     provenance: detectProvenanceIntent(t),
+    venting: VENTING.test(t),
+    wheelHandedOver: WHEEL.test(t),
+    /**
+     * Product state (time, readiness, what happens next) may only surface at
+     * a conversational seam. Anything unresolved, painful or actively playful
+     * is not a seam — the notice waits for the next turn instead.
+     */
+    noticeSeam: !NOT_A_SEAM.test(t),
   };
 }
 
@@ -88,7 +96,7 @@ export function readTurn(text: string): TurnSignals {
 /* The always-on turn discipline                                       */
 /* ------------------------------------------------------------------ */
 
-/** Items 1–20 of the runtime. Internal reasoning order, never narrated. */
+/** Items 1–24 of the runtime. Internal reasoning order, never narrated. */
 export const TURN_RUNTIME_V2 = `BEFORE YOU WRITE ANYTHING (internal turn planning — never narrated, never labelled, never shown)
 
 1. WHAT JUST HAPPENED. Name to yourself the dominant event in their last turn: a joke, an aside, a genuine question, a disclosure, an opinion, a contradiction, a challenge to you, a factual claim, a request, small talk, distress, or a change of subject. Respond to THAT event. Do not respond to a generic version of it.
