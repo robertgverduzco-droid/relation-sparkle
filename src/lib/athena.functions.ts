@@ -357,6 +357,24 @@ Use this memory to:
       : "Do not comment on how long the conversation has been going. This moment is not a place for it.";
     const seamedWaitingHint = seamOk ? waitingHint : "";
 
+    // Runtime observability: what Athena decided, never what was said.
+    try {
+      const { recordTurnDecision } = await import("./turn-decisions.server");
+      await recordTurnDecision({
+        actorHash: await actorHash(context.userId),
+        event: plan.event,
+        surface: "text",
+        humorLevel: plan.permission.humor,
+        seriousMoment: plan.permission.seriousMoment,
+        noticeDeferred: !seamOk && (shouldAcknowledgeTime || Boolean(waitingHint)),
+        atlasIds: plan.atlasIds,
+        exemplarIds: plan.exemplarIds,
+        provenance: plan.signals.provenance.active,
+      });
+    } catch {
+      // Observability never interferes with a conversation.
+    }
+
     // THE CLOSET — experiment instrumentation only. No conversation text, no
     // effect on the reply, and never a reason to steer the conversation.
     if (plan.closetAvailable || plan.closetInvoked) {
