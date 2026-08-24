@@ -256,8 +256,9 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
   const humorDoorOpen = serious && GRIEF_LEVITY.test(text);
   const base = derivePermission(input.style, serious);
   const permission: RegisterPermission = humorDoorOpen
-    ? { ...base, humor: derivePermission(input.style, false).humor }
+    ? { ...base, humor: derivePermission(input.style, false).humor === "playful" ? "playful" : "natural" }
     : base;
+
 
   const exemplars = selectExemplars(
     serious && !humorDoorOpen ? ["serious"] : EVENT_TAGS[event],
