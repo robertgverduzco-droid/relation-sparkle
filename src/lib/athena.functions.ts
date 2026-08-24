@@ -275,7 +275,7 @@ Use this memory to:
       respectTimeGuidance({
         elapsedMinutes: elapsed,
         ready: readyNow,
-        alreadyAcknowledged: Boolean(data.timeAcknowledged),
+        alreadyAcknowledged: alreadyAcknowledgedTime,
       }) || "Do not comment on how long the conversation has been going.";
 
     // Boundaries are session-aware: the same line held a second or third time
