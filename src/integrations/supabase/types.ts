@@ -1347,6 +1347,57 @@ export type Database = {
         }
         Relationships: []
       }
+      member_relational_signals: {
+        Row: {
+          anxious: number
+          attachment_coverage: number
+          avoidant: number
+          connection: number
+          created_at: string
+          disorganized: number
+          drive: number
+          novelty: number
+          refined_at: string
+          secure: number
+          structure: number
+          temperament_coverage: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anxious?: number
+          attachment_coverage?: number
+          avoidant?: number
+          connection?: number
+          created_at?: string
+          disorganized?: number
+          drive?: number
+          novelty?: number
+          refined_at?: string
+          secure?: number
+          structure?: number
+          temperament_coverage?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anxious?: number
+          attachment_coverage?: number
+          avoidant?: number
+          connection?: number
+          created_at?: string
+          disorganized?: number
+          drive?: number
+          novelty?: number
+          refined_at?: string
+          secure?: number
+          structure?: number
+          temperament_coverage?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       member_transitions: {
         Row: {
           choice: string | null
