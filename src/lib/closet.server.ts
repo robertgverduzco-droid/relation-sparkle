@@ -29,9 +29,10 @@ export async function recordClosetEvent(input: {
 }
 
 export async function closetAnalytics() {
-  const writer = await admin();
-  const { data } = await db
+  const reader = await admin();
+  const { data } = await reader
     .from("athena_closet_events")
+
     .select("user_id, kind, surface, had_rapport, created_at")
     .order("created_at", { ascending: false })
     .limit(50000);
