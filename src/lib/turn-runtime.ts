@@ -67,12 +67,29 @@ export function detectProvenanceIntent(text: string): ProvenanceIntent {
   };
 }
 
+const VENTING =
+  /(i (just )?(need|want) to vent|don'?t (want|need) (any )?advice|not (looking for|asking for) (advice|solutions|a solution|help)|just (let me|need to|want to) (rant|vent|complain|bitch|moan)|just listen|i'?m not asking you to fix)/i;
+
+const WHEEL =
+  /(surprise me|you pick|you choose|you decide|ask me something|tell me something (interesting|weird|random)|i'?m bored|entertain me|your (choice|call) then)/i;
+
+/** Turns where a product notice would be an intrusion rather than an aside. */
+const NOT_A_SEAM =
+  /\b(died|death|passed away|funeral|grief|grieving|miscarriage|cancer|terminal|hospice|abuse[d]?|assault|raped?|trauma|suicid\w*|self[- ]harm|panic attack|crying|in tears|divorce|custody|betray\w*|cheated on me|humiliat\w*|ashamed|shame|terrified|breakdown|relapse)\b|(\bha+ha+\b|\blo+l\b|😂|🤣|\bjk\b|just kidding)|(\?\s*$)/i;
+
 export type TurnSignals = {
   challenged: boolean;
   opinionRequested: boolean;
   subjectMatter: boolean;
   provenance: ProvenanceIntent;
+  /** Releasing pressure, explicitly not asking to be helped. */
+  venting: boolean;
+  /** They handed Athena the choice of subject. */
+  wheelHandedOver: boolean;
+  /** This turn is a natural place for product state to appear. */
+  noticeSeam: boolean;
 };
+
 
 export function readTurn(text: string): TurnSignals {
   const t = text ?? "";
