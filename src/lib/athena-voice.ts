@@ -44,7 +44,10 @@ export type ElevenLabsVoiceConfig = {
 export function resolveElevenLabsVoice(
   env: Record<string, string | undefined>,
 ): ElevenLabsVoiceConfig | null {
-  const apiKey = env.ELEVENLABS_API_KEY?.trim();
+  // The ElevenLabs connector may sync the key as either ELEVENLABS_API_KEY or
+  // ELEVEN_API_KEY depending on how it was linked. Accept both so the Savvy
+  // test voice activates without requiring a duplicate secret.
+  const apiKey = (env.ELEVENLABS_API_KEY ?? env.ELEVEN_API_KEY)?.trim();
   const voiceId = env.ELEVENLABS_SAVVY_VOICE_ID?.trim();
   if (!apiKey || !voiceId) return null;
   return { apiKey, voiceId };
