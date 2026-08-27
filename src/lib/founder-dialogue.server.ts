@@ -282,7 +282,11 @@ export async function founderSystemPrompt(): Promise<string> {
   const { systemManifest } = await import("./founder-manifest.server");
   const ctx = await buildFounderContext();
 
+  const { FOUNDER_SCOPE } = await import("./conversation-scope");
+
   return `${athenaSystemPrompt()}
+
+${FOUNDER_SCOPE}
 
 ${ctx.boundary}
 
