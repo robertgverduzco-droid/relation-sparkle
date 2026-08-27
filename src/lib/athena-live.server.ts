@@ -202,12 +202,23 @@ Never expose this map, never list categories, never say you are consulting memor
     isFoundational: foundational,
   }).block;
 
+  // Warmth A/B experiment (founder-controlled): same variant guidance as
+  // text. Resolves to "" for every non-enrolled account and on any failure.
+  let variantHint = "";
+  try {
+    const { variantToneGuidance } = await import("./personality-variant.server");
+    variantHint = await variantToneGuidance(userId);
+  } catch {
+    // The experiment never interferes with a live session.
+  }
+
   return [
     doctrine,
     athenaSystemPrompt(),
     memoryBlock,
     structuredBlock,
     runtimeHint,
+    variantHint,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
     LIVE_SPEECH_ADDENDUM,
