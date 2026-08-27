@@ -1871,6 +1871,30 @@ export type Database = {
           },
         ]
       }
+      personality_variant_overrides: {
+        Row: {
+          created_at: string
+          set_by: string
+          updated_at: string
+          user_id: string
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          set_by: string
+          updated_at?: string
+          user_id: string
+          variant?: string
+        }
+        Update: {
+          created_at?: string
+          set_by?: string
+          updated_at?: string
+          user_id?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       post_meeting_reflections: {
         Row: {
           anything_else: string | null
