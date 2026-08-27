@@ -386,6 +386,17 @@ Use this memory to:
     });
     const runtimeHint = plan.block;
 
+    // Warmth A/B experiment (founder-controlled). Appends a short tone
+    // block only for accounts a founder explicitly opted in; every other
+    // account and every failure path gets "" and the real Athena.
+    let variantHint = "";
+    try {
+      const { variantToneGuidance } = await import("./personality-variant.server");
+      variantHint = await variantToneGuidance(context.userId);
+    } catch {
+      // The experiment never interferes with a conversation.
+    }
+
     // PRODUCT BELONGS AT SEAMS.
     // Time, readiness and lifecycle notices are the service talking, not
     // Athena. They wait for a natural pause and never land in grief, pain, an
