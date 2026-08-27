@@ -8,7 +8,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateObject } from "ai";
 import { z } from "zod";
-import { REVEAL_DIRECTIVE, type Reveal, type RevealInsight } from "./reveal";
+import {
+  REVEAL_DIRECTIVE,
+  buildRevealMaterial,
+  shouldRegenerateReveal,
+  usableRevealFacets,
+  type Reveal,
+  type RevealFacetRow,
+  type RevealInsight,
+} from "./reveal";
 
 const revealSchema = z.object({
   summary: z.string().min(120).max(1600),
@@ -18,48 +26,64 @@ const revealSchema = z.object({
     .max(2),
 });
 
+/** Canonical columns only — anything else makes the query fail silently. */
+const FACET_COLUMNS = "facet_key, understanding, confidence, evidence, basis, needs_clarification";
+
 export async function loadOrGenerateReveal(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<{ ready: boolean; reveal: Reveal | null }> {
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("reveal_summaries")
-    .select("summary, insights, generated_at, confirmed_at")
+    .select("summary, insights, generated_at, confirmed_at, source_facet_count")
     .eq("user_id", userId)
     .maybeSingle();
+  if (existingError) throw new Error(`reveal lookup failed: ${existingError.message}`);
 
-  if (existing) {
-    return {
-      ready: true,
-      reveal: {
+  const held: Reveal | null = existing
+    ? {
         summary: existing.summary as string,
         insights: (existing.insights ?? []) as RevealInsight[],
         generatedAt: existing.generated_at as string,
         confirmedAt: (existing.confirmed_at as string | null) ?? null,
-      },
-    };
-  }
+      }
+    : null;
+
+  // A confirmed reveal is the member's own. It is never rewritten.
+  if (held?.confirmedAt) return { ready: true, reveal: held };
 
   // Readiness is the gate: no reveal exists before Athena can stand behind it.
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { evaluateReadiness } = await import("./readiness.server");
-  const readiness = await evaluateReadiness(supabaseAdmin, userId, "manual_request");
-  if (readiness.state !== "C") return { ready: false, reveal: null };
+  if (!held) {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { evaluateReadiness } = await import("./readiness.server");
+    const readiness = await evaluateReadiness(supabaseAdmin, userId, "manual_request");
+    if (readiness.state !== "C") return { ready: false, reveal: null };
+  }
 
-  const { data: facets } = await supabase
+  const { data: facets, error: facetsError } = await supabase
     .from("understanding_facets")
-    .select("facet_key, understanding, evidence_level, confidence, member_words")
+    .select(FACET_COLUMNS)
     .eq("user_id", userId);
 
-  const material =
-    (facets ?? [])
-      .map(
-        (f: Record<string, unknown>) =>
-          `- ${String(f.facet_key)} [${String(f.evidence_level ?? "unestablished")}] ${String(
-            f.understanding ?? "",
-          )}${f.member_words ? ` — their words: "${String(f.member_words)}"` : ""}`,
-      )
-      .join("\n") || "(nothing yet)";
+  // Never write a reveal from a fetch that failed: a generic reveal persisted
+  // once would misrepresent the member permanently.
+  if (facetsError) throw new Error(`understanding could not be read: ${facetsError.message}`);
+
+  const usable = usableRevealFacets((facets ?? []) as RevealFacetRow[]);
+  if (held) {
+    const regenerate = shouldRegenerateReveal({
+      confirmedAt: held.confirmedAt,
+      sourceFacetCount: Number(existing?.source_facet_count ?? 0),
+      currentUsableFacets: usable.length,
+    });
+    if (!regenerate) return { ready: true, reveal: held };
+  } else if (usable.length === 0) {
+    // Readiness says there should be understanding; there is none. Hold rather
+    // than persist an empty-source reveal.
+    return { ready: false, reveal: null };
+  }
+
+  const material = buildRevealMaterial(usable);
 
   const { createLovableGateway } = await import("./ai-gateway.server");
   const { ANALYTICAL_REGISTER_GUARD } = await import("./conversational-aliveness");
@@ -82,12 +106,16 @@ ${asMemberData(material)}`,
 
   const generatedAt = new Date().toISOString();
   const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
-  await admin.from("reveal_summaries").insert({
-    user_id: userId,
-    summary: object.summary,
-    insights: object.insights,
-    generated_at: generatedAt,
-  });
+  await admin.from("reveal_summaries").upsert(
+    {
+      user_id: userId,
+      summary: object.summary,
+      insights: object.insights,
+      generated_at: generatedAt,
+      source_facet_count: usable.length,
+    },
+    { onConflict: "user_id" },
+  );
 
   return {
     ready: true,

@@ -63,3 +63,55 @@ export function revealAvailable(input: { readinessMet: boolean; hasReveal: boole
 export function paymentUnlocked(reveal: Pick<Reveal, "confirmedAt"> | null): boolean {
   return Boolean(reveal?.confirmedAt);
 }
+
+/**
+ * A row of the Living Profile as it actually exists in the canonical
+ * `understanding_facets` schema. Provenance comes from `basis` and `evidence`
+ * — the reveal never invents a strength field of its own.
+ */
+export type RevealFacetRow = {
+  facet_key: string;
+  understanding: string | null;
+  confidence: number | null;
+  evidence: unknown;
+  basis: string | null;
+  needs_clarification?: boolean | null;
+};
+
+/** Only facets Athena actually holds something for can feed the reveal. */
+export function usableRevealFacets(rows: RevealFacetRow[]): RevealFacetRow[] {
+  return rows.filter((r) => typeof r.understanding === "string" && r.understanding.trim().length > 0);
+}
+
+/**
+ * The source material handed to generation. Each line carries its true
+ * provenance (`basis`) and the member's own words from `evidence`, so the
+ * evidence ladder survives into the written reveal.
+ */
+export function buildRevealMaterial(rows: RevealFacetRow[]): string {
+  return usableRevealFacets(rows)
+    .map((r) => {
+      const basis = (r.basis ?? "unestablished").trim() || "unestablished";
+      const evidence = Array.isArray(r.evidence)
+        ? (r.evidence as unknown[]).filter((e) => typeof e === "string" && e.trim()).slice(0, 3)
+        : [];
+      const words = evidence.length ? ` — their words: ${evidence.map((e) => `"${String(e)}"`).join("; ")}` : "";
+      const unclear = r.needs_clarification ? " (Athena is not sure about this yet)" : "";
+      return `- ${r.facet_key} [${basis}] ${String(r.understanding).trim()}${words}${unclear}`;
+    })
+    .join("\n");
+}
+
+/**
+ * Self-healing: an unconfirmed reveal written from no source material is not
+ * a considered read of anyone, so it may be replaced once real understanding
+ * exists. A confirmed reveal is the member's own and is never regenerated.
+ */
+export function shouldRegenerateReveal(input: {
+  confirmedAt: string | null;
+  sourceFacetCount: number;
+  currentUsableFacets: number;
+}): boolean {
+  if (input.confirmedAt) return false;
+  return input.sourceFacetCount <= 0 && input.currentUsableFacets > 0;
+}
