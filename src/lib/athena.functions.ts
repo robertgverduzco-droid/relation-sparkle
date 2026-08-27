@@ -452,7 +452,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, variantHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
