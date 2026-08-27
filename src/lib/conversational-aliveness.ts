@@ -148,9 +148,10 @@ export type RegisterPermission = {
 };
 
 /**
- * Permission is cumulative, evidence-based and account-scoped. Early
- * conversations are conservative by construction: a single isolated
- * profanity, or one joke, grants nothing.
+ * Permission is cumulative, evidence-based and account-scoped. It gates the
+ * *familiar* registers — profanity mirroring, teasing, full playfulness — so a
+ * single isolated profanity, or one joke, grants nothing. Warmth itself is
+ * never gated: see WARMTH_BY_DEFAULT, which is always on.
  *
  * There is no ideal register. Directness and gentleness, brevity and
  * elaboration are equally legitimate destinations — the evidence decides which
@@ -251,7 +252,7 @@ export function alivenessGuidance(input: {
   isFoundational: boolean;
 }): string {
   const { permission: p } = input;
-  const parts = [ALIVENESS_CORE, humorGuidance(p.humor)];
+  const parts = [ALIVENESS_CORE, WARMTH_BY_DEFAULT, humorGuidance(p.humor)];
 
   if (p.profanity) {
     parts.push(`REGISTER — LANGUAGE
