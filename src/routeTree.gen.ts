@@ -22,6 +22,7 @@ import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
 import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-education'
 import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnostic'
+import { Route as ApiElevenAgentChatRouteImport } from './routes/api/eleven-agent-chat'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedRevealRouteImport } from './routes/_authenticated/reveal'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -108,6 +109,11 @@ const ApiRealtimeEducationRoute = ApiRealtimeEducationRouteImport.update({
 const ApiLiveDiagnosticRoute = ApiLiveDiagnosticRouteImport.update({
   id: '/api/live-diagnostic',
   path: '/api/live-diagnostic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiElevenAgentChatRoute = ApiElevenAgentChatRouteImport.update({
+  id: '/api/eleven-agent-chat',
+  path: '/api/eleven-agent-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUnderstandingRoute =
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/reveal': typeof AuthenticatedRevealRoute
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
+  '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
@@ -376,6 +385,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reveal'
     | '/understanding'
+    | '/api/eleven-agent-chat'
     | '/api/live-diagnostic'
     | '/api/realtime-education'
     | '/api/realtime-session'
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reveal'
     | '/understanding'
+    | '/api/eleven-agent-chat'
     | '/api/live-diagnostic'
     | '/api/realtime-education'
     | '/api/realtime-session'
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/reveal'
     | '/_authenticated/understanding'
+    | '/api/eleven-agent-chat'
     | '/api/live-diagnostic'
     | '/api/realtime-education'
     | '/api/realtime-session'
@@ -474,6 +486,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiElevenAgentChatRoute: typeof ApiElevenAgentChatRoute
   ApiLiveDiagnosticRoute: typeof ApiLiveDiagnosticRoute
   ApiRealtimeEducationRoute: typeof ApiRealtimeEducationRoute
   ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
@@ -574,6 +587,13 @@ declare module '@tanstack/react-router' {
       path: '/api/live-diagnostic'
       fullPath: '/api/live-diagnostic'
       preLoaderRoute: typeof ApiLiveDiagnosticRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/eleven-agent-chat': {
+      id: '/api/eleven-agent-chat'
+      path: '/api/eleven-agent-chat'
+      fullPath: '/api/eleven-agent-chat'
+      preLoaderRoute: typeof ApiElevenAgentChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/understanding': {
@@ -853,6 +873,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiElevenAgentChatRoute: ApiElevenAgentChatRoute,
   ApiLiveDiagnosticRoute: ApiLiveDiagnosticRoute,
   ApiRealtimeEducationRoute: ApiRealtimeEducationRoute,
   ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
