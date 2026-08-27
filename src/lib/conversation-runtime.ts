@@ -226,6 +226,9 @@ export function conversationRuntime(input: ConversationRuntimeInput): Conversati
   const closet = closetAvailable(closetCtx);
 
   const parts = [
+    // Which conversation this is, and that their wording is theirs. Composed
+    // first: everything below is conduct *inside* the member conversation.
+    memberScopeBlock(),
     TURN_RUNTIME_V2,
     alivenessGuidance({ permission, isFoundational: input.isFoundational }),
     humorGuidanceBlock(closetCtx),
