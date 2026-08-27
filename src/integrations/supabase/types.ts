@@ -2313,6 +2313,7 @@ export type Database = {
           id: string
           insights: Json
           member_note: string | null
+          source_facet_count: number
           summary: string
           updated_at: string
           user_id: string
@@ -2324,6 +2325,7 @@ export type Database = {
           id?: string
           insights?: Json
           member_note?: string | null
+          source_facet_count?: number
           summary: string
           updated_at?: string
           user_id: string
@@ -2335,6 +2337,7 @@ export type Database = {
           id?: string
           insights?: Json
           member_note?: string | null
+          source_facet_count?: number
           summary?: string
           updated_at?: string
           user_id?: string
