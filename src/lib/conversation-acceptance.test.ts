@@ -173,17 +173,24 @@ describe("8 — ordinary profanity is not a boundary event", () => {
 });
 
 describe("9 — actual abuse still triggers the boundary", () => {
+  // Bare "fuck you / fuck off" is deliberately no longer abuse: in ordinary
+  // member conversation it is overwhelmingly playful, and treating it as a
+  // boundary event produced a respect lecture. Directed insults still are.
   it("catches language aimed at Athena", () => {
-    for (const t of ["Fuck you, Athena.", "You're a stupid useless bot.", "Shut the fuck up."]) {
+    for (const t of [
+      "You're a stupid useless bot.",
+      "Shut the fuck up.",
+      "Athena, you're a useless piece of shit.",
+    ]) {
       expect(classifyBoundary(t)?.category).toBe("abusive_language");
     }
   });
 
   it("graduates rather than replaying the same warning", () => {
     const state = assessBoundary([
-      { role: "user", content: "fuck you" },
+      { role: "user", content: "you're a stupid useless bot" },
       { role: "assistant", content: "…" },
-      { role: "user", content: "fuck you" },
+      { role: "user", content: "you're a stupid useless bot" },
     ]);
     expect(state?.stage).toBe(2);
     expect(state?.showNotice).toBe(false);

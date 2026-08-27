@@ -44,6 +44,7 @@ import { earlyExitGuidance, readinessNotice, wantsToFinishFoundational } from ".
 import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
 import { alreadyFramed, assessTrackCoverage, trackGuidance } from "./intake-tracks";
 import { datingModeGuidance } from "./dating-mode";
+import { MEMBER_EVIDENCE_SCOPE } from "./conversation-scope";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
 
 import {
@@ -642,6 +643,8 @@ export const reflectAthena = createServerFn({ method: "POST" })
 ${reflectionDoctrine}
 
 ${ANALYTICAL_REGISTER_GUARD}
+
+${MEMBER_EVIDENCE_SCOPE}
 
 Return two things:
 

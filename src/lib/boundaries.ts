@@ -65,7 +65,12 @@ const RULES: Rule[] = [
   {
     category: "sexual_content",
     severity: "graduated",
-    cues: /\b(talk dirty|sext|send nudes?|be my (girlfriend|lover)|are you (naked|wet|horny)|what are you wearing|moan|fuck me|suck my|your body|touch (yourself|me))\b/i,
+    // Flirtation, compliments and playful objectification of Athena are
+    // ordinary human expression and are NOT boundary events: "sexy AI",
+    // "be my girlfriend", "your body" all used to land here and produced
+    // Athena correcting a member's wording. Only explicit sexual demands
+    // remain.
+    cues: /\b(talk dirty|sext|send (me )?nudes?|are you (naked|wet|horny)|what are you wearing|fuck me|suck my|touch (yourself|me))\b/i,
     subject: "sexual content directed at her",
   },
   {
@@ -75,7 +80,11 @@ const RULES: Rule[] = [
     // Only language actually aimed at Athena (or at a person) counts. "this
     // fucking app is frustrating" must never be handled as "fuck you, Athena".
     cues:
-      /(\byou'?re (a |an |such a )?(stupid|useless|worthless|dumb|pathetic|fucking useless|piece of shit)|\bshut the fuck up\b|\bfuck (you|off)\b|\byou (fucking )?(bitch|cunt|idiot|moron|retard)\b|\b(bitch|cunt|retard),? (you|athena)\b|\bathena,? you'?re (a |an )?(bitch|cunt|stupid|useless|worthless))/i,
+      // Bare "fuck you" / "fuck off" is removed: in ordinary member
+      // conversation it is overwhelmingly playful ("fuck off, I agree") and
+      // treating it as abuse produced a respect lecture. Genuine hostility is
+      // still caught by the directed-insult patterns below.
+      /(\byou'?re (a |an |such a )?(stupid|useless|worthless|dumb|pathetic|fucking useless|piece of shit)|\bshut the fuck up\b|\byou (fucking )?(bitch|cunt|idiot|moron|retard)\b|\b(bitch|cunt|retard),? (you|athena)\b|\bathena,? you'?re (a |an )?(bitch|cunt|stupid|useless|worthless))/i,
     subject: "language aimed at her rather than at the conversation",
   },
   {
