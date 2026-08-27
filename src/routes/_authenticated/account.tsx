@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { readAccountIdentity, type AccountIdentity } from "@/lib/account-identity";
 import { toast } from "sonner";
+import { InstallAppAction } from "@/components/install-app-action";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
