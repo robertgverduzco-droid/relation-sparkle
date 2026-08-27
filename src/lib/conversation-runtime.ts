@@ -31,6 +31,7 @@ import {
   type StyleEvidence,
 } from "./conversational-aliveness";
 import { atlasBlock, selectAtlas } from "./atlas";
+import { memberScopeBlock } from "./conversation-scope";
 import { exemplarBlock, selectExemplars, type ExemplarTag } from "./exemplars";
 import { closetAvailable, detectClosetInvocation, humorGuidanceBlock } from "./humor-function";
 
