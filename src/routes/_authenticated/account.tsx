@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { readAccountIdentity, type AccountIdentity } from "@/lib/account-identity";
 import { toast } from "sonner";
+import { InstallAppAction } from "@/components/install-app-action";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -83,7 +84,11 @@ function AccountPage() {
         </section>
       )}
 
-      <div className="mt-8 space-y-2 px-6">
+      <div className="mt-8 px-6">
+        <InstallAppAction />
+      </div>
+
+      <div className="mt-4 space-y-2 px-6">
         <Link
           to="/profile"
           className="flex min-h-11 w-full items-center justify-center rounded-full border border-border px-6 py-3 text-center text-[13px] text-muted-foreground"

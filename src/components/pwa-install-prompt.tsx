@@ -1,70 +1,46 @@
 import { useEffect, useState } from "react";
 
-// Non-intrusive install prompt.
+// Non-intrusive automatic install prompt.
 // - Chromium/Android: uses the native `beforeinstallprompt` deferred event.
 // - iOS Safari: shows Add-to-Home-Screen instructions (no programmatic API).
 // - Hidden once installed (display-mode: standalone) or dismissed for 30 days.
+//
+// Shared state lives in @/lib/pwa-install so the persistent manual action
+// (settings) can reuse the same deferred event and detection.
 
-type BIPEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
-
-const DISMISS_KEY = "ri-pwa-install-dismissed-at";
-const DISMISS_DAYS = 30;
-
-function isRecentlyDismissed(): boolean {
-  try {
-    const raw = localStorage.getItem(DISMISS_KEY);
-    if (!raw) return false;
-    const when = Number(raw);
-    if (!Number.isFinite(when)) return false;
-    return Date.now() - when < DISMISS_DAYS * 24 * 60 * 60 * 1000;
-  } catch {
-    return false;
-  }
-}
-
-function markDismissed() {
-  try {
-    localStorage.setItem(DISMISS_KEY, String(Date.now()));
-  } catch {
-    /* ignore */
-  }
-}
-
-function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-  if (window.matchMedia?.("(display-mode: standalone)").matches) return true;
-  // iOS
-  const nav = window.navigator as Navigator & { standalone?: boolean };
-  return Boolean(nav.standalone);
-}
-
-function isIos(): boolean {
-  if (typeof window === "undefined") return false;
-  const ua = window.navigator.userAgent;
-  const iOSDevice = /iPad|iPhone|iPod/.test(ua);
-  const iPadOS = ua.includes("Mac") && "ontouchend" in document;
-  return iOSDevice || iPadOS;
-}
+import {
+  getDeferredPrompt,
+  invokeDeferredPrompt,
+  isIos,
+  isStandalone,
+  markInstallPromptDismissed,
+  readDismissal,
+  setDeferredPrompt,
+  shouldAutoPrompt,
+  type BIPEvent,
+} from "@/lib/pwa-install";
 
 export function PWAInstallPrompt() {
-  const [deferred, setDeferred] = useState<BIPEvent | null>(null);
+  const [hasDeferred, setHasDeferred] = useState(false);
   const [visible, setVisible] = useState(false);
   const [iosHint, setIosHint] = useState(false);
 
   useEffect(() => {
-    if (isStandalone()) return;
-    if (isRecentlyDismissed()) return;
+    if (!shouldAutoPrompt({ standalone: isStandalone(), dismissed: readDismissal() })) return;
 
     const onBIP = (e: Event) => {
       e.preventDefault();
-      setDeferred(e as BIPEvent);
+      setDeferredPrompt(e as BIPEvent);
+      setHasDeferred(true);
       // Small delay so it doesn't crash a first paint.
       window.setTimeout(() => setVisible(true), 1200);
     };
     window.addEventListener("beforeinstallprompt", onBIP);
+
+    if (getDeferredPrompt()) {
+      setHasDeferred(true);
+      setVisible(true);
+    }
 
     // iOS Safari has no beforeinstallprompt. Show the manual hint after a
     // meaningful pause so it doesn't feel like a popup.
@@ -90,20 +66,13 @@ export function PWAInstallPrompt() {
   if (!visible) return null;
 
   async function accept() {
-    if (deferred) {
-      try {
-        await deferred.prompt();
-        await deferred.userChoice;
-      } catch {
-        /* ignore */
-      }
-    }
+    await invokeDeferredPrompt();
     setVisible(false);
-    markDismissed();
+    markInstallPromptDismissed();
   }
 
   function dismiss() {
-    markDismissed();
+    markInstallPromptDismissed();
     setVisible(false);
   }
 
@@ -113,7 +82,7 @@ export function PWAInstallPrompt() {
         <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
           Keep Athena close
         </p>
-        {iosHint && !deferred ? (
+        {iosHint && !hasDeferred ? (
           <>
             <p className="mt-2 text-[14px] leading-relaxed text-foreground">
               Add Relationship Intelligence to your Home Screen. Tap the
