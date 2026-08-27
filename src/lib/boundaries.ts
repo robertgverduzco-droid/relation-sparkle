@@ -70,7 +70,7 @@ const RULES: Rule[] = [
     // "be my girlfriend", "your body" all used to land here and produced
     // Athena correcting a member's wording. Only explicit sexual demands
     // remain.
-    cues: /\b(talk dirty|sext|send nudes?|are you (naked|wet|horny)|what are you wearing|fuck me|suck my|touch (yourself|me))\b/i,
+    cues: /\b(talk dirty|sext|send (me )?nudes?|are you (naked|wet|horny)|what are you wearing|fuck me|suck my|touch (yourself|me))\b/i,
     subject: "sexual content directed at her",
   },
   {
