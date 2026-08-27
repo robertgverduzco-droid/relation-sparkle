@@ -18,8 +18,7 @@ describe("conversation scope — one auth user, two scopes", () => {
     const plan = run("I've been thinking about how I handle conflict with my sister.");
     expect(plan.block).toContain(MEMBER_SCOPE);
     expect(plan.block).not.toContain(FOUNDER_SCOPE);
-    expect(plan.block.toLowerCase()).not.toContain("aggregate");
-    expect(plan.block.toLowerCase()).not.toContain("governance");
+    expect(plan.block).toMatch(/you carry no product, governance, operational/i);
   });
 
   it("member scope forbids operator identity from role/privilege", () => {
