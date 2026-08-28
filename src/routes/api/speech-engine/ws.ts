@@ -129,6 +129,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           ];
 
           try {
+            at("llm-call-start", `messages=${messages.length}`);
             const response = await fetch(new URL("/api/eleven-agent-chat", url.origin), {
               method: "POST",
               signal: controller.signal,
@@ -138,6 +139,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
               },
               body: JSON.stringify({ model: "athena", stream: true, messages }),
             });
+            at("llm-headers", `status=${response.status}`);
 
             if (!response.ok || !response.body) {
               console.error(`[speech-engine] conversation call failed: ${response.status}`);
