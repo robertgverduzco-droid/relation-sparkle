@@ -6,6 +6,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "./athena-live";
+
+const startSession = vi.fn(async () => ({
+  endSession: async () => {},
+  sendContextualUpdate: () => {},
+}));
+vi.mock("@elevenlabs/client", () => ({
+  Conversation: { startSession: (opts: unknown) => startSession(opts as never) },
+}));
 import {
   asksForPermission,
   classifySessionStatus,
@@ -20,7 +28,8 @@ describe("transport reachability", () => {
   it("allows the browser to reach the realtime provider", () => {
     const server = read("src/server.ts");
     const csp = server.split("\n").find((l) => l.includes("connect-src")) ?? "";
-    expect(csp).toContain("https://api.openai.com");
+    expect(csp).toContain("https://api.elevenlabs.io");
+    expect(csp).toContain("wss://*.livekit.cloud");
   });
 
   it("keeps the policy narrow — no wildcard connect-src", () => {
@@ -28,8 +37,8 @@ describe("transport reachability", () => {
   });
 
   it("never ships a provider key to the browser", () => {
-    expect(read("src/lib/athena-live.ts")).not.toMatch(/OPENAI_API_KEY|sk-/);
-    expect(read("src/lib/athena-live.ts")).toContain("clientSecret");
+    expect(read("src/lib/athena-live.ts")).not.toMatch(/ELEVEN_?LABS?_API_KEY|xi-api-key/);
+    expect(read("src/lib/athena-live.ts")).toContain("conversationToken");
   });
 });
 
@@ -147,7 +156,7 @@ describe("session initialization", () => {
     vi.stubGlobal("navigator", fakeMic(true));
     mockFetch((url) =>
       url.includes("/api/realtime-session")
-        ? Response.json({ clientSecret: "ek_test" })
+        ? Response.json({ conversationToken: "tok_test", conversationId: "conv_test" })
         : new Response("v=0\r\n", { status: 200 }),
     );
     const h = harness();
@@ -218,7 +227,7 @@ describe("session initialization", () => {
     vi.stubGlobal("navigator", fakeMic(true));
     const calls = mockFetch((url) =>
       url.includes("/api/realtime-session")
-        ? Response.json({ clientSecret: "ek_test" })
+        ? Response.json({ conversationToken: "tok_test", conversationId: "conv_test" })
         : new Response("v=0", { status: 200 }),
     );
     const h = harness();
@@ -231,7 +240,7 @@ describe("session initialization", () => {
     vi.stubGlobal("navigator", fakeMic(true));
     mockFetch((url) =>
       url.includes("/api/realtime-session")
-        ? Response.json({ clientSecret: "ek_test" })
+        ? Response.json({ conversationToken: "tok_test", conversationId: "conv_test" })
         : new Response("v=0", { status: 200 }),
     );
     const h = harness();
@@ -255,22 +264,20 @@ describe("session initialization", () => {
 describe("turn handling and continuity", () => {
   it("never submits an empty transcript as a turn", () => {
     const source = read("src/lib/athena-live.ts");
-    expect(source).toContain('const text = (evt.transcript ?? "").trim();');
-    expect(source).toContain("if (text) {");
+    expect(source).toContain('const text = (message ?? "").trim();');
+    expect(source).toContain("if (!text) return;");
   });
 
-  it("keeps server-side turn detection and barge-in enabled", () => {
-    const live = read("src/lib/athena-live.server.ts");
-    expect(live).toContain('type: "semantic_vad"');
-    expect(live).toContain("interrupt_response: true");
-    expect(live).toContain("create_response: true");
+  it("keeps barge-in handling on the reasoning socket", () => {
+    const ws = read("src/routes/api/speech-engine/ws.ts");
+    expect(ws).toContain("inFlight.abort()");
+    expect(ws).toContain("latestEventId");
   });
 
-  it("keeps the mid-session Athena University supplement wired", () => {
-    const source = read("src/lib/athena-live.ts");
-    expect(source).toContain("/api/realtime-education");
-    expect(source).toContain("refreshEducation");
-    expect(read("src/routes/api/realtime-education.ts")).toContain("reasoningContext");
+  it("binds a live call to the member who started it", () => {
+    const session = read("src/routes/api/realtime-session.ts");
+    expect(session).toContain("recordLiveGrant");
+    expect(read("src/routes/api/speech-engine/ws.ts")).toContain("resolveLiveGrant");
   });
 
   it("keeps text mode and spoken fallback intact", () => {
