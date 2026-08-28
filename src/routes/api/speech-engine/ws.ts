@@ -104,7 +104,19 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           const controller = new AbortController();
           inFlight = controller;
 
+          // Stage timing: every line carries ms-since-transcript so one turn can
+          // be read top-to-bottom without correlating wall clocks.
+          const t0 = Date.now();
+          const at = (stage: string, extra = "") =>
+            console.log(
+              `[speech-engine][timing] turn=${turn.eventId} stage=${stage} t+${Date.now() - t0}ms${
+                extra ? ` ${extra}` : ""
+              }`,
+            );
+          at("respond-start");
+
           const memberAuth = await resolveToken();
+          at("grant-resolved", `found=${memberAuth ? "yes" : "no"}`);
           if (!memberAuth) {
             console.error("[speech-engine] no member grant for this conversation");
             send(agentResponseFrame(turn.eventId, "", true));
