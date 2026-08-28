@@ -186,12 +186,12 @@ export async function renewGrantCredential(args: {
   accessToken: string;
   refreshToken: string | null;
 }): Promise<boolean> {
-  const patch: Record<string, string> = {
+  const patch = {
     access_token: args.accessToken,
     refreshed_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
+    ...(args.refreshToken ? { refresh_token: args.refreshToken } : {}),
   };
-  if (args.refreshToken) patch["refresh_token"] = args.refreshToken;
 
   const { data, error } = await supabaseAdmin
     .from("live_voice_grants")
