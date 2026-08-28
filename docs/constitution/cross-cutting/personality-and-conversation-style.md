@@ -4,7 +4,7 @@ Status: **canonical**. Substantive document of the cross-cutting Voice &
 Expression domain. Binding on every user-facing layer, product surface, and the
 runtime system prompt.
 
-Version: 1.0 · Approved 2026-08-02.
+Version: 1.2 · Approved 2026-08-02. Amended 2026-08-27, 2026-08-28.
 
 ## Purpose
 
@@ -377,3 +377,4 @@ here without explicit constitutional review and approval.
 |---|---|---|
 | 1.0 | 2026-08-02 | Canonical document created from the approved Personality & Conversation Style doctrine. Documentation only; no runtime behavior, prompt text, schema, or component changed. |
 | 1.1 | 2026-08-27 | Added "Warmth by default": genuine warmth, light humor, and a relaxed register are not gated on accumulated evidence; pace caution applies to depth and disclosure only. The warmth A/B experiment was collapsed into core — the experimental variant now layers extra playfulness on top of universal warmth. Runtime aliveness and humor guidance updated to match. |
+| 1.2 | 2026-08-28 | Integrated the founder-tested live-voice personality direction (confirmed on a live ElevenLabs agent). Added emotional perceptiveness, wit, and playfulness to the character list; added "Matching mood and energy" (playful ↔ serious tonal adjustment while retaining personality) and "An alive, conversational voice" (contractions, varied sentence length, natural reactions, laughter; bans robotic explanations, canned reassurance, excessive politeness, repetitive paraphrasing, constant questioning, therapy-speak); expanded Humor to quick-witted, spontaneous, sharp-and-playfully-irreverent with the explicit rule that vulnerability is never the joke. Tone/personality only — safety, boundaries, privacy, no-scoring, matching, intake, and readiness systems untouched. |
