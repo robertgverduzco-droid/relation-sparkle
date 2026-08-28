@@ -249,7 +249,9 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             inFlight = null;
           }
           latestEventId = turn.eventId;
-          console.log(`[speech-engine] turn ${turn.eventId} received`);
+          console.log(
+            `[speech-engine][timing] turn=${turn.eventId} stage=transcript-received at=${new Date().toISOString()} chars=${turn.text.length} history=${turn.history.length}`,
+          );
           void respond(turn);
         });
 
