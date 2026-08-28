@@ -7,12 +7,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "./athena-live";
 
-const startSession = vi.fn(async () => ({
-  endSession: async () => {},
-  sendContextualUpdate: () => {},
-}));
 vi.mock("@elevenlabs/client", () => ({
-  Conversation: { startSession: (opts: unknown) => startSession(opts as never) },
+  Conversation: {
+    startSession: async () => ({
+      endSession: async () => {},
+      sendContextualUpdate: () => {},
+    }),
+  },
 }));
 import {
   asksForPermission,
