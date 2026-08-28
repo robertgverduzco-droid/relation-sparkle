@@ -36,6 +36,17 @@ function memberToken(request: Request, url: URL): string | null {
   return param?.trim() || null;
 }
 
+/** The init frame is the only place ElevenLabs names the conversation. */
+function parseConversationId(raw: string): string | null {
+  try {
+    const data = JSON.parse(raw) as { type?: unknown; conversation_id?: unknown };
+    if (data.type !== "init") return null;
+    return typeof data.conversation_id === "string" ? data.conversation_id : null;
+  } catch {
+    return null;
+  }
+}
+
 export const Route = createFileRoute("/api/speech-engine/ws")({
   server: {
     handlers: {
@@ -55,10 +66,12 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         }
 
         const url = new URL(request.url);
-        const token = memberToken(request, url);
-        if (!token) {
-          return new Response("Member token required", { status: 401 });
-        }
+        // A live call opened from the app carries no per-member header:
+        // ElevenLabs dials this socket itself. The member is resolved from the
+        // grant recorded when the browser minted its conversation token, and
+        // the header/query form stays available for direct integrations.
+        let token = memberToken(request, url);
+        let conversationId = "";
 
         const pair = new WebSocketPair();
         const client = pair[0];
@@ -77,10 +90,26 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           }
         };
 
+        const resolveToken = async (): Promise<string | null> => {
+          if (token) return token;
+          if (!conversationId) return null;
+          const { resolveLiveGrant } = await import("@/lib/live-voice.server");
+          const grant = await resolveLiveGrant(conversationId);
+          token = grant?.accessToken ?? null;
+          return token;
+        };
+
         const respond = async (turn: ReturnType<typeof parseUserTranscript>) => {
           if (!turn) return;
           const controller = new AbortController();
           inFlight = controller;
+
+          const memberAuth = await resolveToken();
+          if (!memberAuth) {
+            console.error("[speech-engine] no member grant for this conversation");
+            send(agentResponseFrame(turn.eventId, "", true));
+            return;
+          }
 
           const messages = [
             ...turn.history,
@@ -93,7 +122,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
               signal: controller.signal,
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${memberAuth}`,
               },
               body: JSON.stringify({ model: "athena", stream: true, messages }),
             });
@@ -155,8 +184,14 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         };
 
         server.addEventListener("message", (event: MessageEvent) => {
+          const raw = typeof event.data === "string" ? event.data : String(event.data ?? "");
+          const init = parseConversationId(raw);
+          if (init) {
+            conversationId = init;
+            return;
+          }
           const turn = parseUserTranscript(
-            typeof event.data === "string" ? event.data : String(event.data ?? ""),
+            raw,
           );
           if (!turn) return;
           if (turn.eventId < latestEventId) return;
@@ -173,6 +208,11 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         server.addEventListener("close", () => {
           inFlight?.abort();
           inFlight = null;
+          if (conversationId) {
+            void import("@/lib/live-voice.server").then(({ releaseLiveGrant }) =>
+              releaseLiveGrant(conversationId),
+            ).catch(() => {});
+          }
         });
 
         return new Response(null, { status: 101, webSocket: client } as WebSocketResponseInit);
