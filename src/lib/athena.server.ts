@@ -47,7 +47,13 @@ export const askInput = z.object({
    * claimed until that has genuinely changed (readiness-truth.ts).
    */
   readinessShortfallSignature: z.string().max(2000).nullable().optional(),
+  /**
+   * Transport the turn arrived on. Delivery only (D5 v1.1 spoken register) —
+   * it never changes what Athena gathers, claims, or is permitted to do.
+   */
+  channel: z.enum(["text", "voice"]).optional(),
 });
+
 
 export const askOutput = z.object({
   reply: z.string(),
