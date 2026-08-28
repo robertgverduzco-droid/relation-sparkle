@@ -40,6 +40,7 @@ import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedBetaAccountsRouteImport } from './routes/_authenticated/beta-accounts'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ApiSpeechEngineWsRouteImport } from './routes/api/speech-engine/ws'
 import { Route as ApiPublicRestoreReconcileRouteImport } from './routes/api/public/restore-reconcile'
 import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/ops-heartbeat'
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
@@ -208,6 +209,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiSpeechEngineWsRoute = ApiSpeechEngineWsRouteImport.update({
+  id: '/api/speech-engine/ws',
+  path: '/api/speech-engine/ws',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRestoreReconcileRoute =
   ApiPublicRestoreReconcileRouteImport.update({
     id: '/api/public/restore-reconcile',
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
   '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
+  '/api/speech-engine/ws': typeof ApiSpeechEngineWsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
   '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
+  '/api/speech-engine/ws': typeof ApiSpeechEngineWsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -367,6 +375,7 @@ export interface FileRoutesById {
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
   '/api/public/ops-heartbeat': typeof ApiPublicOpsHeartbeatRoute
   '/api/public/restore-reconcile': typeof ApiPublicRestoreReconcileRoute
+  '/api/speech-engine/ws': typeof ApiSpeechEngineWsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -408,6 +417,7 @@ export interface FileRouteTypes {
     | '/profile/review'
     | '/api/public/ops-heartbeat'
     | '/api/public/restore-reconcile'
+    | '/api/speech-engine/ws'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/profile/review'
     | '/api/public/ops-heartbeat'
     | '/api/public/restore-reconcile'
+    | '/api/speech-engine/ws'
   id:
     | '__root__'
     | '/'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile/review'
     | '/api/public/ops-heartbeat'
     | '/api/public/restore-reconcile'
+    | '/api/speech-engine/ws'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -507,6 +519,7 @@ export interface RootRouteChildren {
   ApiWsEchoRoute: typeof ApiWsEchoRoute
   ApiPublicOpsHeartbeatRoute: typeof ApiPublicOpsHeartbeatRoute
   ApiPublicRestoreReconcileRoute: typeof ApiPublicRestoreReconcileRoute
+  ApiSpeechEngineWsRoute: typeof ApiSpeechEngineWsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -728,6 +741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/speech-engine/ws': {
+      id: '/api/speech-engine/ws'
+      path: '/api/speech-engine/ws'
+      fullPath: '/api/speech-engine/ws'
+      preLoaderRoute: typeof ApiSpeechEngineWsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/restore-reconcile': {
       id: '/api/public/restore-reconcile'
       path: '/api/public/restore-reconcile'
@@ -902,6 +922,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWsEchoRoute: ApiWsEchoRoute,
   ApiPublicOpsHeartbeatRoute: ApiPublicOpsHeartbeatRoute,
   ApiPublicRestoreReconcileRoute: ApiPublicRestoreReconcileRoute,
+  ApiSpeechEngineWsRoute: ApiSpeechEngineWsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
