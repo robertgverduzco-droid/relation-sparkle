@@ -3,6 +3,14 @@
 // Delete or repurpose once the real speech-engine route replaces it.
 import { createFileRoute } from "@tanstack/react-router";
 
+// Cloudflare Workers WebSocket API — present in the workerd runtime but not
+// in the default TS lib types.
+declare const WebSocketPair: {
+  new (): { 0: WebSocket; 1: WebSocket };
+};
+
+type WebSocketResponseInit = ResponseInit & { webSocket: WebSocket };
+
 export const Route = createFileRoute("/api/ws-echo")({
   server: {
     handlers: {
@@ -24,7 +32,10 @@ export const Route = createFileRoute("/api/ws-echo")({
           );
         });
 
-        return new Response(null, { status: 101, webSocket: client });
+        return new Response(null, {
+          status: 101,
+          webSocket: client,
+        } as WebSocketResponseInit);
       },
     },
   },

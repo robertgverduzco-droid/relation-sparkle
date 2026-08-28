@@ -17,6 +17,7 @@ import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiWsEchoRouteImport } from './routes/api/ws-echo'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
@@ -84,6 +85,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWsEchoRoute = ApiWsEchoRouteImport.update({
+  id: '/api/ws-echo',
+  path: '/api/ws-echo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/ws-echo': typeof ApiWsEchoRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
@@ -311,6 +318,7 @@ export interface FileRoutesByTo {
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/ws-echo': typeof ApiWsEchoRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
@@ -351,6 +359,7 @@ export interface FileRoutesById {
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/ws-echo': typeof ApiWsEchoRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/_authenticated/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/_authenticated/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
+    | '/api/ws-echo'
     | '/connections/$id'
     | '/founder/intelligence'
     | '/introductions/$id'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
+    | '/api/ws-echo'
     | '/connections/$id'
     | '/founder/intelligence'
     | '/introductions/$id'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/api/realtime-session'
     | '/api/stt'
     | '/api/tts'
+    | '/api/ws-echo'
     | '/_authenticated/connections/$id'
     | '/_authenticated/founder/intelligence'
     | '/_authenticated/introductions/$id'
@@ -492,6 +504,7 @@ export interface RootRouteChildren {
   ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiWsEchoRoute: typeof ApiWsEchoRoute
   ApiPublicOpsHeartbeatRoute: typeof ApiPublicOpsHeartbeatRoute
   ApiPublicRestoreReconcileRoute: typeof ApiPublicRestoreReconcileRoute
 }
@@ -552,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ws-echo': {
+      id: '/api/ws-echo'
+      path: '/api/ws-echo'
+      fullPath: '/api/ws-echo'
+      preLoaderRoute: typeof ApiWsEchoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -879,6 +899,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
+  ApiWsEchoRoute: ApiWsEchoRoute,
   ApiPublicOpsHeartbeatRoute: ApiPublicOpsHeartbeatRoute,
   ApiPublicRestoreReconcileRoute: ApiPublicRestoreReconcileRoute,
 }
