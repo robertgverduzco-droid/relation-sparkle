@@ -77,7 +77,7 @@ function applySecurityHeaders(response: Response, request: Request): Response {
       // ElevenLabs voice layer (LiveKit transport), using a short-lived
       // single-conversation token. No long-lived provider credential ever
       // reaches the client.
-      `connect-src 'self' ${supabase} https://*.supabase.co wss://*.supabase.co https://ai.gateway.lovable.dev https://api.elevenlabs.io wss://api.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud`,
+      `connect-src 'self' ${supabase} https://*.supabase.co wss://*.supabase.co https://ai.gateway.lovable.dev https://api.elevenlabs.io wss://api.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud https://livekit.rtc.elevenlabs.io wss://livekit.rtc.elevenlabs.io`,
       "worker-src 'self' blob:",
       "upgrade-insecure-requests",
     ].join("; "),
