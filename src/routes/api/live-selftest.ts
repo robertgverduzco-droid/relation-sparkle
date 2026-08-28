@@ -99,8 +99,9 @@ export const Route = createFileRoute("/api/live-selftest")({
           .eq("conversation_id", conversationId);
 
         const url = new URL(request.url);
+        // fetch() keeps the http(s) scheme; the Upgrade header is what makes
+        // it a WebSocket handshake.
         const wsUrl = new URL("/api/speech-engine/ws", url.origin);
-        wsUrl.protocol = wsUrl.protocol === "https:" ? "wss:" : "ws:";
 
         const { SPEECH_ENGINE_AUTH_HEADER } = await import("@/lib/speech-engine-auth");
         const upgrade = await fetch(wsUrl.toString(), {
