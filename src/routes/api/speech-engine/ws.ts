@@ -104,7 +104,19 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           const controller = new AbortController();
           inFlight = controller;
 
+          // Stage timing: every line carries ms-since-transcript so one turn can
+          // be read top-to-bottom without correlating wall clocks.
+          const t0 = Date.now();
+          const at = (stage: string, extra = "") =>
+            console.log(
+              `[speech-engine][timing] turn=${turn.eventId} stage=${stage} t+${Date.now() - t0}ms${
+                extra ? ` ${extra}` : ""
+              }`,
+            );
+          at("respond-start");
+
           const memberAuth = await resolveToken();
+          at("grant-resolved", `found=${memberAuth ? "yes" : "no"}`);
           if (!memberAuth) {
             console.error("[speech-engine] no member grant for this conversation");
             send(agentResponseFrame(turn.eventId, "", true));
@@ -117,6 +129,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           ];
 
           try {
+            at("llm-call-start", `messages=${messages.length}`);
             const response = await fetch(new URL("/api/eleven-agent-chat", url.origin), {
               method: "POST",
               signal: controller.signal,
@@ -126,6 +139,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
               },
               body: JSON.stringify({ model: "athena", stream: true, messages }),
             });
+            at("llm-headers", `status=${response.status}`);
 
             if (!response.ok || !response.body) {
               console.error(`[speech-engine] conversation call failed: ${response.status}`);
@@ -141,14 +155,20 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             const emit = (text: string) => {
               for (const chunk of chunkReply(text)) {
                 if (controller.signal.aborted || latestEventId > turn.eventId) return;
+                if (!spoken) at("first-audio-frame-sent", `chars=${chunk.length}`);
                 spoken = true;
                 send(agentResponseFrame(turn.eventId, chunk, false));
               }
             };
 
+            let firstByte = true;
             while (!controller.signal.aborted && latestEventId <= turn.eventId) {
               const { done, value } = await reader.read();
               if (done) break;
+              if (firstByte) {
+                firstByte = false;
+                at("llm-first-byte");
+              }
               buffer += decoder.decode(value, { stream: true });
               const lines = buffer.split("\n");
               buffer = lines.pop() ?? "";
@@ -174,6 +194,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             }
             if (!spoken) send(agentResponseFrame(turn.eventId, "", false));
             send(agentResponseFrame(turn.eventId, "", true));
+            at("final-frame-sent", `spoken=${spoken}`);
           } catch (error) {
             if ((error as { name?: string })?.name === "AbortError") return;
             console.error("[speech-engine] turn failed", error);
@@ -197,6 +218,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           // Keep-alive: ElevenLabs drops the connection without a pong.
           if (frameType === "ping") {
             send({ type: "pong" });
+            console.log(`[speech-engine][timing] ping/pong at ${new Date().toISOString()}`);
             return;
           }
           if (frameType === "close") {
@@ -227,7 +249,9 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             inFlight = null;
           }
           latestEventId = turn.eventId;
-          console.log(`[speech-engine] turn ${turn.eventId} received`);
+          console.log(
+            `[speech-engine][timing] turn=${turn.eventId} stage=transcript-received at=${new Date().toISOString()} chars=${turn.text.length} history=${turn.history.length}`,
+          );
           void respond(turn);
         });
 

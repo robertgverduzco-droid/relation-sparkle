@@ -67,9 +67,17 @@ export const Route = createFileRoute("/api/eleven-agent-chat")({
           );
         }
 
+        // Stage timing for live-voice latency work: how much of a turn is
+        // Athena's own reasoning versus everything around it.
+        const tStart = Date.now();
         const { askAthena } = await import("@/lib/athena.functions");
+        const tImported = Date.now();
         const result = await askAthena({ data: { messages } });
+        const tAnswered = Date.now();
         const reply = result.reply ?? "";
+        console.log(
+          `[agent-chat][timing] import=${tImported - tStart}ms askAthena=${tAnswered - tImported}ms total=${tAnswered - tStart}ms chars=${reply.length} messages=${messages.length}`,
+        );
 
         const created = Math.floor(Date.now() / 1000);
         const id = `chatcmpl-${crypto.randomUUID()}`;
