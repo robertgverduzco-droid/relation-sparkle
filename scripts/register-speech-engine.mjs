@@ -5,6 +5,9 @@ const apiKey = process.env.ELEVEN_API_KEY || process.env.ELEVENLABS_API_KEY;
 if (!apiKey) throw new Error("Missing ELEVEN_API_KEY / ELEVENLABS_API_KEY");
 
 const WS_URL = "wss://relation-sparkle.lovable.app/api/speech-engine/ws";
+// Voice, model and delivery live in src/lib/athena-voice.ts; run
+// `bun scripts/update-speech-engine.ts` immediately after registering to
+// apply them (D5 v1.1 single source of truth).
 const SAVVY_VOICE_ID = "ogwqBH5bbF03DSbNiRNN";
 
 const res = await fetch("https://api.elevenlabs.io/v1/speech-engine", {

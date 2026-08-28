@@ -103,7 +103,7 @@ export const Route = createFileRoute("/api/eleven-agent-chat")({
         const tStart = Date.now();
         const { askAthena } = await import("@/lib/athena.functions");
         const tImported = Date.now();
-        const result = await askAthena({ data: { messages } });
+        const result = await askAthena({ data: { messages, channel: "voice" as const } });
         const tAnswered = Date.now();
         const reply = result.reply ?? "";
         console.log(

@@ -45,6 +45,7 @@ import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
 import { alreadyFramed, assessTrackCoverage, trackGuidance } from "./intake-tracks";
 import { datingModeGuidance } from "./dating-mode";
 import { MEMBER_EVIDENCE_SCOPE } from "./conversation-scope";
+import { spokenRegisterBlock } from "./spoken-register";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
 
 import {
@@ -452,7 +453,7 @@ Use this memory to:
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, variantHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, spokenRegisterBlock(data.channel), variantHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
