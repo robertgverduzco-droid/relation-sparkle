@@ -43,6 +43,12 @@ function normalizeRole(role: unknown): "user" | "assistant" | null {
  * Parse an inbound frame. Returns null for anything that is not a usable
  * user_transcript — pings, unknown types and malformed payloads are ignored
  * rather than treated as errors.
+ *
+ * The documented ElevenLabs shape carries the whole conversation in
+ * `user_transcript` as an array of { role, content }, with the newest user
+ * turn last and `event_id` alongside it. Older/flat variants (a `text` field
+ * plus a separate history array) are still accepted so a dialect change on
+ * their side cannot silence Athena again.
  */
 export function parseUserTranscript(raw: unknown): SpeechEngineTurn | null {
   let data: Record<string, unknown>;
@@ -60,7 +66,11 @@ export function parseUserTranscript(raw: unknown): SpeechEngineTurn | null {
 
   if (data["type"] !== "user_transcript") return null;
 
-  const nested = (data["user_transcript"] ?? data["data"] ?? {}) as Record<string, unknown>;
+  const transcript = data["user_transcript"];
+  const nested =
+    transcript && typeof transcript === "object" && !Array.isArray(transcript)
+      ? (transcript as Record<string, unknown>)
+      : ((data["data"] ?? {}) as Record<string, unknown>);
   const pick = (key: string): unknown => data[key] ?? nested[key];
 
   const rawEventId = pick("event_id");
@@ -70,13 +80,13 @@ export function parseUserTranscript(raw: unknown): SpeechEngineTurn | null {
       : typeof rawEventId === "string" && rawEventId.trim() !== "" && !Number.isNaN(Number(rawEventId))
         ? Number(rawEventId)
         : null;
-  if (eventId === null) return null;
 
-  const text = flatten(pick("text") ?? pick("transcript") ?? pick("user_transcript")).trim();
-  if (!text) return null;
+  // Canonical shape: the transcript itself is the full conversation.
+  const rawHistory = Array.isArray(transcript)
+    ? transcript
+    : (pick("conversation_history") ?? pick("history") ?? pick("messages"));
 
-  const rawHistory = pick("conversation_history") ?? pick("history") ?? pick("messages");
-  const history: SpeechEngineTurn["history"] = [];
+  const turns: SpeechEngineTurn["history"] = [];
   if (Array.isArray(rawHistory)) {
     for (const entry of rawHistory) {
       if (!entry || typeof entry !== "object") continue;
@@ -87,12 +97,27 @@ export function parseUserTranscript(raw: unknown): SpeechEngineTurn | null {
           (entry as { text?: unknown }).text,
       ).trim();
       if (!content) continue;
-      history.push({ role, content });
+      turns.push({ role, content });
     }
   }
 
-  return { eventId, text, history: history.slice(-60) };
+  let text = flatten(pick("text") ?? pick("transcript")).trim();
+  let history = turns;
+  if (!text && Array.isArray(transcript)) {
+    // The latest user turn is the thing being answered; everything before it
+    // is context.
+    const lastUser = [...turns].reverse().findIndex((t) => t.role === "user");
+    if (lastUser === -1) return null;
+    const index = turns.length - 1 - lastUser;
+    text = turns[index]!.content;
+    history = turns.slice(0, index);
+  }
+  if (!text) return null;
+  if (eventId === null && !Array.isArray(transcript)) return null;
+
+  return { eventId: eventId ?? 0, text, history: history.slice(-60) };
 }
+
 
 export function agentResponseFrame(
   eventId: number,
