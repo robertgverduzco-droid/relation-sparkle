@@ -22,7 +22,6 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
 import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-education'
-import { Route as ApiLiveSelftestRouteImport } from './routes/api/live-selftest'
 import { Route as ApiLiveReleaseRouteImport } from './routes/api/live-release'
 import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnostic'
 import { Route as ApiLiveCredentialRouteImport } from './routes/api/live-credential'
@@ -114,11 +113,6 @@ const ApiRealtimeSessionRoute = ApiRealtimeSessionRouteImport.update({
 const ApiRealtimeEducationRoute = ApiRealtimeEducationRouteImport.update({
   id: '/api/realtime-education',
   path: '/api/realtime-education',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiLiveSelftestRoute = ApiLiveSelftestRouteImport.update({
-  id: '/api/live-selftest',
-  path: '/api/live-selftest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLiveReleaseRoute = ApiLiveReleaseRouteImport.update({
@@ -301,7 +295,6 @@ export interface FileRoutesByFullPath {
   '/api/live-credential': typeof ApiLiveCredentialRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/live-release': typeof ApiLiveReleaseRoute
-  '/api/live-selftest': typeof ApiLiveSelftestRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -344,7 +337,6 @@ export interface FileRoutesByTo {
   '/api/live-credential': typeof ApiLiveCredentialRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/live-release': typeof ApiLiveReleaseRoute
-  '/api/live-selftest': typeof ApiLiveSelftestRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -389,7 +381,6 @@ export interface FileRoutesById {
   '/api/live-credential': typeof ApiLiveCredentialRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/live-release': typeof ApiLiveReleaseRoute
-  '/api/live-selftest': typeof ApiLiveSelftestRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -434,7 +425,6 @@ export interface FileRouteTypes {
     | '/api/live-credential'
     | '/api/live-diagnostic'
     | '/api/live-release'
-    | '/api/live-selftest'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -477,7 +467,6 @@ export interface FileRouteTypes {
     | '/api/live-credential'
     | '/api/live-diagnostic'
     | '/api/live-release'
-    | '/api/live-selftest'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -521,7 +510,6 @@ export interface FileRouteTypes {
     | '/api/live-credential'
     | '/api/live-diagnostic'
     | '/api/live-release'
-    | '/api/live-selftest'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -550,7 +538,6 @@ export interface RootRouteChildren {
   ApiLiveCredentialRoute: typeof ApiLiveCredentialRoute
   ApiLiveDiagnosticRoute: typeof ApiLiveDiagnosticRoute
   ApiLiveReleaseRoute: typeof ApiLiveReleaseRoute
-  ApiLiveSelftestRoute: typeof ApiLiveSelftestRoute
   ApiRealtimeEducationRoute: typeof ApiRealtimeEducationRoute
   ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
   ApiSttRoute: typeof ApiSttRoute
@@ -652,13 +639,6 @@ declare module '@tanstack/react-router' {
       path: '/api/realtime-education'
       fullPath: '/api/realtime-education'
       preLoaderRoute: typeof ApiRealtimeEducationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/live-selftest': {
-      id: '/api/live-selftest'
-      path: '/api/live-selftest'
-      fullPath: '/api/live-selftest'
-      preLoaderRoute: typeof ApiLiveSelftestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/live-release': {
@@ -977,7 +957,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLiveCredentialRoute: ApiLiveCredentialRoute,
   ApiLiveDiagnosticRoute: ApiLiveDiagnosticRoute,
   ApiLiveReleaseRoute: ApiLiveReleaseRoute,
-  ApiLiveSelftestRoute: ApiLiveSelftestRoute,
   ApiRealtimeEducationRoute: ApiRealtimeEducationRoute,
   ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
   ApiSttRoute: ApiSttRoute,
