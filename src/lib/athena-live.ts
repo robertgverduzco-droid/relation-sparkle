@@ -292,7 +292,7 @@ export class AthenaLiveSession {
     try {
       await fetch("/api/live-diagnostic", {
         method: "POST",
-        headers: { ...this.authHeaders, "Content-Type": "application/json" },
+        headers: { ...(await this.currentAuthHeaders()), "Content-Type": "application/json" },
         body: JSON.stringify({ reason, detail, stage }),
         keepalive: true,
       });
