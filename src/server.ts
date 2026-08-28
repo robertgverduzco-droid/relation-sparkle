@@ -72,7 +72,8 @@ function applySecurityHeaders(response: Response, request: Request): Response {
       "font-src 'self' data: https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Vite injects inline module bootstrap; eval is dev-only.
-      `script-src 'self' 'unsafe-inline'${url.hostname === "localhost" ? " 'unsafe-eval'" : ""}`,
+      // ElevenLabs AudioWorklet loads the rawAudioProcessor worklet from a blob.
+      `script-src 'self' 'unsafe-inline' blob:${url.hostname === "localhost" ? " 'unsafe-eval'" : ""}`,
       // Live Conversation only: the browser holds a WebRTC call with the
       // ElevenLabs voice layer (LiveKit transport), using a short-lived
       // single-conversation token. No long-lived provider credential ever
