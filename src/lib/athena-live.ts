@@ -118,6 +118,8 @@ export class AthenaLiveSession {
         return;
       }
       if (this.closed) return this.cleanup();
+      this.startCredentialHeartbeat();
+
 
       // The SDK opens and owns its own capture track; ours existed only to
       // establish permission cleanly, and holding it would keep a second
