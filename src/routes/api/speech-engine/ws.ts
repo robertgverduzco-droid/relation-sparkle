@@ -302,16 +302,27 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           }
           if (turn.eventId < latestEventId) return;
 
-          // Barge-in: a newer transcript retires whatever is still generating.
-          if (turn.eventId > latestEventId && inFlight) {
+          const priorText = answered.get(turn.eventId);
+          if (priorText === turn.text) {
+            console.log(
+              `[speech-engine][timing] turn=${turn.eventId} stage=duplicate-transcript-ignored at=${new Date().toISOString()} chars=${turn.text.length}`,
+            );
+            return;
+          }
+
+          // Barge-in, or a revision of the same event id: either way whatever
+          // is still generating is retired before the new answer starts.
+          if (inFlight && (turn.eventId > latestEventId || priorText !== undefined)) {
             inFlight.abort();
             inFlight = null;
           }
           latestEventId = turn.eventId;
+          rememberAnswered(turn.eventId, turn.text);
           console.log(
             `[speech-engine][timing] turn=${turn.eventId} stage=transcript-received at=${new Date().toISOString()} chars=${turn.text.length} history=${turn.history.length}`,
           );
           void respond(turn);
+
         });
 
 
