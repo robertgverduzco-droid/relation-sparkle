@@ -241,6 +241,24 @@ export class AthenaLiveSession {
     this.heartbeat = null;
   }
 
+  /**
+   * The credential handed over at the door ages out mid-call. Cleanup and
+   * diagnostics that reused that snapshot silently 401'd once the call ran
+   * past the token's life, so both now ask the browser session for the current
+   * credential and fall back to the original headers only if that fails.
+   */
+  private async currentAuthHeaders(): Promise<Record<string, string>> {
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (token) return { ...this.authHeaders, Authorization: `Bearer ${token}` };
+    } catch {
+      /* fall through to the headers we started with */
+    }
+    return this.authHeaders;
+  }
+
   /** The grant that binds this call to the member has no life after it. */
   private async release(): Promise<void> {
     if (!this.conversationId) return;
@@ -249,7 +267,7 @@ export class AthenaLiveSession {
     try {
       await fetch("/api/live-release", {
         method: "POST",
-        headers: { ...this.authHeaders, "Content-Type": "application/json" },
+        headers: { ...(await this.currentAuthHeaders()), "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId }),
         keepalive: true,
       });
@@ -257,6 +275,7 @@ export class AthenaLiveSession {
       /* the grant expires on its own */
     }
   }
+
 
   /**
    * Failure after the microphone is open: continuous conversation could not
