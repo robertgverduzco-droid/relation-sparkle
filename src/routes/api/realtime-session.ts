@@ -32,6 +32,13 @@ export const Route = createFileRoute("/api/realtime-session")({
         const accessToken = (request.headers.get("authorization") ?? "").slice(7);
         if (!accessToken) return new Response("Unauthorized", { status: 401 });
 
+        // The renewal credential is what lets a long call stay authenticated
+        // after the starting access token ages out. It is stored only on the
+        // service-role grant row and deleted when the call ends.
+        const body = (await request.json().catch(() => ({}))) as { refreshToken?: unknown };
+        const refreshToken =
+          typeof body.refreshToken === "string" && body.refreshToken ? body.refreshToken : null;
+
         const minted = await mintConversationToken(key);
         if (!minted) {
           safeLog("live.session.failed", { provider: "elevenlabs" });
@@ -43,8 +50,10 @@ export const Route = createFileRoute("/api/realtime-session")({
             conversationId: minted.conversationId,
             userId: caller.userId,
             accessToken,
+            refreshToken,
           });
         } catch {
+
           // Without the grant the socket cannot tell who is speaking, and an
           // anonymous Athena is not an acceptable degradation.
           safeLog("live.grant.failed", {});
