@@ -218,6 +218,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           // Keep-alive: ElevenLabs drops the connection without a pong.
           if (frameType === "ping") {
             send({ type: "pong" });
+            console.log(`[speech-engine][timing] ping/pong at ${new Date().toISOString()}`);
             return;
           }
           if (frameType === "close") {
