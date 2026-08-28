@@ -73,10 +73,11 @@ function applySecurityHeaders(response: Response, request: Request): Response {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Vite injects inline module bootstrap; eval is dev-only.
       `script-src 'self' 'unsafe-inline'${url.hostname === "localhost" ? " 'unsafe-eval'" : ""}`,
-      // api.openai.com is required by Live Conversation only: the browser
-      // posts its WebRTC offer there using a short-lived ephemeral secret.
-      // No long-lived provider credential ever reaches the client.
-      `connect-src 'self' ${supabase} https://*.supabase.co wss://*.supabase.co https://ai.gateway.lovable.dev https://api.openai.com`,
+      // Live Conversation only: the browser holds a WebRTC call with the
+      // ElevenLabs voice layer (LiveKit transport), using a short-lived
+      // single-conversation token. No long-lived provider credential ever
+      // reaches the client.
+      `connect-src 'self' ${supabase} https://*.supabase.co wss://*.supabase.co https://ai.gateway.lovable.dev https://api.elevenlabs.io wss://api.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud`,
       "worker-src 'self' blob:",
       "upgrade-insecure-requests",
     ].join("; "),
