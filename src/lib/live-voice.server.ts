@@ -173,6 +173,40 @@ export async function resolveTurnCredential(conversationId: string): Promise<Tur
   return { ok: true, userId: data.user_id, accessToken, renewed: true };
 }
 
+/**
+ * The browser feeding its current credential forward, mid-call. This is the
+ * primary way a long conversation stays authenticated: the browser's session
+ * is the authoritative one, and a server-side refresh can lose a race with it
+ * when the browser rotates the token first. Scoped to the member's own grant,
+ * and it extends the grant's life so a long call is not cut short by TTL.
+ */
+export async function renewGrantCredential(args: {
+  conversationId: string;
+  userId: string;
+  accessToken: string;
+  refreshToken: string | null;
+}): Promise<boolean> {
+  const patch = {
+    access_token: args.accessToken,
+    refreshed_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
+    ...(args.refreshToken ? { refresh_token: args.refreshToken } : {}),
+  };
+
+  const { data, error } = await supabaseAdmin
+    .from("live_voice_grants")
+    .update(patch)
+    .eq("conversation_id", args.conversationId)
+    .eq("user_id", args.userId)
+    .select("conversation_id")
+    .maybeSingle();
+  if (error) {
+    console.error(`[live-voice] credential renewal failed: ${error.message}`);
+    return false;
+  }
+  return Boolean(data);
+}
+
 /** The call is over; the credential has no reason to exist any longer. */
 export async function releaseLiveGrant(conversationId: string): Promise<void> {
   if (!conversationId) return;

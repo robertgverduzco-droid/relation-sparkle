@@ -25,6 +25,7 @@ import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-
 import { Route as ApiLiveSelftestRouteImport } from './routes/api/live-selftest'
 import { Route as ApiLiveReleaseRouteImport } from './routes/api/live-release'
 import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnostic'
+import { Route as ApiLiveCredentialRouteImport } from './routes/api/live-credential'
 import { Route as ApiElevenAgentChatRouteImport } from './routes/api/eleven-agent-chat'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedRevealRouteImport } from './routes/_authenticated/reveal'
@@ -128,6 +129,11 @@ const ApiLiveReleaseRoute = ApiLiveReleaseRouteImport.update({
 const ApiLiveDiagnosticRoute = ApiLiveDiagnosticRouteImport.update({
   id: '/api/live-diagnostic',
   path: '/api/live-diagnostic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLiveCredentialRoute = ApiLiveCredentialRouteImport.update({
+  id: '/api/live-credential',
+  path: '/api/live-credential',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiElevenAgentChatRoute = ApiElevenAgentChatRouteImport.update({
@@ -292,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
+  '/api/live-credential': typeof ApiLiveCredentialRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/live-release': typeof ApiLiveReleaseRoute
   '/api/live-selftest': typeof ApiLiveSelftestRoute
@@ -334,6 +341,7 @@ export interface FileRoutesByTo {
   '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
+  '/api/live-credential': typeof ApiLiveCredentialRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/live-release': typeof ApiLiveReleaseRoute
   '/api/live-selftest': typeof ApiLiveSelftestRoute
@@ -378,6 +386,7 @@ export interface FileRoutesById {
   '/_authenticated/reveal': typeof AuthenticatedRevealRoute
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
+  '/api/live-credential': typeof ApiLiveCredentialRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
   '/api/live-release': typeof ApiLiveReleaseRoute
   '/api/live-selftest': typeof ApiLiveSelftestRoute
@@ -422,6 +431,7 @@ export interface FileRouteTypes {
     | '/reveal'
     | '/understanding'
     | '/api/eleven-agent-chat'
+    | '/api/live-credential'
     | '/api/live-diagnostic'
     | '/api/live-release'
     | '/api/live-selftest'
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/reveal'
     | '/understanding'
     | '/api/eleven-agent-chat'
+    | '/api/live-credential'
     | '/api/live-diagnostic'
     | '/api/live-release'
     | '/api/live-selftest'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reveal'
     | '/_authenticated/understanding'
     | '/api/eleven-agent-chat'
+    | '/api/live-credential'
     | '/api/live-diagnostic'
     | '/api/live-release'
     | '/api/live-selftest'
@@ -535,6 +547,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   ApiElevenAgentChatRoute: typeof ApiElevenAgentChatRoute
+  ApiLiveCredentialRoute: typeof ApiLiveCredentialRoute
   ApiLiveDiagnosticRoute: typeof ApiLiveDiagnosticRoute
   ApiLiveReleaseRoute: typeof ApiLiveReleaseRoute
   ApiLiveSelftestRoute: typeof ApiLiveSelftestRoute
@@ -660,6 +673,13 @@ declare module '@tanstack/react-router' {
       path: '/api/live-diagnostic'
       fullPath: '/api/live-diagnostic'
       preLoaderRoute: typeof ApiLiveDiagnosticRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/live-credential': {
+      id: '/api/live-credential'
+      path: '/api/live-credential'
+      fullPath: '/api/live-credential'
+      preLoaderRoute: typeof ApiLiveCredentialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/eleven-agent-chat': {
@@ -954,6 +974,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   ApiElevenAgentChatRoute: ApiElevenAgentChatRoute,
+  ApiLiveCredentialRoute: ApiLiveCredentialRoute,
   ApiLiveDiagnosticRoute: ApiLiveDiagnosticRoute,
   ApiLiveReleaseRoute: ApiLiveReleaseRoute,
   ApiLiveSelftestRoute: ApiLiveSelftestRoute,

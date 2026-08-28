@@ -48,6 +48,7 @@ export class AthenaLiveSession {
   private started = false;
   private authHeaders: Record<string, string> = {};
   private conversationId = "";
+  private heartbeat: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly handlers: LiveHandlers) {}
 
@@ -118,6 +119,8 @@ export class AthenaLiveSession {
         return;
       }
       if (this.closed) return this.cleanup();
+      this.startCredentialHeartbeat();
+
 
       // The SDK opens and owns its own capture track; ours existed only to
       // establish permission cleanly, and holding it would keep a second
@@ -193,9 +196,49 @@ export class AthenaLiveSession {
   stop(): void {
     if (this.closed) return;
     this.closed = true;
+    this.stopCredentialHeartbeat();
     void this.release();
     this.cleanup();
     this.handlers.onStatus("ended");
+  }
+
+  /**
+   * A call can outlive the access token it started with — that is what once
+   * left Athena silent mid-conversation. The browser refreshes its own session
+   * in the background, so it hands the current credential forward periodically
+   * while the call is open, rather than the server chasing a token the browser
+   * has already rotated.
+   */
+  private startCredentialHeartbeat(): void {
+    const push = async () => {
+      if (this.closed || !this.conversationId) return;
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
+        if (!session?.access_token) return;
+        await fetch("/api/live-credential", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            conversationId: this.conversationId,
+            refreshToken: session.refresh_token ?? null,
+          }),
+        });
+      } catch {
+        /* the server-side renewal path remains as the fallback */
+      }
+    };
+    void push();
+    this.heartbeat = setInterval(() => void push(), 4 * 60_000);
+  }
+
+  private stopCredentialHeartbeat(): void {
+    if (this.heartbeat) clearInterval(this.heartbeat);
+    this.heartbeat = null;
   }
 
   /** The grant that binds this call to the member has no life after it. */

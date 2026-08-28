@@ -70,6 +70,8 @@ export const Route = createFileRoute("/api/live-selftest")({
           refreshToken?: string;
           turns?: string[];
           breakRefreshToken?: boolean;
+          expireCredential?: boolean;
+          renewAfter?: number;
         };
         const turns = Array.isArray(body.turns) && body.turns.length ? body.turns : ["Hello."];
         const accessToken = (request.headers.get("authorization") ?? "").slice(7);
@@ -90,13 +92,16 @@ export const Route = createFileRoute("/api/live-selftest")({
             : (body.refreshToken ?? null),
         });
 
-        // Age the credential past its life, as ~40 minutes of conversation
-        // would. Nothing else about the call is simulated.
+        // Optionally age the credential past its life, as ~40 minutes of
+        // conversation would. Nothing else about the call is simulated.
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin
-          .from("live_voice_grants")
-          .update({ access_token: expiredToken(caller.userId) })
-          .eq("conversation_id", conversationId);
+        const expireCredential = body.expireCredential !== false;
+        if (expireCredential) {
+          await supabaseAdmin
+            .from("live_voice_grants")
+            .update({ access_token: expiredToken(caller.userId) })
+            .eq("conversation_id", conversationId);
+        }
 
         const url = new URL(request.url);
         // fetch() keeps the http(s) scheme; the Upgrade header is what makes
@@ -141,7 +146,18 @@ export const Route = createFileRoute("/api/live-selftest")({
         socket.send(JSON.stringify({ type: "init", conversation_id: conversationId }));
 
         const history: { role: "user" | "assistant"; content: string }[] = [];
+        const { renewGrantCredential } = await import("@/lib/live-voice.server");
         for (let i = 0; i < turns.length; i += 1) {
+          // The browser heartbeat, standing in for a real one: it hands the
+          // live credential forward mid-call.
+          if (typeof body.renewAfter === "number" && i === body.renewAfter) {
+            await renewGrantCredential({
+              conversationId,
+              userId: caller.userId,
+              accessToken,
+              refreshToken: body.refreshToken ?? null,
+            });
+          }
           const eventId = (i + 1) * 10;
           const text = turns[i]!;
           history.push({ role: "user", content: text });
