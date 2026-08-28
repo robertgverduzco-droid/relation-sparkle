@@ -1198,6 +1198,8 @@ export type Database = {
           conversation_id: string
           created_at: string
           expires_at: string
+          refresh_token: string | null
+          refreshed_at: string | null
           user_id: string
         }
         Insert: {
@@ -1205,6 +1207,8 @@ export type Database = {
           conversation_id: string
           created_at?: string
           expires_at: string
+          refresh_token?: string | null
+          refreshed_at?: string | null
           user_id: string
         }
         Update: {
@@ -1212,6 +1216,8 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           expires_at?: string
+          refresh_token?: string | null
+          refreshed_at?: string | null
           user_id?: string
         }
         Relationships: []
