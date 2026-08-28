@@ -289,7 +289,7 @@ function AthenaPage() {
       if (priorMessages.length > 0) {
         setMessages(priorMessages);
         lastReflectedTurnRef.current = priorMessages.filter((m) => m.role === "user").length;
-        setVoiceMode(stored ?? "text");
+        setVoiceMode(stored ?? "voice");
         setHydrated(true);
         conversationStartRef.current = Date.now();
         return;
