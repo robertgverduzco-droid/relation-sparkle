@@ -194,6 +194,7 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             }
             if (!spoken) send(agentResponseFrame(turn.eventId, "", false));
             send(agentResponseFrame(turn.eventId, "", true));
+            at("final-frame-sent", `spoken=${spoken}`);
           } catch (error) {
             if ((error as { name?: string })?.name === "AbortError") return;
             console.error("[speech-engine] turn failed", error);
