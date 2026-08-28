@@ -95,7 +95,30 @@ describe("speech engine token verification", () => {
 });
 
 describe("speech engine protocol", () => {
+  it("parses the documented ElevenLabs frame where user_transcript is the history", () => {
+    const turn = parseUserTranscript(
+      JSON.stringify({
+        type: "user_transcript",
+        event_id: 2,
+        user_transcript: [
+          { role: "user", content: "hi" },
+          { role: "agent", content: "Hello." },
+          { role: "user", content: "Can you hear me now?" },
+        ],
+      }),
+    );
+    expect(turn).toEqual({
+      eventId: 2,
+      text: "Can you hear me now?",
+      history: [
+        { role: "user", content: "hi" },
+        { role: "assistant", content: "Hello." },
+      ],
+    });
+  });
+
   it("parses a user_transcript with history", () => {
+
     const turn = parseUserTranscript(
       JSON.stringify({
         type: "user_transcript",
