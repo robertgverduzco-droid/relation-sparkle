@@ -155,14 +155,20 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             const emit = (text: string) => {
               for (const chunk of chunkReply(text)) {
                 if (controller.signal.aborted || latestEventId > turn.eventId) return;
+                if (!spoken) at("first-audio-frame-sent", `chars=${chunk.length}`);
                 spoken = true;
                 send(agentResponseFrame(turn.eventId, chunk, false));
               }
             };
 
+            let firstByte = true;
             while (!controller.signal.aborted && latestEventId <= turn.eventId) {
               const { done, value } = await reader.read();
               if (done) break;
+              if (firstByte) {
+                firstByte = false;
+                at("llm-first-byte");
+              }
               buffer += decoder.decode(value, { stream: true });
               const lines = buffer.split("\n");
               buffer = lines.pop() ?? "";
