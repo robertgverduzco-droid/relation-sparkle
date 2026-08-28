@@ -97,7 +97,7 @@ export async function verifyInternalToken(value: string | null): Promise<Interna
   } catch {
     return { ok: false, reason: "unreadable-internal-claims" };
   }
-  if (!claims.userId) return { ok: false, reason: "internal-token-без-subject" };
+  if (!claims.userId) return { ok: false, reason: "internal-token-no-subject" };
   if (typeof claims.exp !== "number" || claims.exp * 1000 < Date.now()) {
     return { ok: false, reason: "internal-token-expired" };
   }
