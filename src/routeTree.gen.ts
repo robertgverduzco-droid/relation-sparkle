@@ -22,6 +22,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiRealtimeSessionRouteImport } from './routes/api/realtime-session'
 import { Route as ApiRealtimeEducationRouteImport } from './routes/api/realtime-education'
+import { Route as ApiLiveReleaseRouteImport } from './routes/api/live-release'
 import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnostic'
 import { Route as ApiElevenAgentChatRouteImport } from './routes/api/eleven-agent-chat'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
@@ -111,6 +112,11 @@ const ApiRealtimeSessionRoute = ApiRealtimeSessionRouteImport.update({
 const ApiRealtimeEducationRoute = ApiRealtimeEducationRouteImport.update({
   id: '/api/realtime-education',
   path: '/api/realtime-education',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLiveReleaseRoute = ApiLiveReleaseRouteImport.update({
+  id: '/api/live-release',
+  path: '/api/live-release',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLiveDiagnosticRoute = ApiLiveDiagnosticRouteImport.update({
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
+  '/api/live-release': typeof ApiLiveReleaseRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -321,6 +328,7 @@ export interface FileRoutesByTo {
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
+  '/api/live-release': typeof ApiLiveReleaseRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -363,6 +371,7 @@ export interface FileRoutesById {
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-diagnostic': typeof ApiLiveDiagnosticRoute
+  '/api/live-release': typeof ApiLiveReleaseRoute
   '/api/realtime-education': typeof ApiRealtimeEducationRoute
   '/api/realtime-session': typeof ApiRealtimeSessionRoute
   '/api/stt': typeof ApiSttRoute
@@ -405,6 +414,7 @@ export interface FileRouteTypes {
     | '/understanding'
     | '/api/eleven-agent-chat'
     | '/api/live-diagnostic'
+    | '/api/live-release'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -445,6 +455,7 @@ export interface FileRouteTypes {
     | '/understanding'
     | '/api/eleven-agent-chat'
     | '/api/live-diagnostic'
+    | '/api/live-release'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -486,6 +497,7 @@ export interface FileRouteTypes {
     | '/_authenticated/understanding'
     | '/api/eleven-agent-chat'
     | '/api/live-diagnostic'
+    | '/api/live-release'
     | '/api/realtime-education'
     | '/api/realtime-session'
     | '/api/stt'
@@ -512,6 +524,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiElevenAgentChatRoute: typeof ApiElevenAgentChatRoute
   ApiLiveDiagnosticRoute: typeof ApiLiveDiagnosticRoute
+  ApiLiveReleaseRoute: typeof ApiLiveReleaseRoute
   ApiRealtimeEducationRoute: typeof ApiRealtimeEducationRoute
   ApiRealtimeSessionRoute: typeof ApiRealtimeSessionRoute
   ApiSttRoute: typeof ApiSttRoute
@@ -613,6 +626,13 @@ declare module '@tanstack/react-router' {
       path: '/api/realtime-education'
       fullPath: '/api/realtime-education'
       preLoaderRoute: typeof ApiRealtimeEducationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/live-release': {
+      id: '/api/live-release'
+      path: '/api/live-release'
+      fullPath: '/api/live-release'
+      preLoaderRoute: typeof ApiLiveReleaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/live-diagnostic': {
@@ -915,6 +935,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiElevenAgentChatRoute: ApiElevenAgentChatRoute,
   ApiLiveDiagnosticRoute: ApiLiveDiagnosticRoute,
+  ApiLiveReleaseRoute: ApiLiveReleaseRoute,
   ApiRealtimeEducationRoute: ApiRealtimeEducationRoute,
   ApiRealtimeSessionRoute: ApiRealtimeSessionRoute,
   ApiSttRoute: ApiSttRoute,

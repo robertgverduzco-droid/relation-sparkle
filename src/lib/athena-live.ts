@@ -1,10 +1,16 @@
-// Athena Live Conversation — browser transport (WebRTC).
+// Athena Live Conversation — browser transport.
+//
+// The member's browser holds a WebRTC call with ElevenLabs, which does the
+// hearing and the speaking. Athena's actual reasoning runs on our own server:
+// ElevenLabs calls back into /api/speech-engine/ws for every turn, where the
+// existing conversation pipeline answers. There is still exactly one Athena.
 //
 // Text mode and TTS remain the fallback and are untouched. This module owns
-// only the live speech-to-speech channel: microphone in, Athena's voice out,
-// and a running transcript so the conversation record stays continuous with
+// only the live speech channel: microphone in, Athena's voice out, and a
+// running transcript so the conversation record stays continuous with
 // everything typed before or after it.
 
+import { Conversation } from "@elevenlabs/client";
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 import {
   classifySessionStatus,
@@ -33,19 +39,15 @@ export type LiveHandlers = {
   onError: (message: string) => void;
 };
 
-const REALTIME_URL = "https://api.openai.com/v1/realtime/calls";
+type LiveConversation = Awaited<ReturnType<typeof Conversation.startSession>>;
 
 export class AthenaLiveSession {
-  private pc: RTCPeerConnection | null = null;
-  private dc: RTCDataChannel | null = null;
+  private conversation: LiveConversation | null = null;
   private stream: MediaStream | null = null;
-  private audio: HTMLAudioElement | null = null;
   private closed = false;
   private started = false;
-  private assistantBuffer = "";
   private authHeaders: Record<string, string> = {};
-  private memberTurns: string[] = [];
-  private educationInFlight = false;
+  private conversationId = "";
 
   constructor(private readonly handlers: LiveHandlers) {}
 
@@ -56,7 +58,6 @@ export class AthenaLiveSession {
     this.started = true;
     this.handlers.onStatus("connecting");
     this.authHeaders = authHeaders;
-    this.memberTurns = priorTurns.filter((t) => t.role === "user").slice(-3).map((t) => t.content);
 
     if (!webrtcSupported()) {
       this.failLive("unsupported-browser", "no RTCPeerConnection");
@@ -80,106 +81,72 @@ export class AthenaLiveSession {
       const res = await fetch("/api/realtime-session", {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ recentText: this.memberTurns.join("\n") }),
+        body: JSON.stringify({}),
       });
       if (!res.ok) {
         this.failLive(classifySessionStatus(res.status), `session endpoint ${res.status}`);
         return;
       }
-      let clientSecret = "";
+      let conversationToken = "";
       try {
-        ({ clientSecret } = (await res.json()) as { clientSecret: string });
+        const body = (await res.json()) as {
+          conversationToken?: string;
+          conversationId?: string;
+        };
+        conversationToken = body.conversationToken ?? "";
+        this.conversationId = body.conversationId ?? "";
       } catch (error) {
         this.failLive("session-failed", `unreadable session response: ${String(error)}`);
         return;
       }
-      if (!clientSecret) {
-        this.failLive("session-failed", "session response carried no client secret");
+      if (!conversationToken) {
+        this.failLive("session-failed", "session response carried no conversation token");
         return;
       }
       if (this.closed) return this.cleanup();
 
-      const pc = new RTCPeerConnection();
-      this.pc = pc;
-      pc.onconnectionstatechange = () => {
-        if (this.closed) return;
-        if (pc.connectionState === "failed") {
-          this.failLive("connection-failed", "peer connection failed");
-        } else if (pc.connectionState === "disconnected") {
-          this.failLive("disconnected", "peer connection disconnected");
-        }
-      };
+      // The SDK opens and owns its own capture track; ours existed only to
+      // establish permission cleanly, and holding it would keep a second
+      // microphone stream alive for the whole call.
+      this.releaseMicrophone();
 
-      // iOS Safari will not play a remote stream from a detached element, and
-      // needs playsInline; the element is attached, silent to the eye, and
-      // removed again on cleanup.
-      this.audio = document.createElement("audio");
-      this.audio.autoplay = true;
-      this.audio.setAttribute?.("playsinline", "");
-      this.audio.style?.setProperty?.("display", "none");
-      document.body?.appendChild?.(this.audio);
-      pc.ontrack = (e) => {
-        if (!this.audio) return;
-        this.audio.srcObject = e.streams[0] ?? null;
-        // The member pressed a button to get here, so this play() is inside a
-        // gesture-initiated flow; a rejection is not fatal to the session.
-        void this.audio.play?.()?.catch?.(() => {});
-      };
-      const stream = this.stream;
-      if (!stream) return this.cleanup();
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
-
-      const dc = pc.createDataChannel("oai-events");
-      this.dc = dc;
-      dc.onmessage = (e) => this.onEvent(e.data as string);
-      dc.onopen = () => {
-        // Continuity: Athena resumes with everything already said today.
-        for (const turn of priorTurns.slice(-12)) {
-          this.send({
-            type: "conversation.item.create",
-            item: {
-              type: "message",
-              role: turn.role,
-              content: [
-                {
-                  type: turn.role === "user" ? "input_text" : "output_text",
-                  text: turn.content,
-                },
-              ],
-            },
-          });
-        }
-        this.handlers.onStatus("listening");
-      };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      const answer = await fetch(REALTIME_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${clientSecret}`,
-          "Content-Type": "application/sdp",
+      this.conversation = await Conversation.startSession({
+        conversationToken,
+        connectionType: "webrtc",
+        onConnect: () => {
+          if (this.closed) return;
+          this.handlers.onStatus("listening");
+          // Continuity: Athena resumes with everything already said today.
+          const recap = priorTurns
+            .slice(-12)
+            .map((t) => `${t.role === "user" ? "Member" : "Athena"}: ${t.content}`)
+            .join("\n");
+          if (recap) this.guide(`Earlier in this same conversation:\n${recap}`);
         },
-        body: offer.sdp ?? "",
+        onModeChange: ({ mode }) => {
+          if (this.closed) return;
+          this.handlers.onStatus(mode === "speaking" ? "speaking" : "listening");
+          if (mode === "listening") this.handlers.onPartial("");
+        },
+        onMessage: ({ message, role }) => {
+          const text = (message ?? "").trim();
+          if (!text) return;
+          this.handlers.onPartial("");
+          this.handlers.onTurn({ role: role === "user" ? "user" : "assistant", content: text });
+        },
+        onDisconnect: (details) => {
+          if (this.closed) return;
+          if (details?.reason === "error") {
+            this.failLive("disconnected", details.message ?? "session dropped", "session");
+            return;
+          }
+          this.stop();
+        },
+        onError: (message) => {
+          if (this.closed) return;
+          this.failLive("connection-failed", String(message ?? "unknown"), "session");
+        },
       });
-      if (!answer.ok) {
-        const detail = (await answer.text().catch(() => "")).slice(0, 200);
-        this.failLive(
-          answer.status === 429
-            ? detail.includes("insufficient_quota")
-              ? "quota-exhausted"
-              : "rate-limited"
-            : answer.status >= 500
-              ? "provider-unavailable"
-              : "connection-failed",
-          `realtime calls ${answer.status}: ${detail}`,
-        );
-        return;
-      }
-      const sdp = await answer.text();
-      if (this.closed) return this.cleanup();
-      await pc.setRemoteDescription({ type: "answer", sdp });
     } catch (error) {
       // The microphone was already granted and open, so this can only be an
       // initialization failure. It is never reported as a permission problem.
@@ -188,116 +155,49 @@ export class AthenaLiveSession {
   }
 
   /**
-   * Deliver internal guidance mid-session. A live session's instructions are
-   * fixed when it opens, so breadth-first correction during the foundational
-   * conversation arrives as a system item. It is never spoken or referenced.
+   * Deliver internal guidance mid-session. It reaches Athena's reasoning as
+   * context, never as something spoken or referenced back to the member.
    */
   guide(text: string): void {
-    if (!text) return;
-    this.send({
-      type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "system",
-        content: [{ type: "input_text", text }],
-      },
-    });
-  }
-
-  /**
-   * Draw the educational material that bears on what the member just said.
-   * A spoken session's instructions are fixed when it opens, so depth for
-   * anything said afterwards has to arrive as an internal system item. Silent
-   * by design: if nothing relevant is found, nothing is sent.
-   */
-  private async refreshEducation(): Promise<void> {
-    if (this.closed || this.educationInFlight) return;
-    this.educationInFlight = true;
+    if (!text || !this.conversation) return;
     try {
-      const res = await fetch("/api/realtime-education", {
-        method: "POST",
-        headers: { ...this.authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ text: this.memberTurns.join("\n") }),
-      });
-      if (!res.ok) return;
-      const { block } = (await res.json()) as { block?: string };
-      if (block && !this.closed) this.guide(block);
+      this.conversation.sendContextualUpdate(text);
     } catch {
-      // Depth is an enhancement; a live conversation continues without it.
-    } finally {
-      this.educationInFlight = false;
+      /* the conversation is closing */
     }
   }
 
-  /** Athena yields the floor immediately when the member takes it. */
+  /**
+   * Athena yields the floor immediately when the member takes it. Barge-in is
+   * detected by the voice layer itself; this only clears what is on screen.
+   */
   interrupt(): void {
-    this.send({ type: "response.cancel" });
-    this.assistantBuffer = "";
     this.handlers.onPartial("");
     if (!this.closed) this.handlers.onStatus("listening");
   }
 
-
   stop(): void {
+    if (this.closed) return;
     this.closed = true;
+    void this.release();
     this.cleanup();
     this.handlers.onStatus("ended");
   }
 
-  private send(payload: unknown): void {
-    if (this.dc?.readyState === "open") {
-      try {
-        this.dc.send(JSON.stringify(payload));
-      } catch {
-        /* channel closing */
-      }
-    }
-  }
-
-  private onEvent(raw: string): void {
-    let evt: { type?: string; transcript?: string; delta?: string };
+  /** The grant that binds this call to the member has no life after it. */
+  private async release(): Promise<void> {
+    if (!this.conversationId) return;
+    const conversationId = this.conversationId;
+    this.conversationId = "";
     try {
-      evt = JSON.parse(raw);
+      await fetch("/api/live-release", {
+        method: "POST",
+        headers: { ...this.authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId }),
+        keepalive: true,
+      });
     } catch {
-      return;
-    }
-    switch (evt.type) {
-      case "input_audio_buffer.speech_started":
-        this.assistantBuffer = "";
-        this.handlers.onPartial("");
-        this.handlers.onStatus("listening");
-        break;
-      case "response.output_audio.delta":
-        this.handlers.onStatus("speaking");
-        break;
-      case "response.output_audio_transcript.delta":
-        this.assistantBuffer += evt.delta ?? "";
-        this.handlers.onPartial(this.assistantBuffer);
-        break;
-      case "response.output_audio_transcript.done": {
-        const text = (evt.transcript ?? this.assistantBuffer).trim();
-        this.assistantBuffer = "";
-        this.handlers.onPartial("");
-        if (text) this.handlers.onTurn({ role: "assistant", content: text });
-        break;
-      }
-      case "response.done":
-        if (!this.closed) this.handlers.onStatus("listening");
-        break;
-      case "conversation.item.input_audio_transcription.completed": {
-        const text = (evt.transcript ?? "").trim();
-        if (text) {
-          this.handlers.onTurn({ role: "user", content: text });
-          this.memberTurns = [...this.memberTurns, text].slice(-3);
-          void this.refreshEducation();
-        }
-        break;
-      }
-      case "error":
-        this.handlers.onError("Something interrupted the live conversation.");
-        break;
-      default:
-        break;
+      /* the grant expires on its own */
     }
   }
 
@@ -327,26 +227,24 @@ export class AthenaLiveSession {
 
   private fail(message: string): void {
     this.closed = true;
+    void this.release();
     this.handlers.onError(message);
     this.handlers.onStatus("error");
     this.cleanup();
   }
 
+  private releaseMicrophone(): void {
+    this.stream?.getTracks().forEach((t) => t.stop());
+    this.stream = null;
+  }
+
   private cleanup(): void {
     try {
-      this.dc?.close();
-    } catch { /* ignore */ }
-    try {
-      this.pc?.close();
-    } catch { /* ignore */ }
-    this.stream?.getTracks().forEach((t) => t.stop());
-    if (this.audio) {
-      this.audio.srcObject = null;
-      this.audio.remove?.();
-      this.audio = null;
+      void this.conversation?.endSession?.();
+    } catch {
+      /* already closing */
     }
-    this.dc = null;
-    this.pc = null;
-    this.stream = null;
+    this.conversation = null;
+    this.releaseMicrophone();
   }
 }

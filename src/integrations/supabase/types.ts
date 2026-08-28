@@ -1192,6 +1192,30 @@ export type Database = {
           },
         ]
       }
+      live_voice_grants: {
+        Row: {
+          access_token: string
+          conversation_id: string
+          created_at: string
+          expires_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          conversation_id: string
+          created_at?: string
+          expires_at: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          conversation_id?: string
+          created_at?: string
+          expires_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meeting_proposals: {
         Row: {
           completed_at: string | null

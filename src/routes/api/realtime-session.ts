@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Mints a short-lived client secret for Athena's Live Conversation mode.
- * The long-lived provider key never reaches the browser: the client receives
- * only an ephemeral token bound to this pre-configured session.
+ * Opens a live conversation against Athena's registered ElevenLabs Speech
+ * Engine. The browser receives only a short-lived, single-conversation token;
+ * the provider key never reaches it.
+ *
+ * Athena's mind is not on the other end of this token — ElevenLabs is. It
+ * calls back into /api/speech-engine/ws for every turn, which is why the
+ * member is bound to the conversation id here, before the call begins.
  */
 export const Route = createFileRoute("/api/realtime-session")({
   server: {
@@ -13,50 +17,42 @@ export const Route = createFileRoute("/api/realtime-session")({
         const caller = await verifyApiCaller(request);
         if (!caller) return new Response("Unauthorized", { status: 401 });
 
-        const { rateLimit, assertFeatureEnabled } = await import("@/lib/security.server");
+        const { rateLimit, assertFeatureEnabled, safeLog } = await import("@/lib/security.server");
         await assertFeatureEnabled("athena_conversation");
         if (!rateLimit(`live:${caller.userId}`, 12, 60_000)) {
           return new Response("Too many requests", { status: 429 });
         }
 
-        const key = process.env.OPENAI_API_KEY;
+        const { elevenApiKey, mintConversationToken, recordLiveGrant } = await import(
+          "@/lib/live-voice.server"
+        );
+        const key = elevenApiKey();
         if (!key) return new Response("Live conversation is not configured", { status: 503 });
 
-        const { buildLiveInstructions, liveSessionConfig } = await import(
-          "@/lib/athena-live.server"
-        );
         const accessToken = (request.headers.get("authorization") ?? "").slice(7);
-        // Anything already said today shapes which educational material the
-        // session opens with; the live client supplements it turn by turn.
-        let recentText = "";
-        try {
-          const body = (await request.json()) as { recentText?: unknown };
-          recentText = typeof body.recentText === "string" ? body.recentText.slice(0, 4000) : "";
-        } catch {
-          recentText = "";
-        }
-        const instructions = await buildLiveInstructions(accessToken, recentText, caller.userId);
+        if (!accessToken) return new Response("Unauthorized", { status: 401 });
 
-        const res = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${key}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(liveSessionConfig(instructions)),
-        });
-
-        if (!res.ok) {
-          const { safeLog } = await import("@/lib/security.server");
-          safeLog("live.session.failed", { status: res.status });
+        const minted = await mintConversationToken(key);
+        if (!minted) {
+          safeLog("live.session.failed", { provider: "elevenlabs" });
           return new Response("Live conversation is unavailable right now", { status: 502 });
         }
 
-        const body = (await res.json()) as { value?: string; expires_at?: number };
-        if (!body.value) return new Response("Live conversation is unavailable right now", { status: 502 });
+        try {
+          await recordLiveGrant({
+            conversationId: minted.conversationId,
+            userId: caller.userId,
+            accessToken,
+          });
+        } catch {
+          // Without the grant the socket cannot tell who is speaking, and an
+          // anonymous Athena is not an acceptable degradation.
+          safeLog("live.grant.failed", {});
+          return new Response("Live conversation is unavailable right now", { status: 502 });
+        }
 
         return Response.json(
-          { clientSecret: body.value, expiresAt: body.expires_at ?? null },
+          { conversationToken: minted.token, conversationId: minted.conversationId },
           { headers: { "Cache-Control": "no-store" } },
         );
       },
