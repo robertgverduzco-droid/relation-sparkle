@@ -70,8 +70,12 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         // ElevenLabs dials this socket itself. The member is resolved from the
         // grant recorded when the browser minted its conversation token, and
         // the header/query form stays available for direct integrations.
-        let token = memberToken(request, url);
+        // A direct integration may present its own member token on the
+        // upgrade; a call opened from the app does not, and is re-resolved
+        // from the grant on every single turn instead.
+        const headerToken = memberToken(request, url);
         let conversationId = "";
+
 
         const pair = new WebSocketPair();
         const client = pair[0];
