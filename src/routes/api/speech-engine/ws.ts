@@ -70,8 +70,12 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         // ElevenLabs dials this socket itself. The member is resolved from the
         // grant recorded when the browser minted its conversation token, and
         // the header/query form stays available for direct integrations.
-        let token = memberToken(request, url);
+        // A direct integration may present its own member token on the
+        // upgrade; a call opened from the app does not, and is re-resolved
+        // from the grant on every single turn instead.
+        const headerToken = memberToken(request, url);
         let conversationId = "";
+
 
         const pair = new WebSocketPair();
         const client = pair[0];
@@ -90,13 +94,21 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           }
         };
 
-        const resolveToken = async (): Promise<string | null> => {
-          if (token) return token;
-          if (!conversationId) return null;
-          const { resolveLiveGrant } = await import("@/lib/live-voice.server");
-          const grant = await resolveLiveGrant(conversationId);
-          token = grant?.accessToken ?? null;
-          return token;
+        /**
+         * Silence is Athena's to choose, never a failure's to impose. When a
+         * turn cannot be answered she says one plain line and the member knows
+         * something went wrong, instead of talking into a dead channel.
+         */
+        const speakFallback = (eventId: number, reason: string) => {
+          console.error(`[speech-engine] turn=${eventId} unanswerable: ${reason}`);
+          send(
+            agentResponseFrame(
+              eventId,
+              "Something on my end just dropped out. Give me a second and say that again.",
+              false,
+            ),
+          );
+          send(agentResponseFrame(eventId, "", true));
         };
 
         const respond = async (turn: ReturnType<typeof parseUserTranscript>) => {
@@ -115,11 +127,32 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             );
           at("respond-start");
 
-          const memberAuth = await resolveToken();
-          at("grant-resolved", `found=${memberAuth ? "yes" : "no"}`);
-          if (!memberAuth) {
-            console.error("[speech-engine] no member grant for this conversation");
-            send(agentResponseFrame(turn.eventId, "", true));
+          // Resolved fresh for every turn. Caching a member token for the
+          // length of a call is exactly what silenced her: once it aged out,
+          // every remaining turn failed identically and invisibly.
+          const { resolveTurnCredential } = await import("@/lib/live-voice.server");
+          const credential = headerToken
+            ? ({ ok: true, userId: "", accessToken: headerToken, renewed: false } as const)
+            : await resolveTurnCredential(conversationId);
+          at(
+            "credential-resolved",
+            credential.ok
+              ? `ok renewed=${credential.renewed}`
+              : `failed reason=${credential.reason}`,
+          );
+          if (!credential.ok) {
+            speakFallback(turn.eventId, `credential ${credential.reason}`);
+            return;
+          }
+
+          const { signInternalToken, INTERNAL_AUTH_HEADER } = await import(
+            "@/lib/internal-auth.server"
+          );
+          const internalToken = credential.userId
+            ? await signInternalToken({ userId: credential.userId, conversationId })
+            : null;
+          if (credential.userId && !internalToken) {
+            speakFallback(turn.eventId, "internal signing secret is not configured");
             return;
           }
 
@@ -135,15 +168,21 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
               signal: controller.signal,
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${memberAuth}`,
+                Authorization: `Bearer ${credential.accessToken}`,
+                ...(internalToken ? { [INTERNAL_AUTH_HEADER]: internalToken } : {}),
               },
               body: JSON.stringify({ model: "athena", stream: true, messages }),
             });
             at("llm-headers", `status=${response.status}`);
 
             if (!response.ok || !response.body) {
-              console.error(`[speech-engine] conversation call failed: ${response.status}`);
-              send(agentResponseFrame(turn.eventId, "", true));
+              // The body names the actual cause; swallowing it is what made a
+              // repeating 401 indistinguishable from Athena thinking.
+              const detail = await response.text().catch(() => "");
+              speakFallback(
+                turn.eventId,
+                `conversation call failed ${response.status} ${detail.slice(0, 300)}`,
+              );
               return;
             }
 
@@ -192,17 +231,22 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
               await reader.cancel().catch(() => {});
               return;
             }
-            if (!spoken) send(agentResponseFrame(turn.eventId, "", false));
+            if (!spoken) {
+              // A 200 that produced no words is still a failed turn.
+              speakFallback(turn.eventId, "conversation returned an empty reply");
+              return;
+            }
             send(agentResponseFrame(turn.eventId, "", true));
             at("final-frame-sent", `spoken=${spoken}`);
           } catch (error) {
             if ((error as { name?: string })?.name === "AbortError") return;
             console.error("[speech-engine] turn failed", error);
-            send(agentResponseFrame(turn.eventId, "", true));
+            speakFallback(turn.eventId, `threw ${String(error).slice(0, 300)}`);
           } finally {
             if (inFlight === controller) inFlight = null;
           }
         };
+
 
         console.log("[speech-engine] upgrade accepted");
 

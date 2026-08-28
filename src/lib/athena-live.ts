@@ -78,11 +78,25 @@ export class AthenaLiveSession {
     if (this.closed) return this.cleanup();
 
     try {
+      // A long call outlives the access token it started with. The renewal
+      // credential is handed over once, at the door, so the server can keep
+      // the conversation authenticated without the browser being asked again
+      // mid-sentence.
+      let refreshToken: string | null = null;
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase.auth.getSession();
+        refreshToken = data.session?.refresh_token ?? null;
+      } catch {
+        /* a call without renewal is still better than no call */
+      }
+
       const res = await fetch("/api/realtime-session", {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ refreshToken }),
       });
+
       if (!res.ok) {
         this.failLive(classifySessionStatus(res.status), `session endpoint ${res.status}`);
         return;

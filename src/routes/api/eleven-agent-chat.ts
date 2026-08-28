@@ -36,15 +36,46 @@ export const Route = createFileRoute("/api/eleven-agent-chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Two ways in. A direct integration presents a member bearer token.
+        // Our own speech socket additionally presents a server-signed
+        // internal token: that is the trusted signal that the call is ours,
+        // and it is what a rejection is reported against, so an internal
+        // failure can never look like an anonymous caller wandering in.
+        const { INTERNAL_AUTH_HEADER, verifyInternalToken } = await import(
+          "@/lib/internal-auth.server"
+        );
+        const internal = await verifyInternalToken(request.headers.get(INTERNAL_AUTH_HEADER));
+
         const { verifyApiCaller } = await import("@/lib/api-auth.server");
         const caller = await verifyApiCaller(request);
-        if (!caller) return new Response("Unauthorized", { status: 401 });
+        if (!caller) {
+          console.error(
+            `[agent-chat] rejected 401: bearer=invalid-or-missing internal=${
+              internal.ok ? `ok user=${internal.claims.userId}` : internal.reason
+            }`,
+          );
+          return new Response(
+            JSON.stringify({
+              error: {
+                message: "Unauthorized",
+                reason: internal.ok ? "member-token-rejected" : internal.reason,
+              },
+            }),
+            { status: 401, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        if (internal.ok && internal.claims.userId !== caller.userId) {
+          console.error("[agent-chat] rejected 401: internal token names a different member");
+          return new Response("Unauthorized", { status: 401 });
+        }
 
         const { rateLimit, assertFeatureEnabled } = await import("@/lib/security.server");
         await assertFeatureEnabled("athena_conversation");
         if (!rateLimit(`eleven-agent-chat:${caller.userId}`, 60, 60_000)) {
+          console.warn(`[agent-chat] rejected 429: rate limit for ${caller.userId.slice(0, 8)}`);
           return new Response("Too many requests", { status: 429 });
         }
+
 
         const body = (await request.json().catch(() => ({}))) as ChatCompletionsBody;
         const incoming = Array.isArray(body.messages) ? body.messages : [];
