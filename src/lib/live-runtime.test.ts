@@ -278,8 +278,22 @@ describe("turn handling and continuity", () => {
   it("binds a live call to the member who started it", () => {
     const session = read("src/routes/api/realtime-session.ts");
     expect(session).toContain("recordLiveGrant");
-    expect(read("src/routes/api/speech-engine/ws.ts")).toContain("resolveLiveGrant");
+    expect(read("src/routes/api/speech-engine/ws.ts")).toContain("resolveTurnCredential");
   });
+
+  it("re-authenticates every turn instead of caching one token per call", () => {
+    const ws = read("src/routes/api/speech-engine/ws.ts");
+    // The credential is resolved inside respond(), not once at connect time.
+    expect(ws.slice(ws.indexOf("const respond"))).toContain("resolveTurnCredential");
+    expect(ws).toContain("signInternalToken");
+  });
+
+  it("says something audible instead of an empty frame when a turn fails", () => {
+    const ws = read("src/routes/api/speech-engine/ws.ts");
+    expect(ws).toContain("speakFallback");
+    expect(ws).toContain("unanswerable");
+  });
+
 
   it("keeps text mode and spoken fallback intact", () => {
     const page = read("src/routes/_authenticated/athena.tsx");
