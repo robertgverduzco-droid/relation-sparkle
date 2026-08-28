@@ -5,11 +5,15 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // Cloudflare Workers WebSocket API — present in the workerd runtime but not
 // in the default TS lib types.
+interface CloudflareWebSocket extends WebSocket {
+  accept(): void;
+}
+
 declare const WebSocketPair: {
-  new (): { 0: WebSocket; 1: WebSocket };
+  new (): { 0: CloudflareWebSocket; 1: CloudflareWebSocket };
 };
 
-type WebSocketResponseInit = ResponseInit & { webSocket: WebSocket };
+type WebSocketResponseInit = ResponseInit & { webSocket: CloudflareWebSocket };
 
 export const Route = createFileRoute("/api/ws-echo")({
   server: {
