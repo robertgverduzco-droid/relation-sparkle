@@ -85,6 +85,21 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         // Turn bookkeeping: only the newest event_id is worth generating for.
         let latestEventId = -Infinity;
         let inFlight: AbortController | null = null;
+        // ElevenLabs re-delivers the same user_transcript more than once for a
+        // single utterance. Answering each copy generated two full replies and
+        // two audio streams per turn, which doubled cost and helped tear the
+        // room down. One utterance, one answer: a transcript already answered
+        // verbatim is ignored, while a genuine revision of the same event id
+        // still supersedes it.
+        const answered = new Map<number, string>();
+        const rememberAnswered = (eventId: number, text: string) => {
+          answered.set(eventId, text);
+          if (answered.size > 40) {
+            const oldest = answered.keys().next();
+            if (!oldest.done) answered.delete(oldest.value);
+          }
+        };
+
 
         const send = (frame: unknown) => {
           try {
@@ -287,16 +302,27 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           }
           if (turn.eventId < latestEventId) return;
 
-          // Barge-in: a newer transcript retires whatever is still generating.
-          if (turn.eventId > latestEventId && inFlight) {
+          const priorText = answered.get(turn.eventId);
+          if (priorText === turn.text) {
+            console.log(
+              `[speech-engine][timing] turn=${turn.eventId} stage=duplicate-transcript-ignored at=${new Date().toISOString()} chars=${turn.text.length}`,
+            );
+            return;
+          }
+
+          // Barge-in, or a revision of the same event id: either way whatever
+          // is still generating is retired before the new answer starts.
+          if (inFlight && (turn.eventId > latestEventId || priorText !== undefined)) {
             inFlight.abort();
             inFlight = null;
           }
           latestEventId = turn.eventId;
+          rememberAnswered(turn.eventId, turn.text);
           console.log(
             `[speech-engine][timing] turn=${turn.eventId} stage=transcript-received at=${new Date().toISOString()} chars=${turn.text.length} history=${turn.history.length}`,
           );
           void respond(turn);
+
         });
 
 
