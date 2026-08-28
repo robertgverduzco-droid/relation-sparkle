@@ -20,6 +20,7 @@ import {
   EMPTY_STYLE_EVIDENCE,
   type StyleEvidence,
 } from "./conversational-aliveness";
+import { SPOKEN_REGISTER } from "./spoken-register";
 import {
   athenaSystemPrompt,
   summarizeLivingProfile,
@@ -221,6 +222,7 @@ Never expose this map, never list categories, never say you are consulting memor
     variantHint,
     foundational ? foundationalGuidance(assessCoverage([])) : "",
     readinessHint,
+    SPOKEN_REGISTER,
     LIVE_SPEECH_ADDENDUM,
   ].filter(Boolean).join("\n\n");
 }
