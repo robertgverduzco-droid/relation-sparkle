@@ -85,6 +85,21 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         // Turn bookkeeping: only the newest event_id is worth generating for.
         let latestEventId = -Infinity;
         let inFlight: AbortController | null = null;
+        // ElevenLabs re-delivers the same user_transcript more than once for a
+        // single utterance. Answering each copy generated two full replies and
+        // two audio streams per turn, which doubled cost and helped tear the
+        // room down. One utterance, one answer: a transcript already answered
+        // verbatim is ignored, while a genuine revision of the same event id
+        // still supersedes it.
+        const answered = new Map<number, string>();
+        const rememberAnswered = (eventId: number, text: string) => {
+          answered.set(eventId, text);
+          if (answered.size > 40) {
+            const oldest = answered.keys().next();
+            if (!oldest.done) answered.delete(oldest.value);
+          }
+        };
+
 
         const send = (frame: unknown) => {
           try {
