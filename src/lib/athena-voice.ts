@@ -1,5 +1,5 @@
 /**
- * Athena voice selection (D5) — TEST voice configuration.
+ * Athena voice selection (D5) — single source of truth for voice delivery.
  *
  * The current TEST voice is the ElevenLabs Voice Library voice
  * "Savvy — Warm, Grounded & Natural". This is a test selection, not a frozen
@@ -8,28 +8,45 @@
  * existing gateway voice remains the fallback so the spoken experience never
  * degrades while the selection is being finalised.
  *
+ * D5 v1.1 (Spoken Delivery Register) makes this file authoritative for BOTH
+ * synthesis paths — the one-shot /api/tts route and the registered Speech
+ * Engine used by live conversation. The scripts under scripts/ import these
+ * constants rather than restating them, so the two configurations can no
+ * longer drift and change Athena's character with the transport.
+ *
  * Nothing here changes Athena's written personality, doctrine or prompts.
  */
 
 /** Human-readable name of the current test voice. */
 export const ATHENA_TEST_VOICE_NAME = "Savvy — Warm, Grounded & Natural";
 
+/** The Savvy voice id, shared by both synthesis paths. */
+export const ATHENA_VOICE_ID = "ogwqBH5bbF03DSbNiRNN";
+
 /** Fallback voice on the Lovable AI gateway path (unchanged V1 behaviour). */
 export const ATHENA_GATEWAY_VOICE = "marin";
 
-/** ElevenLabs model used for Athena's measured, conversational delivery. */
+/** Model for one-shot synthesis (welcomes, greetings, read-aloud). */
 export const ELEVENLABS_MODEL = "eleven_multilingual_v2";
 
+/** Model for live conversation: real-time, natural laughter, inflection. */
+export const ELEVENLABS_LIVE_MODEL = "eleven_v3_conversational";
+
+/** Expressive Mode stays on for live: the register is played, not read. */
+export const ELEVENLABS_EXPRESSIVE_MODE = true;
+
 /**
- * D5 delivery direction, shared by both synthesis paths so the character of
- * the voice does not shift with the transport.
+ * D5 v1.1 delivery direction, shared by both synthesis paths so the character
+ * of the voice does not shift with the transport. Lower stability and higher
+ * style than v1.0: v1.0's settings flattened Savvy into a narrator, which is
+ * the wrong delivery for the spoken register.
  */
 export const ATHENA_VOICE_SETTINGS = {
-  stability: 0.6,
-  similarity_boost: 0.75,
-  style: 0.25,
+  stability: 0.45,
+  similarity_boost: 0.8,
+  style: 0.55,
   use_speaker_boost: true,
-  speed: 0.96,
+  speed: 1.0,
 } as const;
 
 export type ElevenLabsVoiceConfig = {
