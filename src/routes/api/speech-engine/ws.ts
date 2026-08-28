@@ -183,17 +183,42 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
           }
         };
 
+        console.log("[speech-engine] upgrade accepted");
+
         server.addEventListener("message", (event: MessageEvent) => {
           const raw = typeof event.data === "string" ? event.data : String(event.data ?? "");
+          let frameType = "";
+          try {
+            frameType = String((JSON.parse(raw) as { type?: unknown }).type ?? "");
+          } catch {
+            /* non-JSON frame */
+          }
+
+          // Keep-alive: ElevenLabs drops the connection without a pong.
+          if (frameType === "ping") {
+            send({ type: "pong" });
+            return;
+          }
+          if (frameType === "close") {
+            console.log("[speech-engine] conversation closed by ElevenLabs");
+            return;
+          }
+          if (frameType === "error") {
+            console.error(`[speech-engine] error frame: ${raw.slice(0, 300)}`);
+            return;
+          }
+
           const init = parseConversationId(raw);
           if (init) {
             conversationId = init;
+            console.log("[speech-engine] init frame received");
             return;
           }
-          const turn = parseUserTranscript(
-            raw,
-          );
-          if (!turn) return;
+          const turn = parseUserTranscript(raw);
+          if (!turn) {
+            if (frameType) console.warn(`[speech-engine] unusable frame: ${frameType}`);
+            return;
+          }
           if (turn.eventId < latestEventId) return;
 
           // Barge-in: a newer transcript retires whatever is still generating.
@@ -202,8 +227,10 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             inFlight = null;
           }
           latestEventId = turn.eventId;
+          console.log(`[speech-engine] turn ${turn.eventId} received`);
           void respond(turn);
         });
+
 
         server.addEventListener("close", () => {
           inFlight?.abort();
