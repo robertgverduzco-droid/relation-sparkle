@@ -189,6 +189,9 @@ describe("session initialization", () => {
         : new Response(null, { status: 204 }),
     );
     await harness().session.start({});
+    // Diagnostics are fire-and-forget and now resolve the current credential
+    // before posting, so let those microtasks drain.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(calls.some((c) => c.includes("/api/live-diagnostic"))).toBe(true);
   });
 
