@@ -49,6 +49,9 @@ function isH3SwallowedErrorBody(body: string): boolean {
 // bundles, Supabase, and the AI gateway only; framing is denied outright so a
 // member's private material cannot be clickjacked out of the PWA.
 function applySecurityHeaders(response: Response, request: Request): Response {
+  // 101 Switching Protocols (WebSocket upgrade) responses carry a `webSocket`
+  // property that is lost if the Response is rebuilt — return them untouched.
+  if (response.status === 101) return response;
   const url = new URL(request.url);
   const supabase = process.env.SUPABASE_URL ?? "https://*.supabase.co";
   const headers = new Headers(response.headers);
