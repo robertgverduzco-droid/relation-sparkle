@@ -89,8 +89,12 @@ export class AthenaLiveSession {
       }
       let conversationToken = "";
       try {
-        ({ conversationToken: conversationToken = "", conversationId: this.conversationId = "" } =
-          (await res.json()) as { conversationToken?: string; conversationId?: string });
+        const body = (await res.json()) as {
+          conversationToken?: string;
+          conversationId?: string;
+        };
+        conversationToken = body.conversationToken ?? "";
+        this.conversationId = body.conversationId ?? "";
       } catch (error) {
         this.failLive("session-failed", `unreadable session response: ${String(error)}`);
         return;
