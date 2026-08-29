@@ -720,6 +720,23 @@ ${transcript}`,
 
     const now = new Date().toISOString();
 
+    // Distillation egress wall: MEMBER_EVIDENCE_SCOPE *asks* the reflection
+    // model to skip product/system/governance talk. This drops it
+    // deterministically if it comes back anyway, so discussion of the app can
+    // never be written into a person's Living Profile as dating evidence.
+    const rejected: string[] = [];
+    object.facets = object.facets.filter((f) => {
+      const bad = isInternalEvidence(f.understanding, f.reasoning, ...(f.evidence ?? []));
+      if (bad) rejected.push(f.key);
+      return !bad;
+    });
+    object.topics = object.topics.filter((t) => {
+      const bad = isInternalEvidence(...(t.observations ?? []), ...(t.openQuestions ?? []));
+      if (bad) rejected.push(t.key);
+      return !bad;
+    });
+    if (rejected.length) safeLog("athena.reflect.rejected_internal", { keys: rejected });
+
     const facetKeys = object.facets.map((f) => f.key);
     const { data: existingFacets } = facetKeys.length
       ? await supabase
