@@ -45,6 +45,8 @@ import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
 import { alreadyFramed, assessTrackCoverage, trackGuidance } from "./intake-tracks";
 import { datingModeGuidance } from "./dating-mode";
 import { MEMBER_EVIDENCE_SCOPE } from "./conversation-scope";
+import { guardMemberOutput, isInternalEvidence } from "./output-guard";
+import { safeLog } from "./security.server";
 import { spokenRegisterBlock } from "./spoken-register";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
 
@@ -473,7 +475,14 @@ Use this memory to:
     });
 
 
-    const reply = text.trim();
+    // Egress wall (src/lib/output-guard.ts). Doctrine asks Athena not to
+    // narrate internals; this checks the bytes she actually produced. It runs
+    // after the model and cannot be prompt-injected.
+    const guarded = guardMemberOutput(text.trim());
+    if (guarded.blocked) {
+      safeLog("athena.output.blocked", { reason: guarded.reason, marker: guarded.marker });
+    }
+    const reply = guarded.text;
     // Pacing lives in ./pacing.ts and is time-anchored. Brevity is a
     // conversational style, never evidence of disengagement, so turn count
     // alone can no longer close a foundational conversation.
@@ -710,6 +719,23 @@ ${transcript}`,
     });
 
     const now = new Date().toISOString();
+
+    // Distillation egress wall: MEMBER_EVIDENCE_SCOPE *asks* the reflection
+    // model to skip product/system/governance talk. This drops it
+    // deterministically if it comes back anyway, so discussion of the app can
+    // never be written into a person's Living Profile as dating evidence.
+    const rejected: string[] = [];
+    object.facets = object.facets.filter((f) => {
+      const bad = isInternalEvidence(f.understanding, f.reasoning, ...(f.evidence ?? []));
+      if (bad) rejected.push(f.key);
+      return !bad;
+    });
+    object.topics = object.topics.filter((t) => {
+      const bad = isInternalEvidence(...(t.observations ?? []), ...(t.openQuestions ?? []));
+      if (bad) rejected.push(t.key);
+      return !bad;
+    });
+    if (rejected.length) safeLog("athena.reflect.rejected_internal", { keys: rejected });
 
     const facetKeys = object.facets.map((f) => f.key);
     const { data: existingFacets } = facetKeys.length
