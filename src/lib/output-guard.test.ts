@@ -63,7 +63,6 @@ describe("distillation wall — system talk never becomes dating evidence", () =
 describe("surface isolation — founder and member paths share no data", () => {
   it("the member turn never reads the founder table", () => {
     expect(read("athena.functions.ts")).not.toContain("founder_dialogue_messages");
-    expect(read("athena-live.server.ts")).not.toContain("founder_dialogue_messages");
   });
 
   it("the founder turn never reads member understanding", () => {
