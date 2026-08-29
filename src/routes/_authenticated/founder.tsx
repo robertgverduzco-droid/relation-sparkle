@@ -247,13 +247,31 @@ function FounderDialogueScreen() {
             className="flex-1 resize-none rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
           />
           <button
+            type="button"
+            onClick={recording ? stopRecording : startRecording}
+            disabled={busy || transcribing}
+            aria-label={recording ? "Stop recording" : "Voice input"}
+            className={`rounded-xl border px-3 py-2 text-sm disabled:opacity-40 ${
+              recording
+                ? "border-destructive bg-destructive/10 text-destructive"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {transcribing ? "…" : recording ? "■" : "🎙"}
+          </button>
+          <button
             type="submit"
-            disabled={busy || draft.trim().length === 0}
+            disabled={busy || recording || transcribing || draft.trim().length === 0}
             className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
           >
             Send
           </button>
         </div>
+        {(recording || transcribing) && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {recording ? "Listening… tap again to stop." : "Transcribing…"}
+          </p>
+        )}
       </form>
     </section>
   );
