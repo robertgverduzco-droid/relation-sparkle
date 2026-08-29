@@ -19,10 +19,9 @@ describe("spoken delivery register (D5 v1.1)", () => {
     expect(SPOKEN_REGISTER).toMatch(/no compatibility scores/i);
   });
 
-  it("is composed on both voice paths", () => {
+  it("is composed on the one voice path that exists", () => {
     expect(read("src/routes/api/eleven-agent-chat.ts")).toContain('channel: "voice"');
     expect(read("src/lib/athena.functions.ts")).toContain("spokenRegisterBlock(data.channel)");
-    expect(read("src/lib/athena-live.server.ts")).toContain("SPOKEN_REGISTER");
   });
 });
 
