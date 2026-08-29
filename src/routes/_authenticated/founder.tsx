@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   getFounderStatus,
   getFounderHistory,
   sendFounderMessage,
 } from "@/lib/founder.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 
 export const Route = createFileRoute("/_authenticated/founder")({
   head: () => ({
@@ -18,6 +21,13 @@ export const Route = createFileRoute("/_authenticated/founder")({
 });
 
 type Turn = { role: "founder" | "athena"; content: string };
+
+/** Bearer token for /api/stt, which authenticates every request. */
+async function authHeader(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 function FounderDialogueScreen() {
   const status = useServerFn(getFounderStatus);
