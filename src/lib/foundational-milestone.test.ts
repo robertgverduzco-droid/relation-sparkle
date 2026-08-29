@@ -284,11 +284,14 @@ describe("L. the legacy rule is narrow", () => {
 });
 
 describe("M. one canonical eligibility rule", () => {
-  it("both the text and voice server paths use it", () => {
-    const live = readFileSync("src/lib/athena-live.server.ts", "utf8");
-    expect(live).toMatch(/isFoundationalSession\(\{/);
-    expect(live).toMatch(/memberAlreadyReady: liveReadiness\.ready/);
-    expect(live).toMatch(/sessionCreatedAt/);
+  it("the single server turn path used by text and voice alike uses it", () => {
+    const turn = readFileSync("src/lib/athena.functions.ts", "utf8");
+    expect(turn).toMatch(/isFoundationalSession\(\{/);
+    expect(turn).toMatch(/memberAlreadyReady: readyNow/);
+    expect(turn).toMatch(/sessionCreatedAt/);
+    // Voice reaches that same path rather than composing its own instructions.
+    const voice = readFileSync("src/routes/api/eleven-agent-chat.ts", "utf8");
+    expect(voice).toMatch(/askAthena/);
   });
 
   it("the sheet has exactly one render trigger, and it consults the rule", () => {
