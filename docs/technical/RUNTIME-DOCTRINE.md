@@ -37,7 +37,7 @@ material to reproduce, on either layer.
 | Surface | Mode | Call site |
 |---|---|---|
 | Live member conversation | `conversation` | `src/lib/athena.functions.ts` — `askAthena` |
-| Live spoken conversation | `voice` | `src/lib/athena-live.server.ts` — `buildLiveInstructions`, plus `src/routes/api/realtime-education.ts` mid-session |
+| Live spoken conversation | `voice` | `src/lib/athena.functions.ts` — `askAthena` via `src/routes/api/eleven-agent-chat.ts`, plus `src/routes/api/realtime-education.ts` mid-session |
 | Conversation reflection (Living Profile refinement) | `reflection` | `src/lib/athena.functions.ts` — `reflectAthena` |
 | Pair compatibility reasoning | `pair` | `src/lib/introductions.server.ts` — `reasonPair` |
 | Post-meeting reflection with a member | `meeting` | `src/lib/connections.server.ts` — `reflectSystemPrompt` |

@@ -51,7 +51,7 @@ This pass replaces that assembly with ONE composer.
 
 | Old | Where | Fate |
 |---|---|---|
-| `turnRuntimeGuidance(signals)` composed at the call site | `athena.functions.ts`, `athena-live.server.ts` | absorbed into `conversationRuntime()` |
+| `turnRuntimeGuidance(signals)` composed at the call site | `athena.functions.ts` | absorbed into `conversationRuntime()` |
 | `alivenessGuidance({permission, isFoundational})` composed separately | both surfaces | absorbed (still the register source of truth) |
 | challenge addendum inside `turnRuntimeGuidance` | `turn-runtime.ts` | superseded by the single event directive |
 | provenance posture appended ad hoc | `athena.functions.ts` | absorbed, ordered last |
@@ -60,7 +60,7 @@ This pass replaces that assembly with ONE composer.
 | interaction style written only at reflection | `athena.functions.ts` | moved to per-turn persistence |
 
 Nothing was appended beneath the old runtime. `athena.functions.ts` and
-`athena-live.server.ts` now inject exactly one behavioural block.
+the voice path now injects exactly one behavioural block.
 
 ### New decision flow
 

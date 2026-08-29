@@ -2,7 +2,7 @@
 // If a future change removes the egress guard or re-opens a cross-surface
 // read, one of these fails.
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { guardMemberOutput, isInternalEvidence, INTERNALS_DEFLECTION, screenMemberOutput } from "./output-guard";
 
@@ -63,7 +63,6 @@ describe("distillation wall — system talk never becomes dating evidence", () =
 describe("surface isolation — founder and member paths share no data", () => {
   it("the member turn never reads the founder table", () => {
     expect(read("athena.functions.ts")).not.toContain("founder_dialogue_messages");
-    expect(read("athena-live.server.ts")).not.toContain("founder_dialogue_messages");
   });
 
   it("the founder turn never reads member understanding", () => {
@@ -91,5 +90,41 @@ describe("cross-member wall — a member turn loads only their own rows", () => 
     // Admin writes are allowed (grants are revoked for authenticated); admin
     // *reads* of conversational context are not.
     expect(askBody).not.toMatch(/supabaseAdmin[\s\S]{0,80}from\("(understanding_facets|topic_map|profiles)"\)[\s\S]{0,120}select/);
+  });
+});
+
+describe("no unguarded voice path exists", () => {
+  const ROOT = join(process.cwd());
+  const files = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.name === "node_modules" || e.name.startsWith(".")
+        ? []
+        : e.isDirectory()
+          ? files(join(dir, e.name))
+          : /\.(ts|tsx)$/.test(e.name)
+            ? [join(dir, e.name)]
+            : [],
+    );
+
+  it("the legacy OpenAI realtime module is gone from the codebase", () => {
+    expect(existsSync(join(ROOT, "src/lib/athena-live.server.ts"))).toBe(false);
+    const offenders = files(join(ROOT, "src")).filter((f) => {
+      if (f.endsWith("output-guard.test.ts")) return false;
+      const src = readFileSync(f, "utf8");
+      return (
+        src.includes("gpt-realtime") ||
+        src.includes("api.openai.com/v1/realtime") ||
+        src.includes("athena-live.server")
+      );
+    });
+    expect(offenders).toEqual([]);
+  });
+
+  it("spoken turns are produced by the guarded server turn path", () => {
+    const voice = readFileSync(join(ROOT, "src/routes/api/eleven-agent-chat.ts"), "utf8");
+    expect(voice).toContain("askAthena");
+    expect(readFileSync(join(ROOT, "src/lib/athena.functions.ts"), "utf8")).toContain(
+      "guardMemberOutput(",
+    );
   });
 });

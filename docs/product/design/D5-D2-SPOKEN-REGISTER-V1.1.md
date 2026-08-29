@@ -83,6 +83,6 @@ the delivery settings above from the same module.
 - `askAthena` accepts `channel: "text" | "voice"`; `/api/eleven-agent-chat`
   sets `"voice"`, so the live path composes the register with the same
   doctrine, memory and runtime as text.
-- `buildLiveInstructions` composes the same block for realtime sessions.
+- The live voice path composes the same block through `askAthena` (`channel: "voice"`); the legacy OpenAI realtime module was removed.
 - `scripts/update-speech-engine.ts` pushes the shared configuration to the
   registered Speech Engine (`bun scripts/update-speech-engine.ts`).
