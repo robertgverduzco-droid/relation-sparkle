@@ -38,7 +38,101 @@ function FounderDialogueScreen() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  // ---- Voice input (mic → text in the draft box; Athena still replies in text) ----
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    recorderRef.current = null;
+  }, []);
+
+  const startRecording = useCallback(async () => {
+    if (recording || transcribing || busy) return;
+    const mic = await acquireMicrophone({ audio: true });
+    if (!mic.ok) {
+      toast(micFailureMessage(mic.reason));
+      return;
+    }
+    try {
+      const stream = mic.stream;
+      streamRef.current = stream;
+      const candidates = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+      ];
+      const mimeType = candidates.find((c) =>
+        typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported?.(c),
+      );
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        const type = recorder.mimeType || mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type });
+        chunksRef.current = [];
+        stopStream();
+        if (blob.size < 1024) {
+          setRecording(false);
+          setTranscribing(false);
+          return;
+        }
+        setTranscribing(true);
+        try {
+          const fd = new FormData();
+          const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
+          fd.append("file", blob, `voice.${ext}`);
+          const res = await fetch("/api/stt", {
+            method: "POST",
+            body: fd,
+            headers: await authHeader(),
+          });
+          if (!res.ok) {
+            toast("I couldn't hear that clearly. Please try again.");
+            return;
+          }
+          const { text } = (await res.json()) as { text?: string };
+          const clean = (text ?? "").trim();
+          if (!clean) {
+            toast("I didn't catch that. Please try again.");
+            return;
+          }
+          setDraft((prev) => (prev ? `${prev.trimEnd()} ${clean}` : clean));
+        } catch {
+          toast("Voice input didn't go through. Please try again.");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorder.start();
+      setRecording(true);
+    } catch {
+      toast(micFailureMessage("init-failed", "Your microphone is fine — recording didn't start. You can try again, or type."));
+      stopStream();
+    }
+  }, [recording, transcribing, busy, stopStream]);
+
+  const stopRecording = useCallback(() => {
+    const rec = recorderRef.current;
+    setRecording(false);
+    if (rec && rec.state !== "inactive") {
+      try { rec.stop(); } catch { /* ignore */ }
+    } else {
+      stopStream();
+    }
+  }, [stopStream]);
+
+  useEffect(() => () => stopStream(), [stopStream]);
 
   useEffect(() => {
     let mounted = true;
