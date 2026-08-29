@@ -45,6 +45,8 @@ import { crisisDirective, crisisNotice, detectCrisis } from "./crisis";
 import { alreadyFramed, assessTrackCoverage, trackGuidance } from "./intake-tracks";
 import { datingModeGuidance } from "./dating-mode";
 import { MEMBER_EVIDENCE_SCOPE } from "./conversation-scope";
+import { guardMemberOutput, isInternalEvidence } from "./output-guard";
+import { safeLog } from "./security.server";
 import { spokenRegisterBlock } from "./spoken-register";
 import { isFoundationalSession, isLegacyCrossedFoundation } from "./foundational-milestone";
 
