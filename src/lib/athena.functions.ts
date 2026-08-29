@@ -473,7 +473,14 @@ Use this memory to:
     });
 
 
-    const reply = text.trim();
+    // Egress wall (src/lib/output-guard.ts). Doctrine asks Athena not to
+    // narrate internals; this checks the bytes she actually produced. It runs
+    // after the model and cannot be prompt-injected.
+    const guarded = guardMemberOutput(text.trim());
+    if (guarded.blocked) {
+      safeLog("athena.output.blocked", { reason: guarded.reason, marker: guarded.marker });
+    }
+    const reply = guarded.text;
     // Pacing lives in ./pacing.ts and is time-anchored. Brevity is a
     // conversational style, never evidence of disengagement, so turn count
     // alone can no longer close a foundational conversation.
