@@ -74,7 +74,7 @@ Spoken mode is deliberately tighter: depth must not turn into speech.
 A realtime session's instructions are fixed when it is minted, so voice is
 served twice:
 
-1. **At session open** — `buildLiveInstructions()` retrieves against whatever
+1. **At session open** — the live turn path retrieves against whatever
    the member has already said today.
 2. **Mid-session** — after each completed member turn, the client posts the
    member's last three turns to `POST /api/realtime-education` and injects the
