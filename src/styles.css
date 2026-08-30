@@ -206,6 +206,17 @@
   background: var(--field);
 }
 
+/* LOCKED LANDING gutter restore: while the Landing is mounted, the document
+ * background returns to its pre-harmonization value so the desktop gutters
+ * outside the 480px shell are byte-identical to the §45 Step 0 baseline.
+ * Static CSS only — no JS, no listeners, no class or style mutation. */
+html:has([data-athena-landing]),
+body:has([data-athena-landing]) {
+  background: oklch(0.155 0.012 268);
+}
+
+
+
 
 /* The environment has one state. An explicit .dark class inherits it so any
  * shadcn primitive expecting the dark scope renders identically. */
