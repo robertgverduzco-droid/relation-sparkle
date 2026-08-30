@@ -62,15 +62,15 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
             key={i}
             className="absolute rounded-full"
             style={{
-              left: `${s.x}%`,
-              top: `${s.y}%`,
-              width: `${s.r * 2}px`,
-              height: `${s.r * 2}px`,
+              left: `${s.x.toFixed(2)}%`,
+              top: `${s.y.toFixed(2)}%`,
+              width: `${(s.r * 2).toFixed(2)}px`,
+              height: `${(s.r * 2).toFixed(2)}px`,
               background: "var(--ink)",
-              opacity: awake ? s.o : 0,
-              boxShadow: `0 0 ${s.r * 5}px color-mix(in oklab, var(--lavender-bright) 60%, transparent)`,
+              opacity: awake ? Number(s.o.toFixed(2)) : 0,
+              boxShadow: `0 0 ${(s.r * 5).toFixed(2)}px color-mix(in oklab, var(--lavender-bright) 60%, transparent)`,
               transition: "opacity 2200ms ease-out",
-              animation: reduced || !awake ? undefined : `athena-star-drift ${s.dur}s ease-in-out ${s.d}s infinite`,
+              animation: reduced || !awake ? undefined : `athena-star-drift ${s.dur.toFixed(2)}s ease-in-out ${s.d.toFixed(2)}s infinite`,
             }}
           />
         ))}
