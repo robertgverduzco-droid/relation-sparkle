@@ -218,8 +218,6 @@ body:has([data-athena-landing]) {
 
 
 
-
-
 /* The environment has one state. An explicit .dark class inherits it so any
  * shadcn primitive expecting the dark scope renders identically. */
 .dark {
