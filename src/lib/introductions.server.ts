@@ -42,6 +42,29 @@ export const MIN_FACETS_EACH = 4;
 // ones have feedback (declined, deferred, or moved into a connection).
 export const MAX_ACTIVE_INTRODUCTIONS = 3;
 
+/**
+ * A presented introduction stays "open" until the member has actually closed
+ * it out. Pending, deferred and accepted all still occupy a slot; only a
+ * decline (or a closed connection) frees one.
+ */
+export const OPEN_INTRODUCTION_RESPONSES = ["pending", "deferred", "accepted"] as const;
+
+/** Pure: how many of this member's presented introductions are still open. */
+export function countActiveIntroductions(
+  presentedPairIds: string[],
+  responses: Array<{ pair_id: string; response: string | null }>,
+): number {
+  const byPair = new Map<string, string>();
+  for (const r of responses) byPair.set(r.pair_id, r.response ?? "pending");
+  const open = new Set<string>(OPEN_INTRODUCTION_RESPONSES);
+  return presentedPairIds.filter((pid) => open.has(byPair.get(pid) ?? "pending")).length;
+}
+
+/** Pure: the three-open-introduction cap, asked as a question. */
+export function capPermitsNewIntroduction(activeCount: number): boolean {
+  return activeCount < MAX_ACTIVE_INTRODUCTIONS;
+}
+
 
 export type FacetRow = {
   facet_key: string;
