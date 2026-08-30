@@ -328,3 +328,80 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- Orb field (member navigation) ------------------------------------- */
+.orb-field {
+  position: fixed;
+  inset: 0;
+  margin: 0 auto;
+  max-width: 480px;
+  overflow: hidden;
+  background: var(--void);
+}
+.orb-field-canvas { position: absolute; inset: 0; display: block; z-index: 1; }
+.orb-field-vignette {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(3, 3, 4, 0.88) 94%);
+}
+.orb-field-labels { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.orb-label {
+  position: absolute;
+  transform: translate(-50%, 0);
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+.orb-label-name {
+  font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 300; color: var(--ink); opacity: 0.72; white-space: nowrap;
+}
+.orb-label-badge {
+  display: block; margin-top: 6px;
+  font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--amber); opacity: 0.9; white-space: nowrap;
+}
+.orb-label-sub {
+  display: block; margin-top: 6px;
+  font-size: 0.5rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--lavender-dim); white-space: nowrap;
+}
+.orb-sys {
+  font-size: 0.58rem; font-weight: 300;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--lavender-dim);
+}
+.orb-field-entering {
+  position: absolute; inset: 0; z-index: 9;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.orb-field-entering[data-show="true"] { opacity: 1; }
+.orb-field-entering .orb-sys { color: var(--ink); opacity: 0.5; }
+
+.orb-field-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 26px 0;
+  padding-top: max(24px, calc(env(safe-area-inset-top) + 14px));
+  transition: opacity 0.5s ease;
+}
+.orb-field[data-blooming="true"] .orb-field-top,
+.orb-field[data-blooming="true"] .orb-field-hint { opacity: 0; }
+.orb-field-top .orb-sys { opacity: 0.6; }
+.orb-field-hint {
+  position: absolute; z-index: 4;
+  bottom: max(34px, calc(env(safe-area-inset-bottom) + 24px));
+  left: 0; right: 0; text-align: center;
+  transition: opacity 0.6s ease;
+}
+.orb-field-hint .orb-sys { opacity: 0.32; }
+
+/* Back control shared by the five member surfaces. */
+.surface-back {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid color-mix(in oklab, var(--lavender) 60%, transparent);
+  background: transparent;
+  color: var(--lavender);
+}

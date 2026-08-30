@@ -27,6 +27,7 @@ import { Route as ApiLiveDiagnosticRouteImport } from './routes/api/live-diagnos
 import { Route as ApiLiveCredentialRouteImport } from './routes/api/live-credential'
 import { Route as ApiElevenAgentChatRouteImport } from './routes/api/eleven-agent-chat'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
+import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedRevealRouteImport } from './routes/_authenticated/reveal'
 import { Route as AuthenticatedQaMatchmakingRouteImport } from './routes/_authenticated/qa-matchmaking'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -142,6 +143,11 @@ const AuthenticatedUnderstandingRoute =
     path: '/understanding',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRevealRoute = AuthenticatedRevealRouteImport.update({
   id: '/reveal',
   path: '/reveal',
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/qa-matchmaking': typeof AuthenticatedQaMatchmakingRoute
   '/reveal': typeof AuthenticatedRevealRoute
+  '/today': typeof AuthenticatedTodayRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-credential': typeof ApiLiveCredentialRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/qa-matchmaking': typeof AuthenticatedQaMatchmakingRoute
   '/reveal': typeof AuthenticatedRevealRoute
+  '/today': typeof AuthenticatedTodayRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-credential': typeof ApiLiveCredentialRoute
@@ -386,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/qa-matchmaking': typeof AuthenticatedQaMatchmakingRoute
   '/_authenticated/reveal': typeof AuthenticatedRevealRoute
+  '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
   '/api/live-credential': typeof ApiLiveCredentialRoute
@@ -431,6 +440,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/qa-matchmaking'
     | '/reveal'
+    | '/today'
     | '/understanding'
     | '/api/eleven-agent-chat'
     | '/api/live-credential'
@@ -474,6 +484,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/qa-matchmaking'
     | '/reveal'
+    | '/today'
     | '/understanding'
     | '/api/eleven-agent-chat'
     | '/api/live-credential'
@@ -518,6 +529,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/qa-matchmaking'
     | '/_authenticated/reveal'
+    | '/_authenticated/today'
     | '/_authenticated/understanding'
     | '/api/eleven-agent-chat'
     | '/api/live-credential'
@@ -687,6 +699,13 @@ declare module '@tanstack/react-router' {
       path: '/understanding'
       fullPath: '/understanding'
       preLoaderRoute: typeof AuthenticatedUnderstandingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/today': {
+      id: '/_authenticated/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof AuthenticatedTodayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reveal': {
@@ -940,6 +959,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedQaMatchmakingRoute: typeof AuthenticatedQaMatchmakingRoute
   AuthenticatedRevealRoute: typeof AuthenticatedRevealRoute
+  AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedUnderstandingRoute: typeof AuthenticatedUnderstandingRoute
 }
 
@@ -960,6 +980,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedQaMatchmakingRoute: AuthenticatedQaMatchmakingRoute,
   AuthenticatedRevealRoute: AuthenticatedRevealRoute,
+  AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedUnderstandingRoute: AuthenticatedUnderstandingRoute,
 }
 

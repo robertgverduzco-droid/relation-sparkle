@@ -58,7 +58,7 @@ describe("A-20 — no hardcoded scrim or theme colour", () => {
 
 describe("A-21 — Living Profile reachable in one step", () => {
   it("Today links directly to the understanding surface", () => {
-    const home = read("src/routes/_authenticated/home.tsx");
+    const home = read("src/routes/_authenticated/today.tsx");
     expect(home).toContain('to="/understanding"');
   });
 });
