@@ -140,8 +140,8 @@
   --secondary-foreground: var(--ink);
 
   --muted: var(--surface);
-  /* AA against the void at small sizes (7.9:1). */
-  --muted-foreground: #a49cb8;
+  /* Approved existing-palette muted treatment: Ink at 0.50 against the void. */
+  --muted-foreground: rgba(244, 240, 251, 0.5);
 
   --accent: var(--surface-raised);
   --accent-foreground: var(--ink);
