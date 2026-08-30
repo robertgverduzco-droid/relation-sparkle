@@ -23,20 +23,23 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
   const reduced = useReducedMotion();
 
   const stars = useMemo<Star[]>(() => {
+    // Values are rounded so server and client markup are byte-identical.
+    const r3 = (n: number) => Math.round(n * 1000) / 1000;
     const out: Star[] = [];
     for (let i = 0; i < 96; i++) {
       const y = Math.pow(seeded(i, 2), 1.6) * 58; // sparse, concentrated high
       out.push({
-        x: seeded(i, 1) * 100,
-        y,
-        r: 0.5 + seeded(i, 3) * 1.15,
-        o: 0.18 + seeded(i, 4) * 0.62,
-        d: seeded(i, 5) * 9,
-        dur: 6 + seeded(i, 6) * 9,
+        x: r3(seeded(i, 1) * 100),
+        y: r3(y),
+        r: r3(0.5 + seeded(i, 3) * 1.15),
+        o: r3(0.18 + seeded(i, 4) * 0.62),
+        d: r3(seeded(i, 5) * 9),
+        dur: r3(6 + seeded(i, 6) * 9),
       });
     }
     return out;
   }, []);
+
 
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
