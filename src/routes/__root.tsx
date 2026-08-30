@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       // Literal sRGB of --field (oklch(0.155 0.012 268)); meta tags cannot read CSS vars.
-      { name: "theme-color", content: "#0a0c11" },
+      { name: "theme-color", content: "#030304" },
 
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },

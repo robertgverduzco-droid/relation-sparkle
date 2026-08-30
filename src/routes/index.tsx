@@ -61,7 +61,10 @@ function Welcome() {
   }, [reduced]);
 
   return (
-    <div className="screen-shell safe-top safe-bottom relative overflow-hidden">
+    <div
+      data-athena-landing
+      className="screen-shell safe-top safe-bottom relative overflow-hidden"
+    >
       <ConnectionField intensity={phase >= 1 ? "attending" : "quiet"} />
 
       <div className="relative flex flex-1 flex-col justify-between px-6 pt-16 pb-8">
