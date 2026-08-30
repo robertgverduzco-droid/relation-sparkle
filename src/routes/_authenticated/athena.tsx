@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
+import { AthenaLivePresence } from "@/components/athena-live-presence";
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
 import { mayOfferFoundationalClose, isFoundationalSession } from "@/lib/foundational-milestone";
@@ -759,6 +760,18 @@ function AthenaPage() {
           }}
         />
       </div>
+
+      {/* Full-screen voice presence — presentation only, over the existing
+          live state. No new mode, no new state machine. */}
+      {live && (
+        <AthenaLivePresence
+          status={liveStatus as "connecting" | "listening" | "speaking"}
+          caption={livePartial || undefined}
+          onEnd={endLive}
+        />
+      )}
+
+
 
       <header className="relative px-6 pt-7 pb-4">
         <div className="flex items-center justify-between">

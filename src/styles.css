@@ -172,14 +172,48 @@
   --sidebar-ring: var(--ring);
 }
 
-/* ---- Arrival / Landing ------------------------------------------------
- * The arrival composition now uses the approved Athena token family
- * directly and occupies the full browser canvas, so no legacy colour pin
- * and no gutter override remain. */
+/* ---- LOCKED LANDING / ARRIVAL (§3, §50 authority 1) --------------------
+ * The arrival experience is immutable. It keeps the exact colour values it
+ * rendered with before this harmonization pass, so the harmonized token
+ * family cannot produce any visual diff on it. Nothing here is new styling —
+ * these are the pre-pass values, pinned. */
 [data-athena-landing] {
-  background: var(--void);
+  --field: oklch(0.155 0.012 268);
+  --surface: oklch(0.213 0.009 275);
+  --surface-raised: oklch(0.252 0.009 280);
+  --warm-surface: oklch(0.262 0.014 62);
+  --paper: var(--field);
+  --background: var(--field);
+  --ink: oklch(0.949 0.013 85);
+  --foreground: var(--ink);
+  --ink-soft: oklch(0.795 0.011 78);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --athena: oklch(0.665 0.055 322);
+  --relational: oklch(0.7 0.045 310);
+  --premium: oklch(0.735 0.062 85);
+  --primary: var(--athena);
+  --primary-foreground: oklch(0.16 0.012 268);
+  --secondary: var(--surface-raised);
+  --muted: var(--surface);
+  --muted-foreground: oklch(0.715 0.01 72);
+  --accent: var(--surface-raised);
+  --accent-foreground: var(--ink);
+  --border: oklch(1 0 0 / 0.09);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.7 0.06 322);
+  background: var(--field);
 }
 
+/* LOCKED LANDING gutter restore: while the Landing is mounted, the document
+ * background returns to its pre-harmonization value so the desktop gutters
+ * outside the 480px shell are byte-identical to the §45 Step 0 baseline.
+ * Static CSS only — no JS, no listeners, no class or style mutation. */
+html:has([data-athena-landing]),
+body:has([data-athena-landing]) {
+  background: oklch(0.155 0.012 268);
+}
 
 
 
