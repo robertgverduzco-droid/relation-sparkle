@@ -169,14 +169,22 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
         <g transform={`translate(0, ${RANGE_SHIFT})`}>
           <path fill="url(#rangeFar)" d={RANGE_FAR} opacity="0.85" />
           <path fill="url(#rangeMid)" d={RANGE_MID} />
+          {/* Inner flanks, drawn closer to the corridor so the valley reads
+              on a narrow canvas as clearly as on a wide one. */}
+          <g transform={`translate(${W / 2}, 560) scale(0.56, 1.18) translate(${-W / 2}, -560)`}>
+            <path fill="url(#rangeMid)" d={RANGE_FAR} opacity="0.85" />
+          </g>
           <path fill="url(#rangeNear)" d={RANGE_NEAR} />
+          <g transform={`translate(${W / 2}, 560) scale(0.68, 1.1) translate(${-W / 2}, -560)`}>
+            <path fill="url(#rangeNear)" d={RANGE_MID} opacity="0.95" />
+          </g>
         </g>
 
         {/* --- Water ---------------------------------------------------- */}
         <rect x="0" y={HORIZON} width={W} height={H - HORIZON} fill="url(#water)" />
 
         {/* Mirrored ranges, softened into the lake */}
-        <g mask="url(#reflectionMask)" opacity="0.38">
+        <g mask="url(#reflectionMask)" opacity="0.32">
           <g transform={`translate(0, ${HORIZON * 2}) scale(1, -1)`}>
             <g transform={`translate(0, ${RANGE_SHIFT})`}>
               <path fill="url(#rangeNear)" d={RANGE_NEAR} />
@@ -184,8 +192,15 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
           </g>
         </g>
 
-        {/* Waterline */}
-        <rect x="120" y={HORIZON - 1.5} width={W - 240} height="3" fill="#ffdcb0" opacity="0.45" />
+        {/* Waterline — brightest at the corridor, dissolving to either side */}
+        <rect
+          x={W / 2 - 520}
+          y={HORIZON - 1.5}
+          width="1040"
+          height="3"
+          fill="url(#waterlineFade)"
+          opacity="0.55"
+        />
 
         {/* Luminous central path — widening as it approaches the member */}
         <path
@@ -206,13 +221,14 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
           {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => {
             const t = (i + 1) / 10;
             const y = HORIZON + t * t * (H - HORIZON);
-            const w = 90 + t * 460;
+            const w = 70 + t * 300;
             return (
               <line
                 key={i}
                 x1={W / 2 - w / 2}
                 x2={W / 2 + w / 2}
                 y1={y}
+
                 y2={y}
                 strokeWidth={1.2 + t * 1.6}
                 opacity={0.3 - t * 0.22}
