@@ -35,7 +35,8 @@ it, and how it is handled. Classes are defined in `src/lib/security.server.ts`
 | `member_readiness` | 4 | own (state only) | never | reasoning is service-role |
 | `athena_self_evaluations` | 4 | admin only | never | Athena's self-measurement |
 | `athena_usage_log` | 4 | own | never | usage metering |
-| `pair_reasoning` | 5 | column-limited (presentation only) | never | `reasoning`, `alignments`, `complementary`, `frictions`, `hard_conflicts` unreadable by members at the database layer |
+| `pair_reasoning` | 5 | column-limited (presentation only) | never | `reasoning`, `alignments`, `complementary`, `frictions`, `hard_conflicts`, `status`, `confidence` unreadable by members at the database layer |
+| `member_relational_signals` | 5 | none | never | service-role only; RESTRICTIVE deny-all policy for members |
 | `pair_reasoning_history` | 5 | none | never | service-role only |
 | `post_meeting_reflections` | 5 | author only | never | strictly private |
 | `reflection_submissions` | 5 | author only | never | append-only |
