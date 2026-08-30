@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { listMyIntroductions } from "@/lib/introductions.functions";
-import { listConversations } from "@/lib/messaging.functions";
 import { getMyUnderstanding } from "@/lib/understanding.functions";
 import { OrbField, type OrbId, type OrbSpec } from "@/components/orb-field";
 
@@ -42,11 +41,9 @@ const count = (n: number) => (n < WORDS.length ? WORDS[n] : String(n));
 function Field() {
   const navigate = useNavigate();
   const listIntroductions = useServerFn(listMyIntroductions);
-  const listConvs = useServerFn(listConversations);
   const loadUnderstanding = useServerFn(getMyUnderstanding);
   const [loading, setLoading] = useState(true);
   const [waiting, setWaiting] = useState(0);
-  const [threads, setThreads] = useState(0);
   const [held, setHeld] = useState(0);
 
   useEffect(() => {
@@ -78,14 +75,12 @@ function Field() {
       );
       setLoading(false);
 
-      const [convs, understanding] = await Promise.all([
-        listConvs().catch(() => ({ conversations: [] as unknown[] })),
-        loadUnderstanding().catch(() => ({ facets: [] as unknown[] })),
-      ]);
-      setThreads(convs?.conversations?.length ?? 0);
+      const understanding = await loadUnderstanding().catch(() => ({
+        facets: [] as unknown[],
+      }));
       setHeld(understanding?.facets?.length ?? 0);
     })();
-  }, [navigate, listIntroductions, listConvs, loadUnderstanding]);
+  }, [navigate, listIntroductions, loadUnderstanding]);
 
   if (loading)
     return (
@@ -103,12 +98,9 @@ function Field() {
       warm: waiting > 0 ? 1 : 0,
       badge: waiting > 0 ? `${count(waiting)} waiting` : null,
     },
-    {
-      id: "messages",
-      name: "Messages",
-      warm: 0,
-      sub: threads > 0 ? `${count(threads)} open` : null,
-    },
+    // No status line: we have no unread signal, and any count we do have
+    // would read as "people waiting on you", which is a different fact.
+    { id: "messages", name: "Messages", warm: 0 },
     { id: "you", name: "You", warm: 0, sub: held > 0 ? `${count(held)} held` : null },
   ];
 
