@@ -760,6 +760,18 @@ function AthenaPage() {
         />
       </div>
 
+      {/* Full-screen voice presence — presentation only, over the existing
+          live state. No new mode, no new state machine. */}
+      {live && (
+        <AthenaLivePresence
+          status={liveStatus as "connecting" | "listening" | "speaking"}
+          caption={livePartial || undefined}
+          onEnd={endLive}
+        />
+      )}
+
+
+
       <header className="relative px-6 pt-7 pb-4">
         <div className="flex items-center justify-between">
           <button
