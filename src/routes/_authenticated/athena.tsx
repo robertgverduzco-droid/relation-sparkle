@@ -1220,7 +1220,7 @@ function Bubble({ role, content }: { role: "user" | "assistant"; content: string
     <div className={`flex fade-in-slow ${isUser ? "justify-end" : "justify-start"}`}>
       {isUser ? (
         <div
-          className="max-w-[84%] rounded-[1.25rem] rounded-br-md px-4.5 py-3 text-[15px] leading-relaxed text-foreground"
+          className="max-w-[84%] rounded-[1.25rem] rounded-br-md px-5 py-3 text-[15px] leading-relaxed text-foreground"
           style={{
             background: "color-mix(in oklab, var(--lavender) 14%, transparent)",
             border: "1px solid var(--border-strong)",
@@ -1263,7 +1263,7 @@ function TypingBubble({ label }: { label: string }) {
 function Dot({ delay }: { delay: string }) {
   return (
     <span
-      className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground"
+      className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--lavender)]"
       style={{ animationDelay: delay }}
     />
   );
