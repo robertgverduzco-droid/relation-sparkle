@@ -1218,23 +1218,34 @@ function Bubble({ role, content }: { role: "user" | "assistant"; content: string
   const isUser = role === "user";
   return (
     <div className={`flex fade-in-slow ${isUser ? "justify-end" : "justify-start"}`}>
-      <div
-        className={
-          isUser
-            ? "max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-4 py-3 text-[15px] leading-relaxed text-primary-foreground"
-            : "max-w-[90%] text-[15px] leading-relaxed text-foreground"
-        }
-      >
-        {isUser ? (
+      {isUser ? (
+        <div
+          className="max-w-[84%] rounded-[1.25rem] rounded-br-md px-4.5 py-3 text-[15px] leading-relaxed text-foreground"
+          style={{
+            background: "color-mix(in oklab, var(--lavender) 14%, transparent)",
+            border: "1px solid var(--border-strong)",
+          }}
+        >
           <p className="whitespace-pre-wrap">{content}</p>
-        ) : (
-          <div className="prose prose-sm max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:font-display">
+        </div>
+      ) : (
+        <div className="relative max-w-[92%] pl-4">
+          <span
+            aria-hidden
+            className="absolute inset-y-1 left-0 w-px"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent, color-mix(in oklab, var(--lavender) 55%, transparent), transparent)",
+            }}
+          />
+          <div className="prose prose-sm max-w-none text-[16.5px] leading-[1.75] text-ink-soft prose-p:my-3 prose-p:leading-[1.75] prose-strong:text-foreground prose-headings:font-display prose-headings:text-foreground">
             <ReactMarkdown>{content}</ReactMarkdown>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
+
 }
 
 function TypingBubble({ label }: { label: string }) {
