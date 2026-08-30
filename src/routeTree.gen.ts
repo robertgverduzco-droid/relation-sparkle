@@ -28,6 +28,7 @@ import { Route as ApiLiveCredentialRouteImport } from './routes/api/live-credent
 import { Route as ApiElevenAgentChatRouteImport } from './routes/api/eleven-agent-chat'
 import { Route as AuthenticatedUnderstandingRouteImport } from './routes/_authenticated/understanding'
 import { Route as AuthenticatedRevealRouteImport } from './routes/_authenticated/reveal'
+import { Route as AuthenticatedQaMatchmakingRouteImport } from './routes/_authenticated/qa-matchmaking'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -146,6 +147,12 @@ const AuthenticatedRevealRoute = AuthenticatedRevealRouteImport.update({
   path: '/reveal',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedQaMatchmakingRoute =
+  AuthenticatedQaMatchmakingRouteImport.update({
+    id: '/qa-matchmaking',
+    path: '/qa-matchmaking',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -289,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/qa-matchmaking': typeof AuthenticatedQaMatchmakingRoute
   '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
@@ -331,6 +339,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/qa-matchmaking': typeof AuthenticatedQaMatchmakingRoute
   '/reveal': typeof AuthenticatedRevealRoute
   '/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
@@ -375,6 +384,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/qa-matchmaking': typeof AuthenticatedQaMatchmakingRoute
   '/_authenticated/reveal': typeof AuthenticatedRevealRoute
   '/_authenticated/understanding': typeof AuthenticatedUnderstandingRoute
   '/api/eleven-agent-chat': typeof ApiElevenAgentChatRoute
@@ -419,6 +429,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/qa-matchmaking'
     | '/reveal'
     | '/understanding'
     | '/api/eleven-agent-chat'
@@ -461,6 +472,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/qa-matchmaking'
     | '/reveal'
     | '/understanding'
     | '/api/eleven-agent-chat'
@@ -504,6 +516,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/qa-matchmaking'
     | '/_authenticated/reveal'
     | '/_authenticated/understanding'
     | '/api/eleven-agent-chat'
@@ -681,6 +694,13 @@ declare module '@tanstack/react-router' {
       path: '/reveal'
       fullPath: '/reveal'
       preLoaderRoute: typeof AuthenticatedRevealRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/qa-matchmaking': {
+      id: '/_authenticated/qa-matchmaking'
+      path: '/qa-matchmaking'
+      fullPath: '/qa-matchmaking'
+      preLoaderRoute: typeof AuthenticatedQaMatchmakingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -918,6 +938,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
+  AuthenticatedQaMatchmakingRoute: typeof AuthenticatedQaMatchmakingRoute
   AuthenticatedRevealRoute: typeof AuthenticatedRevealRoute
   AuthenticatedUnderstandingRoute: typeof AuthenticatedUnderstandingRoute
 }
@@ -937,6 +958,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
+  AuthenticatedQaMatchmakingRoute: AuthenticatedQaMatchmakingRoute,
   AuthenticatedRevealRoute: AuthenticatedRevealRoute,
   AuthenticatedUnderstandingRoute: AuthenticatedUnderstandingRoute,
 }
