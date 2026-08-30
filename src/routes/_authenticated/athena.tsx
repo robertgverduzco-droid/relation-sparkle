@@ -740,24 +740,51 @@ function AthenaPage() {
 
 
   return (
-    <div className="screen-shell safe-top pb-24" data-testid="athena-screen">
-      <header className="px-6 pt-6 pb-3 border-b border-border/60">
+    <div className="screen-shell safe-top relative pb-24" data-testid="athena-screen">
+      {/* Environment — the void with quiet dimensional depth. */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[var(--void)]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(110% 55% at 50% -6%, color-mix(in oklab, var(--lavender) 12%, transparent) 0%, transparent 60%)",
+          }}
+        />
+        <div
+          className="absolute inset-x-0 bottom-0 h-[38%]"
+          style={{
+            background:
+              "radial-gradient(70% 100% at 50% 130%, color-mix(in oklab, var(--amber) 7%, transparent) 0%, transparent 72%)",
+          }}
+        />
+      </div>
+
+      <header className="relative px-6 pt-7 pb-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate({ to: "/home" })}
-            className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
+            className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground transition-colors hover:text-foreground"
           >
             ← Home
           </button>
-          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Athena</span>
+          <span className="font-display text-[15px] tracking-[0.34em] text-foreground">ATHENA</span>
           <button
             onClick={() => setSettingsOpen(true)}
-            className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
+            className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground transition-colors hover:text-foreground"
             title="Voice settings"
           >
             {voiceMode === "voice" ? "Voice" : "Text"}
           </button>
         </div>
+        <span
+          aria-hidden
+          className="absolute inset-x-6 bottom-0 block h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, color-mix(in oklab, var(--lavender) 34%, transparent), transparent)",
+          }}
+        />
       </header>
 
       <div
@@ -765,8 +792,10 @@ function AthenaPage() {
         data-testid="athena-transcript"
         data-hydrated={hydrated ? "true" : "false"}
         data-conversation-state={runtimeState}
-        className="flex-1 overflow-y-auto px-5 py-6 space-y-4"
+        className="relative flex-1 overflow-y-auto px-6 py-8"
       >
+        <div className="mx-auto w-full max-w-[36rem] space-y-6">
+
         {!hydrated ? (
           <p className="text-center text-sm text-muted-foreground fade-in-slow">
             Athena is preparing to meet you…
