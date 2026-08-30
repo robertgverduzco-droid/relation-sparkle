@@ -173,7 +173,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
 
         {/* --- Ranges: the valley opens at the centre ------------------- */}
         <g
-          transform={`translate(0, ${RANGE_SHIFT}) translate(0, 560) scale(1, 1.55) translate(0, -560)`}
+          transform={`translate(0, ${RANGE_SHIFT}) translate(0, 560) scale(1, 1.22) translate(0, -560)`}
         >
           <path fill="url(#rangeFar)" d={RANGE_FAR} opacity="0.85" />
           <path fill="url(#rangeMid)" d={RANGE_MID} />
