@@ -900,7 +900,7 @@ function AthenaPage() {
           e.preventDefault();
           void send();
         }}
-        className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
+        className="safe-bottom relative border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] px-5 pt-4 pb-4 backdrop-blur-xl"
       >
         {!askingPreference && hydrated && !introducing && (
           <div className="mb-2 flex justify-center">
@@ -909,14 +909,14 @@ function AthenaPage() {
               data-testid="athena-live-toggle"
               onClick={() => (live ? endLive() : void startLive())}
               disabled={busy || recording || transcribing}
-              className="tap-target rounded-full border border-border px-4 text-xs uppercase tracking-[0.2em] text-muted-foreground transition disabled:opacity-40 hover:text-foreground"
+              className="tap-target rounded-full border border-border-strong px-5 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground disabled:opacity-40"
             >
               {live ? "End live conversation" : "Speak with Athena"}
             </button>
           </div>
         )}
         <div
-          className="flex items-end gap-2 rounded-3xl border border-input bg-card px-2 py-2 transition-opacity"
+          className="flex items-end gap-2 rounded-[1.5rem] border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-2.5 py-2 transition-opacity"
           style={{ opacity: (inputDisabled && !recording) || live ? 0.5 : 1 }}
         >
 
@@ -955,7 +955,7 @@ function AthenaPage() {
             type="submit"
             data-testid="athena-send"
             disabled={!input.trim() || inputDisabled}
-            className="rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition disabled:opacity-40"
+            className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium tracking-wide text-primary-foreground transition disabled:opacity-40"
           >
             Send
           </button>
