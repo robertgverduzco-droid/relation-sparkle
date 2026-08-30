@@ -76,44 +76,64 @@
   /* Restrained radius — approachable, never bubbly. */
   --radius: 0.625rem;
 
-  /* Deep field: near-black midnight charcoal, never pure black. */
-  --field: oklch(0.155 0.012 268);
-  --surface: oklch(0.213 0.009 275);
-  --surface-raised: oklch(0.252 0.009 280);
-  /* Warm interior — used sparingly where humanity increases. */
-  --warm-surface: oklch(0.262 0.014 62);
+  /* ---- Approved Athena token family (Harmonization v1.1 §4) ------------ */
+  --void: #030304;
+  --lavender: #a897d4;
+  --lavender-bright: #cdc0ef;
+  --lavender-dim: #4d4468;
+  --amber: #ffb87a;
+  --amber-bright: #ffdcb0;
+  --error-color: #d98a8a;
+  --focus: #cdc0ef;
+  --scrim: rgba(3, 3, 4, 0.72);
 
-  --scrim: oklch(0.09 0.01 268);
+  /* Disciplined spacing scale (§7). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Deep field: Athena's environmental void. Depth, not dark mode. */
+  --field: var(--void);
+  --surface: #0c0b11;
+  --surface-raised: #14121b;
+  /* Warm interior — used sparingly where humanity increases. */
+  --warm-surface: #171119;
 
   --paper: var(--field);
 
   --background: var(--field);
 
-  /* Warm off-white, never sterile. */
-  --ink: oklch(0.949 0.013 85);
+  /* Primary readable foreground — warm off-white, never pure white. */
+  --ink: #f4f0fb;
   --foreground: var(--ink);
-  --ink-soft: oklch(0.795 0.011 78);
+  --ink-soft: #cdc7db;
 
   --card: var(--surface);
   --card-foreground: var(--ink);
   --popover: var(--surface-raised);
   --popover-foreground: var(--ink);
 
-  /* Athena / relational accent — mature plum-lavender, never bright purple. */
-  --athena: oklch(0.665 0.055 322);
-  --relational: oklch(0.7 0.045 310);
-  /* Rare premium accent — muted champagne. */
-  --premium: oklch(0.735 0.062 85);
+  /* Athena's intelligence. */
+  --athena: var(--lavender);
+  --relational: var(--lavender-bright);
+  /* Human warmth — rarer than lavender by design. */
+  --premium: var(--amber);
 
-  --primary: var(--athena);
-  --primary-foreground: oklch(0.16 0.012 268);
+  --primary: var(--lavender);
+  --primary-foreground: var(--void);
 
   --secondary: var(--surface-raised);
   --secondary-foreground: var(--ink);
 
   --muted: var(--surface);
-  /* AA on the deep field at small sizes. */
-  --muted-foreground: oklch(0.715 0.01 72);
+  /* AA against the void at small sizes (7.9:1). */
+  --muted-foreground: #a49cb8;
 
   --accent: var(--surface-raised);
   --accent-foreground: var(--ink);
@@ -121,15 +141,18 @@
   /* Functional states stay semantically honest — never brand-coloured. */
   --success: oklch(0.74 0.1 158);
   --warning: oklch(0.79 0.1 82);
-  --error: oklch(0.68 0.14 26);
+  --error: var(--error-color);
   --info: oklch(0.75 0.07 235);
-  --destructive-foreground: oklch(0.16 0.012 268);
-  --disabled: oklch(0.45 0.008 275);
+  --destructive-foreground: var(--void);
+  --disabled: #565064;
 
-  --border: oklch(1 0 0 / 0.09);
-  --border-strong: oklch(1 0 0 / 0.16);
-  --input: oklch(1 0 0 / 0.14);
-  --ring: oklch(0.7 0.06 322);
+  /* Hairline family (§7). */
+  --border: rgba(168, 151, 212, 0.1);
+  --border-strong: rgba(168, 151, 212, 0.18);
+  /* Functional control boundaries must clear 3:1 (§41). */
+  --border-control: rgba(168, 151, 212, 0.6);
+  --input: rgba(168, 151, 212, 0.6);
+  --ring: var(--focus);
 
   --sidebar: var(--field);
   --sidebar-foreground: var(--ink);
@@ -140,6 +163,41 @@
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }
+
+/* ---- LOCKED LANDING / ARRIVAL (§3, §50 authority 1) --------------------
+ * The arrival experience is immutable. It keeps the exact colour values it
+ * rendered with before this harmonization pass, so the harmonized token
+ * family cannot produce any visual diff on it. Nothing here is new styling —
+ * these are the pre-pass values, pinned. */
+[data-athena-landing] {
+  --field: oklch(0.155 0.012 268);
+  --surface: oklch(0.213 0.009 275);
+  --surface-raised: oklch(0.252 0.009 280);
+  --warm-surface: oklch(0.262 0.014 62);
+  --paper: var(--field);
+  --background: var(--field);
+  --ink: oklch(0.949 0.013 85);
+  --foreground: var(--ink);
+  --ink-soft: oklch(0.795 0.011 78);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --athena: oklch(0.665 0.055 322);
+  --relational: oklch(0.7 0.045 310);
+  --premium: oklch(0.735 0.062 85);
+  --primary: var(--athena);
+  --primary-foreground: oklch(0.16 0.012 268);
+  --secondary: var(--surface-raised);
+  --muted: var(--surface);
+  --muted-foreground: oklch(0.715 0.01 72);
+  --accent: var(--surface-raised);
+  --accent-foreground: var(--ink);
+  --border: oklch(1 0 0 / 0.09);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.7 0.06 322);
+  background: var(--field);
+}
+
 
 /* The environment has one state. An explicit .dark class inherits it so any
  * shadcn primitive expecting the dark scope renders identically. */
