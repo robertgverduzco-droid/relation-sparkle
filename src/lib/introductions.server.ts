@@ -468,14 +468,15 @@ export async function runMatchmakingForUser(
       .select("pair_id, response")
       .eq("user_id", userId)
       .in("pair_id", presentedPairIds);
-    const respByPair = new Map<string, string>();
-    for (const r of myResp ?? []) respByPair.set(r.pair_id as string, r.response as string);
-    activeCount = presentedPairIds.filter((pid) => {
-      const r = respByPair.get(pid) ?? "pending";
-      return r === "pending" || r === "deferred" || r === "accepted";
-    }).length;
+    activeCount = countActiveIntroductions(
+      presentedPairIds,
+      ((myResp ?? []) as Array<{ pair_id: string; response: string }>).map((r) => ({
+        pair_id: r.pair_id,
+        response: r.response,
+      })),
+    );
   }
-  if (activeCount >= MAX_ACTIVE_INTRODUCTIONS) {
+  if (!capPermitsNewIntroduction(activeCount)) {
     return { ok: true, considered: 0, reason: "active_cap_reached", active: activeCount };
   }
 
