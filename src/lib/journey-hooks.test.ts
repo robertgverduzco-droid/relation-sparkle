@@ -50,6 +50,13 @@ const SPINE: Array<[string, string[]]> = [
     [
       "introductions-screen",
       "introduction-card",
+      "introduction-detail-link",
+    ],
+  ],
+  [
+    "src/routes/_authenticated/introductions.$id.tsx",
+    [
+      "introduction-detail",
       "introduction-accept",
       "introduction-defer",
       "introduction-decline",
