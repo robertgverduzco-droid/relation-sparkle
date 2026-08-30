@@ -12,7 +12,7 @@ const read = (p: string) => readFileSync(new URL(`../../${p}`, import.meta.url),
 
 const SPINE: Array<[string, string[]]> = [
   [
-    "src/routes/_authenticated/home.tsx",
+    "src/routes/_authenticated/today.tsx",
     ["today-screen", "today-link-athena", "today-link-living-profile", "today-link-understanding"],
   ],
   [

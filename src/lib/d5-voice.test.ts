@@ -87,7 +87,7 @@ describe("returning member", () => {
     ]) {
       expect(read(f)).not.toContain("ReturnGreeting");
     }
-    expect(read("src/routes/_authenticated/home.tsx")).toContain("ReturnGreeting");
+    expect(read("src/routes/_authenticated/today.tsx")).toContain("ReturnGreeting");
   });
 });
 
@@ -153,7 +153,7 @@ describe("visual restraint", () => {
   });
 
   it("reuses the existing presence states rather than new AI visual language", () => {
-    expect(read("src/routes/_authenticated/home.tsx")).toContain(
+    expect(read("src/routes/_authenticated/today.tsx")).toContain(
       'athenaSpeaking ? "speaking" : "quiet"',
     );
   });
