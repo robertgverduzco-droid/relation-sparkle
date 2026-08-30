@@ -83,7 +83,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
             "radial-gradient(58% 100% at 50% 62%, color-mix(in oklab, var(--amber) 26%, transparent) 0%, color-mix(in oklab, var(--amber) 8%, transparent) 38%, transparent 72%)",
           opacity: awake ? 1 : 0,
           transition: "opacity 2600ms ease-out",
-          animation: reduced ? undefined : "athena-horizon-shimmer 14s ease-in-out infinite",
+          animation: reduced || !awake ? undefined : "athena-horizon-shimmer 14s ease-in-out infinite",
         }}
       />
 
@@ -147,7 +147,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
           filter: "blur(6px)",
           opacity: awake ? 0.9 : 0,
           transition: "opacity 3000ms ease-out",
-          animation: reduced ? undefined : "athena-horizon-shimmer 16s ease-in-out infinite",
+          animation: reduced || !awake ? undefined : "athena-horizon-shimmer 16s ease-in-out infinite",
         }}
       />
 
