@@ -76,107 +76,177 @@ function Home() {
   const displayName = profile?.display_name ?? null;
 
   return (
-    <div className="screen-shell safe-top pb-28 fade-in-quick" data-testid="today-screen">
-      <header className="px-6 pt-8">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-          <p className="type-section">Today</p>
-          <Link
-            to="/notifications"
-            aria-label="Notifications"
-            className="tap-target -mr-2 justify-end text-muted-foreground"
-          >
-            <Bell className="h-5 w-5 shrink-0" strokeWidth={1.5} />
-          </Link>
-        </div>
-        <ReturnGreeting displayName={displayName} onSpeakingChange={setAthenaSpeaking} />
-        <div className="mt-4">
-          <AthenaPresence state={athenaSpeaking ? "speaking" : "quiet"} />
-        </div>
-      </header>
-
-      <div className="mt-8 space-y-8">
-        <section className="px-6">
-          <EndingChoiceCard />
-          <ReadinessCard />
-        </section>
-
-        {/* Post-foundational: Athena's own Looking state. It renders only when
-            she is genuinely eligible and empty-handed; otherwise readiness and
-            hold copy above already own the surface. */}
-        {!hasIntroduction && <LookingState />}
-
-        <section className="space-y-1 px-6">
-          <Continuation
-            title={hasStartedAthena ? "Continue with Athena" : "Meet Athena"}
-            body={
-              hasStartedAthena
-                ? "She remembers where you left off, and she is in no hurry."
-                : "There is nothing to fill out — just a conversation, at your pace."
-            }
-            to="/athena"
-            action={hasStartedAthena ? "Continue" : "Begin"}
-            testId="today-link-athena"
-          />
-          <Continuation
-            title="Your Living Profile"
-            body="What Athena is coming to understand. Correct anything that doesn't sound like you."
-            to="/profile"
-            action="Open"
-            testId="today-link-living-profile"
-          />
-          {/* A-21: the understanding surface is reachable in one step, not two. */}
-          <Continuation
-            title="What Athena understands"
-            body="Her working picture of you, in her own words — and how it changed."
-            to="/understanding"
-            action="Read"
-            testId="today-link-understanding"
-          />
-          {/* §5 — the reveal. Reachable once Athena can stand behind it; the
-              screen itself says so plainly when she can't yet. */}
-          <Continuation
-            title="What Athena understands about you"
-            body="Her read of who you are — including one or two things you may not have said out loud."
-            to="/reveal"
-            action="Read"
-            testId="today-link-reveal"
-          />
-
-
-
-        </section>
+    <div
+      className="relative min-h-[100dvh] w-full overflow-x-hidden fade-in-quick"
+      data-testid="today-screen"
+    >
+      {/* Environment — a quiet dimensional field, never a flat dark theme. */}
+      <div aria-hidden className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-[var(--void)]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(120% 60% at 50% -8%, color-mix(in oklab, var(--lavender) 11%, transparent) 0%, transparent 62%)",
+          }}
+        />
+        <div
+          className="absolute inset-x-0 bottom-0 h-[42%]"
+          style={{
+            background:
+              "radial-gradient(80% 100% at 50% 120%, color-mix(in oklab, var(--amber) 8%, transparent) 0%, transparent 70%)",
+          }}
+        />
       </div>
 
-      <MobileTabBar current="home" />
+      <div className="screen-shell safe-top relative z-10 pb-32">
+        <header className="px-7 pt-10">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+            <p className="type-section">Today</p>
+            <Link
+              to="/notifications"
+              aria-label="Notifications"
+              className="tap-target -mr-2 justify-end text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Bell className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+            </Link>
+          </div>
+
+          <div className="mt-8">
+            <ReturnGreeting displayName={displayName} onSpeakingChange={setAthenaSpeaking} />
+          </div>
+
+          <div className="mt-7 flex items-center gap-3">
+            <span
+              aria-hidden
+              className="h-px flex-1"
+              style={{
+                background:
+                  "linear-gradient(90deg, color-mix(in oklab, var(--lavender) 42%, transparent), transparent)",
+              }}
+            />
+            <AthenaPresence state={athenaSpeaking ? "speaking" : "quiet"} />
+          </div>
+        </header>
+
+        <div className="mt-10 space-y-10">
+          <section className="space-y-5 px-7">
+            <EndingChoiceCard />
+            <ReadinessCard />
+          </section>
+
+          {/* Post-foundational: Athena's own Looking state. It renders only when
+              she is genuinely eligible and empty-handed; otherwise readiness and
+              hold copy above already own the surface. */}
+          {!hasIntroduction && <LookingState />}
+
+          <section className="px-7">
+            <p className="type-section">Your journey</p>
+            <div className="mt-5 space-y-5">
+              <Continuation
+                index="01"
+                title={hasStartedAthena ? "Continue with Athena" : "Meet Athena"}
+                body={
+                  hasStartedAthena
+                    ? "She remembers where you left off, and she is in no hurry."
+                    : "There is nothing to fill out — just a conversation, at your pace."
+                }
+                to="/athena"
+                action={hasStartedAthena ? "Continue" : "Begin"}
+                testId="today-link-athena"
+                tone="warm"
+              />
+              <Continuation
+                index="02"
+                title="Your Living Profile"
+                body="What Athena is coming to understand. Correct anything that doesn't sound like you."
+                to="/profile"
+                action="Open"
+                testId="today-link-living-profile"
+              />
+              {/* A-21: the understanding surface is reachable in one step, not two. */}
+              <Continuation
+                index="03"
+                title="What Athena understands"
+                body="Her working picture of you, in her own words — and how it changed."
+                to="/understanding"
+                action="Read"
+                testId="today-link-understanding"
+              />
+              {/* §5 — the reveal. Reachable once Athena can stand behind it; the
+                  screen itself says so plainly when she can't yet. */}
+              <Continuation
+                index="04"
+                title="What Athena understands about you"
+                body="Her read of who you are — including one or two things you may not have said out loud."
+                to="/reveal"
+                action="Read"
+                testId="today-link-reveal"
+              />
+            </div>
+          </section>
+        </div>
+
+        <MobileTabBar current="home" />
+      </div>
     </div>
   );
 }
 
-/** Space, alignment and typography before card + border + shadow (§11). */
+/** An elegant journey section — space, rhythm and light before borders. */
 function Continuation({
+  index,
   title,
   body,
   to,
   action,
   testId,
+  tone = "cool",
 }: {
+  index?: string;
   title: string;
   body: string;
   to: "/profile" | "/introductions" | "/athena" | "/understanding" | "/reveal";
   action: string;
   /** A-28: stable semantic hook for the authenticated journey walkthrough. */
   testId?: string;
+  tone?: "cool" | "warm";
 }) {
+  const accent = tone === "warm" ? "var(--amber)" : "var(--lavender)";
   return (
     <Link
       to={to}
       data-testid={testId}
-      className="hairline block py-5 transition-colors first:border-t-0 hover:bg-surface/40"
+      className="group relative block overflow-hidden rounded-[1.5rem] px-6 py-7 transition-colors"
+      style={{
+        background:
+          "linear-gradient(150deg, color-mix(in oklab, var(--lavender) 5%, transparent) 0%, transparent 62%)",
+        border: "1px solid var(--border)",
+      }}
     >
-      <h3 className="font-display text-[1.375rem] leading-snug text-foreground">{title}</h3>
-      <p className="type-body mt-1.5 text-ink-soft">{body}</p>
-      <span className="mt-3 inline-block text-sm text-primary">{action} →</span>
+      <span
+        aria-hidden
+        className="absolute inset-y-6 left-0 w-px"
+        style={{
+          background: `linear-gradient(180deg, transparent, color-mix(in oklab, ${accent} 60%, transparent), transparent)`,
+        }}
+      />
+      {index && (
+        <span className="block text-[10px] tracking-[0.34em] text-muted-foreground">{index}</span>
+      )}
+      <h3 className="mt-3 font-display text-[1.5rem] leading-snug text-foreground">{title}</h3>
+      <p className="type-body mt-2 max-w-[30rem] text-ink-soft">{body}</p>
+      <span
+        className="mt-5 inline-flex items-center gap-2 text-[13px] uppercase tracking-[0.2em]"
+        style={{ color: accent }}
+      >
+        {action}
+        <span aria-hidden className="transition-transform group-hover:translate-x-1">
+          →
+        </span>
+      </span>
     </Link>
   );
 }
+
 
