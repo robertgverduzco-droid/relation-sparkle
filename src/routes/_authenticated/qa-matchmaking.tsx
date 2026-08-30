@@ -76,14 +76,14 @@ function QaMatchmakingScreen() {
   }, [run, mode, seed]);
 
   if (state === "checking") {
-    return <main className="p-8 text-sm text-muted-foreground">Checking…</main>;
+    return <div className="p-8 text-sm text-muted-foreground">Checking…</div>;
   }
   if (state === "denied") {
-    return <main className="p-8 text-sm text-muted-foreground">Not found.</main>;
+    return <div className="p-8 text-sm text-muted-foreground">Not found.</div>;
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 py-10" data-testid="qa-matchmaking">
+    <div className="mx-auto w-full max-w-3xl px-5 py-10" data-testid="qa-matchmaking">
       <h1 className="text-2xl font-light tracking-tight text-foreground">Synthetic matchmaking QA</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         Scripted fictional people, run through the same discovery, constraint, reasoning and cap
@@ -201,6 +201,6 @@ function QaMatchmakingScreen() {
           </details>
         </section>
       ) : null}
-    </main>
+    </div>
   );
 }
