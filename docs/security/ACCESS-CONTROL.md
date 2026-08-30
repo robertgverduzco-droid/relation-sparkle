@@ -26,7 +26,10 @@ Two tables are deliberately harder:
 
 - `pair_reasoning` — members hold column-level `SELECT` on presentation columns
   only, and only once the pair has been presented to them. Athena's private
-  reasoning columns are unreadable at the database layer.
+  reasoning columns — including `status` and `confidence` — are unreadable at
+  the database layer.
+- `member_relational_signals` — no member or anon privileges at all, plus a
+  RESTRICTIVE deny-all policy for `authenticated`; service-role only.
 - `pair_reasoning_history` — `USING (false)` for members; service-role only.
 
 ## Administrative access
