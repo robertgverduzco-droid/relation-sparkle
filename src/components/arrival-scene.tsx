@@ -188,6 +188,17 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
           </g>
         </g>
 
+        {/* Valley haze — atmosphere gathering at the foot of the ranges */}
+        <ellipse
+          cx={W / 2}
+          cy={HORIZON}
+          rx="900"
+          ry="150"
+          fill="url(#sunset)"
+          opacity="0.55"
+        />
+
+
         {/* --- Water ---------------------------------------------------- */}
         <rect x="0" y={HORIZON} width={W} height={H - HORIZON} fill="url(#water)" />
 
