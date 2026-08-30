@@ -98,10 +98,12 @@ function Today() {
         />
       </div>
 
+      <FieldBack />
+
       <div className="screen-shell safe-top relative z-10 pb-32">
         <header className="px-7 pt-10">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-            <p className="type-section">Today</p>
+            <p className="type-section pl-12">Today</p>
             <Link
               to="/notifications"
               aria-label="Notifications"
