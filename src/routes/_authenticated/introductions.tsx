@@ -6,7 +6,6 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import {
   considerIntroductions,
   listMyIntroductions,
-  respondToIntroduction,
 } from "@/lib/introductions.functions";
 
 export const Route = createFileRoute("/_authenticated/introductions")({
