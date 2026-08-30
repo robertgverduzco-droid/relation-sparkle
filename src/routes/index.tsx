@@ -65,7 +65,7 @@ function Welcome() {
     >
       <ArrivalScene awake={phase >= 1} />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-1 flex-col items-center justify-center px-6 py-16 text-center sm:px-10">
+      <section className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-1 flex-col items-center justify-center px-6 py-16 text-center sm:px-10">
         <p
           className="text-[0.6875rem] uppercase tracking-[0.5em] text-[color-mix(in_oklab,var(--amber-bright)_78%,transparent)] transition-opacity duration-[1400ms]"
           style={{ opacity: phase >= 1 ? 1 : 0 }}
@@ -130,7 +130,7 @@ function Welcome() {
             Already a member? Sign In
           </Link>
         </footer>
-      </main>
+      </section>
     </div>
   );
 }
