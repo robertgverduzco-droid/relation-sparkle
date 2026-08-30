@@ -39,13 +39,30 @@ export function ReadinessCard() {
         : "Not yet — and that's alright";
 
   return (
-    <article className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-      <span
-        className={`inline-block h-2 w-2 rounded-full ${r.considering ? "bg-primary" : "bg-muted-foreground/50"}`}
-        aria-hidden
-      />
-      <h3 className="mt-3 font-display text-xl text-foreground">{label}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{r.message}</p>
+    <article
+      className="relative overflow-hidden rounded-[1.5rem] px-6 py-7"
+      style={{
+        background:
+          "linear-gradient(150deg, color-mix(in oklab, var(--lavender) 7%, transparent) 0%, transparent 66%)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="inline-block h-1.5 w-1.5 rounded-full"
+          style={{
+            background: r.considering ? "var(--lavender-bright)" : "var(--lavender-dim)",
+            boxShadow: r.considering
+              ? "0 0 14px color-mix(in oklab, var(--lavender) 70%, transparent)"
+              : undefined,
+          }}
+        />
+        <span className="type-section">From Athena</span>
+      </div>
+      <h3 className="mt-4 font-display text-[1.375rem] leading-snug text-foreground">{label}</h3>
+      <p className="mt-3 max-w-[30rem] text-[15px] leading-relaxed text-ink-soft">{r.message}</p>
     </article>
   );
 }
+
