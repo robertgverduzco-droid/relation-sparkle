@@ -57,18 +57,10 @@ export function AthenaPresence({
         }}
       />
       {showLabel && (
-        <span
-          className="type-caption"
-          role="status"
-          aria-live="polite"
-          /* §12 — the informational state label must clear 4.5:1 against the
-           * void. Approved accessibility deviation from the prototype. */
-          style={{ color: "var(--lavender)", opacity: 1 }}
-        >
+        <span className="type-caption" role="status" aria-live="polite">
           {LABEL[state]}
         </span>
       )}
-
       {!showLabel && <span className="sr-only" role="status" aria-live="polite">{LABEL[state]}</span>}
       <style>{`@keyframes athena-breathe {
         0%, 100% { transform: scale(1); opacity: 0.78; }
