@@ -181,6 +181,7 @@ function IntroductionDetailPage() {
         <div className="fixed inset-x-0 bottom-16 z-30 mx-auto max-w-[480px] border-t border-border/70 bg-background/90 px-6 py-3 backdrop-blur">
           <div className="flex gap-2">
             <button
+              data-testid="introduction-accept"
               onClick={() => react("accepted")}
               disabled={busy}
               className="min-h-11 flex-1 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-60"
@@ -188,6 +189,7 @@ function IntroductionDetailPage() {
               Yes, I'm open
             </button>
             <button
+              data-testid="introduction-defer"
               onClick={() => react("deferred")}
               disabled={busy}
               className="min-h-11 rounded-full border border-border px-4 py-3 text-sm text-foreground disabled:opacity-60"
@@ -195,6 +197,7 @@ function IntroductionDetailPage() {
               Not now
             </button>
             <button
+              data-testid="introduction-decline"
               onClick={() => react("declined")}
               disabled={busy}
               className="min-h-11 rounded-full border border-border px-4 py-3 text-sm text-muted-foreground disabled:opacity-60"
