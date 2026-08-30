@@ -823,14 +823,14 @@ function AthenaPage() {
                 <div className="flex flex-col gap-2 w-full max-w-sm">
                   <button
                     onClick={() => void choosePreference("voice")}
-                    className="rounded-2xl border border-input bg-card px-4 py-3 text-left text-[15px] hover:bg-accent transition"
+                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
                   >
                     Continue with voice & text
                     <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
                   </button>
                   <button
                     onClick={() => void choosePreference("text")}
-                    className="rounded-2xl border border-input bg-card px-4 py-3 text-left text-[15px] hover:bg-accent transition"
+                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
                   >
                     Continue with text only
                     <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
@@ -851,7 +851,7 @@ function AthenaPage() {
           <div
             data-testid="athena-live-panel"
             data-live-status={liveStatus}
-            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_7%,transparent)] px-4 py-2.5 backdrop-blur-md"
           >
             <p className="text-xs text-ink-soft">
               {liveStatus === "connecting"
@@ -864,7 +864,7 @@ function AthenaPage() {
               type="button"
               data-testid="athena-live-end"
               onClick={endLive}
-              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+              className="tap-target shrink-0 rounded-full border border-border-strong px-3.5 text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-surface"
             >
               End
             </button>
@@ -878,7 +878,7 @@ function AthenaPage() {
         {speaking && (
           <div
             data-testid="athena-speaking"
-            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_7%,transparent)] px-4 py-2.5 backdrop-blur-md"
           >
             <p className="text-xs text-ink-soft">
               Athena is speaking. Her words appear above as she says them.
@@ -887,7 +887,7 @@ function AthenaPage() {
               type="button"
               data-testid="athena-stop-speaking"
               onClick={stopSpeaking}
-              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+              className="tap-target shrink-0 rounded-full border border-border-strong px-3.5 text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-surface"
             >
               Stop
             </button>
