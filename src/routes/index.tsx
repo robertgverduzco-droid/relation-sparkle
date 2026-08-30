@@ -65,72 +65,95 @@ function Welcome() {
     >
       <ArrivalScene awake={phase >= 1} />
 
-      <section className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-1 flex-col items-center justify-center px-6 py-16 text-center sm:px-10">
-        <p
-          className="text-[0.6875rem] uppercase tracking-[0.5em] text-[color-mix(in_oklab,var(--amber-bright)_78%,transparent)] transition-opacity duration-[1400ms]"
-          style={{ opacity: phase >= 1 ? 1 : 0 }}
+      <section className="relative z-10 mx-auto flex w-full max-w-[560px] flex-1 flex-col items-center justify-center px-6 py-16 text-center sm:px-10">
+        {/* Monogram — a quiet star mark above the wordmark. */}
+        <svg
+          aria-hidden
+          viewBox="0 0 64 64"
+          className="h-11 w-11 transition-all duration-[1400ms]"
+          style={{
+            opacity: phase >= 1 ? 1 : 0,
+            transform: phase >= 1 ? "none" : "translateY(8px)",
+            filter: "drop-shadow(0 0 18px color-mix(in oklab, var(--lavender) 55%, transparent))",
+          }}
         >
-          Relationship Intelligence
-        </p>
+          <path
+            d="M32 4 L35.4 26.2 L60 32 L35.4 37.8 L32 60 L28.6 37.8 L4 32 L28.6 26.2 Z"
+            fill="color-mix(in oklab, var(--amber-bright) 82%, transparent)"
+            opacity="0.55"
+          />
+          <path
+            d="M22 44 L32 18 L42 44 M26.4 36 L37.6 36"
+            fill="none"
+            stroke="var(--ink)"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
 
         <h1
-          className="mt-8 font-display leading-[0.92] text-foreground transition-all duration-[1600ms]"
+          className="mt-6 font-display leading-none text-foreground transition-all duration-[1600ms]"
           style={{
-            fontSize: "clamp(3.75rem, 13vw, 9rem)",
-            letterSpacing: "0.06em",
+            fontSize: "clamp(2.5rem, 9vw, 4.25rem)",
+            letterSpacing: "0.28em",
+            textIndent: "0.28em",
+            color: "color-mix(in oklab, var(--amber-bright) 42%, var(--ink))",
             opacity: phase >= 1 ? 1 : 0,
-            transform: phase >= 1 ? "none" : "translateY(14px)",
+            transform: phase >= 1 ? "none" : "translateY(12px)",
             textShadow:
-              "0 0 60px color-mix(in oklab, var(--amber) 26%, transparent), 0 0 140px color-mix(in oklab, var(--lavender) 20%, transparent)",
+              "0 0 44px color-mix(in oklab, var(--amber) 24%, transparent), 0 0 120px color-mix(in oklab, var(--lavender) 26%, transparent)",
           }}
         >
           ATHENA
         </h1>
 
         <div
-          className="mt-8 flex flex-col items-center gap-4 transition-opacity duration-[1600ms]"
+          className="mt-6 flex flex-col items-center gap-3 transition-opacity duration-[1600ms]"
           style={{ opacity: phase >= 2 ? 1 : 0 }}
         >
           <span
-            className="block h-px w-24"
+            className="block h-px w-16"
             style={{
               background:
-                "linear-gradient(90deg, transparent, color-mix(in oklab, var(--amber-bright) 70%, transparent), transparent)",
+                "linear-gradient(90deg, transparent, color-mix(in oklab, var(--amber-bright) 60%, transparent), transparent)",
             }}
             aria-hidden
           />
-          <p className="font-display text-[clamp(1.25rem,3.2vw,1.875rem)] leading-snug text-foreground">
+          <p className="font-display text-[clamp(1.0625rem,4.2vw,1.375rem)] leading-snug tracking-[0.02em] text-foreground">
             The Next Evolution of Matchmaking
           </p>
-          <p className="max-w-[34rem] text-[15px] leading-relaxed text-ink-soft sm:text-[16px]">
+          <p className="max-w-[24rem] text-[14px] leading-relaxed text-ink-soft">
             Relationship intelligence that sees the whole you.
           </p>
         </div>
 
         <footer
-          className="mt-14 flex w-full max-w-[26rem] flex-col items-stretch gap-3 transition-opacity duration-[1200ms]"
+          className="mt-12 flex w-full max-w-[21rem] flex-col items-center gap-5 transition-opacity duration-[1200ms]"
           style={{ opacity: phase >= 3 ? 1 : 0, pointerEvents: phase >= 3 ? "auto" : "none" }}
         >
           <Link
             to="/auth"
             search={{ mode: "signup" } as never}
-            className="group relative flex min-h-[56px] items-center justify-center overflow-hidden rounded-full px-8 text-[15px] font-medium tracking-wide text-[var(--void)] transition active:scale-[0.99]"
+            className="group relative flex min-h-[54px] w-full items-center justify-center overflow-hidden rounded-full px-8 text-[15px] font-medium tracking-[0.04em] text-[var(--ink)] transition active:scale-[0.99]"
             style={{
               background:
-                "linear-gradient(135deg, var(--amber-bright) 0%, var(--amber) 44%, var(--lavender) 100%)",
-              boxShadow: "0 18px 60px -22px color-mix(in oklab, var(--amber) 70%, transparent)",
+                "linear-gradient(180deg, color-mix(in oklab, var(--lavender) 92%, white) 0%, var(--lavender) 46%, color-mix(in oklab, var(--lavender) 72%, var(--void)) 100%)",
+              boxShadow:
+                "0 20px 60px -20px color-mix(in oklab, var(--lavender) 80%, transparent), 0 0 0 1px color-mix(in oklab, var(--lavender-bright) 40%, transparent) inset",
             }}
           >
             Begin Your Journey
           </Link>
           <Link
             to="/auth"
-            className="flex min-h-[52px] items-center justify-center rounded-full border border-border-strong px-8 text-[14px] text-ink-soft transition hover:border-[color-mix(in_oklab,var(--lavender)_55%,transparent)] hover:text-foreground active:scale-[0.99]"
+            className="text-[13px] tracking-[0.03em] text-ink-soft underline-offset-4 transition hover:text-foreground hover:underline"
           >
             Already a member? Sign In
           </Link>
         </footer>
       </section>
+
     </div>
   );
 }
