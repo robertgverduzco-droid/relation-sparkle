@@ -47,11 +47,13 @@ describe("A-20 — no hardcoded scrim or theme colour", () => {
   it("defines the scrim token in the design system", () => {
     const css = read("src/styles.css");
     expect(css).toContain("--color-scrim: var(--scrim)");
-    expect(css).toMatch(/--scrim:\s*oklch/);
+    // Harmonization v1.1 §35 — the scrim is the void, held at 72%.
+    expect(css).toMatch(/--scrim:\s*rgba\(3,\s*3,\s*4,\s*0\.72\)/);
   });
   it("theme-color matches the field colour", () => {
-    expect(read("src/routes/__root.tsx")).toContain('"theme-color", content: "#0a0c11"');
+    expect(read("src/routes/__root.tsx")).toContain('"theme-color", content: "#030304"');
   });
+
 });
 
 describe("A-21 — Living Profile reachable in one step", () => {
