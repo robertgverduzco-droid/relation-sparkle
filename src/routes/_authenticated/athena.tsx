@@ -841,7 +841,9 @@ function AthenaPage() {
             )}
           </>
         )}
+        </div>
       </div>
+
 
       {/* Live conversation state, stated in words rather than motion alone. */}
       <div aria-live="polite" className="px-5">
