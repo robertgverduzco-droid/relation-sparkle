@@ -56,6 +56,14 @@
   --color-premium: var(--premium);
   --color-plum: var(--athena);
   --color-ember: var(--premium);
+  --color-void: var(--void);
+  --color-lavender: var(--lavender);
+  --color-lavender-bright: var(--lavender-bright);
+  --color-lavender-dim: var(--lavender-dim);
+  --color-amber: var(--amber);
+  --color-amber-bright: var(--amber-bright);
+  --color-focus: var(--focus);
+
 
   /* Functional */
   --color-success: var(--success);
