@@ -80,7 +80,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
       <div
         className="absolute inset-x-0"
         style={{
-          top: "38%",
+          top: "42%",
           height: "40%",
           background:
             "radial-gradient(58% 100% at 50% 62%, color-mix(in oklab, var(--amber) 26%, transparent) 0%, color-mix(in oklab, var(--amber) 8%, transparent) 38%, transparent 72%)",
@@ -93,7 +93,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
       {/* Distant ranges */}
       <svg
         className="absolute inset-x-0"
-        style={{ top: "42%", height: "26%", width: "100%" }}
+        style={{ top: "50%", height: "24%", width: "100%" }}
         viewBox="0 0 1440 260"
         preserveAspectRatio="none"
       >
@@ -109,11 +109,11 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
         </defs>
         <path
           fill="url(#ridge-far)"
-          d="M0,196 L118,150 L214,178 L326,116 L438,166 L556,104 L668,158 L790,120 L906,170 L1026,132 L1150,178 L1268,140 L1380,182 L1440,158 L1440,260 L0,260 Z"
+          d="M0,214 C120,190 200,168 300,176 C410,185 470,146 580,150 C700,155 760,186 880,178 C990,171 1060,150 1180,158 C1290,165 1360,190 1440,182 L1440,260 L0,260 Z"
         />
         <path
           fill="url(#ridge-near)"
-          d="M0,226 L142,192 L268,216 L392,176 L520,214 L648,182 L784,220 L918,188 L1052,222 L1188,190 L1320,224 L1440,200 L1440,260 L0,260 Z"
+          d="M0,236 C150,222 240,206 360,210 C480,214 560,196 680,198 C800,200 870,220 990,216 C1110,212 1200,198 1320,204 C1380,207 1410,214 1440,218 L1440,260 L0,260 Z"
         />
       </svg>
 
@@ -121,7 +121,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
       <div
         className="absolute inset-x-0"
         style={{
-          top: "67.4%",
+          top: "73.4%",
           height: "1px",
           background:
             "linear-gradient(90deg, transparent 0%, color-mix(in oklab, var(--amber-bright) 55%, transparent) 32%, color-mix(in oklab, var(--amber-bright) 85%, transparent) 50%, color-mix(in oklab, var(--amber-bright) 55%, transparent) 68%, transparent 100%)",
@@ -134,7 +134,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
       <div
         className="absolute inset-x-0 bottom-0"
         style={{
-          top: "67.5%",
+          top: "73.5%",
           background:
             "linear-gradient(180deg, color-mix(in oklab, var(--lavender-dim) 26%, var(--void)) 0%, var(--void) 62%)",
         }}
@@ -143,7 +143,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2"
         style={{
-          top: "67.5%",
+          top: "73.5%",
           width: "min(78vw, 780px)",
           background:
             "radial-gradient(50% 74% at 50% 0%, color-mix(in oklab, var(--amber) 30%, transparent) 0%, color-mix(in oklab, var(--amber) 8%, transparent) 40%, transparent 74%)",
