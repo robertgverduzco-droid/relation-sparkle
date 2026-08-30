@@ -67,7 +67,7 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
               opacity: awake ? s.o : 0,
               boxShadow: `0 0 ${s.r * 5}px color-mix(in oklab, var(--lavender-bright) 60%, transparent)`,
               transition: "opacity 2200ms ease-out",
-              animation: reduced ? undefined : `athena-star-drift ${s.dur}s ease-in-out ${s.d}s infinite`,
+              animation: reduced || !awake ? undefined : `athena-star-drift ${s.dur}s ease-in-out ${s.d}s infinite`,
             }}
           />
         ))}
