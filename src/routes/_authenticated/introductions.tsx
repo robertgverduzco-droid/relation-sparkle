@@ -6,7 +6,6 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import {
   considerIntroductions,
   listMyIntroductions,
-  respondToIntroduction,
 } from "@/lib/introductions.functions";
 
 export const Route = createFileRoute("/_authenticated/introductions")({
@@ -33,7 +32,6 @@ type Intro = {
 function IntroductionsPage() {
   const list = useServerFn(listMyIntroductions);
   const consider = useServerFn(considerIntroductions);
-  const respond = useServerFn(respondToIntroduction);
   const [items, setItems] = useState<Intro[] | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -60,15 +58,6 @@ function IntroductionsPage() {
       toast.error(e instanceof Error ? e.message : "Athena couldn't reflect right now.");
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function react(pair_id: string, response: "accepted" | "declined" | "deferred") {
-    try {
-      await respond({ data: { pair_id, response } });
-      await refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't record that.");
     }
   }
 
@@ -139,39 +128,14 @@ function IntroductionsPage() {
               >
                 Why Athena sees potential here →
               </Link>
-              <div className="mt-5 flex gap-2">
-                {it.response === "pending" || it.response === "deferred" ? (
-                  <>
-                    <button
-                      data-testid="introduction-accept"
-                      onClick={() => react(it.id, "accepted")}
-                      className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
-                    >
-                      Yes, I'm open
-                    </button>
-                    <button
-                      data-testid="introduction-defer"
-                      onClick={() => react(it.id, "deferred")}
-                      className="rounded-full border border-border px-4 py-2.5 text-sm text-foreground"
-                    >
-                      Not now
-                    </button>
-                    <button
-                      data-testid="introduction-decline"
-                      onClick={() => react(it.id, "declined")}
-                      className="rounded-full border border-border px-4 py-2.5 text-sm text-muted-foreground"
-                    >
-                      Pass
-                    </button>
-                  </>
-                ) : it.response === "accepted" ? (
-                  <p className="text-sm text-ink-soft">
-                    You're open. Athena will let you know when they are too.
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">You passed on this one.</p>
-                )}
-              </div>
+              <Link
+                data-testid="introduction-detail-link"
+                to="/introductions/$id"
+                params={{ id: it.id }}
+                className="mt-5 inline-flex min-h-11 items-center rounded-full border border-border px-5 py-2.5 text-sm text-foreground"
+              >
+                Review →
+              </Link>
             </li>
           ))}
         </ul>
