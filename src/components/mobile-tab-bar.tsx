@@ -20,8 +20,21 @@ export function MobileTabBar({ current }: { current: Tab }) {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[480px] border-t border-border bg-field/90 backdrop-blur-xl safe-bottom"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[480px] safe-bottom"
+      style={{
+        background:
+          "linear-gradient(180deg, color-mix(in oklab, var(--void) 62%, transparent) 0%, var(--void) 60%)",
+        backdropFilter: "blur(18px)",
+      }}
     >
+      <span
+        aria-hidden
+        className="absolute inset-x-6 top-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, color-mix(in oklab, var(--lavender) 30%, transparent), transparent)",
+        }}
+      />
       <ul className="grid grid-cols-5">
         {tabs.map(({ key, to, label, Icon }) => {
           const active = key === current;
@@ -30,9 +43,21 @@ export function MobileTabBar({ current }: { current: Tab }) {
               <Link
                 to={to}
                 data-testid={`tab-${key}`}
-                className={`flex min-h-[52px] flex-col items-center justify-center gap-1 py-2 text-[11px] tracking-wide transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
+                className={`relative flex min-h-[56px] flex-col items-center justify-center gap-1.5 py-2.5 text-[10px] tracking-[0.14em] uppercase transition-colors ${active ? "text-foreground" : "text-muted-foreground hover:text-ink-soft"}`}
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 1.75 : 1.25} />
+                <Icon
+                  className="h-[18px] w-[18px] shrink-0"
+                  strokeWidth={active ? 1.75 : 1.25}
+                  style={
+                    active
+                      ? {
+                          color: "var(--lavender-bright)",
+                          filter:
+                            "drop-shadow(0 0 10px color-mix(in oklab, var(--lavender) 65%, transparent))",
+                        }
+                      : undefined
+                  }
+                />
                 <span>{label}</span>
               </Link>
             </li>
@@ -42,3 +67,4 @@ export function MobileTabBar({ current }: { current: Tab }) {
     </nav>
   );
 }
+

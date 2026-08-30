@@ -740,24 +740,51 @@ function AthenaPage() {
 
 
   return (
-    <div className="screen-shell safe-top pb-24" data-testid="athena-screen">
-      <header className="px-6 pt-6 pb-3 border-b border-border/60">
+    <div className="screen-shell safe-top relative pb-24" data-testid="athena-screen">
+      {/* Environment — the void with quiet dimensional depth. */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[var(--void)]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(110% 55% at 50% -6%, color-mix(in oklab, var(--lavender) 12%, transparent) 0%, transparent 60%)",
+          }}
+        />
+        <div
+          className="absolute inset-x-0 bottom-0 h-[38%]"
+          style={{
+            background:
+              "radial-gradient(70% 100% at 50% 130%, color-mix(in oklab, var(--amber) 7%, transparent) 0%, transparent 72%)",
+          }}
+        />
+      </div>
+
+      <header className="relative px-6 pt-7 pb-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate({ to: "/home" })}
-            className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
+            className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground transition-colors hover:text-foreground"
           >
             ← Home
           </button>
-          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Athena</span>
+          <span className="font-display text-[15px] tracking-[0.34em] text-foreground">ATHENA</span>
           <button
             onClick={() => setSettingsOpen(true)}
-            className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
+            className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground transition-colors hover:text-foreground"
             title="Voice settings"
           >
             {voiceMode === "voice" ? "Voice" : "Text"}
           </button>
         </div>
+        <span
+          aria-hidden
+          className="absolute inset-x-6 bottom-0 block h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, color-mix(in oklab, var(--lavender) 34%, transparent), transparent)",
+          }}
+        />
       </header>
 
       <div
@@ -765,8 +792,10 @@ function AthenaPage() {
         data-testid="athena-transcript"
         data-hydrated={hydrated ? "true" : "false"}
         data-conversation-state={runtimeState}
-        className="flex-1 overflow-y-auto px-5 py-6 space-y-4"
+        className="relative flex-1 overflow-y-auto px-6 py-8"
       >
+        <div className="mx-auto w-full max-w-[36rem] space-y-6">
+
         {!hydrated ? (
           <p className="text-center text-sm text-muted-foreground fade-in-slow">
             Athena is preparing to meet you…
@@ -794,14 +823,14 @@ function AthenaPage() {
                 <div className="flex flex-col gap-2 w-full max-w-sm">
                   <button
                     onClick={() => void choosePreference("voice")}
-                    className="rounded-2xl border border-input bg-card px-4 py-3 text-left text-[15px] hover:bg-accent transition"
+                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
                   >
                     Continue with voice & text
                     <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
                   </button>
                   <button
                     onClick={() => void choosePreference("text")}
-                    className="rounded-2xl border border-input bg-card px-4 py-3 text-left text-[15px] hover:bg-accent transition"
+                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
                   >
                     Continue with text only
                     <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
@@ -812,7 +841,9 @@ function AthenaPage() {
             )}
           </>
         )}
+        </div>
       </div>
+
 
       {/* Live conversation state, stated in words rather than motion alone. */}
       <div aria-live="polite" className="px-5">
@@ -820,7 +851,7 @@ function AthenaPage() {
           <div
             data-testid="athena-live-panel"
             data-live-status={liveStatus}
-            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_7%,transparent)] px-4 py-2.5 backdrop-blur-md"
           >
             <p className="text-xs text-ink-soft">
               {liveStatus === "connecting"
@@ -833,7 +864,7 @@ function AthenaPage() {
               type="button"
               data-testid="athena-live-end"
               onClick={endLive}
-              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+              className="tap-target shrink-0 rounded-full border border-border-strong px-3.5 text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-surface"
             >
               End
             </button>
@@ -847,7 +878,7 @@ function AthenaPage() {
         {speaking && (
           <div
             data-testid="athena-speaking"
-            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card px-4 py-2"
+            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_7%,transparent)] px-4 py-2.5 backdrop-blur-md"
           >
             <p className="text-xs text-ink-soft">
               Athena is speaking. Her words appear above as she says them.
@@ -856,7 +887,7 @@ function AthenaPage() {
               type="button"
               data-testid="athena-stop-speaking"
               onClick={stopSpeaking}
-              className="tap-target shrink-0 rounded-full border border-border px-3 text-xs text-foreground"
+              className="tap-target shrink-0 rounded-full border border-border-strong px-3.5 text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-surface"
             >
               Stop
             </button>
@@ -869,7 +900,7 @@ function AthenaPage() {
           e.preventDefault();
           void send();
         }}
-        className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-4 pt-3 pb-3"
+        className="safe-bottom relative border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] px-5 pt-4 pb-4 backdrop-blur-xl"
       >
         {!askingPreference && hydrated && !introducing && (
           <div className="mb-2 flex justify-center">
@@ -878,14 +909,14 @@ function AthenaPage() {
               data-testid="athena-live-toggle"
               onClick={() => (live ? endLive() : void startLive())}
               disabled={busy || recording || transcribing}
-              className="tap-target rounded-full border border-border px-4 text-xs uppercase tracking-[0.2em] text-muted-foreground transition disabled:opacity-40 hover:text-foreground"
+              className="tap-target rounded-full border border-border-strong px-5 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground disabled:opacity-40"
             >
               {live ? "End live conversation" : "Speak with Athena"}
             </button>
           </div>
         )}
         <div
-          className="flex items-end gap-2 rounded-3xl border border-input bg-card px-2 py-2 transition-opacity"
+          className="flex items-end gap-2 rounded-[1.5rem] border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-2.5 py-2 transition-opacity"
           style={{ opacity: (inputDisabled && !recording) || live ? 0.5 : 1 }}
         >
 
@@ -924,7 +955,7 @@ function AthenaPage() {
             type="submit"
             data-testid="athena-send"
             disabled={!input.trim() || inputDisabled}
-            className="rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition disabled:opacity-40"
+            className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium tracking-wide text-primary-foreground transition disabled:opacity-40"
           >
             Send
           </button>
@@ -1187,23 +1218,34 @@ function Bubble({ role, content }: { role: "user" | "assistant"; content: string
   const isUser = role === "user";
   return (
     <div className={`flex fade-in-slow ${isUser ? "justify-end" : "justify-start"}`}>
-      <div
-        className={
-          isUser
-            ? "max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-4 py-3 text-[15px] leading-relaxed text-primary-foreground"
-            : "max-w-[90%] text-[15px] leading-relaxed text-foreground"
-        }
-      >
-        {isUser ? (
+      {isUser ? (
+        <div
+          className="max-w-[84%] rounded-[1.25rem] rounded-br-md px-5 py-3 text-[15px] leading-relaxed text-foreground"
+          style={{
+            background: "color-mix(in oklab, var(--lavender) 14%, transparent)",
+            border: "1px solid var(--border-strong)",
+          }}
+        >
           <p className="whitespace-pre-wrap">{content}</p>
-        ) : (
-          <div className="prose prose-sm max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:font-display">
+        </div>
+      ) : (
+        <div className="relative max-w-[92%] pl-4">
+          <span
+            aria-hidden
+            className="absolute inset-y-1 left-0 w-px"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent, color-mix(in oklab, var(--lavender) 55%, transparent), transparent)",
+            }}
+          />
+          <div className="prose prose-sm max-w-none text-[16.5px] leading-[1.75] text-ink-soft prose-p:my-3 prose-p:leading-[1.75] prose-strong:text-foreground prose-headings:font-display prose-headings:text-foreground">
             <ReactMarkdown>{content}</ReactMarkdown>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
+
 }
 
 function TypingBubble({ label }: { label: string }) {
@@ -1221,7 +1263,7 @@ function TypingBubble({ label }: { label: string }) {
 function Dot({ delay }: { delay: string }) {
   return (
     <span
-      className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground"
+      className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--lavender)]"
       style={{ animationDelay: delay }}
     />
   );
