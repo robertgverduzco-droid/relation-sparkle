@@ -162,8 +162,8 @@ export function ArrivalScene({ awake = true }: { awake?: boolean }) {
 
       <style>{`
         @keyframes athena-star-drift {
-          0%, 100% { transform: translateY(0); opacity: var(--star-o, 1); }
-          50% { transform: translateY(-2px); opacity: 0.45; }
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-2px) scale(0.82); }
         }
         @keyframes athena-horizon-shimmer {
           0%, 100% { opacity: 0.82; }
