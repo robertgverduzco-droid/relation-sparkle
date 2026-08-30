@@ -24,11 +24,13 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
     // the other member's private Living Profile and must never reach a
     // client. It is additionally unreadable at the database layer — the
     // `authenticated` role holds column-level SELECT on the approved columns
-    // only. Server-side matchmaking (service role) is unaffected.
+    // only, and `status`/`confidence` are deliberately not among them: pair
+    // confidence is internal and is never shown to a member in any form.
+    // Server-side matchmaking (service role) is unaffected.
     const { data: pairs } = await supabase
       .from("pair_reasoning")
       .select(
-        "id, user_low, user_high, status, confidence, presented_to_a_at, presented_to_b_at, last_reasoned_at",
+        "id, user_low, user_high, presented_to_a_at, presented_to_b_at, last_reasoned_at",
       )
 
       .or(
