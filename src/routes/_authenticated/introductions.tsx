@@ -32,7 +32,6 @@ type Intro = {
 function IntroductionsPage() {
   const list = useServerFn(listMyIntroductions);
   const consider = useServerFn(considerIntroductions);
-  const respond = useServerFn(respondToIntroduction);
   const [items, setItems] = useState<Intro[] | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -59,15 +58,6 @@ function IntroductionsPage() {
       toast.error(e instanceof Error ? e.message : "Athena couldn't reflect right now.");
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function react(pair_id: string, response: "accepted" | "declined" | "deferred") {
-    try {
-      await respond({ data: { pair_id, response } });
-      await refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't record that.");
     }
   }
 
