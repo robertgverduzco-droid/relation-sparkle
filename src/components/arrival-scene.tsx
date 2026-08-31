@@ -226,13 +226,29 @@ export function ArrivalScene({
     const ctx = createArrivalAudio();
     audioRef.current = ctx;
     if (ctx) {
-      void ctx.resume().catch(() => {});
-      playAmbientBuild(ctx);
+      // Safari/Chrome start suspended; scheduling before the context is
+      // actually running produces silence, so the build waits for resume.
+      void ctx
+        .resume()
+        .catch(() => {})
+        .finally(() => playAmbientBuild(ctx));
     }
     setGridIn(true);
     setTimeout(() => setHud(true), 400);
     setStarted(true);
   };
+
+  /** Repeat visit: the member can ask for the arrival again, with sound. */
+  const replayArrival = () => {
+    setRevealed(false);
+    setStep(0);
+    setHud(false);
+    setGridIn(false);
+    setGridFade(false);
+    setStarted(false);
+    setReplay(true);
+  };
+
 
   useEffect(() => {
     return () => {
