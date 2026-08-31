@@ -741,7 +741,7 @@ function AthenaPage() {
 
 
   return (
-    <div className="screen-shell safe-top relative pb-24" data-testid="athena-screen">
+    <div className="screen-shell safe-top relative pb-6" data-testid="athena-screen">
       {/* Environment — the void with quiet dimensional depth. */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-[var(--void)]" />
