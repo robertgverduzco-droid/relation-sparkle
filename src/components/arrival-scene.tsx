@@ -434,6 +434,23 @@ export function ArrivalScene({
           </span>
         </button>
       ) : null}
+
+      {/* Repeat visit: the arrival is silent by design — offer it back. */}
+      {still && !reduced ? (
+        <button
+          type="button"
+          onClick={replayArrival}
+          data-testid="arrival-replay"
+          className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-2 text-[10px] font-light uppercase tracking-[0.22em]"
+          style={{
+            color: "color-mix(in oklab, var(--ink) 50%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--lavender) 60%, transparent)",
+          }}
+        >
+          Replay arrival
+        </button>
+      ) : null}
+
     </div>
   );
 }
