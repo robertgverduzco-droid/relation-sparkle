@@ -11,6 +11,7 @@ import { z } from "zod";
 import {
   REVEAL_DIRECTIVE,
   buildRevealMaterial,
+  hasEnoughRevealMaterial,
   shouldRegenerateReveal,
   usableRevealFacets,
   type Reveal,
