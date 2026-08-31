@@ -103,9 +103,31 @@ export function buildRevealMaterial(rows: RevealFacetRow[]): string {
 }
 
 /**
- * Self-healing: an unconfirmed reveal written from no source material is not
- * a considered read of anyone, so it may be replaced once real understanding
- * exists. A confirmed reveal is the member's own and is never regenerated.
+ * The floor beneath which a reveal cannot be a considered read of a person.
+ * Readiness normally guarantees far more than this; the floor exists so that a
+ * degraded read — a partial query, a member whose understanding was mostly
+ * removed — can never be written down and shown as Athena's judgement of them
+ * immediately before a payment ask.
+ */
+export const MIN_REVEAL_FACETS = 5;
+
+/** Is there enough real member material to write a reveal at all? */
+export function hasEnoughRevealMaterial(usableFacetCount: number): boolean {
+  return usableFacetCount >= MIN_REVEAL_FACETS;
+}
+
+/**
+ * Growth after which an unconfirmed reveal is stale rather than held: Athena
+ * knows materially more than she did when she wrote it.
+ */
+const MATERIAL_GROWTH = 4;
+
+/**
+ * Self-healing: an unconfirmed reveal written from too little (or no) source
+ * material is not a considered read of anyone, so it is replaced once real
+ * understanding exists — as is one that has been overtaken by how much more
+ * Athena now holds. A confirmed reveal is the member's own and is never
+ * regenerated.
  */
 export function shouldRegenerateReveal(input: {
   confirmedAt: string | null;
@@ -113,5 +135,8 @@ export function shouldRegenerateReveal(input: {
   currentUsableFacets: number;
 }): boolean {
   if (input.confirmedAt) return false;
-  return input.sourceFacetCount <= 0 && input.currentUsableFacets > 0;
+  if (!hasEnoughRevealMaterial(input.currentUsableFacets)) return false;
+  if (!hasEnoughRevealMaterial(input.sourceFacetCount)) return true;
+  return input.currentUsableFacets - input.sourceFacetCount >= MATERIAL_GROWTH;
 }
+

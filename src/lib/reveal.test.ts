@@ -4,7 +4,13 @@
 // canonical understanding_facets schema, ignoring the error, and persisting a
 // permanently generic reveal written from "(nothing yet)".
 import { describe, expect, it, vi } from "vitest";
-import { buildRevealMaterial, shouldRegenerateReveal, usableRevealFacets, type RevealFacetRow } from "./reveal";
+import {
+  buildRevealMaterial,
+  hasEnoughRevealMaterial,
+  shouldRegenerateReveal,
+  usableRevealFacets,
+  type RevealFacetRow,
+} from "./reveal";
 
 const facet = (over: Partial<RevealFacetRow> = {}): RevealFacetRow => ({
   facet_key: "self_understanding",
@@ -47,9 +53,23 @@ describe("self-healing rules", () => {
     expect(shouldRegenerateReveal({ confirmedAt: null, sourceFacetCount: 0, currentUsableFacets: 9 })).toBe(true);
   });
 
+  it("an unconfirmed reveal built from too little material is replaced, not kept", () => {
+    expect(shouldRegenerateReveal({ confirmedAt: null, sourceFacetCount: 2, currentUsableFacets: 9 })).toBe(true);
+  });
+
+  it("an unconfirmed reveal is refreshed once Athena knows materially more", () => {
+    expect(shouldRegenerateReveal({ confirmedAt: null, sourceFacetCount: 6, currentUsableFacets: 12 })).toBe(true);
+  });
+
   it("a real reveal is held, not rewritten on every visit", () => {
     expect(shouldRegenerateReveal({ confirmedAt: null, sourceFacetCount: 9, currentUsableFacets: 11 })).toBe(false);
     expect(shouldRegenerateReveal({ confirmedAt: null, sourceFacetCount: 0, currentUsableFacets: 0 })).toBe(false);
+  });
+
+  it("never regenerates into a thin reveal when material is below the floor", () => {
+    expect(shouldRegenerateReveal({ confirmedAt: null, sourceFacetCount: 0, currentUsableFacets: 4 })).toBe(false);
+    expect(hasEnoughRevealMaterial(4)).toBe(false);
+    expect(hasEnoughRevealMaterial(5)).toBe(true);
   });
 });
 

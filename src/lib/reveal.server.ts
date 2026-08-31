@@ -11,6 +11,7 @@ import { z } from "zod";
 import {
   REVEAL_DIRECTIVE,
   buildRevealMaterial,
+  hasEnoughRevealMaterial,
   shouldRegenerateReveal,
   usableRevealFacets,
   type Reveal,
@@ -77,13 +78,21 @@ export async function loadOrGenerateReveal(
       currentUsableFacets: usable.length,
     });
     if (!regenerate) return { ready: true, reveal: held };
-  } else if (usable.length === 0) {
-    // Readiness says there should be understanding; there is none. Hold rather
-    // than persist an empty-source reveal.
+  } else if (!hasEnoughRevealMaterial(usable.length)) {
+    // Readiness says there should be understanding; there is too little of it
+    // to write a read of a person. Hold rather than persist something generic
+    // that then becomes this member's permanent record.
     return { ready: false, reveal: null };
   }
 
+
   const material = buildRevealMaterial(usable);
+  // Last line of defence before anything is written down about a person: the
+  // reveal is only ever generated from real, sufficient member material.
+  if (!hasEnoughRevealMaterial(usable.length) || material.trim().length === 0) {
+    return { ready: Boolean(held), reveal: held };
+  }
+
 
   const { createLovableGateway } = await import("./ai-gateway.server");
   const { ANALYTICAL_REGISTER_GUARD } = await import("./conversational-aliveness");
