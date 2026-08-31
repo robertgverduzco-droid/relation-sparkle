@@ -13,7 +13,7 @@ import {
 import { logUsage } from "@/lib/messaging.functions";
 import { getMyMembership } from "@/lib/membership.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { FieldBack } from "@/components/field-back";
 import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { AthenaLivePresence } from "@/components/athena-live-presence";
@@ -775,12 +775,7 @@ function AthenaPage() {
 
       <header className="relative px-6 pt-7 pb-4">
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate({ to: "/home" })}
-            className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            ← Home
-          </button>
+          <span aria-hidden className="h-9 w-9" />
           <span className="font-display text-[15px] tracking-[0.34em] text-foreground">ATHENA</span>
           <button
             onClick={() => setSettingsOpen(true)}
@@ -857,33 +852,6 @@ function AthenaPage() {
         </div>
       </div>
 
-
-      {/* Live conversation state, stated in words rather than motion alone. */}
-      <div aria-live="polite" className="px-5">
-        {live && (
-          <div
-            data-testid="athena-live-panel"
-            data-live-status={liveStatus}
-            className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_7%,transparent)] px-4 py-2.5 backdrop-blur-md"
-          >
-            <p className="text-xs text-ink-soft">
-              {liveStatus === "connecting"
-                ? "Opening a live conversation…"
-                : liveStatus === "speaking"
-                  ? "Athena is speaking. You can simply begin talking whenever you like."
-                  : "Athena is listening. Take your time."}
-            </p>
-            <button
-              type="button"
-              data-testid="athena-live-end"
-              onClick={endLive}
-              className="tap-target shrink-0 rounded-full border border-border-strong px-3.5 text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-surface"
-            >
-              End
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* D5 playback state, stated in words rather than motion alone. */}
       <div aria-live="polite" className="px-5">
@@ -1015,7 +983,7 @@ function AthenaPage() {
         />
       )}
 
-      <MobileTabBar current="athena" />
+      <FieldBack />
 
     </div>
   );
