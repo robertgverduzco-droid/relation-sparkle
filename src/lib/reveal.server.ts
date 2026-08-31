@@ -78,11 +78,13 @@ export async function loadOrGenerateReveal(
       currentUsableFacets: usable.length,
     });
     if (!regenerate) return { ready: true, reveal: held };
-  } else if (usable.length === 0) {
-    // Readiness says there should be understanding; there is none. Hold rather
-    // than persist an empty-source reveal.
+  } else if (!hasEnoughRevealMaterial(usable.length)) {
+    // Readiness says there should be understanding; there is too little of it
+    // to write a read of a person. Hold rather than persist something generic
+    // that then becomes this member's permanent record.
     return { ready: false, reveal: null };
   }
+
 
   const material = buildRevealMaterial(usable);
 
