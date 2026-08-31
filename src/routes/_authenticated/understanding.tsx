@@ -78,6 +78,7 @@ function UnderstandingScreen() {
   const markReviewed = useServerFn(markUnderstandingReviewed);
 
   const [data, setData] = useState<Loaded | null>(null);
+  const [failed, setFailed] = useState(false);
   const [openLens, setOpenLens] = useState<string | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [kind, setKind] = useState<Kind>("change");
