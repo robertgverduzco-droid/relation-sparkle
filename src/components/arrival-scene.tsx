@@ -46,7 +46,8 @@ export function ArrivalScene({
   footer?: ReactNode;
 }) {
   const reduced = useReducedMotion();
-  const still = reduced || skip;
+  const [replay, setReplay] = useState(false);
+  const still = (reduced || skip) && !replay;
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [started, setStarted] = useState(false);
