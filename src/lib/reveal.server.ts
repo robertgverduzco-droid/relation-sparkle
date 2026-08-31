@@ -87,6 +87,12 @@ export async function loadOrGenerateReveal(
 
 
   const material = buildRevealMaterial(usable);
+  // Last line of defence before anything is written down about a person: the
+  // reveal is only ever generated from real, sufficient member material.
+  if (!hasEnoughRevealMaterial(usable.length) || material.trim().length === 0) {
+    return { ready: Boolean(held), reveal: held };
+  }
+
 
   const { createLovableGateway } = await import("./ai-gateway.server");
   const { ANALYTICAL_REGISTER_GUARD } = await import("./conversational-aliveness");
