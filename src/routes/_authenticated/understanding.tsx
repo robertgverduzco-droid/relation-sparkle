@@ -246,14 +246,29 @@ function UnderstandingScreen() {
         entirely.
       </p>
 
-      {data === null && <p className="mt-8 text-sm text-muted-foreground">Gathering my thoughts…</p>}
+      {data === null && !failed && (
+        <p className="mt-8 text-sm text-muted-foreground">Gathering my thoughts…</p>
+      )}
 
-      {data?.facets.length === 0 && (
+      {failed && (
+        <div className="mt-8" data-testid="understanding-unavailable">
+          <p className="text-sm text-ink-soft">
+            I couldn&apos;t bring this up just now — that&apos;s me, not you. Nothing has changed
+            about what I understand.
+          </p>
+          <button onClick={load} className="mt-3 text-[13px] text-primary">
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!failed && data?.facets.length === 0 && (
         <p className="mt-8 text-sm text-ink-soft">
           We haven&apos;t talked enough yet for me to understand you properly. That&apos;s the
           right order — understanding comes first.
         </p>
       )}
+
 
       <div className="mt-6 space-y-3">
         {data?.lenses.map((lens) => {
