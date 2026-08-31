@@ -46,7 +46,8 @@ export function ArrivalScene({
   footer?: ReactNode;
 }) {
   const reduced = useReducedMotion();
-  const still = reduced || skip;
+  const [replay, setReplay] = useState(false);
+  const still = (reduced || skip) && !replay;
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [started, setStarted] = useState(false);
@@ -225,13 +226,29 @@ export function ArrivalScene({
     const ctx = createArrivalAudio();
     audioRef.current = ctx;
     if (ctx) {
-      void ctx.resume().catch(() => {});
-      playAmbientBuild(ctx);
+      // Safari/Chrome start suspended; scheduling before the context is
+      // actually running produces silence, so the build waits for resume.
+      void ctx
+        .resume()
+        .catch(() => {})
+        .finally(() => playAmbientBuild(ctx));
     }
     setGridIn(true);
     setTimeout(() => setHud(true), 400);
     setStarted(true);
   };
+
+  /** Repeat visit: the member can ask for the arrival again, with sound. */
+  const replayArrival = () => {
+    setRevealed(false);
+    setStep(0);
+    setHud(false);
+    setGridIn(false);
+    setGridFade(false);
+    setStarted(false);
+    setReplay(true);
+  };
+
 
   useEffect(() => {
     return () => {
@@ -417,6 +434,23 @@ export function ArrivalScene({
           </span>
         </button>
       ) : null}
+
+      {/* Repeat visit: the arrival is silent by design — offer it back. */}
+      {still && !reduced ? (
+        <button
+          type="button"
+          onClick={replayArrival}
+          data-testid="arrival-replay"
+          className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-2 text-[10px] font-light uppercase tracking-[0.22em]"
+          style={{
+            color: "color-mix(in oklab, var(--ink) 50%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--lavender) 60%, transparent)",
+          }}
+        >
+          Replay arrival
+        </button>
+      ) : null}
+
     </div>
   );
 }
