@@ -85,10 +85,15 @@ function UnderstandingScreen() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
+    setFailed(false);
     loadFn({})
       .then((r) => setData(r as Loaded))
-      .catch(() => setData({ facets: [], lenses: [], stillLearning: null }));
+      // A failed read is not the same fact as "we haven't talked enough yet".
+      // Saying the second when the first happened tells the member something
+      // untrue about their own understanding.
+      .catch(() => setFailed(true));
   }, [loadFn]);
+
 
   useEffect(load, [load]);
 
