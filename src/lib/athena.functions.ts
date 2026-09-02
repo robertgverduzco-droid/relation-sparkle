@@ -724,9 +724,12 @@ ${transcript}`,
     // model to skip product/system/governance talk. This drops it
     // deterministically if it comes back anyway, so discussion of the app can
     // never be written into a person's Living Profile as dating evidence.
+    // Screens only Athena's own synthesis (understanding, reasoning) — never
+    // f.evidence, which is the member's own quoted words. A member's evidence
+    // is theirs; it is never discarded for containing technical vocabulary.
     const rejected: string[] = [];
     object.facets = object.facets.filter((f) => {
-      const bad = isInternalEvidence(f.understanding, f.reasoning, ...(f.evidence ?? []));
+      const bad = isInternalEvidence(f.understanding, f.reasoning);
       if (bad) rejected.push(f.key);
       return !bad;
     });

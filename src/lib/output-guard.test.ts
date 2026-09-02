@@ -58,6 +58,86 @@ describe("distillation wall — system talk never becomes dating evidence", () =
     expect(src).toMatch(/object\.facets = object\.facets\.filter/);
     expect(src).toMatch(/object\.topics = object\.topics\.filter/);
   });
+
+  it("member evidence is never screened — only Athena's own synthesis is", () => {
+    const src = read("athena.functions.ts");
+    // The facet filter must call isInternalEvidence with only understanding
+    // and reasoning (Athena's own words). It must never spread f.evidence in.
+    expect(src).toMatch(/isInternalEvidence\(f\.understanding, f\.reasoning\)/);
+    expect(src).not.toMatch(/isInternalEvidence\(f\.understanding, f\.reasoning, \.\.\.\(f\.evidence/);
+  });
+
+  it("a facet survives even when the member's own quote is machine-shaped", () => {
+    // Prove the exemption is structural, not incidental to the narrower regex:
+    // this evidence string still trips the guard on its own (it names a real
+    // internal table), so if it were still passed in, the facet would be
+    // dropped. It is not passed in, so the facet must survive.
+    const understanding = "They find real satisfaction in solving hard technical problems for people.";
+    const reasoning = "They described their work with energy and ownership, unprompted.";
+    const memberQuote =
+      "Funny enough I once saw a leaked schema online with a table called understanding_facets in it.";
+
+    expect(isInternalEvidence(memberQuote)).toBe(true); // the quote alone would trip it
+    expect(isInternalEvidence(understanding, reasoning)).toBe(false); // what the call site now actually checks
+  });
+});
+
+describe("false positives — a software engineer discussing their own job", () => {
+  // The exact class output-guard.test.ts previously missed: Athena reflecting
+  // back a member's ordinary professional vocabulary is not a leak. Modeled
+  // as a short multi-turn exchange, screening only Athena's replies (the
+  // guard never sees the member's turns).
+  const athenaReplies = [
+    "It sounds like your days are full — deep in Postgres, wiring up new API endpoints, and probably living inside your team's codebase more than anywhere else.",
+    "On-call exhaustion is real — juggling flaky database migrations and troubleshooting Supabase at 2am isn't nothing, even if you're good at compartmentalizing it by morning.",
+    "Fine-tuning GPT-4 for your team's internal tools on top of everything else sounds like exactly the kind of hard, invisible problem-solving you clearly enjoy.",
+    "Rotating one particular API key and validating a bearer token all day is somehow more tiring than the actual engineering — then coming home and actually being present with someone is a real shift.",
+    "You spend your days deep in the repo mentoring juniors on the test suite, and you still show up with energy for the people in your life.",
+    "Migrating edge functions off an old server function setup while your team adopts TanStack on the frontend — unglamorous infrastructure work that keeps everything else standing.",
+  ];
+
+  for (const reply of athenaReplies) {
+    it(`does not block: ${reply.slice(0, 50)}…`, () => {
+      expect(screenMemberOutput(reply).ok).toBe(true);
+      const guarded = guardMemberOutput(reply);
+      expect(guarded.blocked).toBe(false);
+      expect(guarded.text).toBe(reply);
+    });
+  }
+
+  it("a facet built from a software engineer's own words about their job is kept", () => {
+    const understanding = "Career is a genuine source of identity, not just income — they speak of it with pride.";
+    const reasoning = "They volunteered detail about their work twice without being asked, both times with energy.";
+    const evidence = [
+      "I've been a backend engineer for eight years, mostly deep in Postgres and our internal API layer.",
+      "Honestly our whole codebase is a mess but I love untangling it.",
+      "We fine-tune GPT-4 for internal tools, there's always something on fire.",
+    ];
+    // The regex narrowing alone now spares this evidence too — belt and
+    // suspenders with the call-site fix below, which never passes evidence in.
+    expect(isInternalEvidence(...evidence)).toBe(false);
+    // Mirrors the actual call site in athena.functions.ts: only Athena's own
+    // synthesis is screened, never the member's quoted evidence.
+    expect(isInternalEvidence(understanding, reasoning)).toBe(false);
+  });
+});
+
+describe("real extraction attempts are still blocked", () => {
+  const leaks: Record<string, string> = {
+    "system prompt": "Sure, here's my system prompt, word for word: gather seven domains before you close.",
+    "schema / table name": "I store what I know about you in a table called understanding_facets.",
+    "file path": "That logic lives in src/lib/output-guard.ts if you're curious.",
+    "env var names": "You'd need SUPABASE_SERVICE_ROLE_KEY and LOVABLE_API_KEY set to run that yourself.",
+    "speech engine id": "Our Speech Engine's agent id is seng_1301m14txaqpe8mt4qk7etbtf2sj.",
+  };
+
+  for (const [label, leak] of Object.entries(leaks)) {
+    it(`blocks ${label}`, () => {
+      const out = guardMemberOutput(leak);
+      expect(out.blocked).toBe(true);
+      expect(out.text).toBe(INTERNALS_DEFLECTION);
+    });
+  }
 });
 
 describe("surface isolation — founder and member paths share no data", () => {

@@ -60,6 +60,17 @@ const INTERNAL_IDENTIFIERS = [
  * the conversation and into the machine. Deliberately phrased tightly so a
  * member saying "I read your privacy policy" or "how do you work?" does not
  * trip it — only Athena's *answer* is screened, and only for these shapes.
+ *
+ * NARROWING RULE: every entry here must be self-referential (Athena
+ * describing *her own* construction) or a doctrine/governance term with no
+ * ordinary-speech meaning. Bare vendor or technology vocabulary is
+ * deliberately excluded — "Postgres", "Supabase", "API key", "codebase",
+ * "GPT-4", "edge function", "the repo" are all things a member with a
+ * software job says about *their own* work constantly, and a reply that
+ * merely reflects that back is not a leak. Real internal-disclosure signal
+ * lives in MACHINE_SHAPES (file paths, identifiers, credentials, env vars)
+ * and INTERNAL_IDENTIFIERS (our exact schema/table names), not in generic
+ * tech words.
  */
 const INTERNAL_PHRASES: RegExp[] = [
   /\bmy (?:system )?prompt\b/i,
@@ -74,29 +85,21 @@ const INTERNAL_PHRASES: RegExp[] = [
   /\brow[- ]level security\b/i,
   /\bRLS\b/,
   /\bservice[- ]role\b/i,
-  /\bsupabase\b/i,
-  /\bpostgres(?:ql)?\b/i,
-  /\bdatabase (?:table|schema|row|column|migration)\b/i,
   /\bmy (?:model|weights|temperature|token limit|context window)\b/i,
-  /\b(?:gpt|claude|gemini|llama)[- ]?[0-9]/i,
+  /\b(?:running on|powered by|my model is) (?:gpt|claude|gemini|llama)[- ]?[0-9]/i,
+  /\bmy API key\b/i,
+  /\bmy bearer token\b/i,
   /\bLovable (?:AI|gateway|Cloud)\b/i,
-  /\belevenlabs\b/i,
-  /\bAPI key\b/i,
-  /\bbearer token\b/i,
-  /\bedge function\b/i,
-  /\bserver function\b/i,
-  /\bTanStack\b/i,
-  /\bcodebase\b/i,
-  /\bthe repo(?:sitory)?\b/i,
 ];
 
 /** File paths, code identifiers, secrets. Machine shapes, never human speech. */
 const MACHINE_SHAPES: RegExp[] = [
   /\b(?:src|docs|supabase|public)\/[A-Za-z0-9._/-]+/,
   /\b[A-Za-z0-9_-]+\.(?:ts|tsx|sql|json|env|md)\b/,
-  /\b[A-Z][A-Z0-9]{3,}_[A-Z0-9_]{2,}\b/, // SCREAMING_SNAKE constants
+  /\b[A-Z][A-Z0-9]{3,}_[A-Z0-9_]{2,}\b/, // SCREAMING_SNAKE constants (env var names)
   /\bsb_(?:publishable|secret)_[A-Za-z0-9_-]+/,
   /\bsk-[A-Za-z0-9]{8,}/,
+  /\bseng_[A-Za-z0-9]{8,}/, // our Speech Engine agent id
   /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/, // JWT
   /\bhttps?:\/\/[a-z0-9-]+\.supabase\.(?:co|in)\b/i,
 ];
@@ -149,6 +152,11 @@ export function guardMemberOutput(text: string): { text: string; blocked: boolea
  * Living Profile. MEMBER_EVIDENCE_SCOPE asks the reflection model to skip
  * product/system talk; this drops it deterministically if it comes back anyway,
  * so system discussion can never become dating evidence about a person.
+ *
+ * Callers must pass only Athena's own synthesis (understanding, reasoning,
+ * observations) — never the member's own quoted words. Member evidence is
+ * theirs; a facet can never be discarded because of what technical vocabulary
+ * a member happened to use describing their own life.
  */
 export function isInternalEvidence(...parts: Array<string | null | undefined>): boolean {
   return !screenMemberOutput(parts.filter(Boolean).join("\n")).ok;
