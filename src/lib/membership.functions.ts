@@ -1,6 +1,6 @@
 // Thin wrapper. Runtime logic lives in ./membership.server.ts.
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
+import * as z from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const getMyMembership = createServerFn({ method: "GET" })

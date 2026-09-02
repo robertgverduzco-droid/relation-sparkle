@@ -1,5 +1,5 @@
 // Server-only onboarding state machine (A-08).
-import { z } from "zod";
+import * as z from "zod";
 
 export const ONBOARDING_STAGES = ["welcome", "identity", "preferences", "complete"] as const;
 export type OnboardingStage = (typeof ONBOARDING_STAGES)[number];

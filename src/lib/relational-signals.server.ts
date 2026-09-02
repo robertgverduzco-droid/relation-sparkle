@@ -15,7 +15,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateObject } from "ai";
-import { z } from "zod";
+import * as z from "zod";
 import { TRACK_A, TRACK_B, assessTrackCoverage, type Turn } from "./intake-tracks";
 import { EMPTY_VECTOR, type RelationalVector } from "./relational-scoring";
 import { PROMPT_BOUNDARY, asMemberData } from "./security.server";

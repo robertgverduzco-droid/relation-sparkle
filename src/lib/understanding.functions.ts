@@ -2,7 +2,7 @@
 // Logic lives in ./understanding.server.ts.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { z } from "zod";
+import * as z from "zod";
 import { FACET_KEYS, FACET_LABELS, type FacetKey } from "./facets";
 import {
   toFacetView,

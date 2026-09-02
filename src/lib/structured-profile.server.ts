@@ -1,5 +1,5 @@
 // Validation for structured self-description and match preferences.
-import { z } from "zod";
+import * as z from "zod";
 
 const openness = z.enum(["open", "preference", "requirement", "discuss_with_athena"]);
 

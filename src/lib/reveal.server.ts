@@ -7,7 +7,7 @@
 // rather than a considered read of a person.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateObject } from "ai";
-import { z } from "zod";
+import * as z from "zod";
 import {
   REVEAL_DIRECTIVE,
   buildRevealMaterial,

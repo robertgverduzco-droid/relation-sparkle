@@ -5,7 +5,7 @@
 // Doctrine: docs/constitution/cross-cutting/relationship-journey.md
 // Nothing here evaluates compatibility (L6b) or decides introductions (L6c);
 // it only holds or releases the existing matchmaking gate and records state.
-import { z } from "zod";
+import * as z from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const endingChoiceInput = z.object({

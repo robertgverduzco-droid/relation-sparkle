@@ -13,7 +13,7 @@
 //   - Records are STRICTLY INTERNAL. Members never see them.
 //
 // This module is server-only (`.server.ts`) and is never bundled to the client.
-import { z } from "zod";
+import * as z from "zod";
 import { PROMPT_BOUNDARY, asMemberData } from "./security.server";
 
 // Version stamps — recorded on every row so behavioral drift stays attributable

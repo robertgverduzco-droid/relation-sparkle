@@ -1,7 +1,7 @@
 // Thin wrapper — F-12 device safety surface. Logic lives in ./step-up.server.ts.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { z } from "zod";
+import * as z from "zod";
 
 const purposeSchema = z.enum([
   "account_deletion",

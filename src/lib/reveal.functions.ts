@@ -1,6 +1,6 @@
 // Thin wrapper. Runtime logic lives in ./reveal.server.ts and ./reveal.ts.
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
+import * as z from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**

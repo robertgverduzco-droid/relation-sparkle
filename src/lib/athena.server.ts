@@ -1,6 +1,6 @@
 // Server-only helpers for Athena conversation and reflection.
 // Kept out of .functions.ts to preserve TanStack thin-wrapper contract.
-import { z } from "zod";
+import * as z from "zod";
 import { FACET_KEYS, FACET_LABELS, type FacetKey } from "./facets";
 import { TOPIC_KEYS, TOPIC_LABELS, TOPIC_NEIGHBORS, type TopicKey } from "./topics";
 import { NO_NUMERICAL_REDUCTION } from "./security.server";

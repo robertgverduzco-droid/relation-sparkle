@@ -3,7 +3,7 @@
 // functions are the sanctioned path and require the caller to hold the
 // `founder` role. Not a member-facing setting.
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
+import * as z from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { isPersonalityVariant, type PersonalityVariant } from "./personality-variants";
 

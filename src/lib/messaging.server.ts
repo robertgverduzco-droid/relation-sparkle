@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 export const sendInput = z.object({
   conversation_id: z.string().uuid(),

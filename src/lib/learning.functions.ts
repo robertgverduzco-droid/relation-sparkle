@@ -4,7 +4,7 @@
 // influences Athena's reasoning. Members cannot read outcome signals.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { z } from "zod";
+import * as z from "zod";
 
 const optOutInput = z.object({ opt_out: z.boolean() });
 

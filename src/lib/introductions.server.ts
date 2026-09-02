@@ -8,7 +8,7 @@ import { ANALYTICAL_REGISTER_GUARD } from "./conversational-aliveness";
 import { deriveRung, RUNG_MARKER } from "./evidentiary-discipline";
 
 import { generateObject } from "ai";
-import { z } from "zod";
+import * as z from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   EMPTY_PREFERENCES,
