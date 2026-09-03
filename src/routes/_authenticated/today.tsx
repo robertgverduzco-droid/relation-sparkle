@@ -82,8 +82,10 @@ function Today() {
 
   return (
     <div className="surface fade-in-quick" data-testid="today-screen">
+      <FieldBack />
+
       <div className="surface-top">
-        <FieldBack variant="inline" />
+        <span aria-hidden style={{ width: "34px" }} />
         <div className="sys" style={{ opacity: 0.6 }}>
           {today}
         </div>
