@@ -38,3 +38,25 @@ export const rejectPendingPhoto = createServerFn({ method: "POST" })
     const { rejectPhotoAsFounder } = await import("./photo-moderation.server");
     return rejectPhotoAsFounder(context.userId, data.photo_id, data.note ?? null);
   });
+
+export const getApprovedPhotosForReview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { isFounder } = await import("./founder-dialogue.server");
+    if (!(await isFounder(context.userId))) throw new Error("Not found");
+    const { listApprovedPhotosForFounder } = await import("./photo-moderation.server");
+    return listApprovedPhotosForFounder();
+  });
+
+/** Reverses an approval — the un-approve action. Approving was previously one-way. */
+export const unapprovePhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) =>
+    z.object({ photo_id: z.string().uuid(), note: z.string().max(500).nullish() }).parse(v),
+  )
+  .handler(async ({ data, context }) => {
+    const { isFounder } = await import("./founder-dialogue.server");
+    if (!(await isFounder(context.userId))) throw new Error("Not found");
+    const { unapprovePhotoAsFounder } = await import("./photo-moderation.server");
+    return unapprovePhotoAsFounder(context.userId, data.photo_id, data.note ?? null);
+  });

@@ -233,6 +233,24 @@ export class Db {
         }
         return Promise.resolve({ data: null, error: { message: `rpc ${fn} not modeled` } });
       },
+      // Minimal stand-in for the two Storage calls the app actually makes:
+      // deleting a removed photo's file, and signing a URL to preview one.
+      // No real bytes exist in this harness, so both are pure bookkeeping.
+      storage: {
+        from(_bucket: string) {
+          return {
+            remove(_paths: string[]) {
+              return Promise.resolve({ data: null, error: null });
+            },
+            createSignedUrl(path: string, _ttlSeconds: number) {
+              return Promise.resolve({
+                data: { signedUrl: `https://fake.test/${path}` },
+                error: null,
+              });
+            },
+          };
+        },
+      },
     };
   }
   rows(table: string) {
@@ -260,6 +278,15 @@ export type FakeClient = {
     fn: string,
     args?: Record<string, unknown>,
   ): Promise<{ data: unknown; error: { message: string } | null }>;
+  storage: {
+    from(bucket: string): {
+      remove(paths: string[]): Promise<{ data: null; error: null }>;
+      createSignedUrl(
+        path: string,
+        ttlSeconds: number,
+      ): Promise<{ data: { signedUrl: string } | null; error: null }>;
+    };
+  };
 };
 
 /**

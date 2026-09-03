@@ -186,6 +186,10 @@ export const NOTIFICATION_COPY = {
     title: "A photo needs another try",
     body: "One of your photos didn't meet what's needed for your profile. Feel free to add a different one — there's no limit on trying again.",
   },
+  photo_unapproved: {
+    title: "A photo was taken down",
+    body: "One of your approved photos no longer meets what's needed and has been removed from your profile. If that was your only approved photo, introductions will pause until you add a new one — nothing else about your account has changed.",
+  },
   safety_update: {
     title: "A safety update",
     body: "There's information about a recent report on your account.",
