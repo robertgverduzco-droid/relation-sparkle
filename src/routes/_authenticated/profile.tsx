@@ -235,12 +235,13 @@ function ProfilePage() {
             transcript) is no longer linked. /athena is the canonical
             conversation surface. */}
         {profile?.suspended_by_moderator ? (
-          <p
+          <Link
+            to="/account/appeal"
             data-testid="profile-suspended-notice"
-            className="rounded-full border border-border px-6 py-3 text-center text-sm text-muted-foreground"
+            className="block w-full rounded-full border border-border px-6 py-3 text-center text-sm text-foreground"
           >
-            Your account is on hold. This isn't something you can change here.
-          </p>
+            Your account is on hold — see why, and respond
+          </Link>
         ) : (
           <>
             <button

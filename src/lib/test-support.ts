@@ -33,7 +33,7 @@ function matchOr(expr: string): Filter {
 class Query implements PromiseLike<{ data: unknown; error: { message: string } | null }> {
   private filters: Filter[] = [];
   private limitN: number | null = null;
-  private single: "maybe" | "one" | null = null;
+  private singleMode: "maybe" | "one" | null = null;
   private pending: { kind: "select" } | { kind: "mutate"; rows: Row[] } = { kind: "select" };
 
   constructor(
@@ -89,6 +89,18 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
     this.filters.push((r) => (op === "is" ? (r[col] ?? null) !== val : String(r[col]) !== String(val)));
     return this;
   }
+  gt(col: string, val: unknown) {
+    this.filters.push((r) => {
+      const rv = r[col];
+      if (rv == null) return false;
+      // Comparable as dates when they look like ISO timestamps, otherwise
+      // fall back to a plain relational comparison.
+      const a = typeof rv === "string" && /^\d{4}-\d{2}-\d{2}/.test(rv) ? Date.parse(rv) : rv;
+      const b = typeof val === "string" && /^\d{4}-\d{2}-\d{2}/.test(val) ? Date.parse(val) : val;
+      return (a as number) > (b as number);
+    });
+    return this;
+  }
   or(expr: string) {
     this.filters.push(matchOr(expr));
     return this;
@@ -101,7 +113,12 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
     return this;
   }
   maybeSingle() {
-    this.single = "maybe";
+    this.singleMode = "maybe";
+    return this;
+  }
+  /** Loose stand-in: real PostgREST errors on 0/>1 rows, this just takes the first. */
+  single() {
+    this.singleMode = "one";
     return this;
   }
 
@@ -168,7 +185,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string } |
     else if (this.pending.kind === "mutate") data = this.pending.rows;
     else data = this.rows().filter((r) => this.filters.every((f) => f(r)));
     if (this.limitN !== null) data = data.slice(0, this.limitN);
-    if (this.single) return { data: data[0] ?? null, error: null };
+    if (this.singleMode) return { data: data[0] ?? null, error: null };
     return { data, error: null };
   }
 
@@ -202,6 +219,20 @@ export class Db {
       from(table: string) {
         return new Query(db, table, role) as unknown as AnyBuilder;
       },
+      // Only `has_role` is modeled, backed by a seedable `user_roles` table
+      // (rows shaped { user_id, role }) -- the one RPC the app's own code
+      // actually calls today.
+      rpc(fn: string, args?: Record<string, unknown>) {
+        if (fn === "has_role") {
+          const uid = String(args?.["_user_id"] ?? "");
+          const wantRole = String(args?.["_role"] ?? "");
+          const has = db
+            .rows("user_roles")
+            .some((r) => String(r["user_id"]) === uid && String(r["role"]) === wantRole);
+          return Promise.resolve({ data: has, error: null });
+        }
+        return Promise.resolve({ data: null, error: { message: `rpc ${fn} not modeled` } });
+      },
     };
   }
   rows(table: string) {
@@ -222,7 +253,14 @@ export class Db {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyBuilder = any;
 
-export type FakeClient = { role: "member" | "admin"; from(table: string): AnyBuilder };
+export type FakeClient = {
+  role: "member" | "admin";
+  from(table: string): AnyBuilder;
+  rpc(
+    fn: string,
+    args?: Record<string, unknown>,
+  ): Promise<{ data: unknown; error: { message: string } | null }>;
+};
 
 /**
  * Call sites expect a real `SupabaseClient`. The harness satisfies only the

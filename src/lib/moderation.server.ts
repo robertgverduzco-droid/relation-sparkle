@@ -4,11 +4,17 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import * as z from "zod";
 
-export const resolveInput = z.object({
-  report_id: z.string().uuid(),
-  action: z.enum(["dismiss", "suspend", "ban"]),
-  note: z.string().max(1000).optional(),
-});
+export const resolveInput = z
+  .object({
+    report_id: z.string().uuid(),
+    action: z.enum(["dismiss", "suspend", "ban"]),
+    note: z.string().max(1000).optional(),
+  })
+  .refine((v) => v.action !== "suspend" || Boolean(v.note?.trim()), {
+    message:
+      "A behavior note is required when suspending an account -- it's the only thing the member will see explaining why.",
+    path: ["note"],
+  });
 
 export type ResolveInput = z.infer<typeof resolveInput>;
 
@@ -131,7 +137,7 @@ export async function resolveReportForModerator(
       resolution_note: data.note ?? null,
     })
     .eq("id", data.report_id)
-    .select("reported_id")
+    .select("reported_id, category, severity")
     .maybeSingle();
   if (rErr || !report) throw new Error(rErr?.message ?? "Report not found");
 
@@ -154,12 +160,66 @@ export async function resolveReportForModerator(
       .from("profiles")
       .update({ is_paused: true, suspended_by_moderator: true })
       .eq("id", reportedId);
+
+    // The one real write into the enforcement ladder schema (enforcement.server.ts
+    // exists but nothing calls it yet -- this suspend action is the only live
+    // path that actually creates a hold). This row is what an appeal points
+    // at: appeal_status starts 'not_requested' and enforcement_appeals has a
+    // unique index on action_id, so a member gets exactly one appeal per hold.
+    const { error: actionErr } = await supabaseAdmin.from("enforcement_actions").insert({
+      user_id: reportedId,
+      level: 2,
+      action: "account_hold",
+      conduct_category: (report.category as string) ?? "policy_violation",
+      severity: report.severity,
+      evidence_basis: "Moderator review of a member report",
+      behavior_note: data.note as string, // required by resolveInput's refine when action === "suspend"
+      initiated_by: userId,
+      report_id: data.report_id,
+      review_status: "substantiated",
+      appeal_status: "not_requested",
+    });
+    if (actionErr) throw new Error(actionErr.message);
+
+    const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+    await notify(supabaseAdmin as never, {
+      userId: reportedId,
+      category: "safety",
+      eventType: "account_suspended",
+      title: NOTIFICATION_COPY.account_suspended.title,
+      body: NOTIFICATION_COPY.account_suspended.body,
+      actionPath: "/account/appeal",
+      dedupeKey: `account_suspended:${data.report_id}`,
+    });
+
+    const { evaluateReadiness } = await import("./readiness.server");
+    await evaluateReadiness(supabaseAdmin, reportedId, "safety_change");
   } else if (data.action === "ban") {
     const { purgeMemberAndDeleteAuthUser } = await import("./account.server");
     await purgeMemberAndDeleteAuthUser(reportedId);
   }
   return { ok: true };
+}
 
+/**
+ * The only DB effect of lifting a moderator-imposed hold. Shared by direct
+ * reinstatement and a granted appeal so both paths guarantee identical
+ * downstream state -- including a fresh readiness evaluation. Nothing in the
+ * app's live gates reads a cached readiness row (member_readiness has no
+ * consumers; every real check calls evaluateReadiness fresh), so this call
+ * is belt-and-suspenders for that cache rather than load-bearing -- but it
+ * keeps that cache honest for anything that ever does read it.
+ */
+export async function clearHold(userId: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ is_paused: false, suspended_by_moderator: false })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+
+  const { evaluateReadiness } = await import("./readiness.server");
+  await evaluateReadiness(supabaseAdmin, userId, "safety_change");
 }
 
 /** Lift a moderator-imposed hold. The only path that may clear it. */
@@ -169,13 +229,7 @@ export async function reinstateAccount(
   data: ReinstateInput,
 ): Promise<{ ok: true }> {
   await assertModerator(supabase, userId);
-
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { error } = await supabaseAdmin
-    .from("profiles")
-    .update({ is_paused: false, suspended_by_moderator: false })
-    .eq("id", data.user_id);
-  if (error) throw new Error(error.message);
+  await clearHold(data.user_id);
 
   const { auditAdminAccess } = await import("./security.server");
   await auditAdminAccess({
@@ -189,6 +243,7 @@ export async function reinstateAccount(
   });
 
   const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await notify(supabaseAdmin as never, {
     userId: data.user_id,
     category: "safety",

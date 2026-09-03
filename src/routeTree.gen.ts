@@ -52,7 +52,9 @@ import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedIntroductionsIdRouteImport } from './routes/_authenticated/introductions.$id'
 import { Route as AuthenticatedFounderPhotosRouteImport } from './routes/_authenticated/founder.photos'
 import { Route as AuthenticatedFounderIntelligenceRouteImport } from './routes/_authenticated/founder.intelligence'
+import { Route as AuthenticatedFounderAppealsRouteImport } from './routes/_authenticated/founder.appeals'
 import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
+import { Route as AuthenticatedAccountAppealRouteImport } from './routes/_authenticated/account.appeal'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -280,11 +282,23 @@ const AuthenticatedFounderIntelligenceRoute =
     path: '/intelligence',
     getParentRoute: () => AuthenticatedFounderRoute,
   } as any)
+const AuthenticatedFounderAppealsRoute =
+  AuthenticatedFounderAppealsRouteImport.update({
+    id: '/appeals',
+    path: '/appeals',
+    getParentRoute: () => AuthenticatedFounderRoute,
+  } as any)
 const AuthenticatedConnectionsIdRoute =
   AuthenticatedConnectionsIdRouteImport.update({
     id: '/$id',
     path: '/$id',
     getParentRoute: () => AuthenticatedConnectionsRoute,
+  } as any)
+const AuthenticatedAccountAppealRoute =
+  AuthenticatedAccountAppealRouteImport.update({
+    id: '/appeal',
+    path: '/appeal',
+    getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -295,7 +309,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/account': typeof AuthenticatedAccountRoute
+  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/athena': typeof AuthenticatedAthenaRoute
   '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -322,7 +336,9 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/ws-echo': typeof ApiWsEchoRoute
+  '/account/appeal': typeof AuthenticatedAccountAppealRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/founder/appeals': typeof AuthenticatedFounderAppealsRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/founder/photos': typeof AuthenticatedFounderPhotosRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
@@ -340,7 +356,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/account': typeof AuthenticatedAccountRoute
+  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/athena': typeof AuthenticatedAthenaRoute
   '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -367,7 +383,9 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/ws-echo': typeof ApiWsEchoRoute
+  '/account/appeal': typeof AuthenticatedAccountAppealRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/founder/appeals': typeof AuthenticatedFounderAppealsRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/founder/photos': typeof AuthenticatedFounderPhotosRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
@@ -387,7 +405,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/athena': typeof AuthenticatedAthenaRoute
   '/_authenticated/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
@@ -414,7 +432,9 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/ws-echo': typeof ApiWsEchoRoute
+  '/_authenticated/account/appeal': typeof AuthenticatedAccountAppealRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
+  '/_authenticated/founder/appeals': typeof AuthenticatedFounderAppealsRoute
   '/_authenticated/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
   '/_authenticated/founder/photos': typeof AuthenticatedFounderPhotosRoute
   '/_authenticated/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
@@ -461,7 +481,9 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/api/ws-echo'
+    | '/account/appeal'
     | '/connections/$id'
+    | '/founder/appeals'
     | '/founder/intelligence'
     | '/founder/photos'
     | '/introductions/$id'
@@ -506,7 +528,9 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/api/ws-echo'
+    | '/account/appeal'
     | '/connections/$id'
+    | '/founder/appeals'
     | '/founder/intelligence'
     | '/founder/photos'
     | '/introductions/$id'
@@ -552,7 +576,9 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/api/ws-echo'
+    | '/_authenticated/account/appeal'
     | '/_authenticated/connections/$id'
+    | '/_authenticated/founder/appeals'
     | '/_authenticated/founder/intelligence'
     | '/_authenticated/founder/photos'
     | '/_authenticated/introductions/$id'
@@ -889,6 +915,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFounderIntelligenceRouteImport
       parentRoute: typeof AuthenticatedFounderRoute
     }
+    '/_authenticated/founder/appeals': {
+      id: '/_authenticated/founder/appeals'
+      path: '/appeals'
+      fullPath: '/founder/appeals'
+      preLoaderRoute: typeof AuthenticatedFounderAppealsRouteImport
+      parentRoute: typeof AuthenticatedFounderRoute
+    }
     '/_authenticated/connections/$id': {
       id: '/_authenticated/connections/$id'
       path: '/$id'
@@ -896,8 +929,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConnectionsIdRouteImport
       parentRoute: typeof AuthenticatedConnectionsRoute
     }
+    '/_authenticated/account/appeal': {
+      id: '/_authenticated/account/appeal'
+      path: '/appeal'
+      fullPath: '/account/appeal'
+      preLoaderRoute: typeof AuthenticatedAccountAppealRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
   }
 }
+
+interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountAppealRoute: typeof AuthenticatedAccountAppealRoute
+}
+
+const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountAppealRoute: AuthenticatedAccountAppealRoute,
+}
+
+const AuthenticatedAccountRouteWithChildren =
+  AuthenticatedAccountRoute._addFileChildren(AuthenticatedAccountRouteChildren)
 
 interface AuthenticatedConnectionsRouteChildren {
   AuthenticatedConnectionsIdRoute: typeof AuthenticatedConnectionsIdRoute
@@ -914,11 +965,13 @@ const AuthenticatedConnectionsRouteWithChildren =
   )
 
 interface AuthenticatedFounderRouteChildren {
+  AuthenticatedFounderAppealsRoute: typeof AuthenticatedFounderAppealsRoute
   AuthenticatedFounderIntelligenceRoute: typeof AuthenticatedFounderIntelligenceRoute
   AuthenticatedFounderPhotosRoute: typeof AuthenticatedFounderPhotosRoute
 }
 
 const AuthenticatedFounderRouteChildren: AuthenticatedFounderRouteChildren = {
+  AuthenticatedFounderAppealsRoute: AuthenticatedFounderAppealsRoute,
   AuthenticatedFounderIntelligenceRoute: AuthenticatedFounderIntelligenceRoute,
   AuthenticatedFounderPhotosRoute: AuthenticatedFounderPhotosRoute,
 }
@@ -965,7 +1018,7 @@ const AuthenticatedProfileRouteWithChildren =
   AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
   AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
   AuthenticatedBetaAccountsRoute: typeof AuthenticatedBetaAccountsRoute
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
@@ -986,7 +1039,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
   AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
   AuthenticatedBetaAccountsRoute: AuthenticatedBetaAccountsRoute,
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,

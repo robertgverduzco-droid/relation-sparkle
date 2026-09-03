@@ -190,4 +190,16 @@ export const NOTIFICATION_COPY = {
     title: "A safety update",
     body: "There's information about a recent report on your account.",
   },
+  account_suspended: {
+    title: "Your account is on hold",
+    body: "Athena's team reviewed a report and placed a hold on your account. You can see why, and respond, from your account settings.",
+  },
+  appeal_granted: {
+    title: "Your appeal was granted",
+    body: "Athena's team reviewed your appeal and agreed — the hold has been lifted.",
+  },
+  appeal_upheld: {
+    title: "A decision on your appeal",
+    body: "Athena's team reviewed your appeal. The hold stands.",
+  },
 } as const;

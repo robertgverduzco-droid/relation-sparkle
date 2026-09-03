@@ -30,6 +30,7 @@ function ModerationPage() {
   const reinstate = useServerFn(reinstateModeratedAccount);
   const [ready, setReady] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
+  const [notes, setNotes] = useState<Record<string, string>>({});
   // BR01-06: exactly one denial notice per attempt. Effect re-runs (StrictMode,
   // remount, or a changed server-fn identity) must not repeat it, and sonner
   // dedupes on the shared id even if the route is re-entered.
@@ -60,8 +61,22 @@ function ModerationPage() {
 
 
   async function act(id: string, action: "dismiss" | "suspend" | "ban") {
+    const note = notes[id]?.trim() || undefined;
+    // A behavior note is the member's entire window into why they're on
+    // hold once they can appeal it -- it can't be optional for suspend.
+    if (action === "suspend" && !note) {
+      toast.error(
+        "A behavior note is required to suspend — the member will see it if they appeal.",
+      );
+      return;
+    }
     if (action === "ban" && !confirm("Permanently delete this account?")) return;
-    await resolve({ data: { report_id: id, action } });
+    try {
+      await resolve({ data: { report_id: id, action, note } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "That didn't go through.");
+      return;
+    }
     const res = await list({});
     setReports(res.reports);
     toast(action === "dismiss" ? "Report dismissed." : action === "suspend" ? "Account paused." : "Account removed.");
@@ -101,11 +116,25 @@ function ModerationPage() {
               </p>
               {r.details && <p className="mt-2 text-sm text-ink-soft">{r.details}</p>}
               {r.status === "open" && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button onClick={() => void act(r.id, "dismiss")} className="rounded-full border border-border px-3 py-1.5 text-xs">Dismiss</button>
-                  <button onClick={() => void act(r.id, "suspend")} className="rounded-full border border-border px-3 py-1.5 text-xs">Pause account</button>
-                  <button onClick={() => void act(r.id, "ban")} className="rounded-full bg-destructive px-3 py-1.5 text-xs text-destructive-foreground">Remove</button>
-                </div>
+                <>
+                  <label className="mt-3 block">
+                    <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      Behavior note — required to suspend, shown to the member if they appeal
+                    </span>
+                    <textarea
+                      value={notes[r.id] ?? ""}
+                      onChange={(e) => setNotes((cur) => ({ ...cur, [r.id]: e.target.value }))}
+                      maxLength={1000}
+                      rows={2}
+                      className="mt-1 w-full resize-none rounded-lg border border-border bg-transparent px-2 py-1.5 text-xs text-foreground"
+                    />
+                  </label>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button onClick={() => void act(r.id, "dismiss")} className="rounded-full border border-border px-3 py-1.5 text-xs">Dismiss</button>
+                    <button onClick={() => void act(r.id, "suspend")} className="rounded-full border border-border px-3 py-1.5 text-xs">Pause account</button>
+                    <button onClick={() => void act(r.id, "ban")} className="rounded-full bg-destructive px-3 py-1.5 text-xs text-destructive-foreground">Remove</button>
+                  </div>
+                </>
               )}
               {r.status !== "open" && r.resolution_note && (
                 <p className="mt-2 text-xs text-muted-foreground">Note: {r.resolution_note}</p>
