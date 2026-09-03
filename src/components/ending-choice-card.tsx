@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { getEndingChoice, chooseEndingPath } from "@/lib/relationship.functions";
 
 type Pending = {
@@ -45,8 +46,8 @@ export function EndingChoiceCard() {
       const res = await choose({ data: { transition_id: pending.id, choice: key } });
       setAck(res.acknowledgement);
       setPending({ ...pending, choice: key });
-    } catch {
-      setAck(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "That didn't go through. Try again.");
     } finally {
       setBusy(false);
     }

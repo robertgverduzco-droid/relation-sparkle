@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { getFocusState, optIntoFocus, endFocus } from "@/lib/relationship.functions";
 
 type State = {
@@ -50,6 +51,8 @@ export function FocusModeCard({
     try {
       await optIn({ data: { connection_id: connectionId } });
       await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "That didn't go through. Try again.");
     } finally {
       setBusy(false);
     }
@@ -60,6 +63,8 @@ export function FocusModeCard({
     try {
       await leave({ data: { connection_id: connectionId } });
       await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "That didn't go through. Try again.");
     } finally {
       setBusy(false);
     }

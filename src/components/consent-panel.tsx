@@ -28,8 +28,10 @@ export function ConsentPanel({
   const [status, setStatus] = useState<ConsentStatus | null>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const load = useCallback(() => {
+    setLoadFailed(false);
     statusFn({})
       .then((s) => {
         const next = s as ConsentStatus;
@@ -39,10 +41,31 @@ export function ConsentPanel({
         );
         if (mode === "gate" && next.outstanding.length === 0) onSatisfied?.();
       })
-      .catch(() => undefined);
+      .catch(() => setLoadFailed(true));
   }, [statusFn, mode, onSatisfied]);
 
   useEffect(load, [load]);
+
+  // A blank panel with a dead Continue button is a dead end at the very
+  // front door of onboarding — this must never render nothing on failure.
+  if (loadFailed && !status) {
+    return (
+      <div className="rounded-2xl border border-border/70 bg-card p-5">
+        <p className="text-[12px] uppercase tracking-[0.22em] text-muted-foreground">
+          {mode === "gate" ? "Before we begin" : "Your permissions"}
+        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-ink-soft">
+          Athena couldn't bring these up just now — that's on her end, not yours.
+        </p>
+        <button
+          onClick={load}
+          className="mt-4 rounded-full border border-border px-4 py-2 text-sm text-foreground"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   if (!status) return null;
   if (mode === "gate" && status.outstanding.length === 0) return null;

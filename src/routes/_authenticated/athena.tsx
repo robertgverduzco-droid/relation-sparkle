@@ -472,11 +472,17 @@ function AthenaPage() {
       // 3. Mark session complete and force matchmaking. The server refuses
       // when readiness is unmet, so leaving early can never make someone
       // introduction-eligible.
-      let ready = true;
+      let ready: boolean;
       try {
         const res = await complete({});
         ready = (res as { ready?: boolean }).ready !== false;
-      } catch { /* non-fatal */ }
+      } catch {
+        // A failed call is unknown, not "yes" — defaulting to ready would
+        // tell the member she's done when nothing was actually confirmed.
+        // The transcript and reflection above already saved either way.
+        toast("Something went wrong finishing that. Nothing was lost — try again.");
+        return;
+      }
       if (!ready) {
         setIntroReady(false);
         introReadyRef.current = false;
