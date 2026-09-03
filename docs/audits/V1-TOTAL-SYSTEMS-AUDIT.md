@@ -739,3 +739,16 @@ D-44/F-33 counterpart photography and progressive revelation; D5 landing-chime,
 playback and caption divergences; monitoring operational verification;
 restore-purchase rehearsal; §16 legal dependencies; membership tier and pricing
 decisions; billing activation; native-readiness and native packaging.
+
+---
+
+## Addendum — 2026-09-02 (post-audit, found during a member-journey trace; not part of the original three-track review)
+
+**Known issue: no appeal path for `safety_hold`.** `enforcement_appeals` exists as a real
+table with member-level INSERT/SELECT grants, and `enforcement_actions.appeal_status` exists
+as a column — both clearly built to let a held member contest a report. CODE-TRACED: no
+route, component, or server function anywhere in `src/` ever reads or writes either. A member
+in `safety_hold` (`src/lib/readiness.server.ts`) sees only "There's something on your account
+I need to resolve before I bring anyone to you," with no in-app way to see the report or
+dispute it. Deferred — the beta-blocking photo moderation dead end (same trace) is being fixed
+first; this is not.
