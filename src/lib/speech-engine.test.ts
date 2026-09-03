@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   SPEECH_ENGINE_ISSUER,
   SPEECH_ENGINE_SUBJECT,
@@ -172,5 +174,34 @@ describe("speech engine protocol", () => {
   it("treats a newer event id as superseding an in-flight turn", () => {
     expect(isSuperseded(3, 4)).toBe(true);
     expect(isSuperseded(4, 4)).toBe(false);
+  });
+});
+
+describe("a live call opened after typing carries that text forward, not just fetches it", () => {
+  // The failure this guards against: ElevenLabs's own `turn.history` only
+  // ever covers turns spoken within the current call. Fetching the prior
+  // text conversation and then never using it would leave voice starting
+  // cold exactly as before -- the same shape of bug as the reveal note that
+  // reached nothing. Source-scanned because ws.ts is a Workers WebSocket
+  // route (WebSocketPair) that isn't practically instantiable in vitest.
+  const src = readFileSync(join(process.cwd(), "src/routes/api/speech-engine/ws.ts"), "utf8");
+
+  it("reads interview_sessions -- the same store the text path already uses, not a second one", () => {
+    expect(src).toMatch(/from\("interview_sessions"\)/);
+    expect(src).toMatch(/\.select\("messages"\)/);
+  });
+
+  it("the fetched seed actually lands in the messages sent to the model", () => {
+    expect(src).toMatch(/const seed = credential\.userId[\s\S]{0,40}priorHistoryFor/);
+    const messagesBlock = src.slice(
+      src.indexOf("const seed ="),
+      src.indexOf("try {", src.indexOf("const seed =")),
+    );
+    expect(messagesBlock).toContain("...seed");
+    expect(messagesBlock).toContain("...turn.history");
+  });
+
+  it("is cached per connection, not refetched on every turn", () => {
+    expect(src).toMatch(/if \(priorHistory !== null\) return priorHistory;/);
   });
 });

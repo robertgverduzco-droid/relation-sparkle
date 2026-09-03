@@ -85,6 +85,44 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
         // Turn bookkeeping: only the newest event_id is worth generating for.
         let latestEventId = -Infinity;
         let inFlight: AbortController | null = null;
+
+        // Continuity with whatever was said before this live call started.
+        // ElevenLabs's own `turn.history` only ever covers turns spoken
+        // *within* the current call -- it has no knowledge of a prior text
+        // conversation, so a live call opened after typing started cold and
+        // re-asked what the member had just answered. Fetched once per
+        // connection (not per turn, to avoid a race with the client's own
+        // persist() of live turns landing mid-call) from interview_sessions
+        // -- the same store the text path already reads and writes, not a
+        // second conversation history.
+        let priorHistory: { role: "user" | "assistant"; content: string }[] | null = null;
+        const priorHistoryFor = async (
+          userId: string,
+        ): Promise<{ role: "user" | "assistant"; content: string }[]> => {
+          if (priorHistory !== null) return priorHistory;
+          try {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { data } = await supabaseAdmin
+              .from("interview_sessions")
+              .select("messages")
+              .eq("user_id", userId)
+              .maybeSingle();
+            const stored = Array.isArray(data?.messages)
+              ? (data!.messages as Array<{ role?: unknown; content?: unknown }>)
+              : [];
+            priorHistory = stored
+              .filter((m) => m.role === "user" || m.role === "assistant")
+              .slice(-12)
+              .map((m) => ({
+                role: m.role as "user" | "assistant",
+                content: String(m.content ?? ""),
+              }));
+          } catch {
+            // A missing recap is a worse conversation, not a broken one.
+            priorHistory = [];
+          }
+          return priorHistory;
+        };
         // ElevenLabs re-delivers the same user_transcript more than once for a
         // single utterance. Answering each copy generated two full replies and
         // two audio streams per turn, which doubled cost and helped tear the
@@ -171,7 +209,9 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             return;
           }
 
+          const seed = credential.userId ? await priorHistoryFor(credential.userId) : [];
           const messages = [
+            ...seed,
             ...turn.history,
             { role: "user" as const, content: turn.text },
           ];
