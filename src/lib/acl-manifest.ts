@@ -44,6 +44,10 @@ export const AUTHENTICATED_ACL: Record<string, TableAcl> = {
   athena_experiments: none,
   athena_intelligence_versions: none,
   athena_self_evaluations: none,
+  athena_turn_decisions: none,
+  athena_closet_events: none,
+  live_voice_grants: none,
+  personality_variant_overrides: none,
   athena_usage_log: {
     insert: [
       "billed_at",
