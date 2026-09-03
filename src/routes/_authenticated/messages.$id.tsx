@@ -10,6 +10,8 @@ import {
   reportUser,
 } from "@/lib/messaging.functions";
 import { ReportSheet } from "@/components/report-sheet";
+import { FieldBack } from "@/components/field-back";
+import { ArrowRight, ChevronLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/messages/$id")({
   head: () => ({
@@ -54,7 +56,7 @@ function ConversationPage() {
   useEffect(() => { void load(); }, [load]);
 
   useEffect(() => {
-    scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   // Realtime subscription
@@ -134,80 +136,92 @@ function ConversationPage() {
     }
   }
 
+  const dayLabel = (iso: string) => {
+    const d = new Date(iso);
+    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    if (days <= 0) return "Today";
+    if (days === 1) return "Yesterday";
+    if (days < 7) return d.toLocaleDateString(undefined, { weekday: "long" });
+    return d.toLocaleDateString(undefined, { day: "numeric", month: "long" });
+  };
+
+  let lastDay = "";
+
   return (
-    <div className="screen-shell safe-top flex flex-col">
-      <header className="px-4 pt-4 pb-3 border-b border-border/60 flex items-center justify-between">
+    <div className="surface" data-testid="conversation-screen">
+      <FieldBack />
+      <div className="surface-top">
         <button
           onClick={() => navigate({ to: "/messages" })}
-          className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
+          className="vbtn"
+          aria-label="Back to messages"
         >
-          ← Messages
+          <ChevronLeft className="h-4 w-4" strokeWidth={1.4} />
         </button>
-        <span className="font-display text-[1.1rem] text-foreground">{other?.name ?? "…"}</span>
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className="text-xs uppercase tracking-[0.25em] text-muted-foreground"
-          aria-label="More"
-        >
-          ⋯
+        <div className="ms-name">{other?.name ?? "…"}</div>
+        <button onClick={() => setMenuOpen((v) => !v)} className="vbtn" aria-label="More">
+          <span className="text-[var(--lavender)] opacity-60">⋯</span>
         </button>
-      </header>
+      </div>
 
       {menuOpen && (
-        <div className="absolute right-4 top-14 z-30 rounded-2xl border border-border bg-card shadow-lg overflow-hidden">
+        <div className="ms-menu">
+          <button onClick={() => { setMenuOpen(false); setReportOpen(true); }}>Report a concern</button>
           <button
-            onClick={() => { setMenuOpen(false); setReportOpen(true); }}
-            className="block w-full px-5 py-3 text-left text-sm text-foreground hover:bg-accent"
-          >
-            Report a concern
-          </button>
-          <button
+            className="ms-menu-warn"
             onClick={() => { setMenuOpen(false); void doBlock(); }}
-            className="block w-full px-5 py-3 text-left text-sm text-destructive hover:bg-accent"
           >
             Block {other?.name ?? "them"}
           </button>
         </div>
       )}
 
-      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 py-5 space-y-3">
+      <div ref={scrollerRef} className="surface-scroll ms-thread">
         {messages.length === 0 ? (
-          <p className="text-center text-sm text-muted-foreground pt-8">
-            Say hello — no pressure, no scripts.
-          </p>
+          <p className="ms-quiet">Nothing said yet. There is no right way to start.</p>
         ) : (
-          messages.map((m) => (
-            <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
-              <div
-                className={
-                  m.mine
-                    ? "max-w-[80%] rounded-3xl rounded-br-lg bg-primary px-4 py-2.5 text-[15px] text-primary-foreground"
-                    : "max-w-[80%] rounded-3xl rounded-bl-lg bg-card border border-border px-4 py-2.5 text-[15px] text-foreground"
-                }
-              >
-                <p className="whitespace-pre-wrap">{m.body}</p>
+          messages.map((m) => {
+            const day = dayLabel(m.created_at);
+            const rule = day !== lastDay ? day : null;
+            lastDay = day;
+            const athena = m.kind === "system" || m.kind === "safety_notice";
+            return (
+              <div key={m.id}>
+                {rule && (
+                  <div className="day-rule">
+                    <span className="line" />
+                    <span className="sys">{rule}</span>
+                    <span className="line" />
+                  </div>
+                )}
+                {athena ? (
+                  <div className="ms-athena">
+                    <div className="sys">Athena</div>
+                    <p>{m.body}</p>
+                  </div>
+                ) : (
+                  <div className={`turn ${m.mine ? "mine" : "theirs"}`}>
+                    <div className="whom">{m.mine ? "You" : (other?.name ?? "Them")}</div>
+                    <p>{m.body}</p>
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      <form onSubmit={submit} className="safe-bottom border-t border-border/60 bg-background/90 backdrop-blur px-3 pt-3 pb-3">
-        <div className="flex items-end gap-2 rounded-3xl border border-input bg-card px-3 py-2">
+      <form onSubmit={submit} className="ms-compose">
+        <div className="ms-box">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void submit(e as unknown as React.FormEvent); } }}
             rows={1}
-            placeholder="Write a message"
-            className="min-h-[24px] max-h-40 flex-1 resize-none bg-transparent px-1 py-1.5 text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
+            placeholder={other ? `Write to ${other.name}` : "Write a message"}
           />
-          <button
-            type="submit"
-            disabled={!input.trim() || busy}
-            className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
-          >
-            Send
+          <button type="submit" disabled={!input.trim() || busy} aria-label="Send">
+            <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.4} />
           </button>
         </div>
       </form>

@@ -83,7 +83,7 @@ export const getTodayRead = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<TodayRead> => {
     const { supabase, userId } = context;
-    const [{ data: intel }, { data: facets }, { data: history }] = await Promise.all([
+    const [intelRes, facetsRes, historyRes] = await Promise.all([
       supabase
         .from("user_intelligence")
         .select("self_understanding, readiness_summary")
@@ -100,6 +100,14 @@ export const getTodayRead = createServerFn({ method: "GET" })
         .order("refined_at", { ascending: false })
         .limit(3),
     ]);
+
+    // A failed read must never be presented as "nothing formed yet" (the
+    // Understanding precedent). Let it throw; the surface says so plainly.
+    const firstError = intelRes.error ?? facetsRes.error ?? historyRes.error;
+    if (firstError) throw new Error(`today-read-failed: ${firstError.message}`);
+    const intel = intelRes.data;
+    const facets = facetsRes.data;
+    const history = historyRes.data;
 
     const row = (intel ?? null) as {
       self_understanding?: string | null;
