@@ -41,6 +41,15 @@ describe("memberVoice — Athena's private notes, re-voiced for the person they 
     expect(memberVoice(t, "Robert")).toBe(t);
   });
 
+  it("keeps conjunction-chained verbs in agreement (real stored note)", () => {
+    expect(
+      memberVoice(
+        "Robert values being active and knows he can make rapid progress, but he reports inconsistency.",
+        "Robert",
+      ),
+    ).toBe("You value being active and know you can make rapid progress, but you report inconsistency.");
+  });
+
   it("returns null for empty material rather than an empty paragraph", () => {
     expect(memberVoice("", "Robert")).toBeNull();
     expect(memberVoice(null, "Robert")).toBeNull();
