@@ -82,6 +82,15 @@ that read to admins, and every write is service-role only.
 `restore_reconciliations` have RLS enabled with no policies. That is the
 intended deny-by-default posture for service-role-only tables, not a gap.
 
+The same posture now covers the learning, observability and short-lived
+credential tables: `athena_predictions`, `athena_prediction_outcomes`,
+`athena_hypotheses`, `athena_hypothesis_evidence`, `athena_hypothesis_reviews`,
+`athena_intelligence_versions`, `athena_experiments`, `athena_turn_decisions`,
+`athena_closet_events`, `live_voice_grants` and
+`personality_variant_overrides`. Their unused `authenticated`/`anon` grants
+were revoked; every code path already reached them through the service-role
+client inside verified server functions, so nothing member-facing changes.
+
 ## Column-level grants on `profiles` (A-08)
 
 `profiles` deliberately has **no table-level `UPDATE`** for `authenticated`.
