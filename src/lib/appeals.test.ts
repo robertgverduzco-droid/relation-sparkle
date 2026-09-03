@@ -7,6 +7,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Db, nextId } from "./test-support";
+// Imported statically, not with `await import()` inside a test. Loading this
+// module graph takes seconds under a fully parallel suite run, and paying that
+// cost inside the first timed test is what made this file flake with a 5s
+// timeout while passing in isolation. The supabaseAdmin mock above is hoisted,
+// so a static import still receives the per-test in-memory database.
+import { evaluateReadiness, introductionGate } from "./readiness.server";
+import { clearHold, reinstateAccount, resolveInput } from "./moderation.server";
+import { resolveAppealAsFounder, fileAppeal } from "./appeals.server";
 
 let db: Db;
 
@@ -85,7 +93,6 @@ beforeEach(() => {
 describe("a lifted hold genuinely restores introduction eligibility (proof, not assumption)", () => {
   it("sanity check: this seed is fully ready-shaped except for the hold", async () => {
     seedReadyButHeld();
-    const { evaluateReadiness } = await import("./readiness.server");
     const before = await evaluateReadiness(db.member(), MEMBER, "manual_request");
     expect(before.state).toBe("A");
     expect(before.reason_code).toBe("suspended");
@@ -93,13 +100,11 @@ describe("a lifted hold genuinely restores introduction eligibility (proof, not 
 
   it("clearHold alone: the very next evaluateReadiness call returns state C, live", async () => {
     seedReadyButHeld();
-    const { clearHold } = await import("./moderation.server");
     await clearHold(MEMBER);
 
     expect(db.one("profiles", { id: MEMBER })!["is_paused"]).toBe(false);
     expect(db.one("profiles", { id: MEMBER })!["suspended_by_moderator"]).toBe(false);
 
-    const { evaluateReadiness, introductionGate } = await import("./readiness.server");
     const after = await evaluateReadiness(db.member(), MEMBER, "manual_request");
     expect(after.state).toBe("C");
     expect(after.reason_code).toBe("ready");
@@ -112,10 +117,8 @@ describe("a lifted hold genuinely restores introduction eligibility (proof, not 
 
   it("reinstateAccount (the moderator path) produces the same unblocked result", async () => {
     seedReadyButHeld();
-    const { reinstateAccount } = await import("./moderation.server");
     await reinstateAccount(db.member(), FOUNDER, { user_id: MEMBER });
 
-    const { introductionGate } = await import("./readiness.server");
     const gate = await introductionGate(db.member(), MEMBER);
     expect(gate.allowed).toBe(true);
     expect(gate.state).toBe("C");
@@ -142,7 +145,6 @@ describe("a lifted hold genuinely restores introduction eligibility (proof, not 
       status: "open",
     });
 
-    const { resolveAppealAsFounder } = await import("./appeals.server");
     await resolveAppealAsFounder(
       FOUNDER,
       appealId,
@@ -156,7 +158,6 @@ describe("a lifted hold genuinely restores introduction eligibility (proof, not 
     expect(db.one("enforcement_appeals", { id: appealId })!["status"]).toBe("granted");
     expect(db.one("enforcement_actions", { id: actionId })!["appeal_status"]).toBe("granted");
 
-    const { introductionGate } = await import("./readiness.server");
     const gate = await introductionGate(db.member(), MEMBER);
     expect(gate.allowed).toBe(true);
     expect(gate.state).toBe("C");
@@ -188,14 +189,12 @@ describe("a lifted hold genuinely restores introduction eligibility (proof, not 
       status: "open",
     });
 
-    const { resolveAppealAsFounder } = await import("./appeals.server");
     await resolveAppealAsFounder(FOUNDER, appealId, "uphold", "Confirmed by message logs.");
 
     expect(db.one("profiles", { id: MEMBER })!["is_paused"]).toBe(true);
     expect(db.one("profiles", { id: MEMBER })!["suspended_by_moderator"]).toBe(true);
     expect(db.one("enforcement_appeals", { id: appealId })!["status"]).toBe("upheld");
 
-    const { introductionGate } = await import("./readiness.server");
     const gate = await introductionGate(db.member(), MEMBER);
     expect(gate.allowed).toBe(false);
     expect(gate.state).toBe("A");
@@ -205,7 +204,6 @@ describe("a lifted hold genuinely restores introduction eligibility (proof, not 
 describe("appeal filing", () => {
   it("a member with no active hold cannot file one", async () => {
     seedReadyButHeld({ is_paused: false, suspended_by_moderator: false });
-    const { fileAppeal } = await import("./appeals.server");
     await expect(fileAppeal(db.member(), MEMBER, "why me?")).rejects.toThrow(/no active hold/i);
   });
 
@@ -216,7 +214,6 @@ describe("appeal filing", () => {
     seedReadyButHeld();
     expect(db.rows("enforcement_actions")).toHaveLength(0);
 
-    const { fileAppeal } = await import("./appeals.server");
     await fileAppeal(db.member(), MEMBER, "This was a misunderstanding.");
 
     expect(db.rows("enforcement_actions")).toHaveLength(1);
@@ -228,7 +225,6 @@ describe("appeal filing", () => {
 
   it("one appeal per hold -- a second attempt is refused, not silently duplicated", async () => {
     seedReadyButHeld();
-    const { fileAppeal } = await import("./appeals.server");
     await fileAppeal(db.member(), MEMBER, "First attempt.");
     expect(db.rows("enforcement_appeals")).toHaveLength(1);
 
@@ -246,7 +242,6 @@ describe("appeal filing", () => {
 
 describe("suspending requires a behavior note -- it's the member's only window into why", () => {
   it("resolveInput rejects a suspend with no note", async () => {
-    const { resolveInput } = await import("./moderation.server");
     const result = resolveInput.safeParse({
       report_id: "aaaaaaaa-0000-4000-8000-000000000099",
       action: "suspend",
@@ -255,7 +250,6 @@ describe("suspending requires a behavior note -- it's the member's only window i
   });
 
   it("resolveInput accepts dismiss and ban with no note", async () => {
-    const { resolveInput } = await import("./moderation.server");
     for (const action of ["dismiss", "ban"] as const) {
       const result = resolveInput.safeParse({
         report_id: "aaaaaaaa-0000-4000-8000-000000000099",
