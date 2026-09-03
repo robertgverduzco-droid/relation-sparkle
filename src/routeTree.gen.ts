@@ -50,6 +50,7 @@ import { Route as ApiPublicOpsHeartbeatRouteImport } from './routes/api/public/o
 import { Route as AuthenticatedProfileReviewRouteImport } from './routes/_authenticated/profile.review'
 import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
 import { Route as AuthenticatedIntroductionsIdRouteImport } from './routes/_authenticated/introductions.$id'
+import { Route as AuthenticatedFounderPhotosRouteImport } from './routes/_authenticated/founder.photos'
 import { Route as AuthenticatedFounderIntelligenceRouteImport } from './routes/_authenticated/founder.intelligence'
 import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
 
@@ -267,6 +268,12 @@ const AuthenticatedIntroductionsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedIntroductionsRoute,
   } as any)
+const AuthenticatedFounderPhotosRoute =
+  AuthenticatedFounderPhotosRouteImport.update({
+    id: '/photos',
+    path: '/photos',
+    getParentRoute: () => AuthenticatedFounderRoute,
+  } as any)
 const AuthenticatedFounderIntelligenceRoute =
   AuthenticatedFounderIntelligenceRouteImport.update({
     id: '/intelligence',
@@ -317,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/api/ws-echo': typeof ApiWsEchoRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
+  '/founder/photos': typeof AuthenticatedFounderPhotosRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
@@ -361,6 +369,7 @@ export interface FileRoutesByTo {
   '/api/ws-echo': typeof ApiWsEchoRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
+  '/founder/photos': typeof AuthenticatedFounderPhotosRoute
   '/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/profile/review': typeof AuthenticatedProfileReviewRoute
@@ -407,6 +416,7 @@ export interface FileRoutesById {
   '/api/ws-echo': typeof ApiWsEchoRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/_authenticated/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
+  '/_authenticated/founder/photos': typeof AuthenticatedFounderPhotosRoute
   '/_authenticated/introductions/$id': typeof AuthenticatedIntroductionsIdRoute
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
   '/_authenticated/profile/review': typeof AuthenticatedProfileReviewRoute
@@ -453,6 +463,7 @@ export interface FileRouteTypes {
     | '/api/ws-echo'
     | '/connections/$id'
     | '/founder/intelligence'
+    | '/founder/photos'
     | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
@@ -497,6 +508,7 @@ export interface FileRouteTypes {
     | '/api/ws-echo'
     | '/connections/$id'
     | '/founder/intelligence'
+    | '/founder/photos'
     | '/introductions/$id'
     | '/messages/$id'
     | '/profile/review'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/api/ws-echo'
     | '/_authenticated/connections/$id'
     | '/_authenticated/founder/intelligence'
+    | '/_authenticated/founder/photos'
     | '/_authenticated/introductions/$id'
     | '/_authenticated/messages/$id'
     | '/_authenticated/profile/review'
@@ -862,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIntroductionsIdRouteImport
       parentRoute: typeof AuthenticatedIntroductionsRoute
     }
+    '/_authenticated/founder/photos': {
+      id: '/_authenticated/founder/photos'
+      path: '/photos'
+      fullPath: '/founder/photos'
+      preLoaderRoute: typeof AuthenticatedFounderPhotosRouteImport
+      parentRoute: typeof AuthenticatedFounderRoute
+    }
     '/_authenticated/founder/intelligence': {
       id: '/_authenticated/founder/intelligence'
       path: '/intelligence'
@@ -895,10 +915,12 @@ const AuthenticatedConnectionsRouteWithChildren =
 
 interface AuthenticatedFounderRouteChildren {
   AuthenticatedFounderIntelligenceRoute: typeof AuthenticatedFounderIntelligenceRoute
+  AuthenticatedFounderPhotosRoute: typeof AuthenticatedFounderPhotosRoute
 }
 
 const AuthenticatedFounderRouteChildren: AuthenticatedFounderRouteChildren = {
   AuthenticatedFounderIntelligenceRoute: AuthenticatedFounderIntelligenceRoute,
+  AuthenticatedFounderPhotosRoute: AuthenticatedFounderPhotosRoute,
 }
 
 const AuthenticatedFounderRouteWithChildren =

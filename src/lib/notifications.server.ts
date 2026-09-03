@@ -182,6 +182,10 @@ export const NOTIFICATION_COPY = {
     title: "Your account has changed",
     body: "There's an update on your account.",
   },
+  photo_rejected: {
+    title: "A photo needs another try",
+    body: "One of your photos didn't meet what's needed for your profile. Feel free to add a different one — there's no limit on trying again.",
+  },
   safety_update: {
     title: "A safety update",
     body: "There's information about a recent report on your account.",
