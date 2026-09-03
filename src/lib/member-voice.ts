@@ -105,10 +105,9 @@ function escapeRe(s: string): string {
 function dominantFamily(text: string): keyof typeof FAMILIES | null {
   const counts = (Object.keys(FAMILIES) as Array<keyof typeof FAMILIES>).map((k) => {
     const f = FAMILIES[k];
-    const n =
-      (text.match(f.subject)?.length ?? 0) +
-      (text.match(f.possessive)?.length ?? 0) +
-      (text.match(f.reflexive)?.length ?? 0);
+    // Reflexives are excluded on purpose: "how people present themselves" is
+    // about other people, and must not make "they" look like the member.
+    const n = (text.match(f.subject)?.length ?? 0) + (text.match(f.possessive)?.length ?? 0);
     return [k, n] as const;
   });
   const best = counts.sort((a, b) => b[1] - a[1])[0];
