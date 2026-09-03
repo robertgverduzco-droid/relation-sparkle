@@ -174,5 +174,23 @@ export function memberVoice(
     );
   }
 
+  // Conjunction-chained verbs share the shifted subject: "you value being
+  // active and knows he can" -> "and know you can". Only applied inside a
+  // sentence that actually addresses the member.
+  out = out
+    .split(/(?<=[.!?…])\s+/)
+    .map((sentence) => {
+      if (!/\byou\b/i.test(sentence)) return sentence;
+      return sentence.replace(
+        /\b(and|but|or|then|yet)(\s+)([a-z']+s)\b/g,
+        (m, conj: string, gap: string, verb: string) => {
+          if (NOT_A_VERB.has(verb)) return m;
+          const base = singularToPlural(verb);
+          return base === verb ? m : `${conj}${gap}${base}`;
+        },
+      );
+    })
+    .join(" ");
+
   return recapitalise(out);
 }
