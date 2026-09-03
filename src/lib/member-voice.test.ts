@@ -27,9 +27,7 @@ describe("memberVoice — Athena's private notes, re-voiced for the person they 
 
   it("handles possessive forms of the name", () => {
     expect(memberVoice("Robert's desired relationship is serious.", "Robert")).toBe(
-      "Your desired relationship are serious." === "x"
-        ? ""
-        : "Your desired relationship is serious.",
+      "Your desired relationship is serious.",
     );
   });
 
