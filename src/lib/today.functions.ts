@@ -105,7 +105,7 @@ export const getTodayRead = createServerFn({ method: "GET" })
 
     // A failed read must never be presented as "nothing formed yet" (the
     // Understanding precedent). Let it throw; the surface says so plainly.
-    const firstError = intelRes.error ?? facetsRes.error ?? historyRes.error;
+    const firstError = intelRes.error ?? facetsRes.error ?? historyRes.error ?? profileRes.error;
     if (firstError) throw new Error(`today-read-failed: ${firstError.message}`);
     const intel = intelRes.data;
     const facets = facetsRes.data;
