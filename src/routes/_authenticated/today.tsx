@@ -7,6 +7,8 @@ import { getTodayRead, countWord, type TodayRead } from "@/lib/today.functions";
 import { EndingChoiceCard } from "@/components/ending-choice-card";
 import { ReadinessCard } from "@/components/readiness-card";
 import { LookingState } from "@/components/looking-state";
+import { ReturnGreeting } from "@/components/return-greeting";
+import { AthenaPresence } from "@/components/athena-presence";
 import { Bell } from "lucide-react";
 import { FieldBack } from "@/components/field-back";
 
@@ -36,6 +38,8 @@ function Today() {
   const loadRead = useServerFn(getTodayRead);
   const [hasIntroduction, setHasIntroduction] = useState<boolean>(false);
   const [read, setRead] = useState<TodayRead>(EMPTY_READ);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [athenaSpeaking, setAthenaSpeaking] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,6 +58,7 @@ function Today() {
       const started = msgs.length > 0;
       setHasIntroduction((intros?.introductions?.length ?? 0) > 0);
       setRead(todayRead ?? EMPTY_READ);
+      setDisplayName(profile?.display_name ?? null);
       if (profile && !profile.onboarding_completed_at) {
         navigate({ to: "/onboarding" });
         return;
@@ -103,6 +108,20 @@ function Today() {
         <div className="today-read">
           <div className="sys" style={{ opacity: 0.6, marginBottom: "16px" }}>
             Where you are
+          </div>
+          <div className="mb-6">
+            <ReturnGreeting displayName={displayName} onSpeakingChange={setAthenaSpeaking} />
+          </div>
+          <div className="mb-7 flex items-center gap-3">
+            <span
+              aria-hidden
+              className="h-px flex-1"
+              style={{
+                background:
+                  "linear-gradient(90deg, color-mix(in oklab, var(--lavender) 42%, transparent), transparent)",
+              }}
+            />
+            <AthenaPresence state={athenaSpeaking ? "speaking" : "quiet"} />
           </div>
           {read.lede ? (
             <>
@@ -165,10 +184,10 @@ function Today() {
           <div className="today-head">
             <div className="sys">Where to go</div>
           </div>
-          <NextLink to="/athena" label="Continue with Athena" warm />
-          <NextLink to="/profile" label="Your Living Profile" />
-          <NextLink to="/understanding" label="What she understands" />
-          <NextLink to="/reveal" label="Her read of you" />
+          <NextLink to="/athena" label="Continue with Athena" testId="today-link-athena" warm />
+          <NextLink to="/profile" label="Your Living Profile" testId="today-link-living-profile" />
+          <NextLink to="/understanding" label="What she understands" testId="today-link-understanding" />
+          <NextLink to="/reveal" label="Her read of you" testId="today-link-reveal" />
         </div>
 
         <div className="today-foot">
@@ -186,14 +205,16 @@ function Today() {
 function NextLink({
   to,
   label,
+  testId,
   warm = false,
 }: {
+  testId?: string;
   to: "/profile" | "/athena" | "/understanding" | "/reveal";
   label: string;
   warm?: boolean;
 }) {
   return (
-    <Link to={to} className={warm ? "today-hold today-next-row warm" : "today-hold today-next-row"}>
+    <Link to={to} data-testid={testId} className={warm ? "today-hold today-next-row warm" : "today-hold today-next-row"}>
       <div className="l">{label}</div>
       <div className="r" aria-hidden>
         →
