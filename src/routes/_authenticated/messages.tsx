@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { FieldBack } from "@/components/field-back";
 import { listConversations } from "@/lib/messaging.functions";
 
 export const Route = createFileRoute("/_authenticated/messages")({
@@ -33,55 +33,47 @@ function MessagesPage() {
   }, [list]);
 
   return (
-    <div className="screen-shell safe-top pb-28 px-6 pt-8" data-testid="messages-screen">
-      <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Messages</p>
-      <h1 className="mt-2 font-display text-[2rem] leading-tight text-foreground">
-        Your conversations
-      </h1>
-      <p className="mt-3 text-sm text-ink-soft">
-        Real conversations open once you both agree to meet.
-      </p>
-
-      {items === null ? (
-        <p className="mt-10 text-sm text-muted-foreground">A moment…</p>
-      ) : items.length === 0 ? (
-        <div className="mt-10 rounded-3xl border border-dashed border-border bg-card/60 p-8 text-center">
-          <p className="font-display text-xl text-foreground">Nothing here yet</p>
-          <p className="mt-2 text-sm text-ink-soft">
-            When Athena introduces you to someone and you both open the door, your
-            conversation will appear here.
-          </p>
+    <div className="surface fade-in-quick" data-testid="messages-screen">
+      <FieldBack />
+      <div className="surface-top">
+        <span aria-hidden style={{ width: "34px" }} />
+        <div className="sys" style={{ opacity: 0.6 }}>
+          Messages
         </div>
-      ) : (
-        <ul className="mt-6 space-y-3">
-          {items.map((c) => (
-            <li key={c.id}>
-              <Link
-                data-testid="message-thread-link"
-                to="/messages/$id"
-                params={{ id: c.id }}
-                className="block rounded-2xl border border-border/70 bg-card p-4 transition hover:border-primary/60"
-              >
-                <div className="flex items-baseline justify-between">
-                  <p className="font-display text-[1.15rem] text-foreground">{c.other_name}</p>
-                  {c.last_message_at && (
-                    <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      {timeAgo(c.last_message_at)}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 line-clamp-2 text-sm text-ink-soft">
-                  {c.preview
-                    ? (c.preview.mine ? "You: " : "") + c.preview.body
-                    : "Say hello."}
-                </p>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+        <span aria-hidden style={{ width: "34px" }} />
+      </div>
 
-      <MobileTabBar current="messages" />
+      <div className="surface-scroll">
+        {items === null ? (
+          <p className="ms-quiet">A moment…</p>
+        ) : items.length === 0 ? (
+          <p className="ms-quiet" data-testid="messages-empty">
+            No one is here yet. When an introduction opens on both sides, the conversation begins
+            here — and it belongs to the two of you.
+          </p>
+        ) : (
+          <ul className="ms-list">
+            {items.map((c) => (
+              <li key={c.id}>
+                <Link
+                  data-testid="message-thread-link"
+                  to="/messages/$id"
+                  params={{ id: c.id }}
+                  className="ms-row"
+                >
+                  <div className="ms-row-top">
+                    <span className="ms-who">{c.other_name}</span>
+                    {c.last_message_at && <span className="ms-when">{timeAgo(c.last_message_at)}</span>}
+                  </div>
+                  <p className="ms-prev">
+                    {c.preview ? (c.preview.mine ? "You: " : "") + c.preview.body : "Nothing said yet."}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
