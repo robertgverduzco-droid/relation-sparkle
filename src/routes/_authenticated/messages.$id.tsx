@@ -56,7 +56,7 @@ function ConversationPage() {
   useEffect(() => { void load(); }, [load]);
 
   useEffect(() => {
-    scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   // Realtime subscription

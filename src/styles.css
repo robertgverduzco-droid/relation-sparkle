@@ -647,7 +647,8 @@
 }
 
 .ms-compose {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 25;
+  position: fixed; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; bottom: 0; z-index: 25;
   padding: 14px 22px;
   padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 14px));
   background: linear-gradient(180deg, rgba(3,3,4,0), var(--void) 34%);
@@ -668,7 +669,7 @@
 .ms-box button:not(:disabled):hover { opacity: 0.9; }
 
 .ms-menu {
-  position: absolute; right: 20px; top: 62px; z-index: 40;
+  position: fixed; right: 20px; top: 62px; z-index: 40;
   border: 1px solid rgba(168,151,212,0.18); border-radius: 16px;
   background: var(--void); overflow: hidden;
 }
