@@ -2040,6 +2040,7 @@ export type Database = {
           religion_self_describe: string | null
           religions: string[]
           smoking: string | null
+          suspended_by_moderator: boolean
           updated_at: string
         }
         Insert: {
@@ -2070,6 +2071,7 @@ export type Database = {
           religion_self_describe?: string | null
           religions?: string[]
           smoking?: string | null
+          suspended_by_moderator?: boolean
           updated_at?: string
         }
         Update: {
@@ -2100,6 +2102,7 @@ export type Database = {
           religion_self_describe?: string | null
           religions?: string[]
           smoking?: string | null
+          suspended_by_moderator?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -2367,6 +2370,7 @@ export type Database = {
           id: string
           insights: Json
           member_note: string | null
+          regenerated_once: boolean
           source_facet_count: number
           summary: string
           updated_at: string
@@ -2379,6 +2383,7 @@ export type Database = {
           id?: string
           insights?: Json
           member_note?: string | null
+          regenerated_once?: boolean
           source_facet_count?: number
           summary: string
           updated_at?: string
@@ -2391,6 +2396,7 @@ export type Database = {
           id?: string
           insights?: Json
           member_note?: string | null
+          regenerated_once?: boolean
           source_facet_count?: number
           summary?: string
           updated_at?: string
