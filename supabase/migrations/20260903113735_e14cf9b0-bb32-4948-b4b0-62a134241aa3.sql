@@ -1,0 +1,23 @@
+REVOKE ALL ON public.athena_predictions FROM authenticated, anon;
+REVOKE ALL ON public.athena_prediction_outcomes FROM authenticated, anon;
+REVOKE ALL ON public.athena_hypotheses FROM authenticated, anon;
+REVOKE ALL ON public.athena_hypothesis_evidence FROM authenticated, anon;
+REVOKE ALL ON public.athena_hypothesis_reviews FROM authenticated, anon;
+REVOKE ALL ON public.athena_intelligence_versions FROM authenticated, anon;
+REVOKE ALL ON public.athena_experiments FROM authenticated, anon;
+REVOKE ALL ON public.athena_turn_decisions FROM authenticated, anon;
+REVOKE ALL ON public.athena_closet_events FROM authenticated, anon;
+REVOKE ALL ON public.live_voice_grants FROM authenticated, anon;
+REVOKE ALL ON public.personality_variant_overrides FROM authenticated, anon;
+
+GRANT ALL ON public.athena_predictions TO service_role;
+GRANT ALL ON public.athena_prediction_outcomes TO service_role;
+GRANT ALL ON public.athena_hypotheses TO service_role;
+GRANT ALL ON public.athena_hypothesis_evidence TO service_role;
+GRANT ALL ON public.athena_hypothesis_reviews TO service_role;
+GRANT ALL ON public.athena_intelligence_versions TO service_role;
+GRANT ALL ON public.athena_experiments TO service_role;
+GRANT ALL ON public.athena_turn_decisions TO service_role;
+GRANT ALL ON public.athena_closet_events TO service_role;
+GRANT ALL ON public.live_voice_grants TO service_role;
+GRANT ALL ON public.personality_variant_overrides TO service_role;
