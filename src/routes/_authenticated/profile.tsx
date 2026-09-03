@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { memberVoice } from "@/lib/member-voice";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { DeviceSafetyPanel } from "@/components/device-safety-panel";
 import { ConsentPanel } from "@/components/consent-panel";
@@ -116,6 +117,12 @@ function ProfilePage() {
   // step-up reauthentication (F-12). A typed phrase is not enough.
 
 
+  // Same rule as Today and /understanding: Athena's stored notes are written
+  // in her private third-person register and are re-voiced for the member at
+  // the moment of display.
+  const voiced = (t: string | null | undefined) =>
+    memberVoice(t, profile?.display_name ?? null);
+
   const values = Array.isArray(intel?.core_values)
     ? (intel!.core_values as string[])
     : [];
@@ -187,21 +194,21 @@ function ProfilePage() {
                 </div>
               </Card>
             )}
-            <Field label="Where your life is going" value={intel?.life_direction} />
+            <Field label="Where your life is going" value={voiced(intel?.life_direction)} />
             <Field
               label="How you understand yourself"
-              value={intel?.self_understanding}
+              value={voiced(intel?.self_understanding)}
             />
             <Field
               label="How you tend to communicate"
-              value={intel?.communication_style}
+              value={voiced(intel?.communication_style)}
             />
-            <Field label="How you handle conflict" value={intel?.conflict_style} />
+            <Field label="How you handle conflict" value={voiced(intel?.conflict_style)} />
             <Field
               label="What you're building toward"
-              value={intel?.partnership_vision}
+              value={voiced(intel?.partnership_vision)}
             />
-            <Field label="Where you are right now" value={intel?.readiness_summary} />
+            <Field label="Where you are right now" value={voiced(intel?.readiness_summary)} />
           </section>
 
           <section className="mt-6 px-6">

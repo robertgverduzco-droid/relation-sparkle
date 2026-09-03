@@ -4,6 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { FACET_LABELS, type FacetKey } from "./facets";
+import { memberVoice } from "./member-voice";
 
 export type TodayHold = {
   label: string;
@@ -83,7 +84,7 @@ export const getTodayRead = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<TodayRead> => {
     const { supabase, userId } = context;
-    const [intelRes, facetsRes, historyRes] = await Promise.all([
+    const [intelRes, facetsRes, historyRes, profileRes] = await Promise.all([
       supabase
         .from("user_intelligence")
         .select("self_understanding, readiness_summary")
@@ -99,11 +100,12 @@ export const getTodayRead = createServerFn({ method: "GET" })
         .eq("user_id", userId)
         .order("refined_at", { ascending: false })
         .limit(3),
+      supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
     ]);
 
     // A failed read must never be presented as "nothing formed yet" (the
     // Understanding precedent). Let it throw; the surface says so plainly.
-    const firstError = intelRes.error ?? facetsRes.error ?? historyRes.error;
+    const firstError = intelRes.error ?? facetsRes.error ?? historyRes.error ?? profileRes.error;
     if (firstError) throw new Error(`today-read-failed: ${firstError.message}`);
     const intel = intelRes.data;
     const facets = facetsRes.data;
@@ -113,17 +115,23 @@ export const getTodayRead = createServerFn({ method: "GET" })
       self_understanding?: string | null;
       readiness_summary?: string | null;
     } | null;
-    const parts = paragraphsOf(row?.self_understanding ?? row?.readiness_summary ?? null);
+    // Athena's stored notes are written about the member in the third person
+    // — her private analytical register. They are re-voiced here, at the
+    // moment of display, so a member never reads a case file about themselves.
+    const displayName =
+      (profileRes.data as { display_name?: string | null } | null)?.display_name ?? null;
+    const voiced = (t: string | null | undefined) => memberVoice(t, displayName);
+    const parts = paragraphsOf(voiced(row?.self_understanding) ?? voiced(row?.readiness_summary) ?? null);
 
     const shifts: TodayShift[] = ((history ?? []) as Array<{
       facet_key: string;
       understanding: string | null;
       refined_at: string | null;
     }>)
-      .filter((h) => (h.understanding ?? "").trim().length > 0)
+      .filter((h) => (voiced(h.understanding) ?? "").length > 0)
       .map((h, i) => ({
         when: h.refined_at ? whenLabel(h.refined_at) : "Recently",
-        text: (h.understanding ?? "").trim(),
+        text: voiced(h.understanding) ?? "",
         warm: i === 0,
       }));
 

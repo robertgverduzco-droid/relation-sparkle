@@ -19,6 +19,7 @@ import {
   stillLearningCopy,
   type LensKey,
 } from "./profile-depth";
+import { memberVoice } from "./member-voice";
 
 
 const reviseInput = z.object({
@@ -36,7 +37,13 @@ export const getMyUnderstanding = createServerFn({ method: "GET" })
     stillLearning: string | null;
   }> => {
     const { supabase, userId } = context;
-    const [{ data: facetRows, error }, { data: revisions }, { data: history }, { data: intel }] =
+    const [
+      { data: facetRows, error },
+      { data: revisions },
+      { data: history },
+      { data: intel },
+      { data: profile },
+    ] =
       await Promise.all([
         supabase
           .from("understanding_facets")
@@ -49,6 +56,7 @@ export const getMyUnderstanding = createServerFn({ method: "GET" })
           .select("understanding_reviewed_at")
           .eq("user_id", userId)
           .maybeSingle(),
+        supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
       ]);
     if (error) throw new Error(error.message);
 
@@ -62,6 +70,8 @@ export const getMyUnderstanding = createServerFn({ method: "GET" })
       (intel as { understanding_reviewed_at?: string | null } | null)?.understanding_reviewed_at ??
       null;
 
+    const displayName =
+      (profile as { display_name?: string | null } | null)?.display_name ?? null;
     const rows = facetRows ?? [];
     const facets = rows
       .map((r) =>
@@ -70,6 +80,13 @@ export const getMyUnderstanding = createServerFn({ method: "GET" })
           reviewedAt,
         }),
       )
+      // Athena's stored understanding is written in her private, third-person
+      // analytical register. It is re-voiced for the person it describes at
+      // the moment of display; nothing stored changes.
+      .map((f) => ({
+        ...f,
+        understanding: memberVoice(f.understanding, displayName) ?? f.understanding,
+      }))
       .filter((f) => f.understanding.length > 0)
       .sort((a, b) => a.label.localeCompare(b.label));
 
