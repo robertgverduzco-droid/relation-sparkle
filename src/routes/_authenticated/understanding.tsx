@@ -1,9 +1,9 @@
 // F-13 / F-14 — what Athena understands about you, and how to change it.
-// Depth model: understanding is grouped by specialist lens, deepens as
-// evidence accumulates, and quietly marks what has evolved since you last
-// read it. No counts, no scores, no completeness meters.
+// Screen 6 ("You") of the Orb Field. Understanding is grouped by how sure she
+// is, in her own words. No counts, no scores, no completeness meters.
 import { BASIS_LABEL, type FacetBasis } from "@/lib/facets";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { FieldBack } from "@/components/field-back";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -72,6 +72,28 @@ const KIND_COPY: Record<Kind, { title: string; help: string; cta: string }> = {
   },
 };
 
+// Confidence bands, straight off the evidence ladder. What she'd stake
+// something on, what is still forming, and what is honestly only a guess.
+type Band = "sure" | "form" | "guess";
+
+const BAND_OF: Record<FacetBasis, Band> = {
+  repeated_pattern: "sure",
+  observed: "sure",
+  self_report: "form",
+  unestablished: "form",
+  inferred: "guess",
+  hypothesis: "guess",
+};
+
+const BAND_LABEL: Record<Band, string> = {
+  sure: "Sure of it",
+  form: "Still forming",
+  guess: "Only a guess",
+};
+
+const COUNT_WORD = ["None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+const countWord = (n: number) => COUNT_WORD[n] ?? String(n);
+
 function UnderstandingScreen() {
   const loadFn = useServerFn(getMyUnderstanding);
   const reviseFn = useServerFn(reviseUnderstanding);
@@ -79,7 +101,6 @@ function UnderstandingScreen() {
 
   const [data, setData] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
-  const [openLens, setOpenLens] = useState<string | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [kind, setKind] = useState<Kind>("change");
   const [statement, setStatement] = useState("");
@@ -94,7 +115,6 @@ function UnderstandingScreen() {
       // untrue about their own understanding.
       .catch(() => setFailed(true));
   }, [loadFn]);
-
 
   useEffect(load, [load]);
 
@@ -122,44 +142,34 @@ function UnderstandingScreen() {
     }
   }
 
-  function renderFacet(f: Facet) {
+  function renderFacet(f: Facet, band: Band) {
+    const open = openKey === f.key;
     return (
-      <article
+      <div
         key={f.key}
         data-testid="understanding-facet"
         data-facet={f.key}
         data-lens={f.lens}
         data-stage={f.stage}
-        className="rounded-2xl border border-border/70 bg-card p-5"
+        data-basis={f.basis}
+        className={band === "sure" ? "you-facet" : "you-facet dim"}
       >
-        <div className="flex items-baseline justify-between gap-3">
-          <h3 className="text-[15px] text-foreground">
-            {f.label}
-            {f.evolved && (
-              <span
-                data-testid={`understanding-evolved-${f.key}`}
-                aria-label="This has evolved since you last read it"
-                className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
-              />
-            )}
-          </h3>
-          <span
-            data-testid={`understanding-basis-${f.key}`}
-            data-basis={f.basis}
-            className="shrink-0 text-[11px] uppercase tracking-[0.16em] text-muted-foreground"
-          >
-            {BASIS_LABEL[f.basis]}
-          </span>
-        </div>
-        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink-soft">
+        <div className="said">
           {f.understanding}
-        </p>
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          {f.held} · {f.depth}
+          {f.evolved && (
+            <span
+              data-testid={`understanding-evolved-${f.key}`}
+              aria-label="This has evolved since you last read it"
+              className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--lavender)] align-middle"
+            />
+          )}
+        </div>
+        <div className="from">
+          <span data-testid={`understanding-basis-${f.key}`}>{BASIS_LABEL[f.basis]}</span> · {f.held}
           {f.revised ? " · you've revised this before" : ""}
-        </p>
+        </div>
 
-        {openKey === f.key ? (
+        {open ? (
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap gap-2">
               {(Object.keys(KIND_COPY) as Kind[]).map((k) => (
@@ -169,15 +179,17 @@ function UnderstandingScreen() {
                   onClick={() => setKind(k)}
                   className={`rounded-full border px-4 py-2 text-[13px] ${
                     kind === k
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border text-ink-soft"
+                      ? "border-[var(--lavender)] text-[var(--ink)]"
+                      : "border-[rgba(168,151,212,0.18)] text-[var(--lavender-dim)]"
                   }`}
                 >
                   {KIND_COPY[k].title}
                 </button>
               ))}
             </div>
-            <p className="text-[13px] leading-relaxed text-ink-soft">{KIND_COPY[kind].help}</p>
+            <p className="text-[13px] leading-relaxed text-[var(--lavender-dim)]">
+              {KIND_COPY[kind].help}
+            </p>
             {kind !== "removal" && (
               <textarea
                 data-testid="understanding-revision-statement"
@@ -187,7 +199,7 @@ function UnderstandingScreen() {
                 maxLength={1200}
                 placeholder="In your own words…"
                 aria-label="In your own words"
-                className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground"
+                className="w-full rounded-2xl border border-[rgba(168,151,212,0.18)] bg-transparent px-4 py-3 text-sm text-[var(--ink)]"
               />
             )}
             <div className="flex gap-2">
@@ -196,7 +208,7 @@ function UnderstandingScreen() {
                   setOpenKey(null);
                   setStatement("");
                 }}
-                className="flex-1 rounded-full border border-border px-5 py-3 text-sm text-foreground"
+                className="flex-1 rounded-full border border-[rgba(168,151,212,0.18)] px-5 py-3 text-sm text-[var(--ink)]"
               >
                 Cancel
               </button>
@@ -204,11 +216,7 @@ function UnderstandingScreen() {
                 data-testid="understanding-revision-submit"
                 disabled={busy}
                 onClick={() => submit(f.key)}
-                className={`flex-1 rounded-full px-5 py-3 text-sm font-medium disabled:opacity-50 ${
-                  kind === "removal"
-                    ? "border border-destructive/60 text-destructive"
-                    : "bg-primary text-primary-foreground"
-                }`}
+                className="flex-1 rounded-full border border-[var(--lavender)] px-5 py-3 text-sm text-[var(--ink)] disabled:opacity-50"
               >
                 {busy ? "Saving…" : KIND_COPY[kind].cta}
               </button>
@@ -222,99 +230,100 @@ function UnderstandingScreen() {
               setKind("change");
               setStatement("");
             }}
-            className="mt-3 text-[13px] text-primary"
+            className="mt-3 text-[12px] text-[var(--lavender-dim)]"
           >
             Change, correct, or remove this
           </button>
         )}
-      </article>
+      </div>
     );
   }
 
+  const facets = data?.facets ?? [];
+  const bands: { key: Band; facets: Facet[] }[] = (["sure", "form", "guess"] as Band[])
+    .map((b) => ({ key: b, facets: facets.filter((f) => BAND_OF[f.basis] === b) }))
+    .filter((b) => b.facets.length > 0);
+
   return (
-    <section className="mx-auto w-full max-w-lg px-5 pb-28 pt-8" data-testid="understanding-screen">
-      <Link to="/profile" className="text-[13px] text-muted-foreground">
-        ← Profile
-      </Link>
-      <h1 className="mt-4 text-2xl font-light tracking-tight text-foreground">
-        What I understand about you
-      </h1>
-      <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-        This is what I&apos;ve come to understand from our conversations — in plain words, not
-        scores or labels. It grows as we talk. Open whichever part you care about. If any of it has
-        changed, or I&apos;ve simply got it wrong, tell me. You can also ask me to forget something
-        entirely.
-      </p>
+    <div className="surface fade-in-quick" data-testid="understanding-screen">
+      <FieldBack />
 
-      {data === null && !failed && (
-        <p className="mt-8 text-sm text-muted-foreground">Gathering my thoughts…</p>
-      )}
-
-      {failed && (
-        <div className="mt-8" data-testid="understanding-unavailable">
-          <p className="text-sm text-ink-soft">
-            I couldn&apos;t bring this up just now — that&apos;s me, not you. Nothing has changed
-            about what I understand.
-          </p>
-          <button onClick={load} className="mt-3 text-[13px] text-primary">
-            Try again
-          </button>
+      <div className="surface-top">
+        <span aria-hidden style={{ width: "34px" }} />
+        <div className="sys" style={{ opacity: 0.6 }}>
+          What I understand
         </div>
-      )}
-
-      {!failed && data?.facets.length === 0 && (
-        <p className="mt-8 text-sm text-ink-soft">
-          We haven&apos;t talked enough yet for me to understand you properly. That&apos;s the
-          right order — understanding comes first.
-        </p>
-      )}
-
-
-      <div className="mt-6 space-y-3">
-        {data?.lenses.map((lens) => {
-          const open = openLens === lens.key;
-          const evolved = lens.facets.some((f) => f.evolved);
-          return (
-            <div
-              key={lens.key}
-              data-testid="understanding-lens"
-              data-lens={lens.key}
-              className="rounded-3xl border border-border/70 bg-card/40"
-            >
-              <button
-                data-testid={`understanding-lens-toggle-${lens.key}`}
-                aria-expanded={open}
-                onClick={() => setOpenLens(open ? null : lens.key)}
-                className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
-              >
-                <span className="text-[15px] text-foreground">
-                  {lens.label}
-                  {evolved && !open && (
-                    <span
-                      aria-label="Something here has evolved since you last read it"
-                      className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
-                    />
-                  )}
-                </span>
-                <span aria-hidden className="text-muted-foreground">
-                  {open ? "−" : "+"}
-                </span>
-              </button>
-              {open && <div className="space-y-3 px-3 pb-3">{lens.facets.map(renderFacet)}</div>}
-            </div>
-          );
-        })}
+        <span aria-hidden style={{ width: "34px" }} />
       </div>
 
-      {data?.stillLearning && (
-        <div
-          data-testid="understanding-still-learning"
-          className="mt-6 rounded-3xl border border-border/50 p-5"
-        >
-          <h2 className="text-[15px] text-foreground">What I&apos;m still learning</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">{data.stillLearning}</p>
+      <div className="surface-scroll">
+        <div className="you-open">
+          <div className="lede">
+            This is what I have of you so far. Not a summary — the parts I would stake something on,
+            and the parts I am still turning over.
+          </div>
+          <p>
+            I have written it the way I would say it. If any of it has changed, or I have simply got
+            it wrong, tell me.
+          </p>
         </div>
-      )}
-    </section>
+
+        {data === null && !failed && (
+          <div className="you-band">
+            <p className="type-meta">Gathering my thoughts…</p>
+          </div>
+        )}
+
+        {failed && (
+          <div className="you-band" data-testid="understanding-unavailable">
+            <p className="text-sm leading-relaxed text-[var(--ink)] opacity-70">
+              I couldn&apos;t bring this up just now — that&apos;s me, not you. Nothing has changed
+              about what I understand.
+            </p>
+            <button onClick={load} className="mt-3 text-[13px] text-[var(--lavender)]">
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!failed && data?.facets.length === 0 && (
+          <div className="you-band">
+            <p className="text-sm leading-relaxed text-[var(--ink)] opacity-70">
+              We haven&apos;t talked enough yet for me to understand you properly. That&apos;s the
+              right order — understanding comes first.
+            </p>
+          </div>
+        )}
+
+        {bands.map((b) => (
+          <div key={b.key} className="you-band" data-testid={`understanding-band-${b.key}`}>
+            <div className="you-band-head">
+              <div className={`sys ${b.key}`}>{BAND_LABEL[b.key]}</div>
+              <div className="sys" style={{ opacity: 0.4 }}>
+                {countWord(b.facets.length)}
+              </div>
+            </div>
+            {b.facets.map((f) => renderFacet(f, b.key))}
+          </div>
+        ))}
+
+        {data?.stillLearning && (
+          <div className="you-foot" data-testid="understanding-still-learning">
+            <div className="sys">What I&apos;m still learning</div>
+            <p>{data.stillLearning}</p>
+          </div>
+        )}
+
+        {facets.length > 0 && (
+          <div className="you-foot">
+            <div className="sys">If I have you wrong</div>
+            <p>
+              Tell me in conversation and I will change it. I would rather be corrected than
+              accurate about the wrong person.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
