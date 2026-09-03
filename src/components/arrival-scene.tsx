@@ -80,6 +80,17 @@ export function ArrivalScene({
 
   // ---- Node field ------------------------------------------------------
   useEffect(() => {
+    // Nothing to resolve until the gesture gate has actually been passed:
+    // the gate is an opaque cover, so a first-time visitor who waits before
+    // tapping would otherwise have the whole reveal sequence -- including
+    // the 5500ms auto-resolve -- run to completion unseen behind it. The
+    // gate's removal then revealed an already-finished scene instantly, and
+    // this effect's own dependency on `started` restarted the timer from
+    // zero, so ~5500ms later runReveal() fired again and pulled step back
+    // down before climbing it a second time -- the reveal and buttons
+    // visibly vanishing and replaying. Nothing here may render before the
+    // gesture that will later be revealed, so nothing needs pulling away.
+    if (!still && !started) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
