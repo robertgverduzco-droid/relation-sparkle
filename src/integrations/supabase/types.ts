@@ -2370,6 +2370,7 @@ export type Database = {
           id: string
           insights: Json
           member_note: string | null
+          regenerated_once: boolean
           source_facet_count: number
           summary: string
           updated_at: string
@@ -2382,6 +2383,7 @@ export type Database = {
           id?: string
           insights?: Json
           member_note?: string | null
+          regenerated_once?: boolean
           source_facet_count?: number
           summary: string
           updated_at?: string
@@ -2394,6 +2396,7 @@ export type Database = {
           id?: string
           insights?: Json
           member_note?: string | null
+          regenerated_once?: boolean
           source_facet_count?: number
           summary?: string
           updated_at?: string

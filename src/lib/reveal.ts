@@ -36,8 +36,19 @@ export const REVEAL_COPY = {
   confirm: "That's me — continue",
   amend: "Something's off",
   amendPrompt: "What did I get wrong?",
+  amendSubmit: "Send this to Athena",
+  amendWorking: "Taking another look…",
   confirmedTitle: "Thank you.",
   confirmedBody: "I'll hold this, and keep revising it as I learn more about you.",
+  /** Shown once, after the one rewrite a flag is allowed to trigger. */
+  regeneratedNotice: "Athena revised this, based on what you told her.",
+  /** Shown when a second flag arrives after the rewrite budget is already spent. */
+  cappedBody:
+    "I've written that down properly, and it'll shape what I understand about you from here. I don't want to guess at this a third time — I'd rather learn more about you than keep rewriting a paragraph.",
+  cappedContinue: "Continue without confirming",
+  cappedHold: "Not yet — keep talking",
+  flagFailed:
+    "Athena couldn't work through that just now. She's noted what you said — try again, or continue as-is.",
 };
 
 /**
@@ -80,7 +91,9 @@ export type RevealFacetRow = {
 
 /** Only facets Athena actually holds something for can feed the reveal. */
 export function usableRevealFacets(rows: RevealFacetRow[]): RevealFacetRow[] {
-  return rows.filter((r) => typeof r.understanding === "string" && r.understanding.trim().length > 0);
+  return rows.filter(
+    (r) => typeof r.understanding === "string" && r.understanding.trim().length > 0,
+  );
 }
 
 /**
@@ -95,7 +108,9 @@ export function buildRevealMaterial(rows: RevealFacetRow[]): string {
       const evidence = Array.isArray(r.evidence)
         ? (r.evidence as unknown[]).filter((e) => typeof e === "string" && e.trim()).slice(0, 3)
         : [];
-      const words = evidence.length ? ` — their words: ${evidence.map((e) => `"${String(e)}"`).join("; ")}` : "";
+      const words = evidence.length
+        ? ` — their words: ${evidence.map((e) => `"${String(e)}"`).join("; ")}`
+        : "";
       const unclear = r.needs_clarification ? " (Athena is not sure about this yet)" : "";
       return `- ${r.facet_key} [${basis}] ${String(r.understanding).trim()}${words}${unclear}`;
     })
@@ -139,4 +154,3 @@ export function shouldRegenerateReveal(input: {
   if (!hasEnoughRevealMaterial(input.sourceFacetCount)) return true;
   return input.currentUsableFacets - input.sourceFacetCount >= MATERIAL_GROWTH;
 }
-

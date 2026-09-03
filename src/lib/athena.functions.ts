@@ -601,16 +601,33 @@ export const reflectAthena = createServerFn({ method: "POST" })
       .map((m) => `${m.role === "user" ? "THEY" : "ATHENA"}: ${m.content}`)
       .join("\n\n");
 
-    const [{ data: priorFacets }, { data: priorTopics }, { data: priorHistory }] =
-      await Promise.all([
-        supabase
-          .from("understanding_facets")
-          .select("facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at, contradiction_count, first_observed_at"),
-        supabase
-          .from("topic_map")
-          .select("topic_key, status, confidence, observations, open_questions"),
-        supabase.from("facet_history").select("facet_key"),
-      ]);
+    const [
+      { data: priorFacets },
+      { data: priorTopics },
+      { data: priorHistory },
+      { data: revealCorrections },
+    ] = await Promise.all([
+      supabase
+        .from("understanding_facets")
+        .select(
+          "facet_key, understanding, reasoning, evidence, basis, confidence, needs_clarification, clarification_note, refined_at, contradiction_count, first_observed_at",
+        ),
+      supabase
+        .from("topic_map")
+        .select("topic_key, status, confidence, observations, open_questions"),
+      supabase.from("facet_history").select("facet_key"),
+      // "Something's off" on the reveal (reveal.server.ts flagRevealFor) logs
+      // here under a sentinel key rather than a real facet, since it's about
+      // the whole read, not one thing. This is the only place anything reads
+      // it back — without this, the member's correction would just sit in a
+      // table nobody looks at, which is exactly the failure it exists to fix.
+      supabase
+        .from("understanding_revisions")
+        .select("member_statement, created_at")
+        .eq("facet_key", "reveal_summary")
+        .order("created_at", { ascending: false })
+        .limit(3),
+    ]);
 
     // Depth architecture (docs: Living Profile depth & specialist lenses).
     // The reflection model previously received only a one-line summary of each
@@ -653,6 +670,12 @@ export const reflectAthena = createServerFn({ method: "POST" })
       (priorTopics ?? [])
         .map((r) => `- ${r.topic_key} [${r.status}, ${Math.round(Number(r.confidence ?? 0) * 100)}%]`)
         .join("\n") || "(none yet)";
+
+    const revealCorrectionLines =
+      (revealCorrections ?? [])
+        .map((r) => `- "${String(r.member_statement ?? "").trim()}"`)
+        .filter((line) => line !== '- ""')
+        .join("\n") || null;
 
 
     const { object } = await generateObject({
@@ -712,7 +735,14 @@ ${priorFacetLines}
 
 PRIOR TOPIC MAP:
 ${priorTopicLines}
-
+${
+  revealCorrectionLines
+    ? `
+THE MEMBER TOLD YOU DIRECTLY THAT A READ YOU WROTE OF THEM WAS WRONG (most recent first — weigh these heavily against whatever facet they touch; do not silently repeat what they've already said isn't them):
+${revealCorrectionLines}
+`
+    : ""
+}
 CONVERSATION:
 
 ${transcript}`,
