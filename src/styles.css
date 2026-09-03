@@ -515,6 +515,68 @@
 }
 .meet-quiet:disabled, .meet-yes:disabled { opacity: 0.45; }
 
+/* Today — her read, in her own register. Hairlines, never cards. */
+.today-read { position: relative; margin: 0 28px 40px; padding-top: 24px; }
+.today-read::before {
+  content: ''; position: absolute; left: 0; top: 0;
+  width: 16px; height: 1px; background: var(--lavender); opacity: 0.65;
+}
+.today-lede {
+  font-family: var(--font-display);
+  font-size: 1.46rem; line-height: 1.52; letter-spacing: 0.004em;
+  color: var(--ink); margin-bottom: 22px;
+}
+.today-lede-quiet { opacity: 0.5; font-size: 1.2rem; margin-bottom: 0; }
+.today-read p {
+  font-family: var(--font-display);
+  font-size: 1.06rem; line-height: 1.66;
+  color: var(--ink); opacity: 0.66; margin-bottom: 18px;
+}
+.today-read p:last-child { margin-bottom: 0; }
+
+.today-sec { margin: 0 28px; }
+.today-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 26px 0 4px;
+  border-top: 1px solid rgba(168,151,212,0.12);
+}
+.today-shift { padding: 16px 0 4px; }
+.today-when {
+  font-size: 0.52rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--lavender-dim); margin-bottom: 8px;
+}
+.today-shift p {
+  font-family: var(--font-display);
+  font-size: 1rem; line-height: 1.62; color: var(--ink); opacity: 0.68;
+}
+.today-shift-warm .today-when { color: var(--amber); opacity: 0.85; }
+
+.today-hold {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(168,151,212,0.1);
+}
+.today-hold:last-of-type { border-bottom: none; }
+.today-hold .l { font-size: 0.94rem; font-weight: 300; color: var(--ink); opacity: 0.8; }
+.today-hold .r {
+  font-size: 0.52rem; letter-spacing: 0.17em; text-transform: uppercase;
+  color: var(--lavender-dim); white-space: nowrap; padding-left: 16px;
+}
+.today-hold .r.sure { color: var(--lavender); opacity: 0.9; }
+.today-next-row .r { font-size: 0.85rem; letter-spacing: 0; }
+.today-next-row.warm .l { color: var(--ink); opacity: 0.95; }
+.today-next-row.warm .r { color: var(--amber); }
+
+.today-foot {
+  margin: 30px 28px 0; padding-top: 22px;
+  border-top: 1px solid rgba(168,151,212,0.12);
+}
+.today-foot p {
+  font-family: var(--font-display);
+  font-size: 0.98rem; line-height: 1.64;
+  color: var(--ink); opacity: 0.44; margin-top: 12px;
+}
+
 /* Meet — the waiting list, when more than one person is in view. */
 .meet-row {
   display: block; width: 100%; text-align: left;
