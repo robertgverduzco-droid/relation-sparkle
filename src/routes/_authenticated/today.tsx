@@ -40,6 +40,7 @@ function Today() {
   const [read, setRead] = useState<TodayRead>(EMPTY_READ);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [athenaSpeaking, setAthenaSpeaking] = useState(false);
+  const [readFailed, setReadFailed] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,13 +52,14 @@ function Today() {
           .maybeSingle(),
         supabase.from("interview_sessions").select("messages").maybeSingle(),
         listIntroductions().catch(() => ({ introductions: [] as unknown[] })),
-        loadRead().catch(() => EMPTY_READ),
+        loadRead().catch(() => null),
       ]);
       const profile = p as ProfileRow | null;
       const msgs = Array.isArray(s?.messages) ? (s!.messages as unknown[]) : [];
       const started = msgs.length > 0;
       setHasIntroduction((intros?.introductions?.length ?? 0) > 0);
       setRead(todayRead ?? EMPTY_READ);
+      setReadFailed(todayRead == null);
       setDisplayName(profile?.display_name ?? null);
       if (profile && !profile.onboarding_completed_at) {
         navigate({ to: "/onboarding" });
@@ -130,8 +132,13 @@ function Today() {
                 <p key={i}>{p}</p>
               ))}
             </>
+          ) : readFailed ? (
+            <div className="today-lede today-lede-quiet" data-testid="today-read-failed">
+              I could not reach my notes just now. This is a problem on my side, not a sign that
+              there is nothing here.
+            </div>
           ) : (
-            <div className="today-lede today-lede-quiet">
+            <div className="today-lede today-lede-quiet" data-testid="today-read-empty">
               I am still forming my read of you. When it is worth saying out loud, it will be here.
             </div>
           )}
