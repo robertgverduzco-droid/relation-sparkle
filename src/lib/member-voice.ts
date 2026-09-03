@@ -73,7 +73,9 @@ const FAMILIES: Record<"he" | "she" | "they", Family> = {
     subject: /\bhe\b/gi,
     object: /\bhim\b/gi,
     possessive: /\bhis\b/gi,
-    possessivePronoun: /\bhis\b/gi,
+    // "his" is both determiner and pronoun; treating it as the determiner
+    // ("your") is right far more often than "yours".
+    possessivePronoun: /\bhis(?=\s*[.,;!?…]|$)/gi,
     reflexive: /\bhimself\b/gi,
     shiftsVerb: true,
   },
@@ -162,8 +164,7 @@ export function memberVoice(
 
   // Subject-verb agreement: "you values" -> "you value". One optional adverb
   // may sit between the subject and the verb ("you often values").
-  const needsVerbShift = family ? FAMILIES[family].shiftsVerb : true;
-  if (needsVerbShift) {
+  {
     out = out.replace(
       /\b(you)(\s+(?:\w+ly|also|still|never|often|already|generally|typically)\b)?(\s+)([A-Za-z']+)/g,
       (m, subj: string, adv: string | undefined, gap: string, verb: string) => {
