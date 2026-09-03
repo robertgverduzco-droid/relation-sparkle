@@ -82,7 +82,11 @@ export async function evaluateReadiness(
   trigger: ReadinessTrigger,
 ): Promise<ReadinessEvaluation> {
   const [{ data: profile }, { data: intel }, { data: facets }] = await Promise.all([
-    supabase.from("profiles").select("id, is_paused").eq("id", userId).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id, is_paused, suspended_by_moderator")
+      .eq("id", userId)
+      .maybeSingle(),
     supabase.from("user_intelligence").select("last_interview_at").eq("user_id", userId).maybeSingle(),
     supabase.from("understanding_facets").select("facet_key, confidence, understanding, needs_clarification").eq("user_id", userId),
   ]);
@@ -118,6 +122,18 @@ export async function evaluateReadiness(
 
   // --- Blocking conditions (state A) ------------------------------------
   if (profile.is_paused) {
+    // A moderator-imposed hold reads as a safety matter, never as the
+    // casual "you paused, resume anytime" copy — that would misrepresent
+    // what actually happened and imply a member can undo it themselves.
+    if (profile.suspended_by_moderator) {
+      return persist({
+        state: "A",
+        reason_code: "suspended",
+        reason_text: COPY.A_safety,
+        hold_kind: "safety",
+        hold_until: null,
+      });
+    }
     return persist({ state: "A", reason_code: "paused", reason_text: COPY.A_paused, hold_kind: "paused", hold_until: null });
   }
 

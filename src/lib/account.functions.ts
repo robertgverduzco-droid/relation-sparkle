@@ -10,6 +10,18 @@ export const setAccountPaused = createServerFn({ method: "POST" })
     const { userId } = context;
     // A-08: account state is not browser-writable; the verified server writes it.
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    if (!data.paused) {
+      // A moderator-imposed hold is not the member's to lift — only
+      // reinstateAccount (moderation.server.ts) may clear it.
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("suspended_by_moderator")
+        .eq("id", userId)
+        .maybeSingle();
+      if (profile?.suspended_by_moderator) {
+        throw new Error("Your account is on hold and can't be resumed from here.");
+      }
+    }
     const { error } = await admin
       .from("profiles")
       .update({ is_paused: data.paused })

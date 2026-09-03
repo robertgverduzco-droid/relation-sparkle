@@ -2,7 +2,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { amIModerator, listOpenReports, resolveReport } from "@/lib/moderation.functions";
+import {
+  amIModerator,
+  listOpenReports,
+  reinstateModeratedAccount,
+  resolveReport,
+} from "@/lib/moderation.functions";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 
 export const Route = createFileRoute("/_authenticated/moderation")({
@@ -22,6 +27,7 @@ function ModerationPage() {
   const check = useServerFn(amIModerator);
   const list = useServerFn(listOpenReports);
   const resolve = useServerFn(resolveReport);
+  const reinstate = useServerFn(reinstateModeratedAccount);
   const [ready, setReady] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   // BR01-06: exactly one denial notice per attempt. Effect re-runs (StrictMode,
@@ -61,6 +67,13 @@ function ModerationPage() {
     toast(action === "dismiss" ? "Report dismissed." : action === "suspend" ? "Account paused." : "Account removed.");
   }
 
+  async function reinstateOne(userId: string) {
+    await reinstate({ data: { user_id: userId } });
+    const res = await list({});
+    setReports(res.reports);
+    toast("Account reinstated.");
+  }
+
   return (
     <div className="screen-shell safe-top pb-28">
       <header className="px-6 pt-8">
@@ -96,6 +109,19 @@ function ModerationPage() {
               )}
               {r.status !== "open" && r.resolution_note && (
                 <p className="mt-2 text-xs text-muted-foreground">Note: {r.resolution_note}</p>
+              )}
+              {r.reported_is_suspended && (
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {r.reported_name} is on hold.
+                  </span>
+                  <button
+                    onClick={() => void reinstateOne(r.reported_id)}
+                    className="rounded-full border border-border px-3 py-1.5 text-xs"
+                  >
+                    Reinstate account
+                  </button>
+                </div>
               )}
             </li>
           ))}

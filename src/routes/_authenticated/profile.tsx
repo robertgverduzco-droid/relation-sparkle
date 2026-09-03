@@ -33,7 +33,12 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
-type ProfileRow = { display_name: string | null; city: string | null; is_paused: boolean | null };
+type ProfileRow = {
+  display_name: string | null;
+  city: string | null;
+  is_paused: boolean | null;
+  suspended_by_moderator: boolean | null;
+};
 type IntelligenceRow = {
   core_values: unknown;
   life_direction: string | null;
@@ -64,7 +69,10 @@ function ProfilePage() {
   useEffect(() => {
     (async () => {
       const [{ data: p }, { data: i }, mod, founder] = await Promise.all([
-        supabase.from("profiles").select("display_name, city, is_paused").maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("display_name, city, is_paused, suspended_by_moderator")
+          .maybeSingle(),
         supabase
           .from("user_intelligence")
           .select(
@@ -97,8 +105,8 @@ function ProfilePage() {
       await pauseFn({ data: { paused: next } });
       setProfile({ ...profile, is_paused: next });
       toast(next ? "Athena has paused your matches." : "Welcome back — matches resumed.");
-    } catch {
-      toast.error("Couldn't update pause state.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't update pause state.");
     } finally {
       setBusy(false);
     }
@@ -226,19 +234,30 @@ function ProfilePage() {
         {/* A-04: the legacy /conversations surface (pre-Athena interview
             transcript) is no longer linked. /athena is the canonical
             conversation surface. */}
-        <button
-          data-testid="profile-pause-toggle"
-          data-paused={profile?.is_paused ? "true" : "false"}
-          onClick={togglePause}
-          disabled={busy || !profile}
-          className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground disabled:opacity-60"
-        >
-          {profile?.is_paused ? "Resume matches" : "Pause matches"}
-        </button>
-        {profile?.is_paused && (
-          <p className="text-center text-xs text-muted-foreground">
-            You're paused. Athena won't create introductions until you resume.
+        {profile?.suspended_by_moderator ? (
+          <p
+            data-testid="profile-suspended-notice"
+            className="rounded-full border border-border px-6 py-3 text-center text-sm text-muted-foreground"
+          >
+            Your account is on hold. This isn't something you can change here.
           </p>
+        ) : (
+          <>
+            <button
+              data-testid="profile-pause-toggle"
+              data-paused={profile?.is_paused ? "true" : "false"}
+              onClick={togglePause}
+              disabled={busy || !profile}
+              className="w-full rounded-full border border-border px-6 py-3 text-sm text-foreground disabled:opacity-60"
+            >
+              {profile?.is_paused ? "Resume matches" : "Pause matches"}
+            </button>
+            {profile?.is_paused && (
+              <p className="text-center text-xs text-muted-foreground">
+                You're paused. Athena won't create introductions until you resume.
+              </p>
+            )}
+          </>
         )}
         <Link
           data-testid="profile-account-link"

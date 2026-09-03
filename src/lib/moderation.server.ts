@@ -12,6 +12,12 @@ export const resolveInput = z.object({
 
 export type ResolveInput = z.infer<typeof resolveInput>;
 
+export const reinstateInput = z.object({
+  user_id: z.string().uuid(),
+});
+
+export type ReinstateInput = z.infer<typeof reinstateInput>;
+
 export type ModerationReport = {
   id: string;
   reporter_name: string;
@@ -24,6 +30,8 @@ export type ModerationReport = {
   resolved_at: string | null;
   resolution_note: string | null;
   created_at: string;
+  /** True while reported_id is currently under a moderator-imposed hold. */
+  reported_is_suspended: boolean;
 };
 
 /** True when the caller holds the moderator or admin role. */
@@ -74,10 +82,19 @@ export async function listReports(
     ids.add(r.reported_id as string);
   }
   const { data: profs } = ids.size
-    ? await supabase.from("profiles").select("id, display_name").in("id", Array.from(ids))
-    : { data: [] as { id: string; display_name: string | null }[] };
+    ? await supabase
+        .from("profiles")
+        .select("id, display_name, suspended_by_moderator")
+        .in("id", Array.from(ids))
+    : {
+        data: [] as { id: string; display_name: string | null; suspended_by_moderator: boolean }[],
+      };
   const nameOf = new Map<string, string>();
-  for (const p of profs ?? []) nameOf.set(p.id as string, (p.display_name as string | null) ?? "Someone");
+  const suspendedOf = new Map<string, boolean>();
+  for (const p of profs ?? []) {
+    nameOf.set(p.id as string, (p.display_name as string | null) ?? "Someone");
+    suspendedOf.set(p.id as string, Boolean(p.suspended_by_moderator));
+  }
 
   return {
     reports: (reports ?? []).map((r) => ({
@@ -92,6 +109,7 @@ export async function listReports(
       resolved_at: r.resolved_at as string | null,
       resolution_note: r.resolution_note as string | null,
       created_at: r.created_at as string,
+      reported_is_suspended: suspendedOf.get(r.reported_id as string) ?? false,
     })),
   };
 }
@@ -130,11 +148,56 @@ export async function resolveReportForModerator(
   });
   if (data.action === "suspend") {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("profiles").update({ is_paused: true }).eq("id", reportedId);
+    // suspended_by_moderator distinguishes this from a member's own pause
+    // toggle, which must never be able to clear a hold it didn't set.
+    await supabaseAdmin
+      .from("profiles")
+      .update({ is_paused: true, suspended_by_moderator: true })
+      .eq("id", reportedId);
   } else if (data.action === "ban") {
     const { purgeMemberAndDeleteAuthUser } = await import("./account.server");
     await purgeMemberAndDeleteAuthUser(reportedId);
   }
   return { ok: true };
 
+}
+
+/** Lift a moderator-imposed hold. The only path that may clear it. */
+export async function reinstateAccount(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  data: ReinstateInput,
+): Promise<{ ok: true }> {
+  await assertModerator(supabase, userId);
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ is_paused: false, suspended_by_moderator: false })
+    .eq("id", data.user_id);
+  if (error) throw new Error(error.message);
+
+  const { auditAdminAccess } = await import("./security.server");
+  await auditAdminAccess({
+    actorId: userId,
+    actorRole: "moderator",
+    action: "moderation.account.reinstate",
+    subjectId: data.user_id,
+    resource: "profiles",
+    purpose: "Safety enforcement decision",
+    metadata: {},
+  });
+
+  const { notify, NOTIFICATION_COPY } = await import("./notifications.server");
+  await notify(supabaseAdmin as never, {
+    userId: data.user_id,
+    category: "safety",
+    eventType: "account_reinstated",
+    title: NOTIFICATION_COPY.account_state.title,
+    body: "Your account is no longer on hold. Matches have resumed.",
+    actionPath: "/profile",
+    dedupeKey: `account_reinstated:${Date.now()}`,
+  });
+
+  return { ok: true };
 }

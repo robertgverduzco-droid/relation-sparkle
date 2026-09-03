@@ -1,7 +1,14 @@
 // Thin wrapper. All moderation logic lives in ./moderation.server.ts.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { isModerator, listReports, resolveInput, resolveReportForModerator } from "./moderation.server";
+import {
+  isModerator,
+  listReports,
+  reinstateAccount,
+  reinstateInput,
+  resolveInput,
+  resolveReportForModerator,
+} from "./moderation.server";
 
 export const amIModerator = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -19,3 +26,8 @@ export const resolveReport = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) =>
     resolveReportForModerator(context.supabase, context.userId, data),
   );
+
+export const reinstateModeratedAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => reinstateInput.parse(v))
+  .handler(async ({ data, context }) => reinstateAccount(context.supabase, context.userId, data));
