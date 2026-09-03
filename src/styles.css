@@ -405,3 +405,121 @@
   background: transparent;
   color: var(--lavender);
 }
+
+/* ---- Member surfaces (Batch 3) ----------------------------------------- */
+/* One world with the field: void ground, hairlines instead of cards, system
+ * chrome in tracked uppercase sans, Athena in serif. Presentation only. */
+.surface {
+  position: relative;
+  min-height: 100dvh;
+  max-width: 480px;
+  margin-inline: auto;
+  background: var(--void);
+  overflow-x: hidden;
+}
+.surface-top {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 26px 26px 22px;
+  padding-top: max(26px, calc(env(safe-area-inset-top) + 12px));
+  background: linear-gradient(180deg, var(--void) 58%, rgba(3,3,4,0.85) 82%, rgba(3,3,4,0));
+  pointer-events: none;
+}
+.surface-top > * { pointer-events: auto; }
+.surface-scroll {
+  padding-top: max(84px, calc(env(safe-area-inset-top) + 70px));
+  padding-bottom: max(48px, calc(env(safe-area-inset-bottom) + 32px));
+}
+.sys {
+  font-size: 0.58rem; font-weight: 300;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--lavender-dim);
+}
+.sys-amber { color: var(--amber); opacity: 0.75; }
+
+/* Meet — one person, in focus. */
+.meet-portrait {
+  position: relative;
+  margin: 4px 26px 0;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid rgba(255,184,122,0.14);
+}
+.meet-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.meet-portrait-veil {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(3,3,4,0) 46%, rgba(3,3,4,0.92));
+}
+.meet-portrait-empty {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 52% 34%, rgba(255,214,178,0.30), transparent 58%),
+    radial-gradient(ellipse at 38% 68%, rgba(168,151,212,0.22), transparent 62%),
+    linear-gradient(168deg, #191420, #0a0810 70%);
+}
+.meet-portrait-note {
+  position: absolute; left: 16px; bottom: 14px;
+  font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--amber); opacity: 0.6;
+}
+.pbrk { position: absolute; width: 10px; height: 10px; border: 1px solid var(--amber); opacity: 0.5; }
+.pbrk-tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.pbrk-br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.meet-name {
+  font-family: var(--font-display);
+  font-size: 2.5rem; line-height: 1.1; letter-spacing: 0.01em;
+  margin: 26px 26px 6px; color: var(--ink);
+}
+.meet-where {
+  margin: 0 26px 30px;
+  font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--lavender-dim);
+}
+.meet-reason { position: relative; margin: 0 26px 32px; padding-top: 22px; }
+.meet-reason::before {
+  content: ''; position: absolute; left: 0; top: 0;
+  width: 16px; height: 1px; background: var(--amber); opacity: 0.75;
+}
+.meet-reason .sys { display: block; margin-bottom: 14px; }
+.meet-reason p {
+  font-family: var(--font-display);
+  font-size: 1.14rem; line-height: 1.62; color: var(--ink); opacity: 0.9;
+  margin-bottom: 14px; white-space: pre-wrap;
+}
+.meet-reason p.quiet { opacity: 0.55; font-size: 1.02rem; }
+
+.meet-held { margin: 26px 26px 0; padding-top: 20px; border-top: 1px solid rgba(168,151,212,0.12); }
+.meet-held p {
+  font-family: var(--font-display);
+  font-size: 0.96rem; line-height: 1.62; color: var(--ink); opacity: 0.45; margin-top: 12px;
+}
+
+.meet-actions { margin: 38px 26px 0; padding-bottom: max(40px, calc(env(safe-area-inset-bottom) + 30px)); }
+.meet-yes {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  padding: 17px 20px;
+  border: 1px solid rgba(255,184,122,0.30);
+  background: rgba(255,184,122,0.045);
+  transition: background 0.4s ease;
+}
+.meet-yes:active { background: rgba(255,184,122,0.09); }
+.meet-yes .go { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); }
+.meet-yes .arrow { color: var(--amber); font-size: 0.85rem; }
+.meet-quiet {
+  display: block; width: 100%; margin-top: 14px; padding: 15px;
+  background: transparent; border: none;
+  font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--lavender-dim);
+}
+.meet-quiet:disabled, .meet-yes:disabled { opacity: 0.45; }
+
+/* Meet — the waiting list, when more than one person is in view. */
+.meet-row {
+  display: block; width: 100%; text-align: left;
+  margin: 0 26px; padding: 22px 0;
+  border-bottom: 1px solid rgba(168,151,212,0.12);
+}
+.meet-row .who { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.2; color: var(--ink); }
+.meet-row .line { margin-top: 10px; font-size: 0.95rem; line-height: 1.6; color: var(--ink); opacity: 0.5; }

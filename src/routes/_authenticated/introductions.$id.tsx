@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { FieldBack } from "@/components/field-back";
 import { CounterpartPhotography } from "@/components/counterpart-photography";
 import {
   listMyIntroductions,
@@ -89,127 +89,124 @@ function IntroductionDetailPage() {
 
   if (intro === undefined) {
     return (
-      <div className="screen-shell safe-top px-6 pt-10">
-        <p className="text-sm text-muted-foreground" role="status">A moment…</p>
-        <MobileTabBar current="introductions" />
+      <div className="surface" data-testid="introduction-detail">
+        <FieldBack />
+        <div className="surface-scroll px-[26px]">
+          <p className="sys" role="status">
+            A moment…
+          </p>
+        </div>
       </div>
     );
   }
 
   if (intro === null) {
     return (
-      <div className="screen-shell safe-top px-6 pt-10">
-        <p className="text-sm text-muted-foreground">This introduction isn't available.</p>
-        <Link
-          to="/introductions"
-          className="mt-6 inline-block rounded-full border border-border px-5 py-2 text-sm text-foreground"
-        >
-          Back to introductions
-        </Link>
-        <MobileTabBar current="introductions" />
+      <div className="surface">
+        <FieldBack />
+        <div className="surface-scroll px-[26px]">
+          <p className="sys">This introduction isn't available.</p>
+          <Link to="/introductions" className="meet-quiet inline-block text-left">
+            Back to Meet
+          </Link>
+        </div>
       </div>
     );
   }
 
   const canRespond = intro.response === "pending" || intro.response === "deferred";
   const lead = framing(intro.presentation);
+  const where = [
+    intro.other_age != null ? `${intro.other_age}` : null,
+    intro.other_area,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className="screen-shell safe-top pb-40" data-testid="introduction-detail">
-      <header className="px-6 pt-8">
-        <Link
-          to="/introductions"
-          className="inline-block min-h-11 text-xs uppercase tracking-[0.25em] text-muted-foreground"
-        >
-          ← Meet
-        </Link>
-        <h1 className="mt-3 font-display text-[2.25rem] leading-tight text-foreground">
-          {intro.other_name}
-          {intro.other_age != null && (
-            <span className="ml-2 text-lg text-ink-soft">{intro.other_age}</span>
-          )}
-        </h1>
-        {intro.other_area && (
-          <p className="mt-1 text-sm text-ink-soft">{intro.other_area}</p>
-        )}
+    <div className="surface fade-in-quick" data-testid="introduction-detail">
+      <FieldBack />
+      <div className="surface-top">
+        <span aria-hidden style={{ width: 34 }} />
+        <span className="sys sys-amber">Someone in focus</span>
+        <span aria-hidden style={{ width: 34 }} />
+      </div>
+
+      <div className="surface-scroll">
+        {/* One person. One portrait, then the reason she is here. */}
+        <CounterpartPhotography
+          pairId={intro.id}
+          name={intro.other_name}
+          onDepth={() => setDepth(true)}
+        />
+
+        <h1 className="meet-name">{intro.other_name}</h1>
+        {where && <p className="meet-where">{where}</p>}
+
         {lead && (
-          <p
-            data-testid="introduction-framing"
-            className="mt-4 text-[15px] leading-relaxed text-foreground/90"
-          >
-            {lead}
-          </p>
+          <div className="meet-reason" data-testid="introduction-framing">
+            <span className="sys">Why her</span>
+            <p>{lead}</p>
+          </div>
         )}
-      </header>
 
-      {/* Portrait first, then further photographs by the member's own choice. */}
-      <CounterpartPhotography
-        pairId={intro.id}
-        name={intro.other_name}
-        onDepth={() => setDepth(true)}
-      />
+        {depth && (
+          <div ref={depthRef} tabIndex={-1} data-testid="introduction-depth">
+            {intro.presentation && (
+              <section className="meet-reason">
+                <span className="sys">Why Athena sees potential here</span>
+                <p>{intro.presentation}</p>
+              </section>
+            )}
 
-      {depth && (
-        <div ref={depthRef} tabIndex={-1} data-testid="introduction-depth">
-          {intro.presentation && (
-            <section className="mx-6 mt-6 rounded-3xl border border-border/70 bg-card p-5">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                Why Athena sees potential here
-              </p>
-              <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/90">
-                {intro.presentation}
+            <section className="meet-held">
+              <span className="sys">How to read this</span>
+              <p>
+                Athena doesn't rank people by percentage. She may introduce
+                someone she isn't yet sure about when her reasoning is genuinely
+                strong. What she shows you here is why — the shape of the
+                potential, not a score. A meeting is worth it when the reasoning
+                resonates, not when a number is high.
               </p>
             </section>
-          )}
+          </div>
+        )}
 
-          <section className="mx-6 mt-6 rounded-3xl border border-dashed border-border bg-background/40 p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              How to read this
-            </p>
-            <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-              Athena doesn't rank people by percentage. She may introduce someone
-              she isn't yet sure about when her reasoning is genuinely strong.
-              What she shows you here is why — the shape of the potential, not a
-              score. A meeting is worth it when the reasoning resonates, not when
-              a number is high.
-            </p>
-          </section>
-        </div>
-      )}
-
-      {canRespond && (
-        <div className="fixed inset-x-0 bottom-16 z-30 mx-auto max-w-[480px] border-t border-border/70 bg-background/90 px-6 py-3 backdrop-blur">
-          <div className="flex gap-2">
+        {canRespond && (
+          <div className="meet-actions">
             <button
+              type="button"
               data-testid="introduction-accept"
               onClick={() => react("accepted")}
               disabled={busy}
-              className="min-h-11 flex-1 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-60"
+              className="meet-yes"
             >
-              Yes, I'm open
+              <span className="go">Say yes to meeting {intro.other_name}</span>
+              <span className="arrow" aria-hidden>
+                →
+              </span>
             </button>
             <button
+              type="button"
               data-testid="introduction-defer"
               onClick={() => react("deferred")}
               disabled={busy}
-              className="min-h-11 rounded-full border border-border px-4 py-3 text-sm text-foreground disabled:opacity-60"
+              className="meet-quiet"
             >
               Not now
             </button>
             <button
+              type="button"
               data-testid="introduction-decline"
               onClick={() => react("declined")}
               disabled={busy}
-              className="min-h-11 rounded-full border border-border px-4 py-3 text-sm text-muted-foreground disabled:opacity-60"
+              className="meet-quiet"
             >
-              Pass
+              Not this one
             </button>
           </div>
-        </div>
-      )}
-
-      <MobileTabBar current="introductions" />
+        )}
+      </div>
     </div>
   );
 }
-

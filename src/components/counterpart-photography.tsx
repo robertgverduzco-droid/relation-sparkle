@@ -81,7 +81,7 @@ export function CounterpartPhotography({
 
   if (photos === null) {
     return (
-      <p className="mx-6 mt-6 text-sm text-muted-foreground" role="status">
+      <p className="mx-[26px] mt-6 sys" role="status">
         A moment…
       </p>
     );
@@ -89,15 +89,13 @@ export function CounterpartPhotography({
 
   if (photos.length === 0) {
     return (
-      <section className="mx-6 mt-6 rounded-3xl border border-dashed border-border p-5">
-        <p className="text-[13px] leading-relaxed text-ink-soft">
+      <section className="meet-held">
+        <span className="sys">No photograph yet</span>
+        <p>
           {name} hasn't shared a photograph yet. You can still read what Athena
           sees, and decide from there.
         </p>
-        <button
-          onClick={onDepth}
-          className="mt-4 min-h-11 text-[13px] text-primary underline underline-offset-4"
-        >
+        <button onClick={onDepth} className="meet-quiet text-left">
           What Athena sees here
         </button>
       </section>
@@ -108,14 +106,13 @@ export function CounterpartPhotography({
   const remaining = photos.length - shown;
 
   return (
-    <section className="mt-6" data-testid="counterpart-photography">
-      <div className="space-y-4 px-6">
+    <section data-testid="counterpart-photography">
+      <div className="space-y-4">
         {visible.map((p, i) => (
           <figure
             key={p.id}
             className={
-              "overflow-hidden rounded-3xl border border-border/60 bg-card " +
-              (reduced || i === 0 ? "" : "animate-in fade-in duration-500")
+              "meet-portrait " + (reduced || i === 0 ? "" : "animate-in fade-in duration-500")
             }
           >
             <img
@@ -123,17 +120,18 @@ export function CounterpartPhotography({
               alt={p.alt}
               data-testid={i === 0 ? "counterpart-primary-photo" : "counterpart-photo"}
               loading={i === 0 ? "eager" : "lazy"}
-              className="aspect-[4/5] w-full object-cover"
             />
+            <span aria-hidden className="meet-portrait-veil" />
+            <span aria-hidden className="pbrk pbrk-tl" />
+            <span aria-hidden className="pbrk pbrk-br" />
+            <figcaption className="meet-portrait-note">Photograph</figcaption>
           </figure>
         ))}
       </div>
 
       {/* Attraction response: private, qualitative, never a rating of a person. */}
-      <fieldset className="mx-6 mt-6 rounded-3xl border border-border/70 bg-card p-5">
-        <legend className="px-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          Between you and Athena
-        </legend>
+      <fieldset className="mx-[26px] mt-7 border-t border-[rgba(168,151,212,0.12)] pt-5">
+        <legend className="sys px-1">Between you and Athena</legend>
         <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
           Seeing them, what's true right now? {name} never sees this.
         </p>
@@ -148,8 +146,8 @@ export function CounterpartPhotography({
               className={
                 "min-h-11 rounded-full border px-4 py-2 text-[13px] disabled:opacity-60 " +
                 (attraction === c.value
-                  ? "border-primary bg-primary/10 text-foreground"
-                  : "border-border text-ink-soft")
+                  ? "border-[color-mix(in_oklab,var(--lavender)_60%,transparent)] text-ink"
+                  : "border-[rgba(168,151,212,0.18)] text-ink/50")
               }
             >
               {c.label}
@@ -157,30 +155,29 @@ export function CounterpartPhotography({
           ))}
         </div>
         {attraction && (
-          <p className="mt-3 text-[12px] text-muted-foreground" role="status">
+          <p className="mt-3 text-[12px] text-ink/50" role="status">
             Noted. Athena keeps this to herself, and it doesn't decide anything
             on its own.
           </p>
         )}
       </fieldset>
 
-      <div className="mx-6 mt-6 flex flex-col gap-3">
+      <div className="mx-[26px] mt-5 flex flex-col items-start gap-2">
         {remaining > 0 && (
           <button
             type="button"
             data-testid="counterpart-more-photos"
             onClick={() => setShown((n) => n + 1)}
-            className="min-h-11 rounded-full border border-border px-5 py-2.5 text-[13px] text-foreground"
+            className="meet-quiet text-left"
           >
-            See another photograph of {name}
-            <span className="ml-2 text-muted-foreground">({remaining} more)</span>
+            See another photograph of {name} ({remaining} more)
           </button>
         )}
         <button
           type="button"
           data-testid="counterpart-depth"
           onClick={onDepth}
-          className="min-h-11 rounded-full border border-border px-5 py-2.5 text-[13px] text-foreground"
+          className="meet-quiet text-left"
         >
           What Athena sees here
         </button>
