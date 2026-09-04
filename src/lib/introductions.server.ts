@@ -430,6 +430,11 @@ export async function runMatchmakingForUser(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const supabase = supabaseAdmin as SupabaseClient;
 
+  // Set aside anything that has been waiting on an answer too long, so a
+  // place held by silence is free before Athena counts the places at all.
+  await sweepLapsedIntroductionsForUser(userId).catch(() => ({ lapsed: 0, reminded: 0 }));
+
+
 
   const [{ data: selfProfile }, { data: selfPrefs }, { data: selfFacets }, { data: selfIntel }] =
     await Promise.all([
