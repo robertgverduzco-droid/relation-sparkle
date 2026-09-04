@@ -113,6 +113,8 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
         // number, and not as an ordinal label standing in for one.
         response: respMap.get(p.id as string) ?? "pending",
         presented_at: (isLow ? p.presented_to_a_at : p.presented_to_b_at) as string | null,
+        // Set aside by Athena after going unanswered. Holds no place.
+        lapsed_at: (p.lapsed_at as string | null) ?? null,
       };
 
     });
