@@ -1742,6 +1742,8 @@ export type Database = {
           hard_conflicts: Json
           id: string
           is_stale: boolean
+          lapse_reminded_at: string | null
+          lapsed_at: string | null
           last_reasoned_at: string
           presentation_a: string | null
           presentation_b: string | null
@@ -1763,6 +1765,8 @@ export type Database = {
           hard_conflicts?: Json
           id?: string
           is_stale?: boolean
+          lapse_reminded_at?: string | null
+          lapsed_at?: string | null
           last_reasoned_at?: string
           presentation_a?: string | null
           presentation_b?: string | null
@@ -1784,6 +1788,8 @@ export type Database = {
           hard_conflicts?: Json
           id?: string
           is_stale?: boolean
+          lapse_reminded_at?: string | null
+          lapsed_at?: string | null
           last_reasoned_at?: string
           presentation_a?: string | null
           presentation_b?: string | null
