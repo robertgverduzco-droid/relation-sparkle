@@ -18,6 +18,15 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
+    // Lapse is derived at read time — no scheduled job. Anything that has
+    // waited too long on an answer is set aside (and the people involved
+    // told) before the member sees the list.
+    {
+      const { sweepLapsedIntroductionsForUser } = await import("./introductions.server");
+      await sweepLapsedIntroductionsForUser(userId).catch(() => null);
+    }
+
+
     // PRIVACY BOUNDARY: only approved member-facing fields are selected here.
     // Athena's internal cross-member reasoning (`reasoning`, `alignments`,
     // `complementary`, `frictions`, `hard_conflicts`) is derived partly from
