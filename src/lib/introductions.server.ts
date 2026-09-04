@@ -430,6 +430,11 @@ export async function runMatchmakingForUser(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const supabase = supabaseAdmin as SupabaseClient;
 
+  // Set aside anything that has been waiting on an answer too long, so a
+  // place held by silence is free before Athena counts the places at all.
+  await sweepLapsedIntroductionsForUser(userId).catch(() => ({ lapsed: 0, reminded: 0 }));
+
+
 
   const [{ data: selfProfile }, { data: selfPrefs }, { data: selfFacets }, { data: selfIntel }] =
     await Promise.all([
@@ -480,7 +485,9 @@ export async function runMatchmakingForUser(
     .from("pair_reasoning")
     .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at")
     .or(`user_low.eq.${userId},user_high.eq.${userId}`)
-    .eq("status", "introduced");
+    .eq("status", "introduced")
+    // An introduction Athena has set aside no longer holds a place.
+    .is("lapsed_at", null);
   const presentedPairIds = (activePairs ?? [])
     .filter((p) => (p.user_low === userId ? p.presented_to_a_at : p.presented_to_b_at))
     .map((p) => p.id as string);
@@ -902,3 +909,150 @@ export async function refreshStalePairsForUser(userId: string): Promise<{ refres
 }
 
 
+
+// ---------------------------------------------------------------------------
+// Introduction lapse.
+//
+// An introduction one person answered and the other never did should not hold
+// a place forever. This sweep is derived at read time — no cron, no scheduled
+// job. It is called before matchmaking and when a member looks at their
+// introductions, and it is idempotent: `lapsed_at` and `lapse_reminded_at`
+// make every notification happen exactly once.
+// ---------------------------------------------------------------------------
+
+const ANSWERED_RESPONSES = new Set(["accepted", "declined", "deferred"]);
+
+export async function sweepLapsedIntroductionsForUser(
+  userId: string,
+): Promise<{ lapsed: number; reminded: number }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const supabase = supabaseAdmin as SupabaseClient;
+  const {
+    decideIntroductionLapse,
+    lapseWindowDays,
+    LAPSE_NOTIFICATIONS,
+  } = await import("./introduction-lapse");
+  const { notify } = await import("./notifications.server");
+
+  const windowDays = lapseWindowDays(process.env["INTRODUCTION_LAPSE_DAYS"] ?? null);
+
+  const { data: pairs } = await supabase
+    .from("pair_reasoning")
+    .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at, lapse_reminded_at")
+    .or(`user_low.eq.${userId},user_high.eq.${userId}`)
+    .eq("status", "introduced")
+    .is("lapsed_at", null)
+    .limit(50);
+  if (!pairs || pairs.length === 0) return { lapsed: 0, reminded: 0 };
+
+  const pairIds = pairs.map((p) => p.id as string);
+  const { data: responses } = await supabase
+    .from("introduction_responses")
+    .select("pair_id, user_id, response")
+    .in("pair_id", pairIds);
+  const answerOf = new Map<string, string>();
+  for (const r of responses ?? [])
+    answerOf.set(`${r.pair_id as string}:${r.user_id as string}`, (r.response as string) ?? "pending");
+
+  type Side = { userId: string; presentedAt: string | null; answer: string };
+  const sidesOf = (p: (typeof pairs)[number]): [Side, Side] => [
+    {
+      userId: p.user_low as string,
+      presentedAt: (p.presented_to_a_at as string | null) ?? null,
+      answer: answerOf.get(`${p.id as string}:${p.user_low as string}`) ?? "pending",
+    },
+    {
+      userId: p.user_high as string,
+      presentedAt: (p.presented_to_b_at as string | null) ?? null,
+      answer: answerOf.get(`${p.id as string}:${p.user_high as string}`) ?? "pending",
+    },
+  ];
+
+  // Is this member's every place currently held by an unanswered introduction?
+  let openForUser = 0;
+  for (const p of pairs) {
+    const mine = sidesOf(p).find((s) => s.userId === userId);
+    if (mine?.presentedAt && OPEN_INTRODUCTION_RESPONSES.includes(mine.answer as never))
+      openForUser += 1;
+  }
+  const atCap = openForUser >= MAX_ACTIVE_INTRODUCTIONS;
+
+  let lapsed = 0;
+  let reminded = 0;
+
+  for (const p of pairs) {
+    const sides = sidesOf(p);
+    // A decline already closed this out; nothing to set aside.
+    if (sides.some((s) => s.answer === "declined")) continue;
+    const presented = sides.filter((s) => s.presentedAt);
+    if (presented.length === 0) continue;
+
+    const answered = presented.filter((s) => ANSWERED_RESPONSES.has(s.answer));
+    const quiet = presented.filter((s) => !ANSWERED_RESPONSES.has(s.answer));
+    const bothAnswered = quiet.length === 0;
+
+    const oldest = presented
+      .map((s) => s.presentedAt as string)
+      .sort()[0] as string;
+
+    const waitingIsThisMember = answered.some((s) => s.userId === userId);
+
+    const decision = decideIntroductionLapse({
+      presentedAt: oldest,
+      bothAnswered,
+      waitingMemberAtCap: atCap && waitingIsThisMember,
+      remindedAt: (p.lapse_reminded_at as string | null) ?? null,
+      windowDays,
+    });
+
+    if (decision === "remind") {
+      for (const s of quiet) {
+        await notify(supabase, {
+          userId: s.userId,
+          category: "introductions",
+          eventType: "introduction_lapse_reminder",
+          ...LAPSE_NOTIFICATIONS.reminder,
+          actionPath: `/introductions/${p.id as string}`,
+          dedupeKey: `intro_lapse_reminder:${p.id as string}:${s.userId}`,
+        });
+      }
+      await supabase
+        .from("pair_reasoning")
+        .update({ lapse_reminded_at: new Date().toISOString() })
+        .eq("id", p.id as string);
+      reminded += 1;
+      continue;
+    }
+
+    if (decision !== "lapse") continue;
+
+    await supabase
+      .from("pair_reasoning")
+      .update({ lapsed_at: new Date().toISOString() })
+      .eq("id", p.id as string);
+    lapsed += 1;
+
+    for (const s of answered) {
+      await notify(supabase, {
+        userId: s.userId,
+        category: "introductions",
+        eventType: "introduction_lapsed",
+        ...LAPSE_NOTIFICATIONS.lapsed_waiting,
+        actionPath: "/introductions",
+        dedupeKey: `intro_lapsed:${p.id as string}:${s.userId}`,
+      });
+    }
+    for (const s of quiet) {
+      await notify(supabase, {
+        userId: s.userId,
+        category: "introductions",
+        eventType: "introduction_lapsed_unanswered",
+        ...LAPSE_NOTIFICATIONS.lapsed_quiet,
+        actionPath: "/introductions",
+        dedupeKey: `intro_lapsed:${p.id as string}:${s.userId}`,
+      });
+    }
+  }
+
+  return { lapsed, reminded };
+}

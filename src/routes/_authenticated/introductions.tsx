@@ -7,6 +7,7 @@ import {
   considerIntroductions,
   listMyIntroductions,
 } from "@/lib/introductions.functions";
+import { LAPSE_COPY_QUIET, LAPSE_COPY_WAITING } from "@/lib/introduction-lapse";
 
 export const Route = createFileRoute("/_authenticated/introductions")({
   head: () => ({
@@ -27,6 +28,7 @@ type Intro = {
   presentation: string | null;
   response: string;
   presented_at: string | null;
+  lapsed_at?: string | null;
 };
 
 /** The first sentence of Athena's reasoning — the rest waits on the person's
@@ -114,6 +116,8 @@ function IntroductionsPage() {
                 .filter(Boolean)
                 .join(" · ");
               const line = lede(it.presentation);
+              const lapsed = Boolean(it.lapsed_at);
+              const answered = it.response !== "pending";
               return (
                 <li key={it.id} data-testid="introduction-card">
                   <Link
@@ -121,14 +125,30 @@ function IntroductionsPage() {
                     to="/introductions/$id"
                     params={{ id: it.id }}
                     className="meet-row"
+                    data-lapsed={lapsed ? "true" : undefined}
                   >
                     <span className="who">{it.other_name}</span>
                     {where && (
                       <span className="meet-where mx-0 mt-2 block">{where}</span>
                     )}
-                    {line && <span className="line block">{line}</span>}
-                    <span className="sys sys-amber mt-4 block">
-                      {it.response === "pending" ? "Waiting on you →" : "Read →"}
+                    {lapsed ? (
+                      <span
+                        className="line block"
+                        data-testid="introduction-lapsed-note"
+                      >
+                        {answered ? LAPSE_COPY_WAITING : LAPSE_COPY_QUIET}
+                      </span>
+                    ) : (
+                      line && <span className="line block">{line}</span>
+                    )}
+                    <span className="sys mt-4 block">
+                      {lapsed ? (
+                        "Set aside"
+                      ) : (
+                        <span className="sys-amber">
+                          {it.response === "pending" ? "Waiting on you →" : "Read →"}
+                        </span>
+                      )}
                     </span>
                   </Link>
                 </li>
