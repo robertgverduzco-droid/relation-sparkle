@@ -480,7 +480,9 @@ export async function runMatchmakingForUser(
     .from("pair_reasoning")
     .select("id, user_low, user_high, presented_to_a_at, presented_to_b_at")
     .or(`user_low.eq.${userId},user_high.eq.${userId}`)
-    .eq("status", "introduced");
+    .eq("status", "introduced")
+    // An introduction Athena has set aside no longer holds a place.
+    .is("lapsed_at", null);
   const presentedPairIds = (activePairs ?? [])
     .filter((p) => (p.user_low === userId ? p.presented_to_a_at : p.presented_to_b_at))
     .map((p) => p.id as string);
