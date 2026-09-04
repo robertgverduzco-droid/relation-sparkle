@@ -27,6 +27,7 @@ type Intro = {
   presentation: string | null;
   response: string;
   presented_at: string | null;
+  lapsed_at?: string | null;
 };
 
 /** The first sentence of Athena's reasoning — the rest waits on the person's
