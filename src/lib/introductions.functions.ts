@@ -39,7 +39,7 @@ export const listMyIntroductions = createServerFn({ method: "GET" })
     const { data: pairs } = await supabase
       .from("pair_reasoning")
       .select(
-        "id, user_low, user_high, presented_to_a_at, presented_to_b_at, last_reasoned_at",
+        "id, user_low, user_high, presented_to_a_at, presented_to_b_at, last_reasoned_at, lapsed_at",
       )
 
       .or(
