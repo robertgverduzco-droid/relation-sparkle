@@ -140,6 +140,20 @@ export const respondToIntroduction = createServerFn({ method: "POST" })
     // response is written with the service-role client — always keyed to the
     // caller's own user_id, never on behalf of the counterpart.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // An introduction Athena has set aside is closed. Answering it now would
+    // reopen a place that has already been given back.
+    {
+      const { data: pairRow } = await supabase
+        .from("pair_reasoning")
+        .select("id, lapsed_at")
+        .eq("id", data.pair_id)
+        .maybeSingle();
+      if (pairRow?.lapsed_at) {
+        throw new Error("Athena set this introduction aside. There's nothing to answer.");
+      }
+    }
+
     const { recordIntroductionResponse } = await import("./write-paths.server");
     const pair = await recordIntroductionResponse(
       supabase,
