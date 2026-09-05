@@ -991,10 +991,22 @@ function AthenaPage() {
             Send
           </button>
         </div>
-        {recording && (
+        )}
+        {composerOpen && recording && (
           <p className="mt-2 text-center text-xs text-muted-foreground">
             Listening — tap the button again when you're done.
           </p>
+        )}
+        {composerOpen && !recording && !input.trim() && (
+          <div className="mt-2 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setComposerOpen(false)}
+              className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Done
+            </button>
+          </div>
         )}
       </form>
 
