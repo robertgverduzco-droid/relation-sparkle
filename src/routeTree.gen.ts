@@ -42,6 +42,7 @@ import { Route as AuthenticatedFounderRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedConnectionsRouteImport } from './routes/_authenticated/connections'
 import { Route as AuthenticatedBetaAccountsRouteImport } from './routes/_authenticated/beta-accounts'
+import { Route as AuthenticatedAthenaHistoryRouteImport } from './routes/_authenticated/athena-history'
 import { Route as AuthenticatedAthenaRouteImport } from './routes/_authenticated/athena'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiSpeechEngineWsRouteImport } from './routes/api/speech-engine/ws'
@@ -54,7 +55,6 @@ import { Route as AuthenticatedFounderPhotosRouteImport } from './routes/_authen
 import { Route as AuthenticatedFounderIntelligenceRouteImport } from './routes/_authenticated/founder.intelligence'
 import { Route as AuthenticatedFounderAppealsRouteImport } from './routes/_authenticated/founder.appeals'
 import { Route as AuthenticatedConnectionsIdRouteImport } from './routes/_authenticated/connections.$id'
-import { Route as AuthenticatedAthenaHistoryRouteImport } from './routes/_authenticated/athena.history'
 import { Route as AuthenticatedAccountAppealRouteImport } from './routes/_authenticated/account.appeal'
 
 const TermsRoute = TermsRouteImport.update({
@@ -228,6 +228,12 @@ const AuthenticatedBetaAccountsRoute =
     path: '/beta-accounts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAthenaHistoryRoute =
+  AuthenticatedAthenaHistoryRouteImport.update({
+    id: '/athena-history',
+    path: '/athena-history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAthenaRoute = AuthenticatedAthenaRouteImport.update({
   id: '/athena',
   path: '/athena',
@@ -295,12 +301,6 @@ const AuthenticatedConnectionsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedConnectionsRoute,
   } as any)
-const AuthenticatedAthenaHistoryRoute =
-  AuthenticatedAthenaHistoryRouteImport.update({
-    id: '/history',
-    path: '/history',
-    getParentRoute: () => AuthenticatedAthenaRoute,
-  } as any)
 const AuthenticatedAccountAppealRoute =
   AuthenticatedAccountAppealRouteImport.update({
     id: '/appeal',
@@ -317,7 +317,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
-  '/athena': typeof AuthenticatedAthenaRouteWithChildren
+  '/athena': typeof AuthenticatedAthenaRoute
+  '/athena-history': typeof AuthenticatedAthenaHistoryRoute
   '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
@@ -344,7 +345,6 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/api/ws-echo': typeof ApiWsEchoRoute
   '/account/appeal': typeof AuthenticatedAccountAppealRoute
-  '/athena/history': typeof AuthenticatedAthenaHistoryRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/founder/appeals': typeof AuthenticatedFounderAppealsRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
@@ -365,7 +365,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
-  '/athena': typeof AuthenticatedAthenaRouteWithChildren
+  '/athena': typeof AuthenticatedAthenaRoute
+  '/athena-history': typeof AuthenticatedAthenaHistoryRoute
   '/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRoute
@@ -392,7 +393,6 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/api/ws-echo': typeof ApiWsEchoRoute
   '/account/appeal': typeof AuthenticatedAccountAppealRoute
-  '/athena/history': typeof AuthenticatedAthenaHistoryRoute
   '/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/founder/appeals': typeof AuthenticatedFounderAppealsRoute
   '/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
@@ -415,7 +415,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
-  '/_authenticated/athena': typeof AuthenticatedAthenaRouteWithChildren
+  '/_authenticated/athena': typeof AuthenticatedAthenaRoute
+  '/_authenticated/athena-history': typeof AuthenticatedAthenaHistoryRoute
   '/_authenticated/beta-accounts': typeof AuthenticatedBetaAccountsRoute
   '/_authenticated/connections': typeof AuthenticatedConnectionsRouteWithChildren
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
@@ -442,7 +443,6 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/api/ws-echo': typeof ApiWsEchoRoute
   '/_authenticated/account/appeal': typeof AuthenticatedAccountAppealRoute
-  '/_authenticated/athena/history': typeof AuthenticatedAthenaHistoryRoute
   '/_authenticated/connections/$id': typeof AuthenticatedConnectionsIdRoute
   '/_authenticated/founder/appeals': typeof AuthenticatedFounderAppealsRoute
   '/_authenticated/founder/intelligence': typeof AuthenticatedFounderIntelligenceRoute
@@ -466,6 +466,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/athena'
+    | '/athena-history'
     | '/beta-accounts'
     | '/connections'
     | '/conversations'
@@ -492,7 +493,6 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/ws-echo'
     | '/account/appeal'
-    | '/athena/history'
     | '/connections/$id'
     | '/founder/appeals'
     | '/founder/intelligence'
@@ -514,6 +514,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/athena'
+    | '/athena-history'
     | '/beta-accounts'
     | '/connections'
     | '/conversations'
@@ -540,7 +541,6 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/ws-echo'
     | '/account/appeal'
-    | '/athena/history'
     | '/connections/$id'
     | '/founder/appeals'
     | '/founder/intelligence'
@@ -563,6 +563,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/athena'
+    | '/_authenticated/athena-history'
     | '/_authenticated/beta-accounts'
     | '/_authenticated/connections'
     | '/_authenticated/conversations'
@@ -589,7 +590,6 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/ws-echo'
     | '/_authenticated/account/appeal'
-    | '/_authenticated/athena/history'
     | '/_authenticated/connections/$id'
     | '/_authenticated/founder/appeals'
     | '/_authenticated/founder/intelligence'
@@ -858,6 +858,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBetaAccountsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/athena-history': {
+      id: '/_authenticated/athena-history'
+      path: '/athena-history'
+      fullPath: '/athena-history'
+      preLoaderRoute: typeof AuthenticatedAthenaHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/athena': {
       id: '/_authenticated/athena'
       path: '/athena'
@@ -942,13 +949,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConnectionsIdRouteImport
       parentRoute: typeof AuthenticatedConnectionsRoute
     }
-    '/_authenticated/athena/history': {
-      id: '/_authenticated/athena/history'
-      path: '/history'
-      fullPath: '/athena/history'
-      preLoaderRoute: typeof AuthenticatedAthenaHistoryRouteImport
-      parentRoute: typeof AuthenticatedAthenaRoute
-    }
     '/_authenticated/account/appeal': {
       id: '/_authenticated/account/appeal'
       path: '/appeal'
@@ -969,17 +969,6 @@ const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
 
 const AuthenticatedAccountRouteWithChildren =
   AuthenticatedAccountRoute._addFileChildren(AuthenticatedAccountRouteChildren)
-
-interface AuthenticatedAthenaRouteChildren {
-  AuthenticatedAthenaHistoryRoute: typeof AuthenticatedAthenaHistoryRoute
-}
-
-const AuthenticatedAthenaRouteChildren: AuthenticatedAthenaRouteChildren = {
-  AuthenticatedAthenaHistoryRoute: AuthenticatedAthenaHistoryRoute,
-}
-
-const AuthenticatedAthenaRouteWithChildren =
-  AuthenticatedAthenaRoute._addFileChildren(AuthenticatedAthenaRouteChildren)
 
 interface AuthenticatedConnectionsRouteChildren {
   AuthenticatedConnectionsIdRoute: typeof AuthenticatedConnectionsIdRoute
@@ -1050,7 +1039,8 @@ const AuthenticatedProfileRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
-  AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRouteWithChildren
+  AuthenticatedAthenaRoute: typeof AuthenticatedAthenaRoute
+  AuthenticatedAthenaHistoryRoute: typeof AuthenticatedAthenaHistoryRoute
   AuthenticatedBetaAccountsRoute: typeof AuthenticatedBetaAccountsRoute
   AuthenticatedConnectionsRoute: typeof AuthenticatedConnectionsRouteWithChildren
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
@@ -1071,7 +1061,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
-  AuthenticatedAthenaRoute: AuthenticatedAthenaRouteWithChildren,
+  AuthenticatedAthenaRoute: AuthenticatedAthenaRoute,
+  AuthenticatedAthenaHistoryRoute: AuthenticatedAthenaHistoryRoute,
   AuthenticatedBetaAccountsRoute: AuthenticatedBetaAccountsRoute,
   AuthenticatedConnectionsRoute: AuthenticatedConnectionsRouteWithChildren,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
