@@ -119,6 +119,10 @@ function AthenaPage() {
   const [voiceMode, setVoiceMode] = useState<VoiceMode | null>(null);
   const [askingPreference, setAskingPreference] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Presentation only: the composer is revealed on request, so arriving is
+  // stillness rather than a keyboard and a scroll.
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [showClosingCard, setShowClosingCard] = useState(false);
