@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -17,6 +17,7 @@ import { FieldBack } from "@/components/field-back";
 import { speak, primeSpeechAudio } from "@/lib/athena-speech";
 import { AthenaLiveSession, type LiveStatus, type LiveTurn } from "@/lib/athena-live";
 import { AthenaLivePresence } from "@/components/athena-live-presence";
+import { AthenaRestingPresence } from "@/components/athena-resting-presence";
 import { acquireMicrophone, micFailureMessage } from "@/lib/mic-access";
 import { assessCoverage, breadthNudge } from "@/lib/foundational";
 import { mayOfferFoundationalClose, isFoundationalSession } from "@/lib/foundational-milestone";
@@ -118,6 +119,12 @@ function AthenaPage() {
   const [voiceMode, setVoiceMode] = useState<VoiceMode | null>(null);
   const [askingPreference, setAskingPreference] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Presentation only: the composer is revealed on request, so arriving is
+  // stillness rather than a keyboard and a scroll.
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
+  /** Turns that already existed when this visit began — never shown here. */
+  const baselineRef = useRef(0);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [showClosingCard, setShowClosingCard] = useState(false);
@@ -277,6 +284,7 @@ function AthenaPage() {
       ]);
       if (cancelled) return;
       accountIdRef.current = auth?.user?.id ?? null;
+      setFirstName((profile?.display_name as string | null)?.split(" ")[0] ?? null);
       foundationCompleteRef.current = Boolean(session?.completed_at);
       // A returning member whose milestone already happened opens straight
       // into ordinary continuing conversation — no intake framing, no sheet.
@@ -288,6 +296,9 @@ function AthenaPage() {
       });
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
+        // Arriving is stillness: prior turns are history, reachable from
+        // settings, never replayed on the screen.
+        baselineRef.current = priorMessages.length;
         setMessages(priorMessages);
         lastReflectedTurnRef.current = priorMessages.filter((m) => m.role === "user").length;
         setVoiceMode(stored ?? "voice");
@@ -745,6 +756,19 @@ function AthenaPage() {
           ? "…"
           : "Say it — or type it";
 
+  // Only the exchange in front of the member: her last reply, with the line
+  // that prompted it. The full history lives in settings, not here.
+  const lastUserIndex = messages.map((m) => m.role).lastIndexOf("user");
+  const exchangeStart = lastUserIndex >= 0 ? lastUserIndex : 0;
+  const exchange = messages.slice(Math.max(exchangeStart, baselineRef.current));
+  const openingLine = !foundationalSessionRef.current
+    ? firstName
+      ? `Hello again, ${firstName}.`
+      : "Hello again."
+    : messages.length > 0
+      ? "We can pick up wherever you like."
+      : "I've been looking forward to meeting you.";
+
 
   return (
     <div className="screen-shell safe-top relative pb-6" data-testid="athena-screen">
@@ -801,61 +825,69 @@ function AthenaPage() {
         />
       </header>
 
-      <div
-        ref={scrollerRef}
-        data-testid="athena-transcript"
-        data-hydrated={hydrated ? "true" : "false"}
-        data-conversation-state={runtimeState}
-        className="relative flex-1 overflow-y-auto px-6 py-8"
-      >
-        <div className="mx-auto w-full max-w-[36rem] space-y-6">
-
+      {/* Athena at rest — what a member arrives to. No transcript, no scroll. */}
+      <div className="relative flex flex-1 flex-col items-center justify-center px-6">
+        <div className="pointer-events-none h-[42vw] max-h-[220px] w-[42vw] max-w-[220px]">
+          <AthenaRestingPresence active={busy || introducing || speaking} />
+        </div>
         {!hydrated ? (
-          <p className="text-center text-sm text-muted-foreground fade-in-slow">
+          <p className="mt-6 text-center text-sm text-muted-foreground fade-in-slow">
             Athena is preparing to meet you…
           </p>
+        ) : exchange.length === 0 ? (
+          <p className="fade-in-slow mt-6 max-w-[22rem] text-center text-[15px] leading-relaxed text-ink-soft">
+            {openingLine}
+          </p>
         ) : (
-          <>
-            {messages.map((m, i) => (
-              <div key={i}>
-                <Bubble role={m.role} content={m.content} />
-                {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
-                {m.readinessNotice ? <ReadinessNotice notice={m.readinessNotice} /> : null}
-                {m.crisis ? <CrisisNotice notice={m.crisis} /> : null}
-
-              </div>
-            ))}
-            {livePartial && (
-              <Bubble role="assistant" content={livePartial} />
-            )}
-            {showsThinkingIndicator(runtimeState) && !live && (
-              <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
-            )}
-            {askingPreference && (
-              <div className="fade-in-slow pt-4 flex flex-col items-start gap-3">
-                <p className="text-sm text-muted-foreground">How would you like to continue?</p>
-                <div className="flex flex-col gap-2 w-full max-w-sm">
-                  <button
-                    onClick={() => void choosePreference("voice")}
-                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
-                  >
-                    Continue with voice & text
-                    <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
-                  </button>
-                  <button
-                    onClick={() => void choosePreference("text")}
-                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
-                  >
-                    Continue with text only
-                    <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
-                  </button>
+          <div
+            ref={scrollerRef}
+            data-testid="athena-transcript"
+            data-hydrated="true"
+            data-conversation-state={runtimeState}
+            className="mt-6 max-h-[38vh] w-full max-w-[36rem] overflow-y-auto"
+          >
+            <div className="space-y-5">
+              {exchange.map((m, i) => (
+                <div key={exchangeStart + i}>
+                  <Bubble role={m.role} content={m.content} />
+                  {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
+                  {m.readinessNotice ? <ReadinessNotice notice={m.readinessNotice} /> : null}
+                  {m.crisis ? <CrisisNotice notice={m.crisis} /> : null}
                 </div>
-                <p className="text-xs text-muted-foreground">You can change this anytime.</p>
-              </div>
-            )}
-          </>
+              ))}
+              {livePartial && <Bubble role="assistant" content={livePartial} />}
+            </div>
+          </div>
         )}
-        </div>
+
+        {hydrated && showsThinkingIndicator(runtimeState) && !live && (
+          <div className="mt-5 w-full max-w-[36rem]">
+            <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
+          </div>
+        )}
+
+        {askingPreference && (
+          <div className="fade-in-slow mt-6 flex w-full max-w-sm flex-col items-start gap-3">
+            <p className="text-sm text-muted-foreground">How would you like to continue?</p>
+            <div className="flex w-full flex-col gap-2">
+              <button
+                onClick={() => void choosePreference("voice")}
+                className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
+              >
+                Continue with voice & text
+                <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
+              </button>
+              <button
+                onClick={() => void choosePreference("text")}
+                className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
+              >
+                Continue with text only
+                <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">You can change this anytime.</p>
+          </div>
+        )}
       </div>
 
 
@@ -887,21 +919,37 @@ function AthenaPage() {
           e.preventDefault();
           void send();
         }}
-        className="safe-bottom relative border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] px-5 pt-4 pb-4 backdrop-blur-xl"
+        className={`safe-bottom relative px-5 pt-4 pb-5 ${
+          composerOpen
+            ? "border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] backdrop-blur-xl"
+            : ""
+        }`}
       >
-        {!askingPreference && hydrated && !introducing && (
-          <div className="mb-2 flex justify-center">
+        {!askingPreference && hydrated && !introducing && !composerOpen && (
+          <div className="flex justify-center gap-3">
             <button
               type="button"
               data-testid="athena-live-toggle"
               onClick={() => (live ? endLive() : void startLive())}
               disabled={busy || recording || transcribing}
-              className="tap-target rounded-full border border-border-strong px-5 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground disabled:opacity-40"
+              className="tap-target rounded-full border border-border-strong px-6 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground disabled:opacity-40"
             >
-              {live ? "End live conversation" : "Speak with Athena"}
+              {live ? "End live conversation" : "Speak"}
+            </button>
+            <button
+              type="button"
+              data-testid="athena-open-composer"
+              onClick={() => {
+                setComposerOpen(true);
+                requestAnimationFrame(() => inputRef.current?.focus());
+              }}
+              className="tap-target rounded-full border border-border-strong px-6 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground"
+            >
+              Type
             </button>
           </div>
         )}
+        {composerOpen && (
         <div
           className="flex items-end gap-2 rounded-[1.5rem] border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-2.5 py-2 transition-opacity"
           style={{ opacity: (inputDisabled && !recording) || live ? 0.5 : 1 }}
@@ -947,10 +995,22 @@ function AthenaPage() {
             Send
           </button>
         </div>
-        {recording && (
+        )}
+        {composerOpen && recording && (
           <p className="mt-2 text-center text-xs text-muted-foreground">
             Listening — tap the button again when you're done.
           </p>
+        )}
+        {composerOpen && !recording && !input.trim() && (
+          <div className="mt-2 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setComposerOpen(false)}
+              className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Done
+            </button>
+          </div>
         )}
       </form>
 
@@ -1036,6 +1096,26 @@ function VoiceSettingsSheet({
         <p className="mt-5 text-xs text-muted-foreground">
           You can speak to Athena at any time by tapping the microphone — whichever mode you're in.
         </p>
+
+        {/* Understated, not advertised: the whole conversation, and the
+            ordinary account options, in one quiet list. */}
+        <div className="mt-6 border-t border-border/60 pt-4 flex flex-col items-start gap-3">
+          <Link
+            to="/athena-history"
+            data-testid="athena-history-link"
+            onClick={onClose}
+            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Past conversation
+          </Link>
+          <Link
+            to="/account"
+            onClick={onClose}
+            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Account &amp; sign out
+          </Link>
+        </div>
       </div>
     </div>
   );
