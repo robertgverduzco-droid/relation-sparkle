@@ -921,19 +921,31 @@ function AthenaPage() {
         }}
         className="safe-bottom relative border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] px-5 pt-4 pb-4 backdrop-blur-xl"
       >
-        {!askingPreference && hydrated && !introducing && (
-          <div className="mb-2 flex justify-center">
+        {!askingPreference && hydrated && !introducing && !composerOpen && (
+          <div className="flex justify-center gap-3">
             <button
               type="button"
               data-testid="athena-live-toggle"
               onClick={() => (live ? endLive() : void startLive())}
               disabled={busy || recording || transcribing}
-              className="tap-target rounded-full border border-border-strong px-5 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground disabled:opacity-40"
+              className="tap-target rounded-full border border-border-strong px-6 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground disabled:opacity-40"
             >
-              {live ? "End live conversation" : "Speak with Athena"}
+              {live ? "End live conversation" : "Speak"}
+            </button>
+            <button
+              type="button"
+              data-testid="athena-open-composer"
+              onClick={() => {
+                setComposerOpen(true);
+                requestAnimationFrame(() => inputRef.current?.focus());
+              }}
+              className="tap-target rounded-full border border-border-strong px-6 text-[11px] uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-foreground"
+            >
+              Type
             </button>
           </div>
         )}
+        {composerOpen && (
         <div
           className="flex items-end gap-2 rounded-[1.5rem] border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-2.5 py-2 transition-opacity"
           style={{ opacity: (inputDisabled && !recording) || live ? 0.5 : 1 }}
