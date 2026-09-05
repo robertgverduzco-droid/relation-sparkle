@@ -751,6 +751,19 @@ function AthenaPage() {
           ? "…"
           : "Say it — or type it";
 
+  // Only the exchange in front of the member: her last reply, with the line
+  // that prompted it. The full history lives in settings, not here.
+  const lastUserIndex = messages.map((m) => m.role).lastIndexOf("user");
+  const exchangeStart = lastUserIndex >= 0 ? lastUserIndex : 0;
+  const exchange = messages.slice(exchangeStart);
+  const openingLine = !foundationalSessionRef.current
+    ? firstName
+      ? `Hello again, ${firstName}.`
+      : "Hello again."
+    : messages.length > 0
+      ? "We can pick up wherever you like."
+      : "I've been looking forward to meeting you.";
+
 
   return (
     <div className="screen-shell safe-top relative pb-6" data-testid="athena-screen">
