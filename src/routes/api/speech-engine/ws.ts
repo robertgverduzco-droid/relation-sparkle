@@ -216,6 +216,15 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             { role: "user" as const, content: turn.text },
           ];
 
+          // The socket keeps its own deadline, independent of anything
+          // upstream. If a turn produces no words in 30s the call stops
+          // waiting, says one honest line, and stays open for the next turn.
+          let timedOut = false;
+          const deadline = setTimeout(() => {
+            timedOut = true;
+            controller.abort();
+          }, 30_000);
+
           try {
             at("llm-call-start", `messages=${messages.length}`);
             const response = await fetch(new URL("/api/eleven-agent-chat", url.origin), {
@@ -294,10 +303,19 @@ export const Route = createFileRoute("/api/speech-engine/ws")({
             send(agentResponseFrame(turn.eventId, "", true));
             at("final-frame-sent", `spoken=${spoken}`);
           } catch (error) {
-            if ((error as { name?: string })?.name === "AbortError") return;
-            console.error("[speech-engine] turn failed", error);
-            speakFallback(turn.eventId, `threw ${String(error).slice(0, 300)}`);
+            // Our own deadline aborts the same way a barge-in does, so the
+            // timeout must be distinguished before treating an abort as the
+            // member's own interruption.
+            if (timedOut) {
+              speakFallback(turn.eventId, "turn exceeded the 30s deadline");
+            } else if ((error as { name?: string })?.name === "AbortError") {
+              return;
+            } else {
+              console.error("[speech-engine] turn failed", error);
+              speakFallback(turn.eventId, `threw ${String(error).slice(0, 300)}`);
+            }
           } finally {
+            clearTimeout(deadline);
             if (inFlight === controller) inFlight = null;
           }
         };

@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listMyIntroductions } from "@/lib/introductions.functions";
 import { getMyUnderstanding } from "@/lib/understanding.functions";
 import { OrbField, type OrbId, type OrbSpec } from "@/components/orb-field";
+import { MemberMenuSheet } from "@/components/member-menu";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -45,6 +46,7 @@ function Field() {
   const [loading, setLoading] = useState(true);
   const [waiting, setWaiting] = useState(0);
   const [held, setHeld] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -118,9 +120,21 @@ function Field() {
         <span className="orb-sys">Athena</span>
         <span className="orb-sys">{stamp}</span>
       </div>
+      {/* Quiet, but never absent: the field is the one screen everybody
+          returns to, so the way out of the app lives here too. */}
+      <button
+        type="button"
+        data-testid="field-menu"
+        aria-label="Menu"
+        onClick={() => setMenuOpen(true)}
+        className="orb-sys fixed bottom-6 right-6 z-40 min-h-11 px-3 py-2 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        Menu
+      </button>
       <div className="orb-field-hint">
         <span className="orb-sys">Touch a light</span>
       </div>
+      {menuOpen && <MemberMenuSheet onClose={() => setMenuOpen(false)} />}
     </div>
   );
 }

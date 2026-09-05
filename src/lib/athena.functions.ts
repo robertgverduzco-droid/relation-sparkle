@@ -467,11 +467,15 @@ Use this memory to:
     // The member-facing turn must reconcile event, evidence, register,
     // provenance, boundaries, memory and objective in one pass, so it runs
     // with low reasoning rather than none. Analytical surfaces are unchanged.
+    // A bounded wait, because an unbounded one is what silence sounds like on
+    // a live call: with no deadline a stalled upstream call never returns and
+    // the member hears nothing at all. 25s is far above a normal turn.
     const { text } = await generateText({
       model: gateway("openai/gpt-5.5"),
       system: budgeted.system,
       messages: budgeted.messages as ModelMessage[],
       providerOptions: { lovable: { reasoningEffort: "low" } },
+      abortSignal: AbortSignal.timeout(25_000),
     });
 
 
