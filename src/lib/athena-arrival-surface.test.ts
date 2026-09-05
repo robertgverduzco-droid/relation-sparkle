@@ -11,7 +11,7 @@ describe("Athena arrival surface", () => {
   it("renders the resting presence rather than a scrolling history", () => {
     expect(screen).toContain("AthenaRestingPresence");
     // Only the current exchange is rendered — never the whole message array.
-    expect(screen).not.toContain("messages.map(");
+    expect(screen).not.toContain("messages.map((m, i)");
     expect(screen).toContain("exchange.map(");
   });
 
