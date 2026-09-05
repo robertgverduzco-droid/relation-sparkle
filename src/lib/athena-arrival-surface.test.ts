@@ -25,9 +25,34 @@ describe("Athena arrival surface", () => {
     expect(screen).toContain('data-testid="athena-open-composer"');
   });
 
-  it("puts the past conversation in settings, understated", () => {
-    expect(screen).toContain('to="/athena-history"');
-    expect(screen).toContain("Past conversation");
-    expect(screen).toContain("Account &amp; sign out");
+  it("puts the past conversation and account controls in the menu", () => {
+    expect(screen).toContain("MemberMenuLinks");
+    expect(screen).toContain("showHistory");
+    // The trigger has to read as a menu, not as a status word.
+    expect(screen).toContain('data-testid="athena-menu"');
+  });
+});
+
+/**
+ * Sign out and the founder tools must never again be orphaned by a layout
+ * change: they live in one shared menu, reachable from the field screen too.
+ */
+describe("member menu reachability", () => {
+  const menu = readFileSync("src/components/member-menu.tsx", "utf8");
+  const field = readFileSync("src/routes/_authenticated/home.tsx", "utf8");
+
+  it("carries sign out, profile, account and founder controls", () => {
+    expect(menu).toContain('data-testid="menu-sign-out"');
+    expect(menu).toContain('to="/profile"');
+    expect(menu).toContain('to="/account"');
+    expect(menu).toContain('to="/founder"');
+    expect(menu).toContain('to="/beta-accounts"');
+    expect(menu).toContain('to="/moderation"');
+    expect(menu).toContain('to="/athena-history"');
+  });
+
+  it("is reachable from the field screen", () => {
+    expect(field).toContain('data-testid="field-menu"');
+    expect(field).toContain("MemberMenuSheet");
   });
 });

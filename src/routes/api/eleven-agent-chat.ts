@@ -103,7 +103,18 @@ export const Route = createFileRoute("/api/eleven-agent-chat")({
         const tStart = Date.now();
         const { askAthena } = await import("@/lib/athena.functions");
         const tImported = Date.now();
-        const result = await askAthena({ data: { messages, channel: "voice" as const } });
+        let result: { reply?: string };
+        try {
+          result = await askAthena({ data: { messages, channel: "voice" as const } });
+        } catch (error) {
+          // A stalled or failed turn must fail loudly and quickly. Silence on
+          // a live call reads to the member as the call having died.
+          console.error(`[agent-chat] turn failed after ${Date.now() - tImported}ms`, error);
+          return new Response(
+            JSON.stringify({ error: { message: "Athena could not answer this turn in time." } }),
+            { status: 504, headers: { "Content-Type": "application/json" } },
+          );
+        }
         const tAnswered = Date.now();
         const reply = result.reply ?? "";
         console.log(

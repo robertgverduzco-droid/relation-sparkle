@@ -1,4 +1,6 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { MemberMenuLinks } from "@/components/member-menu";
+import { Menu } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -807,12 +809,16 @@ function AthenaPage() {
         <div className="flex items-center justify-between">
           <span aria-hidden className="h-9 w-9" />
           <span className="font-display text-[15px] tracking-[0.34em] text-foreground">ATHENA</span>
+          {/* A menu, not a status word: the previous label read as state and
+              hid everything behind it. */}
           <button
             onClick={() => setSettingsOpen(true)}
-            className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground transition-colors hover:text-foreground"
-            title="Voice settings"
+            data-testid="athena-menu"
+            aria-label="Menu"
+            title="Menu"
+            className="flex h-9 w-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           >
-            {voiceMode === "voice" ? "Voice" : "Text"}
+            <Menu className="h-5 w-5" aria-hidden />
           </button>
         </div>
         <span
@@ -1097,24 +1103,11 @@ function VoiceSettingsSheet({
           You can speak to Athena at any time by tapping the microphone — whichever mode you're in.
         </p>
 
-        {/* Understated, not advertised: the whole conversation, and the
-            ordinary account options, in one quiet list. */}
-        <div className="mt-6 border-t border-border/60 pt-4 flex flex-col items-start gap-3">
-          <Link
-            to="/athena-history"
-            data-testid="athena-history-link"
-            onClick={onClose}
-            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Past conversation
-          </Link>
-          <Link
-            to="/account"
-            onClick={onClose}
-            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Account &amp; sign out
-          </Link>
+        {/* Understated, not advertised — but complete: the whole
+            conversation, the profile, account and sign out, and (for those
+            who have them) moderation and founder tools. */}
+        <div className="mt-6 border-t border-border/60 pt-4">
+          <MemberMenuLinks onNavigate={onClose} showHistory />
         </div>
       </div>
     </div>
