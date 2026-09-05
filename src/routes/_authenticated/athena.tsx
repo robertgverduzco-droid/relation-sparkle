@@ -282,6 +282,7 @@ function AthenaPage() {
       ]);
       if (cancelled) return;
       accountIdRef.current = auth?.user?.id ?? null;
+      setFirstName((profile?.display_name as string | null)?.split(" ")[0] ?? null);
       foundationCompleteRef.current = Boolean(session?.completed_at);
       // A returning member whose milestone already happened opens straight
       // into ordinary continuing conversation — no intake framing, no sheet.
