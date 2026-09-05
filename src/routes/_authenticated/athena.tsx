@@ -807,61 +807,69 @@ function AthenaPage() {
         />
       </header>
 
-      <div
-        ref={scrollerRef}
-        data-testid="athena-transcript"
-        data-hydrated={hydrated ? "true" : "false"}
-        data-conversation-state={runtimeState}
-        className="relative flex-1 overflow-y-auto px-6 py-8"
-      >
-        <div className="mx-auto w-full max-w-[36rem] space-y-6">
-
+      {/* Athena at rest — what a member arrives to. No transcript, no scroll. */}
+      <div className="relative flex flex-1 flex-col items-center justify-center px-6">
+        <div className="pointer-events-none h-[42vw] max-h-[220px] w-[42vw] max-w-[220px]">
+          <AthenaRestingPresence active={busy || introducing || speaking} />
+        </div>
         {!hydrated ? (
-          <p className="text-center text-sm text-muted-foreground fade-in-slow">
+          <p className="mt-6 text-center text-sm text-muted-foreground fade-in-slow">
             Athena is preparing to meet you…
           </p>
+        ) : exchange.length === 0 ? (
+          <p className="fade-in-slow mt-6 max-w-[22rem] text-center text-[15px] leading-relaxed text-ink-soft">
+            {openingLine}
+          </p>
         ) : (
-          <>
-            {messages.map((m, i) => (
-              <div key={i}>
-                <Bubble role={m.role} content={m.content} />
-                {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
-                {m.readinessNotice ? <ReadinessNotice notice={m.readinessNotice} /> : null}
-                {m.crisis ? <CrisisNotice notice={m.crisis} /> : null}
-
-              </div>
-            ))}
-            {livePartial && (
-              <Bubble role="assistant" content={livePartial} />
-            )}
-            {showsThinkingIndicator(runtimeState) && !live && (
-              <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
-            )}
-            {askingPreference && (
-              <div className="fade-in-slow pt-4 flex flex-col items-start gap-3">
-                <p className="text-sm text-muted-foreground">How would you like to continue?</p>
-                <div className="flex flex-col gap-2 w-full max-w-sm">
-                  <button
-                    onClick={() => void choosePreference("voice")}
-                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
-                  >
-                    Continue with voice & text
-                    <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
-                  </button>
-                  <button
-                    onClick={() => void choosePreference("text")}
-                    className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
-                  >
-                    Continue with text only
-                    <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
-                  </button>
+          <div
+            ref={scrollerRef}
+            data-testid="athena-transcript"
+            data-hydrated="true"
+            data-conversation-state={runtimeState}
+            className="mt-6 max-h-[38vh] w-full max-w-[36rem] overflow-y-auto"
+          >
+            <div className="space-y-5">
+              {exchange.map((m, i) => (
+                <div key={exchangeStart + i}>
+                  <Bubble role={m.role} content={m.content} />
+                  {m.notice ? <BoundaryNotice notice={m.notice} /> : null}
+                  {m.readinessNotice ? <ReadinessNotice notice={m.readinessNotice} /> : null}
+                  {m.crisis ? <CrisisNotice notice={m.crisis} /> : null}
                 </div>
-                <p className="text-xs text-muted-foreground">You can change this anytime.</p>
-              </div>
-            )}
-          </>
+              ))}
+              {livePartial && <Bubble role="assistant" content={livePartial} />}
+            </div>
+          </div>
         )}
-        </div>
+
+        {hydrated && showsThinkingIndicator(runtimeState) && !live && (
+          <div className="mt-5 w-full max-w-[36rem]">
+            <TypingBubble label={RUNTIME_STATE_LABEL[runtimeState]} />
+          </div>
+        )}
+
+        {askingPreference && (
+          <div className="fade-in-slow mt-6 flex w-full max-w-sm flex-col items-start gap-3">
+            <p className="text-sm text-muted-foreground">How would you like to continue?</p>
+            <div className="flex w-full flex-col gap-2">
+              <button
+                onClick={() => void choosePreference("voice")}
+                className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
+              >
+                Continue with voice & text
+                <span className="block text-xs text-muted-foreground mt-1">Athena speaks while text appears in sync.</span>
+              </button>
+              <button
+                onClick={() => void choosePreference("text")}
+                className="rounded-2xl border border-border bg-[color-mix(in_oklab,var(--lavender)_6%,transparent)] px-5 py-4 text-left text-[15px] transition-colors hover:bg-[color-mix(in_oklab,var(--lavender)_11%,transparent)]"
+              >
+                Continue with text only
+                <span className="block text-xs text-muted-foreground mt-1">Athena communicates silently through text.</span>
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">You can change this anytime.</p>
+          </div>
+        )}
       </div>
 
 
