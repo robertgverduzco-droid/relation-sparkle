@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -919,7 +919,11 @@ function AthenaPage() {
           e.preventDefault();
           void send();
         }}
-        className="safe-bottom relative border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] px-5 pt-4 pb-4 backdrop-blur-xl"
+        className={`safe-bottom relative px-5 pt-4 pb-5 ${
+          composerOpen
+            ? "border-t border-border bg-[color-mix(in_oklab,var(--void)_86%,transparent)] backdrop-blur-xl"
+            : ""
+        }`}
       >
         {!askingPreference && hydrated && !introducing && !composerOpen && (
           <div className="flex justify-center gap-3">
@@ -1092,6 +1096,26 @@ function VoiceSettingsSheet({
         <p className="mt-5 text-xs text-muted-foreground">
           You can speak to Athena at any time by tapping the microphone — whichever mode you're in.
         </p>
+
+        {/* Understated, not advertised: the whole conversation, and the
+            ordinary account options, in one quiet list. */}
+        <div className="mt-6 border-t border-border/60 pt-4 flex flex-col items-start gap-3">
+          <Link
+            to="/athena/history"
+            data-testid="athena-history-link"
+            onClick={onClose}
+            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Past conversation
+          </Link>
+          <Link
+            to="/account"
+            onClick={onClose}
+            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Account &amp; sign out
+          </Link>
+        </div>
       </div>
     </div>
   );
