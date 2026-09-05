@@ -123,6 +123,8 @@ function AthenaPage() {
   // stillness rather than a keyboard and a scroll.
   const [composerOpen, setComposerOpen] = useState(false);
   const [firstName, setFirstName] = useState<string | null>(null);
+  /** Turns that already existed when this visit began — never shown here. */
+  const baselineRef = useRef(0);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [showClosingCard, setShowClosingCard] = useState(false);
@@ -294,6 +296,9 @@ function AthenaPage() {
       });
       const priorMessages = Array.isArray(session?.messages) ? (session!.messages as Msg[]) : [];
       if (priorMessages.length > 0) {
+        // Arriving is stillness: prior turns are history, reachable from
+        // settings, never replayed on the screen.
+        baselineRef.current = priorMessages.length;
         setMessages(priorMessages);
         lastReflectedTurnRef.current = priorMessages.filter((m) => m.role === "user").length;
         setVoiceMode(stored ?? "voice");
@@ -755,7 +760,7 @@ function AthenaPage() {
   // that prompted it. The full history lives in settings, not here.
   const lastUserIndex = messages.map((m) => m.role).lastIndexOf("user");
   const exchangeStart = lastUserIndex >= 0 ? lastUserIndex : 0;
-  const exchange = messages.slice(exchangeStart);
+  const exchange = messages.slice(Math.max(exchangeStart, baselineRef.current));
   const openingLine = !foundationalSessionRef.current
     ? firstName
       ? `Hello again, ${firstName}.`
