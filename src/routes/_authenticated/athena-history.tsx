@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { FieldBack } from "@/components/field-back";
 
-export const Route = createFileRoute("/_authenticated/athena/history")({
+export const Route = createFileRoute("/_authenticated/athena-history")({
   head: () => ({
     meta: [
       { title: "Past conversation — Athena" },

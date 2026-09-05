@@ -1101,7 +1101,7 @@ function VoiceSettingsSheet({
             ordinary account options, in one quiet list. */}
         <div className="mt-6 border-t border-border/60 pt-4 flex flex-col items-start gap-3">
           <Link
-            to="/athena/history"
+            to="/athena-history"
             data-testid="athena-history-link"
             onClick={onClose}
             className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
