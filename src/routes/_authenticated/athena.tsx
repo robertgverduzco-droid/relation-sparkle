@@ -81,14 +81,14 @@ type VoiceMode = "voice" | "text";
 const VOICE_KEY = "athena-voice-mode";
 
 function buildIntro(firstName: string | null, welcomeAlreadyDelivered = false): string[] {
-  const greeting = firstName ? `Hello, ${firstName}.` : "Hello.";
+  const greeting = firstName ? `Hi, ${firstName}.` : "Hi.";
   return [
     // D5: the one-time welcome. If the member already received it at their
     // arrival — before the first onboarding question — it is never repeated.
     ...(welcomeAlreadyDelivered ? [] : [ARRIVAL_WELCOME]),
     greeting,
-    "I'm Athena.",
-    "It's a pleasure to finally meet you.",
+    "My name is Athena.",
+    "Nice to meet you.",
     "Our first conversation is designed to help me build a strong foundation for understanding who you are. By the end of our conversation, I'll know enough to begin identifying people who appear highly compatible with you. Every conversation we have after that helps me understand you more deeply, allowing me to continually refine and improve the introductions I make over time.",
     "Before I ever introduce you to another person, I'd like the opportunity to understand you.",
     "There are no questionnaires. There are no personality tests. Just a conversation.",
@@ -406,7 +406,8 @@ function AthenaPage() {
     try { localStorage.setItem(VOICE_KEY, mode); } catch { /* ignore */ }
     setVoiceMode(mode);
     setAskingPreference(false);
-    const opening = "What's something you've been thinking about recently?";
+    const opening =
+      "Most of these conversations start with someone describing themselves, and almost nobody enjoys that. So instead: what's something about your life right now that you'd want a person to actually understand before they met you?";
     const abort = new AbortController();
     speechAbortRef.current = abort;
     setIntroducing(true);

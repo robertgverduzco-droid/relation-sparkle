@@ -79,7 +79,10 @@ export const askAthena = createServerFn({ method: "POST" })
         .select("topic_key, status, confidence, importance, conversation_count, question_count, observations, related_topics, open_questions, needs_clarification, clarification_note, first_discussed_at, last_discussed_at"),
       // Foundational mode is decided by the member's own record, never by the
       // caller: the client's flag may only ever narrow it, not grant it.
-      supabase.from("interview_sessions").select("completed_at, foundational_milestone_at, created_at").maybeSingle(),
+      supabase
+        .from("interview_sessions")
+        .select("completed_at, foundational_milestone_at, created_at, messages")
+        .maybeSingle(),
     ]);
 
     // Structured intake (member-stated) is context, not a replacement for her
@@ -453,9 +456,28 @@ Use this memory to:
 
     // Minimisation: enforce an explicit per-request ceiling on how much of
     // this member's inner life leaves the system (AI-PRIVACY-BOUNDARY.md).
+    // The asked-question ledger. Derived from the stored transcript merged
+    // with this request's turns, and carried in the system prompt so it
+    // survives history trimming, the safety-filter fallback and a live voice
+    // call — each of which can otherwise hide a question she already asked.
+    let askedBlock = "";
+    try {
+      const { buildAskedLedger } = await import("./asked-ledger");
+      const storedMessages = Array.isArray(
+        (sessionRow as { messages?: unknown } | null)?.messages,
+      )
+        ? ((sessionRow as { messages: Array<{ role?: string; content?: string }> }).messages
+            .filter((m) => typeof m?.role === "string" && typeof m?.content === "string")
+            .map((m) => ({ role: m.role as string, content: m.content as string })))
+        : [];
+      askedBlock = buildAskedLedger(storedMessages, data.messages).block;
+    } catch {
+      // The ledger sharpens a turn; it never blocks one.
+    }
+
     const budgeted = applyContextBudget(
       {
-        fixed: [athenaSystemPrompt(), doctrine, runtimeHint, spokenRegisterBlock(data.channel), variantHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
+        fixed: [athenaSystemPrompt(), doctrine, askedBlock, runtimeHint, spokenRegisterBlock(data.channel), variantHint, presenceHint, pacingHint, seamedTimeHint, breadthHint, trackHint, readinessHint, seamedWaitingHint, datingHint, boundaryHint, structuredBlock, crisisHint].filter(Boolean),
         memory: memoryBlock,
       },
       rawMessages as Array<{ role: string; content: string }>,
