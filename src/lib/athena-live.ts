@@ -52,6 +52,12 @@ export class AthenaLiveSession {
 
   constructor(private readonly handlers: LiveHandlers) {}
 
+  /** A finished call can never be reopened; the caller must build a new one. */
+  isClosed(): boolean {
+    return this.closed || this.started;
+  }
+
+
   async start(authHeaders: Record<string, string>, priorTurns: LiveTurn[] = []): Promise<void> {
     // One session per instance, always: a second press can never open a second
     // microphone channel or a second Athena voice.
