@@ -187,24 +187,46 @@ export async function evaluateReadiness(
   // At least one approved photograph is required before anyone is introduced.
   // The hold is truthful and free of pressure: it distinguishes "none yet"
   // from "still in review", and never implies the member did something wrong.
+  //
+  // Exception, test-only: a synthetic beta persona is fictional and has no
+  // photograph to give. The exemption is keyed to a row in
+  // `synthetic_accounts`, which only the founder provisioning path can create
+  // and which no member can write. Any failure to prove synthetic status
+  // falls through to the requirement, so real members are never exempted.
   {
-    const { data: photos } = await supabase
-      .from("user_photos")
-      .select("moderation")
-      .eq("user_id", userId);
-    const rows = photos ?? [];
-    const approved = rows.some((p) => p.moderation === "approved");
-    if (!approved) {
-      const pending = rows.some((p) => p.moderation === "pending");
-      return persist({
-        state: "A",
-        reason_code: pending ? "photo_pending" : "photo_required",
-        reason_text: pending ? COPY.A_photo_pending : COPY.A_photo_needed,
-        hold_kind: pending ? "photo_review" : "photo",
-        hold_until: null,
-      });
+    let isSynthetic = false;
+    try {
+      const { data: synth } = await supabase
+        .from("synthetic_accounts")
+        .select("id")
+        .eq("user_id", userId)
+        .is("revoked_at", null)
+        .maybeSingle();
+      isSynthetic = Boolean(synth);
+    } catch {
+      isSynthetic = false;
+    }
+
+    if (!isSynthetic) {
+      const { data: photos } = await supabase
+        .from("user_photos")
+        .select("moderation")
+        .eq("user_id", userId);
+      const rows = photos ?? [];
+      const approved = rows.some((p) => p.moderation === "approved");
+      if (!approved) {
+        const pending = rows.some((p) => p.moderation === "pending");
+        return persist({
+          state: "A",
+          reason_code: pending ? "photo_pending" : "photo_required",
+          reason_text: pending ? COPY.A_photo_pending : COPY.A_photo_needed,
+          hold_kind: pending ? "photo_review" : "photo",
+          hold_until: null,
+        });
+      }
     }
   }
+
 
   {
     const { REQUIRED_REFLECTION_GRACE_DAYS } = await import("./connections.server");
