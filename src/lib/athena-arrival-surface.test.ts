@@ -52,7 +52,10 @@ describe("member menu reachability", () => {
   });
 
   it("is reachable from the field screen", () => {
-    expect(field).toContain('data-testid="field-menu"');
+    // The field's menu lives on a sixth orb, not a corner label -- it opens
+    // the same sheet in place rather than navigating to a new screen.
+    expect(field).toContain('{ id: "menu", name: "Menu"');
+    expect(field).toContain('if (id === "menu")');
     expect(field).toContain("MemberMenuSheet");
   });
 });

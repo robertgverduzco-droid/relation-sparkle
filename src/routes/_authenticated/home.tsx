@@ -23,7 +23,9 @@ type ProfileRow = {
   onboarding_completed_at: string | null;
 };
 
-const ROUTE_OF: Record<OrbId, "/today" | "/athena" | "/introductions" | "/messages" | "/understanding"> = {
+const ROUTE_OF: Partial<
+  Record<OrbId, "/today" | "/athena" | "/introductions" | "/messages" | "/understanding">
+> = {
   today: "/today",
   athena: "/athena",
   meet: "/introductions",
@@ -104,6 +106,9 @@ function Field() {
     // would read as "people waiting on you", which is a different fact.
     { id: "messages", name: "Messages", warm: 0 },
     { id: "you", name: "You", warm: 0, sub: held > 0 ? `${count(held)} held` : null },
+    // Not a destination like the other five -- entering it opens the menu
+    // sheet in place rather than navigating away. See OrbField's onClick.
+    { id: "menu", name: "Menu", warm: 0 },
   ];
 
   const today = new Date();
@@ -115,26 +120,27 @@ function Field() {
 
   return (
     <div data-testid="field-screen">
-      <OrbField orbs={orbs} onEnter={(id) => navigate({ to: ROUTE_OF[id] })} />
+      <OrbField
+        orbs={orbs}
+        onEnter={(id) => {
+          // Quiet, but never absent: the field is the one screen everybody
+          // returns to, so the way out of the app lives here too -- as a
+          // sixth light rather than a corner label.
+          if (id === "menu") {
+            setMenuOpen(true);
+            return;
+          }
+          navigate({ to: ROUTE_OF[id]! });
+        }}
+      />
       <div className="orb-field-top" style={{ pointerEvents: "none" }}>
         <span className="orb-sys">Athena</span>
         <span className="orb-sys">{stamp}</span>
       </div>
-      {/* Quiet, but never absent: the field is the one screen everybody
-          returns to, so the way out of the app lives here too. */}
-      <button
-        type="button"
-        data-testid="field-menu"
-        aria-label="Menu"
-        onClick={() => setMenuOpen(true)}
-        className="orb-sys fixed bottom-6 right-6 z-40 min-h-11 px-3 py-2 text-muted-foreground transition-colors hover:text-foreground"
-      >
-        Menu
-      </button>
       <div className="orb-field-hint">
         <span className="orb-sys">Touch a light</span>
       </div>
-      {menuOpen && <MemberMenuSheet onClose={() => setMenuOpen(false)} />}
+      {menuOpen && <MemberMenuSheet onClose={() => setMenuOpen(false)} showHistory />}
     </div>
   );
 }

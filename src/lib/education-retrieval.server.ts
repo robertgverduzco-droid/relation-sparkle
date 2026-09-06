@@ -266,6 +266,12 @@ async function embedQuery(text: string): Promise<number[] | null> {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: VECTORS.model, dimensions: VECTORS.dims, input: cacheKey }),
+      // This runs on every conversation turn, including live voice, ahead of
+      // the model call's own deadline. Unbounded, a slow embeddings provider
+      // silently ate into that budget with nothing to show for it — retrieval
+      // degrades to the lexical pass below either way, so failing fast here
+      // costs nothing.
+      signal: AbortSignal.timeout(5_000),
     });
     if (!res.ok) throw new Error(String(res.status));
     const body = (await res.json()) as { data: { embedding: number[] }[] };

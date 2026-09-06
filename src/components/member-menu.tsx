@@ -80,6 +80,26 @@ export function MemberMenuLinks({
       <Link to="/account" data-testid="menu-account" onClick={onNavigate} className={row}>
         Account settings
       </Link>
+      <Link to="/understanding" data-testid="menu-understanding" onClick={onNavigate} className={row}>
+        What Athena understands
+      </Link>
+      <Link to="/membership" data-testid="menu-membership" onClick={onNavigate} className={row}>
+        Membership
+      </Link>
+      <Link to="/privacy" data-testid="menu-privacy" onClick={onNavigate} className={row}>
+        Privacy
+      </Link>
+      <Link to="/terms" data-testid="menu-terms" onClick={onNavigate} className={row}>
+        Terms
+      </Link>
+      <Link
+        to="/community-guidelines"
+        data-testid="menu-community-guidelines"
+        onClick={onNavigate}
+        className={row}
+      >
+        Community Guidelines
+      </Link>
 
       {isModerator && (
         <Link to="/moderation" data-testid="menu-moderation" onClick={onNavigate} className={row}>
@@ -98,6 +118,22 @@ export function MemberMenuLinks({
             className={row}
           >
             Founder intelligence
+          </Link>
+          <Link
+            to="/founder/photos"
+            data-testid="menu-founder-photos"
+            onClick={onNavigate}
+            className={row}
+          >
+            Founder photos
+          </Link>
+          <Link
+            to="/founder/appeals"
+            data-testid="menu-founder-appeals"
+            onClick={onNavigate}
+            className={row}
+          >
+            Founder appeals
           </Link>
           <Link
             to="/beta-accounts"

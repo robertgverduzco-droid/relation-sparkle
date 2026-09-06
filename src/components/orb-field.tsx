@@ -12,7 +12,7 @@ import { useReducedMotion } from "@/hooks/use-reduced-motion";
  * rgba(3,3,4,0.88) at 94%.
  */
 
-export type OrbId = "today" | "athena" | "meet" | "messages" | "you";
+export type OrbId = "today" | "athena" | "meet" | "messages" | "you" | "menu";
 
 export type OrbSpec = {
   id: OrbId;
@@ -50,6 +50,7 @@ const GEOMETRY: Record<OrbId, { rx: number; ry: number; r: number }> = {
   meet: { rx: 0.77, ry: 0.25, r: 28 },
   messages: { rx: 0.26, ry: 0.68, r: 23 },
   you: { rx: 0.75, ry: 0.71, r: 26 },
+  menu: { rx: 0.83, ry: 0.79, r: 22 },
 };
 
 const CONNECT = 150;
@@ -283,6 +284,14 @@ export function OrbField({
 
     const enter = (n: Node) => {
       if (leaving) return;
+      // Menu opens a sheet in place rather than leaving for a new screen, so
+      // it skips the bloom-and-fade: nothing here ever unmounts the field to
+      // reset that state, and closing the sheet would otherwise leave every
+      // other light faded to nothing.
+      if (n.id === "menu") {
+        onEnterRef.current(n.id);
+        return;
+      }
       leaving = n.id;
       for (const o of NODES) {
         const isIt = o.id === n.id;
