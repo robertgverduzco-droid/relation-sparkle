@@ -242,7 +242,11 @@ function AthenaPage() {
   }, []);
 
   const startLive = useCallback(async () => {
+    // A finished call leaves its object behind. Reusing it silently refuses to
+    // start — which is exactly what "Speak does nothing after I hang up" was.
+    if (liveRef.current?.isClosed()) liveRef.current = null;
     if (liveRef.current) return;
+
     // Live mode owns the audio channel; the fallback voice must go quiet.
     speechEpochRef.current += 1;
     speechAbortRef.current?.abort();
@@ -250,7 +254,16 @@ function AthenaPage() {
     setSpeaking(false);
 
     const session = new AthenaLiveSession({
-      onStatus: (s) => setLiveStatus(s),
+      onStatus: (s) => {
+        setLiveStatus(s);
+        // The call can also end from the far side (the member hangs up in the
+        // voice layer, or the channel closes). Release the object then too, so
+        // the next tap opens a fresh call instead of hitting a dead one.
+        if (s === "ended" || s === "error") {
+          if (liveRef.current === session) liveRef.current = null;
+        }
+      },
+
       onTurn: appendLiveTurn,
       onPartial: (t) => setLivePartial(t),
       onError: (m) => {
