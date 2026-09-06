@@ -135,6 +135,30 @@ function AuthPage() {
           email, password,
           options: { emailRedirectTo: window.location.origin + "/auth-callback" },
         });
+        // An address that already has an account comes back either as an
+        // error or as an obfuscated user with no identities. Either way the
+        // right thing is to sign them in with what they just typed rather
+        // than parking them on a verification screen for an account that is
+        // already confirmed.
+        const alreadyRegistered =
+          (error && /already registered|already exists/i.test(error.message)) ||
+          (!error && (data.user?.identities?.length ?? 1) === 0);
+        if (alreadyRegistered) {
+          const signIn = await supabase.auth.signInWithPassword({ email, password });
+          if (!signIn.error) {
+            clearCooldown(email);
+            const u = signIn.data.user;
+            if (u && !u.email_confirmed_at && !u.phone_confirmed_at) {
+              setPendingEmail(u.email ?? email);
+              return;
+            }
+            navigate({ to: "/home" });
+            return;
+          }
+          setMode("signin");
+          toast.error("That email already has an account. Enter your password to sign in.");
+          return;
+        }
         if (error) throw error;
         clearCooldown(email);
         const u = data.user;
@@ -144,6 +168,7 @@ function AuthPage() {
         } else {
           navigate({ to: "/home" });
         }
+
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
