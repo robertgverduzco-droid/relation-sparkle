@@ -470,13 +470,36 @@ Use this memory to:
     // A bounded wait, because an unbounded one is what silence sounds like on
     // a live call: with no deadline a stalled upstream call never returns and
     // the member hears nothing at all. 25s is far above a normal turn.
-    const { text } = await generateText({
-      model: gateway("openai/gpt-5.5"),
-      system: budgeted.system,
-      messages: budgeted.messages as ModelMessage[],
-      providerOptions: { lovable: { reasoningEffort: "low" } },
-      abortSignal: AbortSignal.timeout(25_000),
-    });
+    // A whole conversation must never be wedged by one rejected request. The
+    // upstream safety filter judges the *entire* transcript, so once a long
+    // history trips it every later turn resends the same history and fails
+    // identically — the member is locked out of Athena permanently. When that
+    // happens the turn is retried on a short tail of the conversation, which
+    // is enough for Athena to keep speaking while the older material stays
+    // stored and untouched.
+    async function answer(messages: ModelMessage[]): Promise<string> {
+      const { text } = await generateText({
+        model: gateway("openai/gpt-5.5"),
+        system: budgeted.system,
+        messages,
+        providerOptions: { lovable: { reasoningEffort: "low" } },
+        abortSignal: AbortSignal.timeout(25_000),
+      });
+      return text;
+    }
+
+    const fullMessages = budgeted.messages as ModelMessage[];
+    let text: string;
+    try {
+      text = await answer(fullMessages);
+    } catch (error) {
+      const detail = String((error as Error)?.message ?? error);
+      const rejected = /content[_ ]filter|ResponsibleAIPolicy|\b400\b|invalid_request/i.test(detail);
+      if (!rejected || fullMessages.length <= 4) throw error;
+      safeLog("athena.turn.filtered", { detail: detail.slice(0, 200) });
+      text = await answer(fullMessages.slice(-4));
+    }
+
 
 
     // Egress wall (src/lib/output-guard.ts). Doctrine asks Athena not to
